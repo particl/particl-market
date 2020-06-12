@@ -12,10 +12,10 @@ export class ShippingPriceCreateRequest extends RequestBody implements ModelRequ
     @IsNotEmpty()
     public item_price_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public domestic: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public international: number;
 
 }

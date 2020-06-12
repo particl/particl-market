@@ -17,13 +17,13 @@ import { BaseCommand } from '../BaseCommand';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import {EscrowReleaseType, EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
-import {ItemCategoryService} from '../../services/model/ItemCategoryService';
-import {MessageException} from '../../exceptions/MessageException';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 

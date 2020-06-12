@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -55,28 +56,28 @@ export class PaymentInformationService {
         }
 
         // extract and remove related models from request
-        const escrow = body.escrow;
-        const itemPrice = body.itemPrice;
+        const escrow = body.escrow || {};
+        const itemPrice = body.itemPrice || {};
         delete body.escrow;
         delete body.itemPrice;
 
         // If the request body was valid we will create the paymentInformation
-        const paymentInformation = await this.paymentInformationRepo.create(body);
+        const paymentInformation: resources.PaymentInformation = await this.paymentInformationRepo.create(body).then(value => value.toJSON());
 
         // create related models, escrow
         if (!_.isEmpty(escrow)) {
-            escrow.payment_information_id = paymentInformation.Id;
+            escrow.payment_information_id = paymentInformation.id;
             await this.escrowService.create(escrow);
         }
 
         // create related models, item price
         if (!_.isEmpty(itemPrice)) {
-            itemPrice.payment_information_id = paymentInformation.Id;
+            itemPrice.payment_information_id = paymentInformation.id;
             await this.itemPriceService.create(itemPrice);
         }
 
         // finally find and return the created paymentInformation
-        return await this.findOne(paymentInformation.Id);
+        return await this.findOne(paymentInformation.id);
 
     }
 

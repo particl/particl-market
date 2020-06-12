@@ -20,7 +20,6 @@ import { CryptocurrencyAddressCreateRequest } from '../../requests/model/Cryptoc
 import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
-import {ListingItem} from '../../models/ListingItem';
 
 export class ItemPriceService {
 
@@ -70,8 +69,7 @@ export class ItemPriceService {
         }
 
         // create the itemPrice
-        const itemPrice: resources.ItemPrice = await this.itemPriceRepo.create(body)
-            .then(value => value.toJSON());
+        const itemPrice: resources.ItemPrice = await this.itemPriceRepo.create(body).then(value => value.toJSON());
 
         // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {

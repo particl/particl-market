@@ -75,8 +75,9 @@ export class ItemInformationService {
         }
 
         // extract and remove related models from request
+        // body.item_category_id might also exist
         const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
-        const itemLocation: ItemLocationCreateRequest = body.itemLocation;
+        const itemLocation: ItemLocationCreateRequest = body.itemLocation || {};
         const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
         const itemImages: ItemImageCreateRequest[] = body.itemImages || [];
 
@@ -93,8 +94,6 @@ export class ItemInformationService {
 
         // ready to save, if the request body was valid, create the itemInformation
         const itemInformation: resources.ItemInformation = await this.itemInformationRepo.create(body).then(value => value.toJSON());
-
-        // this.log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
 
         // location will always be created, even if country wasn't given.
         itemLocation.item_information_id = itemInformation.id;
@@ -217,16 +216,12 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        // this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
 
-        // if (createRequest.id) {
-        //    result = await this.itemCategoryService.findOneDefaultByKey(createRequest.id);
-        // }
         if (createRequest.key && createRequest.market) {
             result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
         } else if (createRequest.key) {
             result = await this.itemCategoryService.findOneDefaultByKey(createRequest.key);
-
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }

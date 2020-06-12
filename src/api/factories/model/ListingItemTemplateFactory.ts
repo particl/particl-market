@@ -47,9 +47,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
                 title: params.title,
                 shortDescription: params.shortDescription,
                 longDescription: params.longDescription,
-                itemCategory: params.categoryId ? {
-                    id: params.categoryId
-                } as ItemCategoryUpdateRequest : undefined
+                item_category_id: params.categoryId ? params.categoryId : undefined
             } as ItemInformationCreateRequest,
             paymentInformation: {
                 type: params.saleType,

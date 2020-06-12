@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { IsNotEmpty, IsEnum, IsPositive } from 'class-validator';
+import {IsNotEmpty, IsEnum, IsPositive, Min} from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ShippingPriceCreateRequest } from './ShippingPriceCreateRequest';
@@ -21,7 +21,7 @@ export class ItemPriceCreateRequest extends RequestBody implements ModelRequestI
     public currency: Cryptocurrency;
 
     @IsNotEmpty()
-    @IsPositive()
+    @Min(0)
     public basePrice: number;
 
     public shippingPrice: ShippingPriceCreateRequest;

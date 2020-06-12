@@ -27,20 +27,15 @@ import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItem
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { MessageSize } from '../../responses/MessageSize';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ImageFactory } from '../../factories/ImageFactory';
 import { ItemImage } from '../../models/ItemImage';
-import { ompVersion} from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { ItemInformationService } from './ItemInformationService';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ItemImageService } from './ItemImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
@@ -51,8 +46,7 @@ import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequ
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
-import {MessagingInformation} from '../../models/MessagingInformation';
-import {ListingItemAddMessage} from '../../messages/action/ListingItemAddMessage';
+import { MessagingInformation } from '../../models/MessagingInformation';
 
 export class ListingItemTemplateService {
 
@@ -73,7 +67,6 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -170,14 +163,14 @@ export class ListingItemTemplateService {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
             const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
                 .then(value => value.toJSON());
-            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
             const createdPaymentInfo: resources.PaymentInformation = await this.paymentInformationService.create(paymentInformation)
                 .then(value => value.toJSON());
-            // this.log.debug('paymentInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('paymentInformation, result:', JSON.stringify(createdPaymentInfo, null, 2));
         }
 
         if (!_.isEmpty(messagingInformation)) {
@@ -185,7 +178,7 @@ export class ListingItemTemplateService {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
                 const createdMsgInfo: resources.MessagingInformation = await this.messagingInformationService.create(msgInfo)
                     .then(value => value.toJSON());
-                // this.log.debug('msgInfo, result:', JSON.stringify(result, null, 2));
+                // this.log.debug('msgInfo, result:', JSON.stringify(createdMsgInfo, null, 2));
             }
         }
 
@@ -194,7 +187,7 @@ export class ListingItemTemplateService {
                 object.listing_item_template_id = listingItemTemplate.id;
                 const createdListingItemObject: resources.ListingItemObject = await this.listingItemObjectService.create(object)
                     .then(value => value.toJSON());
-                // this.log.debug('object, result:', JSON.stringify(result, null, 2));
+                // this.log.debug('object, result:', JSON.stringify(createdListingItemObject, null, 2));
             }
         }
 

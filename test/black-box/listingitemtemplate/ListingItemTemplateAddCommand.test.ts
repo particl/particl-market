@@ -49,7 +49,6 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-/*
     test('Should fail to add because missing title', async () => {
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
             profile.id               // [0]: profile_id
@@ -79,6 +78,9 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
+
+/*
+    these are optional now...
 
     test('Should fail to add because missing categoryId', async () => {
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
@@ -166,6 +168,7 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('internationalShippingPrice').getMessage());
     });
+*/
 
     test('Should fail to add because invalid profileId', async () => {
 
@@ -189,7 +192,7 @@ describe('ListingItemTemplateAddCommand', () => {
     test('Should fail to add because invalid title', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
+            profile.id,                     // [0]: profile_id
             0,                              // [1]: title
             'test short description',       // [2]: short description
             'Long description',             // [3]: long description
@@ -208,7 +211,7 @@ describe('ListingItemTemplateAddCommand', () => {
     test('Should fail to add because invalid shortDescription', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
+            profile.id,                     // [0]: profile_id
             'Test Title',                   // [1]: title
             0,                              // [2]: short description
             'Long description',             // [3]: long description
@@ -227,7 +230,7 @@ describe('ListingItemTemplateAddCommand', () => {
     test('Should fail to add because invalid longDescription', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
+            profile.id,                     // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
             0,                              // [3]: long description
@@ -261,7 +264,7 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
-*/
+
 
 /*
 // TODO: saleType is hardcoded for now
@@ -309,7 +312,6 @@ describe('ListingItemTemplateAddCommand', () => {
     });
 */
 
-/*
     test('Should fail to add because invalid basePrice', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
@@ -366,7 +368,6 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('internationalShippingPrice', 'number').getMessage());
     });
-*/
 
 /*
 // TODO: escrowType is hardcoded for now
@@ -387,7 +388,7 @@ describe('ListingItemTemplateAddCommand', () => {
             'INVALID',                      // [10]: escrowType, (optional) default EscrowType.MAD_CT
             100,                            // [11]: buyerRatio, (optional) default 100
             100                             // [12]: sellerRatio, (optional) default 100
-            //                              // TODO: [13]: parent_listing_item_template_id (optional)
+            //                              // TODO: [13]: escrowReleaseType (optional)
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -396,6 +397,8 @@ describe('ListingItemTemplateAddCommand', () => {
 */
 
 /*
+// TODO: hardcoded for now
+
     test('Should fail to add because invalid buyerRatio', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
@@ -412,7 +415,7 @@ describe('ListingItemTemplateAddCommand', () => {
             EscrowType.MAD_CT,              // [10]: escrowType, (optional) default EscrowType.MAD_CT
             'INVALID',                      // [11]: buyerRatio, (optional) default 100
             100                             // [12]: sellerRatio, (optional) default 100
-            //                              // TODO: [13]: parent_listing_item_template_id (optional)
+            //                              // TODO: [13]: escrowReleaseType (optional)
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -435,12 +438,13 @@ describe('ListingItemTemplateAddCommand', () => {
             EscrowType.MAD_CT,              // [10]: escrowType, (optional) default EscrowType.MAD_CT
             100,                            // [11]: buyerRatio, (optional) default 100
             'INVALID'                       // [12]: sellerRatio, (optional) default 100
-            //                              // TODO: [13]: parent_listing_item_template_id (optional)
+            //                              // TODO: [13]: escrowReleaseType (optional)
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
     });
+*/
 
     test('Should fail to add because Profile not found', async () => {
 
@@ -458,7 +462,7 @@ describe('ListingItemTemplateAddCommand', () => {
             EscrowType.MAD_CT,              // [10]: escrowType, (optional) default EscrowType.MAD_CT
             100,                            // [11]: buyerRatio, (optional) default 100
             100                             // [12]: sellerRatio, (optional) default 100
-            //                              // TODO: [13]: parent_listing_item_template_id (optional)
+            //                              // TODO: [13]: escrowReleaseType (optional)
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -469,16 +473,16 @@ describe('ListingItemTemplateAddCommand', () => {
 
         const testData = [
             templateAddCommand,
-            profile.id,              // [0]: profile_id
+            profile.id,                     // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
             'Long description',             // [3]: long description
-            rootCategory.id,                // [4]: categoryID
-            SaleType.SALE,                  // [5]: sale type
-            Cryptocurrency.PART,            // [6]: currency
-            10,                             // [7]: base price
-            20,                             // [8]: domestic shipping price
-            30                              // [9]: international shipping price
+            // rootCategory.id,                // [4]: categoryID
+            // SaleType.SALE,                  // [5]: sale type
+            // Cryptocurrency.PART,            // [6]: currency
+            // 10,                             // [7]: base price
+            // 20,                             // [8]: domestic shipping price
+            // 30                              // [9]: international shipping price
         ];
 
         const res = await testUtil.rpc(templateCommand, testData);
@@ -486,6 +490,8 @@ describe('ListingItemTemplateAddCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
+
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('Profile');
         expect(result).hasOwnProperty('ItemInformation');
         expect(result).hasOwnProperty('PaymentInformation');
@@ -496,12 +502,12 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result.ItemInformation.title).toBe(testData[2]);
         expect(result.ItemInformation.shortDescription).toBe(testData[3]);
         expect(result.ItemInformation.longDescription).toBe(testData[4]);
-        expect(result.ItemInformation.ItemCategory.id).toBe(testData[5]);
-        expect(result.PaymentInformation.type).toBe(testData[6]);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData[7]);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[8]);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[9]);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[10]);
+        // expect(result.ItemInformation.ItemCategory.id).toBe(testData[5]);
+        // expect(result.PaymentInformation.type).toBe(testData[6]);
+        // expect(result.PaymentInformation.ItemPrice.currency).toBe(testData[7]);
+        // expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[8]);
+        // expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[9]);
+        // expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[10]);
 
     });
 
@@ -509,11 +515,11 @@ describe('ListingItemTemplateAddCommand', () => {
 
         const testData = [
             templateAddCommand,
-            profile.id,              // [0]: profile_id
+            profile.id,                     // [0]: profile_id
             'Test Title 2',                 // [1]: title
             'test short description 2',     // [2]: short description
             'Long description 2',           // [3]: long description
-            rootCategory.id,                    // [4]: categoryID
+            rootCategory.id,                // [4]: categoryID
             SaleType.SALE,                  // [5]: payment type
             Cryptocurrency.PART,            // [6]: currency
             1,                              // [7]: base price
@@ -544,6 +550,5 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData[13]);
 
     });
-*/
 
 });
