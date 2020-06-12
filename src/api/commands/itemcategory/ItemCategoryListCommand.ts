@@ -16,6 +16,7 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
 import { MarketType } from '../../enums/MarketType';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -60,11 +61,17 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        if (data.params[0] === undefined || typeof data.params[0] !== 'number') {
+        if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
-        data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+        if (data.params[0]) {
+            data.params[0] = await this.marketService.findOne(data.params[0])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+        }
 
         return data;
     }
