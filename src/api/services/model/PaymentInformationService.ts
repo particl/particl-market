@@ -48,7 +48,7 @@ export class PaymentInformationService {
     public async create( @request(PaymentInformationCreateRequest) data: PaymentInformationCreateRequest): Promise<PaymentInformation> {
         const body = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('paymentInformation: ', JSON.stringify(body, null, 2));
+        this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -67,13 +67,18 @@ export class PaymentInformationService {
         // create related models, escrow
         if (!_.isEmpty(escrow)) {
             escrow.payment_information_id = paymentInformation.id;
-            await this.escrowService.create(escrow);
+            // this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
+
+            const createdEscrow: resources.Escrow = await this.escrowService.create(escrow).then(value => value.toJSON());
+            // this.log.debug('escrow, result:', JSON.stringify(createdEscrow, null, 2));
+
         }
 
         // create related models, item price
         if (!_.isEmpty(itemPrice)) {
             itemPrice.payment_information_id = paymentInformation.id;
-            await this.itemPriceService.create(itemPrice);
+            const createdItemPrice: resources.ItemPrice = await this.itemPriceService.create(itemPrice).then(value => value.toJSON());
+            // this.log.debug('itemPrice, result:', JSON.stringify(createdItemPrice, null, 2));
         }
 
         // finally find and return the created paymentInformation

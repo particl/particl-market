@@ -204,7 +204,10 @@ export class ListingItemTemplateService {
     public async clone(id: number, setOriginalAsParent: boolean = false, newMarket?: string): Promise<ListingItemTemplate> {
         let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
         const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setOriginalAsParent, newMarket);
+        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
+        // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
         return await this.findOne(listingItemTemplate.id);
     }
 
@@ -543,7 +546,7 @@ export class ListingItemTemplateService {
             listingItemObjects = _.map(listingItemTemplate.ListingItemObjects, (liObject) => {
                 // this.log.debug('liObject.ListingItemObjectDatas: ', JSON.stringify(liObject.ListingItemObjectDatas, null, 2));
                 const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = _.map(liObject.ListingItemObjectDatas, (liObjectData) => {
-                    this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
+                    // this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
                     return _.assign({} as ListingItemObjectCreateRequest, {
                         key: liObjectData.key,
                         value: liObjectData.value
@@ -610,7 +613,10 @@ export class ListingItemTemplateService {
                 } as ItemPriceCreateRequest,
                 escrow: {
                     type: listingItemTemplate.PaymentInformation.Escrow.type,
-                    secondsToLock: listingItemTemplate.PaymentInformation.Escrow.secondsToLock,
+                    releaseType: listingItemTemplate.PaymentInformation.Escrow.releaseType,
+                    secondsToLock: listingItemTemplate.PaymentInformation.Escrow.secondsToLock
+                        ? listingItemTemplate.PaymentInformation.Escrow.secondsToLock
+                        : undefined,
                     ratio: {
                         buyer: listingItemTemplate.PaymentInformation.Escrow.Ratio.buyer,
                         seller: listingItemTemplate.PaymentInformation.Escrow.Ratio.seller

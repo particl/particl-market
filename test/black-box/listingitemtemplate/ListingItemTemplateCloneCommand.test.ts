@@ -23,8 +23,8 @@ describe('ListingItemTemplateCloneCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
@@ -32,24 +32,25 @@ describe('ListingItemTemplateCloneCommand', () => {
         await testUtilBuyerNode.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtilSellerNode.getDefaultProfile();
-        defaultMarket = await testUtilSellerNode.getDefaultMarket();
+        profile = await testUtilSellerNode.getDefaultProfile();
+        market = await testUtilSellerNode.getDefaultMarket(profile.id);
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            false,              // generateItemImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
             true,               // generateMessagingInformation
             true,               // generateListingItemObjects
             true,               // generateObjectDatas
-            defaultProfile.id,  // profileId
-            false,              // generateListingItem
-            defaultMarket.id    // marketId
+            profile.id,         // profileId
+            false               // generateListingItem
+            // market.id           // soldOnMarketId
+            // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtilSellerNode.generateData(
@@ -63,12 +64,14 @@ describe('ListingItemTemplateCloneCommand', () => {
 
     });
 
-    test('Should clone a ListingItemTemplate', async () => {
+    test('Should clone a new Market ListingItemTemplate from the Base ListingItemTemplate', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand,
-            listingItemTemplate.id
+            listingItemTemplate.id,
+            true,                       // setOriginalAsParent
+            market.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -82,7 +85,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result).hasOwnProperty('ListingItemObjects');
         expect(result).hasOwnProperty('ListingItems');
 
-        expect(result.ParentListingItemTemplate).toBeUndefined();
+        expect(result.ParentListingItemTemplate).toBeDefined(); // market template
 
         expect(result.Profile.id).toBe(listingItemTemplate.Profile.id);
         expect(result.ItemInformation.title).toBe(listingItemTemplate.ItemInformation.title);

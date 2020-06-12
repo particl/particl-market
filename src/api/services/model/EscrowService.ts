@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -46,21 +47,23 @@ export class EscrowService {
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         const escrowRatio = body.ratio;
         delete body.ratio;
 
         // If the request body was valid we will create the escrow
-        const escrow = await this.escrowRepo.create(body);
+        const escrow: resources.Escrow = await this.escrowRepo.create(body).then(value => value.toJSON());
+        this.log.debug('escrow, result:', JSON.stringify(escrow, null, 2));
 
         // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {
-            escrowRatio.escrow_id = escrow.Id;
+            escrowRatio.escrow_id = escrow.id;
             await this.escrowRatioService.create(escrowRatio);
         }
 
         // finally find and return the created escrow
-        return await this.findOne(escrow.Id);
+        return await this.findOne(escrow.id);
     }
 
     @validate()

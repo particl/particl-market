@@ -19,6 +19,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -38,7 +39,7 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
      *
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: setAsParent, optional
+     *  [1]: setOriginalAsParent, optional
      *  [2]: newMarket, optional
      *
      * @param data, RpcRequest
@@ -84,22 +85,29 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
         }
 
         // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
 
         if (setOriginalAsParent && _.isNumber(marketId)) {
             // if marketId was given -> we are creating a new market template based on the given base template
 
             //   - template.profile and market.profile should match
-            const market: resources.Market = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+            const market: resources.Market = await this.marketService.findOne(marketId)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+
             if (listingItemTemplate.Profile.id !== market.Profile.id) {
                 throw new MessageException('ListingItemTemplate and Market Profiles don\'t match.');
             }
 
             //   - fail if template for the given market already exists
-            const baseTemplateId: number = listingItemTemplate.ParentListingItemTemplate.id
-                ? listingItemTemplate.ParentListingItemTemplate.id : listingItemTemplate.id;
             const marketTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findLatestByParentTemplateAndMarket(
-                baseTemplateId, market.receiveAddress)
+                listingItemTemplate.id, market.receiveAddress)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     // not found, which is fine...
@@ -136,7 +144,6 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     public description(): string {
         return 'Clone a ListingItemTemplate.';
     }
-
 
     public example(): string {
         return this.getName() + ' 1';

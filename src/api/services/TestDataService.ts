@@ -518,7 +518,8 @@ export class TestDataService {
     public async getRandomCategory(): Promise<resources.ItemCategory> {
         // findRoot should be called only if were not fetching a default category
         const defaultRoot: resources.ItemCategory = await this.itemCategoryService.findDefaultRoot().then(value => value.toJSON());
-        return Faker.random.arrayElement(defaultRoot.ChildItemCategories);
+        const childCat: resources.ItemCategory = Faker.random.arrayElement(defaultRoot.ChildItemCategories);
+        return Faker.random.arrayElement(childCat.ChildItemCategories);
     }
 
     /**
@@ -598,7 +599,9 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest: ListingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
-            // base template
+            // this.log.debug('generateListingItemTemplates(), listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+
+            // create base template
             let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest)
                 .then(value => value.toJSON());
 
@@ -1421,28 +1424,16 @@ export class TestDataService {
             ? this.generateItemLocationData()
             : undefined;
 
-        // this.log.debug('generateParams.categoryId: ', JSON.stringify(generateParams.categoryId, null, 2));
-
-        const itemCategory = {} as ItemCategoryUpdateRequest;
-        if (generateParams.categoryId) {
-            itemCategory.id = generateParams.categoryId;
-        } else {
-            // todo: fix, this isn't working without generateParams.soldOnMarketId
-            const sellerMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
-            // this.log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-
-            // use a default category
-            // itemCategory.market = sellerMarket.receiveAddress;
+        if (!generateParams.categoryId) {
             const randomCategory: resources.ItemCategory = await this.getRandomCategory();
-            // this.log.debug('randomCategory: ', JSON.stringify(randomCategory, null, 2));
-            itemCategory.key = randomCategory.key;
+            generateParams.categoryId = randomCategory.id;
         }
 
         const itemInformationCreateRequest = {
             title: Faker.commerce.productName(),
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
-            itemCategory,
+            item_category_id: generateParams.categoryId,
             itemLocation,
             shippingDestinations,
             itemImages
@@ -1456,10 +1447,16 @@ export class TestDataService {
 
         // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
-        const wallet = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => {
-            const market: resources.Market = value.toJSON();
-            return market.Identity.wallet;
-        });
+        let address;
+        if (generateParams.soldOnMarketId) {
+            address = await this.marketService.findOne(generateParams.soldOnMarketId).then(async value => {
+                const market: resources.Market = value.toJSON();
+                return (await this.coreRpcService.getNewStealthAddress(market.Identity.wallet)).address;
+
+            });
+        } else {
+            address = Faker.finance.bitcoinAddress();
+        }
 
         const escrow = generateParams.generateEscrow
             ? {
@@ -1483,7 +1480,7 @@ export class TestDataService {
                 } as ShippingPriceCreateRequest,
                 cryptocurrencyAddress: {
                     type: CryptoAddressType.STEALTH,
-                    address: (await this.coreRpcService.getNewStealthAddress(wallet)).address
+                    address
                 } as CryptocurrencyAddressCreateRequest
             } as ItemPriceCreateRequest
             : undefined;
@@ -1542,10 +1539,16 @@ export class TestDataService {
             profileId = generateParams.profileId;
         }
 
+        // this.log.debug('generateListingItemTemplateData(), profileId: ', JSON.stringify(profileId, null, 2));
+
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
+        // this.log.debug('generateListingItemTemplateData(), itemInformation: ', JSON.stringify(itemInformation, null, 2));
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
+        // this.log.debug('generateListingItemTemplateData(), paymentInformation: ', JSON.stringify(paymentInformation, null, 2));
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
+        // this.log.debug('generateListingItemTemplateData(), messagingInformation: ', JSON.stringify(messagingInformation, null, 2));
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
+        // this.log.debug('generateListingItemTemplateData(), listingItemObjects: ', JSON.stringify(listingItemObjects, null, 2));
 
         const listingItemTemplateCreateRequest = {
             generatedAt: +Date.now(),
