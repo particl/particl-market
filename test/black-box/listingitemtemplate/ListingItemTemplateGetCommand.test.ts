@@ -20,8 +20,8 @@ describe('ListingItemTemplateGetCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
 
 
@@ -29,8 +29,8 @@ describe('ListingItemTemplateGetCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket(profile.id)
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -43,9 +43,9 @@ describe('ListingItemTemplateGetCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            defaultProfile.id,  // profileId
+            profile.id,  // profileId
             false,              // generateListingItem
-            defaultMarket.id    // marketId
+            market.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -66,8 +66,8 @@ describe('ListingItemTemplateGetCommand', () => {
         const result: resources.ListingItemTemplate = res.getBody()['result'];
 
         log.debug('result:', JSON.stringify(result, null, 2));
-        expect(result.Profile.id).toBe(defaultProfile.id);
-        expect(result.Profile.name).toBe(defaultProfile.name);
+        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Profile.name).toBe(profile.name);
         expect(result).hasOwnProperty('Profile');
         expect(result).hasOwnProperty('ItemInformation');
         expect(result).hasOwnProperty('PaymentInformation');
