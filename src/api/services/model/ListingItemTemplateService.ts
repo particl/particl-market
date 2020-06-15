@@ -370,7 +370,7 @@ export class ListingItemTemplateService {
         // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
 
         // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash
-        const isModifiable = listingItemTemplate.hash === undefined;
+        const isModifiable = (listingItemTemplate.hash === undefined) || (listingItemTemplate.hash === null);
 
         this.log.debug('isModifiable: ' + isModifiable);
         return isModifiable;

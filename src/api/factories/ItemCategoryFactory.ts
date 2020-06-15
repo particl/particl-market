@@ -36,7 +36,7 @@ export class ItemCategoryFactory {
         const createRequest = {
             parent_item_category_id: parentCategory.id,
             market: parentCategory.market,
-            key: hash(fullCategoryPath),
+            key: hash(fullCategoryPath.toString()),
             name: _.last(fullCategoryPath),
             description: _.join(fullCategoryPath, ' / ')
         } as ItemCategoryCreateRequest;

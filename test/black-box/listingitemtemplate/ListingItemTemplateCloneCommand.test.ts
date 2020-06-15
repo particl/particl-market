@@ -99,7 +99,6 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international)
             .toBe(listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international);
 
-
     });
 
 });

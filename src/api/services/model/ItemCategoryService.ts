@@ -113,6 +113,8 @@ export class ItemCategoryService {
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
         const itemCategory: resources.ItemCategory = await this.itemCategoryRepo.create(body).then(value => value.toJSON());
+        this.log.debug('create(), itemCategory:', JSON.stringify(itemCategory, null, 2));
+
         return await this.findOne(itemCategory.id);
     }
 
@@ -162,13 +164,16 @@ export class ItemCategoryService {
             });
 
         const currentPathToLookFor: string[] = [];
+        let index = 0;
         let parentCategory: resources.ItemCategory;
 
         // loop through the categoryName path, starting from the root, creating each one that needs to be created
         for (const categoryName of categoryArray) {     // [ROOT, cat0name, cat1name, cat2name, ...]
 
-            currentPathToLookFor.push(categoryName);    // first: [ROOT], then: [ROOT, cat0name], then: [ROOT, cat0name, cat1name]
+            // first: [ROOT], then: [ROOT, cat0name], then: [ROOT, cat0name, cat1name]
+            currentPathToLookFor[index] = categoryName;
             this.log.debug('createMarketCategoriesFromArray(), currentPathToLookFor: ', currentPathToLookFor);
+            index++;
 
             const keyForPath = hash(currentPathToLookFor.toString());
 
@@ -180,11 +185,13 @@ export class ItemCategoryService {
                     // there was no child category, then create it
                     // root should have always been found, so parentCategory is always set
                     const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentPathToLookFor, parentCategory);
+                    this.log.debug('createMarketCategoriesFromArray(), createRequest:', JSON.stringify(createRequest, null, 2));
+
                     return await this.create(createRequest).then(value => value.toJSON());
                 });
         }
 
-        const category: resources.ItemCategory = await this.findOneByKeyAndMarket(hash(categoryArray), market).then(value => value.toJSON());
+        const category: resources.ItemCategory = await this.findOneByKeyAndMarket(hash(categoryArray.toString()), market).then(value => value.toJSON());
         this.log.debug('createMarketCategoriesFromArray(), category:', JSON.stringify(category, null, 2));
 
         return category;
