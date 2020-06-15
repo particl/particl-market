@@ -129,6 +129,31 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
+    test('Should estimate post cost without actually posting', async () => {
+
+        expect(listingItemTemplate.id).toBeDefined();
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            true
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+
+        expect(result.result).toBe('Not Sent.');
+        expect(result.fee).toBeGreaterThan(0);
+
+        log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
+        log.debug('id: ' + listingItemTemplate.id + ', ' + listingItemTemplate.ItemInformation.title);
+        log.debug('desc: ' + listingItemTemplate.ItemInformation.shortDescription);
+        log.debug('fee: ' + result.fee);
+        log.debug('==============================================================================================');
+
+    });
+
     test('Should post a ListingItem in to the default market', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();
@@ -171,6 +196,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
+
 
 /*
     // TODO: implement these as integration tests

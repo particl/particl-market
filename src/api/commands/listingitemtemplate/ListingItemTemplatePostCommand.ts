@@ -121,9 +121,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
 
-        // then post the Images related to the ListingItem one by one
-        const imageSmsgSendResponse: SmsgSendResponse = await this.postListingItemImages(listingItemTemplate, postRequest);
-        smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
+        if (!estimateFee) {
+            // then post the Images related to the ListingItem one by one
+            const imageSmsgSendResponse: SmsgSendResponse = await this.postListingItemImages(listingItemTemplate, postRequest);
+            smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
+        }
 
         return smsgSendResponse;
     }
