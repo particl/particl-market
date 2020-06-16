@@ -161,7 +161,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // make sure we got the expected result from posting the template
         const result: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.result).toBe('Not Sent.');
         expect(result.fee).toBeGreaterThan(0);
@@ -185,7 +185,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // make sure we got the expected result from posting the template
         const result: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         sent = result.result === 'Sent.';
         if (!sent) {
             log.debug(JSON.stringify(result, null, 2));
@@ -220,7 +220,7 @@ describe('ListingItemTemplatePostCommand', () => {
     test('Should post ListingItemTemplate created using the basic gui flow', async () => {
 
         // pick a random category
-        log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
+        // log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
         const childCat: resources.ItemCategory = Faker.random.arrayElement(rootCategory.ChildItemCategories);
         const category: resources.ItemCategory = Faker.random.arrayElement(childCat.ChildItemCategories);
 
@@ -245,7 +245,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(200);
         listingItemTemplate = res.getBody()['result'];
 
-        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
         expect(listingItemTemplate.id).toBeGreaterThan(0);
 
@@ -304,7 +304,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         listingItemTemplate = res.getBody()['result'];
-        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
         // do a fee estimation (via a post)
         expect(listingItemTemplate.id).toBeDefined();
@@ -316,7 +316,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
 
         const estimateResult: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(estimateResult, null, 2));
+        // log.debug('result:', JSON.stringify(estimateResult, null, 2));
 
         expect(estimateResult.result).toBe('Not Sent.');
         expect(estimateResult.fee).toBeGreaterThan(0);
@@ -329,7 +329,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
 
         const postResult: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(postResult, null, 2));
+        // log.debug('result:', JSON.stringify(postResult, null, 2));
         sent = postResult.result === 'Sent.';
         if (!sent) {
             log.debug(JSON.stringify(postResult, null, 2));
