@@ -48,7 +48,7 @@ export class PaymentInformationService {
     public async create( @request(PaymentInformationCreateRequest) data: PaymentInformationCreateRequest): Promise<PaymentInformation> {
         const body = JSON.parse(JSON.stringify(data));
 
-        this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {

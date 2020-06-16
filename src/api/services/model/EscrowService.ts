@@ -47,14 +47,14 @@ export class EscrowService {
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         const escrowRatio = body.ratio;
         delete body.ratio;
 
         // If the request body was valid we will create the escrow
         const escrow: resources.Escrow = await this.escrowRepo.create(body).then(value => value.toJSON());
-        this.log.debug('escrow, result:', JSON.stringify(escrow, null, 2));
+        // this.log.debug('escrow, result:', JSON.stringify(escrow, null, 2));
 
         // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {

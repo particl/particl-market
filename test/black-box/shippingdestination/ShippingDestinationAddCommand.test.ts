@@ -31,8 +31,8 @@ describe('ShippingDestinationAddCommand', () => {
     const invalidShippingCountry = 'INVALID-COUNTRY-NAME-OR-CODE';
     const invalidShippingAvailability = 'INVALID-SHIPPING-AVAILABILITY';
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let shippingDestination: resources.ShippingDestination;
@@ -41,8 +41,8 @@ describe('ShippingDestinationAddCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket(profile.id);
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -55,9 +55,9 @@ describe('ShippingDestinationAddCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         // create template without shipping destinations and store its id for testing
@@ -144,7 +144,7 @@ describe('ShippingDestinationAddCommand', () => {
             false,
             null,
             true,
-            defaultMarket.id
+            market.id
         ]).toParamsArray();
 
         // generate listingItemTemplate
@@ -161,7 +161,7 @@ describe('ShippingDestinationAddCommand', () => {
         let res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplates[0].id,
             daysRetention,
-            defaultMarket.id
+            market.id
         ]);
         res.expectJson();
 

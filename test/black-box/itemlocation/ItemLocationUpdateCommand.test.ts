@@ -22,19 +22,17 @@ describe('ItemLocationUpdateCommand', () => {
 
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket(profile.id);
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -48,9 +46,9 @@ describe('ItemLocationUpdateCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -253,9 +251,9 @@ describe('ItemLocationUpdateCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             true,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(

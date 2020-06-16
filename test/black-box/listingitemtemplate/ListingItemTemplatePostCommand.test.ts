@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -12,6 +13,9 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -25,12 +29,23 @@ describe('ListingItemTemplatePostCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+    const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
+    const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
+
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
+    const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
+    const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     // let brokenListingItemTemplate: resources.ListingItemTemplate;
+
+    let rootCategory: resources.ItemCategory;
 
     let sent = false;
     const daysRetention = 1;
@@ -69,6 +84,11 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
         // brokenListingItemTemplate = listingItemTemplates[1];
 
+        // get the default root category
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        rootCategory = res.getBody()['result'];
     });
 
     test('Should fail to post because missing listingItemTemplateId', async () => {
@@ -194,6 +214,130 @@ describe('ListingItemTemplatePostCommand', () => {
 
         expect(listingItemTemplate.hash).toBeDefined();
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
+
+    });
+
+    test('Should post ListingItemTemplate created using the basic gui flow', async () => {
+
+        // pick a random category
+        log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
+        const childCat: resources.ItemCategory = Faker.random.arrayElement(rootCategory.ChildItemCategories);
+        const category: resources.ItemCategory = Faker.random.arrayElement(childCat.ChildItemCategories);
+
+        // create new base template
+        let res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
+            profile.id,                     // profile_id
+            'Test02',                       // title
+            'Test02 Summary',               // shortDescription
+            'Test02 Long Description',      // longDescription
+            category.id,                    // categoryId
+            SaleType.SALE,                  // SaleType
+            Cryptocurrency.PART,            // Cryptocurrency
+            1000,                           // basePrice
+            300,                            // domesticShippingPrice
+            600,                            // internationalShippingPrice
+            EscrowType.MAD_CT,              // EscrowType
+            100,                            // buyerRatio
+            100,                            // sellerRatio
+            EscrowReleaseType.ANON          // EscrowReleaseType
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplate = res.getBody()['result'];
+
+        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
+        expect(listingItemTemplate.id).toBeGreaterThan(0);
+
+        // update template location
+        let country = 'AU';
+        res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
+            listingItemTemplate.id,
+            country
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const itemLocation: resources.ItemLocation = res.getBody()['result'];
+
+        expect(itemLocation.country).toBe(country);
+
+        // add some shipping destinations
+        country = 'AU';
+        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplate.id,
+            country,
+            ShippingAvailability.SHIPS
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        let shippingDestination: resources.ShippingDestination = res.getBody()['result'];
+        expect(shippingDestination.country).toBe(country);
+
+        country = 'ZA';
+        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplate.id,
+            country,
+            ShippingAvailability.SHIPS
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        shippingDestination = res.getBody()['result'];
+        expect(shippingDestination.country).toBe(country);
+
+        country = 'US';
+        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplate.id,
+            country,
+            ShippingAvailability.DOES_NOT_SHIP
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        shippingDestination = res.getBody()['result'];
+        expect(shippingDestination.country).toBe(country);
+
+        // create market template from the base template
+        res = await testUtil.rpc(templateCommand, [templateCloneCommand,
+            listingItemTemplate.id,
+            true,                       // setOriginalAsParent
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplate = res.getBody()['result'];
+        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
+        // do a fee estimation (via a post)
+        expect(listingItemTemplate.id).toBeDefined();
+        res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            true
+        ]);
+        res.expectJson();
+
+        const estimateResult: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(estimateResult, null, 2));
+
+        expect(estimateResult.result).toBe('Not Sent.');
+        expect(estimateResult.fee).toBeGreaterThan(0);
+
+        // post the item
+        res = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention
+        ]);
+        res.expectJson();
+
+        const postResult: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(postResult, null, 2));
+        sent = postResult.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(postResult, null, 2));
+        }
+        expect(postResult.result).toBe('Sent.');
+
+        expect(postResult.txid).toBeDefined();
+        expect(postResult.fee).toBeGreaterThan(0);
 
     });
 
