@@ -29,30 +29,30 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     let listingItemTemplate: resources.ListingItemTemplate;
     let postedListingItemTemplate: resources.ListingItemTemplate;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket(profile.id);
 
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            true,           // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            false,          // generateListingItem
+            market.id       // marketId
         ]).toParamsArray();
 
         let listingItemTemplates = await testUtil.generateData(
@@ -64,19 +64,19 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
 
         generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            true,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            true,           // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            true,           // generateListingItem
+            market.id       // marketId
         ]).toParamsArray();
 
         listingItemTemplates = await testUtil.generateData(
