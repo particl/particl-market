@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ShoppingCartItemAddCommand', () => {
@@ -20,18 +20,21 @@ describe('ShoppingCartItemAddCommand', () => {
     const shoppingCartItemCommand = Commands.SHOPPINGCARTITEM_ROOT.commandName;
     const shoppingCartItemAddCommand = Commands.SHOPPINGCARTITEM_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let defaultShoppingCart: resources.ShoppingCart;
     let listingItems: resources.ListingItem[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
-        defaultShoppingCart = defaultProfile.ShoppingCart[0];
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
+        defaultShoppingCart = profile.ShoppingCart[0];
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation

@@ -21,7 +21,8 @@ describe('MarketListCommand', () => {
     const marketListCommand = Commands.MARKET_LIST.commandName;
     const marketAddCommand = Commands.MARKET_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     const marketData = {
         name: 'Test Market',
@@ -35,7 +36,10 @@ describe('MarketListCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
     });
 
@@ -50,7 +54,7 @@ describe('MarketListCommand', () => {
     });
 
     test('Should list only one default Market', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketListCommand, defaultProfile.id]);
+        const res = await testUtil.rpc(marketCommand, [marketListCommand, profile.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -61,7 +65,7 @@ describe('MarketListCommand', () => {
 
         // add new one
         await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
@@ -70,7 +74,7 @@ describe('MarketListCommand', () => {
             marketData.publishAddress
         ]);
 
-        const res = await testUtil.rpc(marketCommand, [marketListCommand, defaultProfile.id]);
+        const res = await testUtil.rpc(marketCommand, [marketListCommand, profile.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

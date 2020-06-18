@@ -124,7 +124,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(8);
     });
 
@@ -139,7 +139,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(0);
     });
 

@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('ShoppingCartClearCommand', () => {
@@ -23,18 +23,22 @@ describe('ShoppingCartClearCommand', () => {
     const cartItemAddCommand = Commands.SHOPPINGCARTITEM_ADD.commandName;
     const cartItemListCommand = Commands.SHOPPINGCARTITEM_LIST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let defaultShoppingCart: resources.ShoppingCart;
+    let profile: resources.Profile;
+    let market: resources.Market;
+    let shoppingCart: resources.ShoppingCart;
+
     let listingItems: resources.ListingItem[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
-        defaultShoppingCart = defaultProfile.ShoppingCart[0];
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
+        shoppingCart = profile.ShoppingCart[0];
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -58,7 +62,7 @@ describe('ShoppingCartClearCommand', () => {
 
         // add listingItem to shoppingCart
         let res = await testUtil.rpc(cartItemCommand, [cartItemAddCommand,
-            defaultShoppingCart.id,
+            shoppingCart.id,
             listingItems[0].id
         ]);
         res.expectJson();
@@ -66,7 +70,7 @@ describe('ShoppingCartClearCommand', () => {
 
         // add listingItem to shoppingCart
         res = await testUtil.rpc(cartItemCommand, [cartItemAddCommand,
-            defaultShoppingCart.id,
+            shoppingCart.id,
             listingItems[1].id
         ]);
         res.expectJson();
@@ -74,7 +78,7 @@ describe('ShoppingCartClearCommand', () => {
 
         // check listingItem is added
         res = await testUtil.rpc(cartItemCommand, [cartItemListCommand,
-            defaultShoppingCart.id
+            shoppingCart.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -84,12 +88,12 @@ describe('ShoppingCartClearCommand', () => {
 
     test('Should clear ShoppingCart', async () => {
         // clear cart
-        let res = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand, defaultShoppingCart.id]);
+        let res = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand, shoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
         // check shopping cart is clear or not
-        res = await testUtil.rpc(cartItemCommand, [cartItemListCommand, defaultShoppingCart.id]);
+        res = await testUtil.rpc(cartItemCommand, [cartItemListCommand, shoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

@@ -24,6 +24,7 @@ describe('MarketRemoveCommand', () => {
 
     let market: resources.Market;
     let profile: resources.Profile;
+
     let testMarket: resources.Market;
 
     const testData = {
@@ -33,10 +34,11 @@ describe('MarketRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        market = await testUtil.getDefaultMarket();
         profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        // create a market
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
             testData.name

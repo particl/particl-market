@@ -24,8 +24,8 @@ describe('BidSearchCommand', () => {
     const bidCommand =  Commands.BID_ROOT.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
     let listingItems: resources.ListingItem[];
     let bid: resources.Bid;
 
@@ -37,8 +37,11 @@ describe('BidSearchCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 
         // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
@@ -107,7 +110,7 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItem.hash
             MPAction.MPA_BID,           // type
-            defaultProfile.address,     // bidder
+            profile.address,     // bidder
             undefined,                  // seller
             undefined                   // parentBidId
         ]).toParamsArray();
@@ -146,7 +149,7 @@ describe('BidSearchCommand', () => {
             false,                       // generateListingItem
             listingItems[0].hash,       // listingItemhash
             MPAction.MPA_ACCEPT,        // type
-            defaultProfile.address,     // bidder
+            profile.address,     // bidder
             undefined,                  // seller
             bid.id                      // parentBidId
         ]).toParamsArray();
@@ -206,7 +209,7 @@ describe('BidSearchCommand', () => {
             listingItems[0].hash,
             MPAction.MPA_BID,
             '*',
-            defaultProfile.address
+            profile.address
         ];
 
         const res: any = await testUtil.rpc(bidCommand, bidSearchCommandParams);

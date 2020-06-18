@@ -67,7 +67,6 @@ import { VoteActionService } from './action/VoteActionService';
 import { ProposalResultService } from './model/ProposalResultService';
 import { ProposalOptionResultService } from './model/ProposalOptionResultService';
 import { ProposalAddActionService } from './action/ProposalAddActionService';
-import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
 import { SettingCreateRequest } from '../requests/model/SettingCreateRequest';
 import { ItemVote } from '../enums/ItemVote';
 import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDestinationCreateRequest';

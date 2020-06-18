@@ -22,7 +22,8 @@ describe('ProposalPostCommand', () => {
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     const title = Faker.lorem.words();
     const description = Faker.lorem.paragraph();
@@ -39,7 +40,11 @@ describe('ProposalPostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 
     });
 
@@ -52,7 +57,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing proposalTitle', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -61,7 +66,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing proposalDescription', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title
         ]);
         res.expectJson();
@@ -71,7 +76,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing daysRetention', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description
         ]);
@@ -82,7 +87,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing estimateFee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention
@@ -94,7 +99,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing option1Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention,
@@ -107,7 +112,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because missing option2Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention,
@@ -136,7 +141,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because invalid proposalTitle', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             0,
             description,
             daysRetention,
@@ -151,7 +156,7 @@ describe('ProposalPostCommand', () => {
 /*
     test('Should fail to post a Proposal because invalid proposalDescription', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             0,
             daysRetention,
@@ -166,7 +171,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because invalid daysRetention', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             'INVALID',
@@ -181,7 +186,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should fail to post a Proposal because invalid estimateFee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention,
@@ -213,7 +218,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should estimate Proposal posting fee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention,
@@ -233,7 +238,7 @@ describe('ProposalPostCommand', () => {
     test('Should post a Proposal', async () => {
         estimateFee = false;
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            defaultProfile.id,
+            profile.id,
             title,
             description,
             daysRetention,

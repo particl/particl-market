@@ -19,26 +19,28 @@ describe('ProfileGetCommand', () => {
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileGetCommand = Commands.PROFILE_GET.commandName;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultMarket = await testUtil.getDefaultMarket();
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
     });
 
     test('Should return one Profile by id', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.id]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, profile.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Profile = res.getBody()['result'];
-        expect(result.id).toBe(defaultProfile.id);
-        expect(result.name).toBe(defaultProfile.name);
-        expect(result.address).toBe(defaultProfile.address);
+        expect(result.id).toBe(profile.id);
+        expect(result.name).toBe(profile.name);
+        expect(result.address).toBe(profile.address);
         expect(result.CryptocurrencyAddresses).toBeDefined();
         expect(result.FavoriteItems).toBeDefined();
         expect(result.ShippingAddresses).toBeDefined();
@@ -46,14 +48,14 @@ describe('ProfileGetCommand', () => {
     });
 
     test('Should return one Profile by name', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.name]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, profile.name]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.id).toBe(defaultProfile.id);
-        expect(result.name).toBe(defaultProfile.name);
-        expect(result.address).toBe(defaultProfile.address);
+        expect(result.id).toBe(profile.id);
+        expect(result.name).toBe(profile.name);
+        expect(result.address).toBe(profile.address);
         expect(result.CryptocurrencyAddresses).toBeDefined();
         expect(result.FavoriteItems).toBeDefined();
         expect(result.ShippingAddresses).toBeDefined();

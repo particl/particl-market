@@ -89,8 +89,8 @@ describe('Happy Buy Flow', () => {
         log.debug('sellerProfile: ', sellerProfile.address);
         log.debug('buyerProfile: ', buyerProfile.address);
 
-        sellerMarket = await testUtilSellerNode.getDefaultMarket();
-        buyerMarket = await testUtilBuyerNode.getDefaultMarket();
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
         log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));

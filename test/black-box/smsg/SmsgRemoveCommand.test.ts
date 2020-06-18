@@ -15,8 +15,8 @@ import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { ListingItemAddMessageCreateParams } from '../../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('SmsgRemoveCommand', () => {
 
@@ -28,8 +28,8 @@ describe('SmsgRemoveCommand', () => {
     const smsgCommand = Commands.SMSG_ROOT.commandName;
     const smsgRemoveCommand = Commands.SMSG_REMOVE.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let smsgMessages: resources.SmsgMessage[];
@@ -39,9 +39,10 @@ describe('SmsgRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -55,9 +56,9 @@ describe('SmsgRemoveCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            defaultProfile.id,  // profileId
+            profile.id,  // profileId
             false,              // generateListingItem
-            defaultMarket.id    // marketId
+            market.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -83,8 +84,8 @@ describe('SmsgRemoveCommand', () => {
             Date.now() - (24 * 60 * 60 * 1000),     // sent
             Date.now() + (5 * 24 * 60 * 60 * 1000), // expiration
             DAYS_RETENTION,                         // daysretention
-            defaultProfile.address,                 // from
-            defaultMarket.address,                  // to
+            profile.address,                 // from
+            market.address,                  // to
             messageParams                           // messageParams
             // text
         ]).toParamsArray();

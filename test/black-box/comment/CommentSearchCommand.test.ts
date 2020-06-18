@@ -24,8 +24,8 @@ describe('VoteGetCommand', () => {
     const commentCommand = Commands.COMMENT_ROOT.commandName;
     const commentSearchCommand = Commands.COMMENT_SEARCH.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let createdListingItemHash;
 
@@ -39,8 +39,8 @@ describe('VoteGetCommand', () => {
         await testUtil.cleanDb();
 
         // get default Profile and Market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket();
 
         // create ListingItem
         const generateListingItemParams = new GenerateListingItemParams([
@@ -67,8 +67,8 @@ describe('VoteGetCommand', () => {
             false,
             false,
             false,
-            defaultProfile.address,                         // sender
-            defaultMarket.address,                          // receiver
+            profile.address,                         // sender
+            market.address,                          // receiver
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,   // type
             createdListingItemHash                          // target
         ]).toParamsArray();

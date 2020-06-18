@@ -21,8 +21,8 @@ import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketType } from '../enums/MarketType';
 import { ItemCategoryService } from '../services/model/ItemCategoryService';
-import {hash} from 'omp-lib/dist/hasher/hash';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
+import { hash } from 'omp-lib/dist/hasher/hash';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 /**
  *

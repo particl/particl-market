@@ -27,8 +27,8 @@ describe('VoteGetCommand', () => {
     const voteGetCommand = Commands.VOTE_GET.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let proposal: resources.Proposal;
     let createdVote: resources.Vote;
@@ -38,9 +38,10 @@ describe('VoteGetCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateProposalParams = new GenerateProposalParams([
             false,                  // generateListingItemTemplate
@@ -48,7 +49,7 @@ describe('VoteGetCommand', () => {
             null,                   // listingItemHash,
             false,                  // generatePastProposal,
             0,                      // voteCount
-            defaultProfile.address  // submitter
+            profile.address  // submitter
         ]).toParamsArray();
 
         // generate proposal, no votes
@@ -72,7 +73,7 @@ describe('VoteGetCommand', () => {
 
     test('Should fail to get because missing proposalHash', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -93,7 +94,7 @@ describe('VoteGetCommand', () => {
     test('Should fail to add because invalid profileId', async () => {
 
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            defaultProfile.id,
+            profile.id,
             true
         ]);
         res.expectJson();
@@ -115,7 +116,7 @@ describe('VoteGetCommand', () => {
     test('Should fail to add because Proposal not found', async () => {
 
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            defaultProfile.id,
+            profile.id,
             0
         ]);
         res.expectJson();
@@ -126,7 +127,7 @@ describe('VoteGetCommand', () => {
     test('Should fail to return a Vote', async () => {
 
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash
         ]);
         res.expectJson();
@@ -139,7 +140,7 @@ describe('VoteGetCommand', () => {
         // post a vote
         let response: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             proposal.ProposalOptions[0].optionId
         ]);
@@ -156,7 +157,7 @@ describe('VoteGetCommand', () => {
 
         response = await testUtil.rpcWaitFor(
             voteCommand,
-            [voteGetCommand, defaultProfile.id, proposal.hash],
+            [voteGetCommand, profile.id, proposal.hash],
             8 * 60,
             200,
             'ProposalOption.optionId',
@@ -168,7 +169,7 @@ describe('VoteGetCommand', () => {
         createdVote = vote;
 
         expect(vote).hasOwnProperty('ProposalOption');
-        expect(vote.voter).toBe(defaultProfile.address);
+        expect(vote.voter).toBe(profile.address);
         expect(vote.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
 
@@ -177,7 +178,7 @@ describe('VoteGetCommand', () => {
         // post a vote
         let response: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             proposal.ProposalOptions[1].optionId
         ]);
@@ -192,7 +193,7 @@ describe('VoteGetCommand', () => {
 
         response = await testUtil.rpcWaitFor(
             voteCommand,
-            [voteGetCommand, defaultProfile.id, proposal.hash],
+            [voteGetCommand, profile.id, proposal.hash],
             8 * 60,
             200,
             'ProposalOption.optionId',
@@ -204,7 +205,7 @@ describe('VoteGetCommand', () => {
         result = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.weight).toBe(createdVote.weight);
-        expect(result.voter).toBe(defaultProfile.address);
+        expect(result.voter).toBe(profile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
     });
 

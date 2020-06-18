@@ -23,8 +23,8 @@ describe('CommentGetCommand', () => {
     const commentCommand = Commands.COMMENT_ROOT.commandName;
     const commentGetCommand = Commands.COMMENT_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let createdListingItemHash;
 
@@ -34,8 +34,11 @@ describe('CommentGetCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 
         // create listing item
         const generateListingItemParams = new GenerateListingItemParams([
@@ -63,8 +66,8 @@ describe('CommentGetCommand', () => {
             false,
             false,
             false,
-            defaultProfile.address,                         // sender
-            defaultMarket.address,                          // receiver
+            profile.address,                         // sender
+            market.address,                          // receiver
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,   // type
             createdListingItemHash                          // target
         ]).toParamsArray();
@@ -81,17 +84,6 @@ describe('CommentGetCommand', () => {
 
     test('Should fail to return a Comment because invalid commentId', async () => {
         const invalidId = -1;
-        const response: any = await testUtil.rpc(commentCommand, [
-            commentGetCommand,
-            invalidId
-        ]);
-        response.expectJson();
-        response.expectStatusCode(404);
-        expect(response.error.error.message).toBe(new NotFoundException(invalidId).getMessage());
-    });
-
-    test('Should fail to return a Comment because null commentId', async () => {
-        const invalidId = null;
         const response: any = await testUtil.rpc(commentCommand, [
             commentGetCommand,
             invalidId

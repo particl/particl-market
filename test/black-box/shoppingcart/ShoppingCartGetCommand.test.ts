@@ -18,24 +18,27 @@ describe('ShoppingCartGetCommand', () => {
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartGetCommand = Commands.SHOPPINGCART_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let defaultShoppingCart: resources.ShoppingCart;
     let secondShoppingCart: resources.ShoppingCart;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
-        defaultShoppingCart = defaultProfile.ShoppingCart[0];
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
+        defaultShoppingCart = profile.ShoppingCart[0];
 
         // add a second shopping cart
         const shoppingName = 'TEST-CART-NAME';
         const res = await testUtil.rpc(shoppingCartCommand, [Commands.SHOPPINGCART_ADD.commandName,
             shoppingName,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -49,7 +52,7 @@ describe('ShoppingCartGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
         expect(result.name).toBe(defaultShoppingCart.name);
-        expect(result.Profile.id).toBe(defaultProfile.id);
+        expect(result.Profile.id).toBe(profile.id);
     });
 
     test('Should get the second ShoppingCart', async () => {
@@ -58,7 +61,7 @@ describe('ShoppingCartGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
         expect(result.name).toBe(secondShoppingCart.name);
-        expect(result.Profile.id).toBe(defaultProfile.id);
+        expect(result.Profile.id).toBe(profile.id);
     });
 
     test('Should fail to get ShoppingCart with invalidId', async () => {

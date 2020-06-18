@@ -30,16 +30,21 @@ describe('VotePostCommand', () => {
     const votePostCommand = Commands.VOTE_POST.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let proposal: resources.Proposal;
-    let createdVote: resources.Vote;
+    let vote: resources.Vote;
 
     let sent = false;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateProposalParams = new GenerateProposalParams([
             false,                      // generateListingItemTemplate
@@ -47,7 +52,7 @@ describe('VotePostCommand', () => {
             null,                       // listingItemHash,
             false,                      // generatePastProposal,
             0,                          // voteCount
-            defaultProfile.address      // submitter
+            profile.address      // submitter
         ]).toParamsArray();
 
         // generate proposals
@@ -74,7 +79,7 @@ describe('VotePostCommand', () => {
     test('Should fail to post a Vote because missing proposalHash', async () => {
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -85,7 +90,7 @@ describe('VotePostCommand', () => {
     test('Should fail to post a Vote because missing proposalOptionId', async () => {
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash
         ]);
         res.expectJson();
@@ -114,7 +119,7 @@ describe('VotePostCommand', () => {
 
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             invalidProposalHash,
             proposal.ProposalOptions[0].optionId
         ]);
@@ -130,7 +135,7 @@ describe('VotePostCommand', () => {
         const invalidProposalOptionId = 'invalid-proposal-option-id';
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             invalidProposalOptionId
         ]);
@@ -158,7 +163,7 @@ describe('VotePostCommand', () => {
     test('Should fail to post a Vote because Proposal not found', async () => {
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash + 'notfound',
             proposal.ProposalOptions[0].optionId
         ]);
@@ -173,7 +178,7 @@ describe('VotePostCommand', () => {
 
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             invalidProposalOptionId
         ]);
@@ -186,7 +191,7 @@ describe('VotePostCommand', () => {
     test('Should post a Vote', async () => {
 
         const res: any = await testUtil.rpc(voteCommand, [votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             proposal.ProposalOptions[0].optionId
         ]);
@@ -206,17 +211,17 @@ describe('VotePostCommand', () => {
         await testUtil.waitFor(5);
 
         const res: any = await testUtil.rpc(voteCommand, [voteGetCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Vote = res.getBody()['result'];
-        createdVote = result;
+        vote = result;
 
         log.debug('vote: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.voter).toBe(defaultProfile.address);
+        expect(result.voter).toBe(profile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     }, 600000); // timeout to 600s
 
@@ -224,7 +229,7 @@ describe('VotePostCommand', () => {
     test('Should post a new Vote with different optionId', async () => {
         const res: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash,
             proposal.ProposalOptions[1].optionId
         ]);
@@ -244,7 +249,7 @@ describe('VotePostCommand', () => {
 
         const res: any = await testUtil.rpc(voteCommand, [
             voteGetCommand,
-            defaultProfile.id,
+            profile.id,
             proposal.hash
         ]);
         res.expectJson();
@@ -253,8 +258,8 @@ describe('VotePostCommand', () => {
 
         log.debug('vote updated: ', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(createdVote.weight);
-        expect(result.voter).toBe(defaultProfile.address);
+        expect(result.weight).toBe(vote.weight);
+        expect(result.voter).toBe(profile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
 
     }, 600000); // timeout to 600s

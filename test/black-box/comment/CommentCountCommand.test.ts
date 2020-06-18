@@ -24,8 +24,8 @@ describe('CommentGetCommand', () => {
     const commentCommand = Commands.COMMENT_ROOT.commandName;
     const commentCountCommand = Commands.COMMENT_COUNT.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let createdListingItemHash;
 
@@ -35,10 +35,11 @@ describe('CommentGetCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        // create listing item
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -51,7 +52,6 @@ describe('CommentGetCommand', () => {
             false   // generateListingItemObjects
         ]).toParamsArray();
 
-        // create listing item for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                              // how many to generate
@@ -64,8 +64,8 @@ describe('CommentGetCommand', () => {
             false,
             false,
             false,
-            defaultProfile.address,                         // sender
-            defaultMarket.address,                          // receiver
+            profile.address,                         // sender
+            market.address,                          // receiver
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,   // type
             createdListingItemHash                          // target
         ]).toParamsArray();

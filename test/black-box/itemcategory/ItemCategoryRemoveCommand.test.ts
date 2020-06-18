@@ -34,8 +34,10 @@ describe('ItemCategoryRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        market = await testUtil.getDefaultMarket();
         profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // first get the rootCategory
         let res = await testUtil.rpc(categoryCommand, [categoryListCommand]);

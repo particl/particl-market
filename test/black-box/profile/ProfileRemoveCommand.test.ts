@@ -22,16 +22,16 @@ describe('ProfileRemoveCommand', () => {
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileRemoveCommand = Commands.PROFILE_REMOVE.commandName;
 
-    let createdProfile1: resources.Profile;
-    let createdProfile2: resources.Profile;
+    let profile1: resources.Profile;
+    let profile2: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         const generatedProfiles: resources.Profile[] = await testUtil.generateData(CreatableModel.PROFILE, 2, true);
         expect(generatedProfiles).toHaveLength(2);
-        createdProfile1 = generatedProfiles[0];
-        createdProfile2 = generatedProfiles[1];
+        profile1 = generatedProfiles[0];
+        profile2 = generatedProfiles[1];
 
     });
 
@@ -56,7 +56,7 @@ describe('ProfileRemoveCommand', () => {
     });
 
     test('Should delete the Profile by id', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, profile1.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });

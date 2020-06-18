@@ -23,8 +23,8 @@ describe('AddressAddCommand', () => {
     const addressCommand = Commands.ADDRESS_ROOT.commandName;
     const addressAddCommand = Commands.ADDRESS_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     const testData = {
         title: 'Work',
@@ -43,13 +43,16 @@ describe('AddressAddCommand', () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
     });
 
     test('Should create a new Address for Profile', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -94,7 +97,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -111,7 +114,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -127,7 +130,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -142,7 +145,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -156,7 +159,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -169,7 +172,7 @@ describe('AddressAddCommand', () => {
 
         test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName
@@ -181,7 +184,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName
         ]);
@@ -192,7 +195,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title
         ]);
         res.expectJson();
@@ -202,7 +205,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -219,7 +222,7 @@ describe('AddressAddCommand', () => {
 
     test('Should fail to create Address because missing state', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -237,7 +240,7 @@ describe('AddressAddCommand', () => {
 
     test('Should create a new Address with blank state', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -265,7 +268,7 @@ describe('AddressAddCommand', () => {
 
     test('Should check countryCode validation', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -284,7 +287,7 @@ describe('AddressAddCommand', () => {
 
     test('Should check countryName validation', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,

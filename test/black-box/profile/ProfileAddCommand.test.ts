@@ -24,7 +24,7 @@ describe('ProfileAddCommand', () => {
 
     const profileName = 'test-profile-' + Faker.random.uuid();
 
-    let createdProfile: resources.Profile;
+    let profile: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -54,7 +54,7 @@ describe('ProfileAddCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        createdProfile = result;
+        profile = result;
         expect(result.name).toBe(profileName);
         expect(result.ShoppingCart).toHaveLength(1);
         expect(result.ShoppingCart[0].name).toBe('DEFAULT');

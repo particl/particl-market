@@ -46,20 +46,22 @@ describe('AddressUpdateCommand', () => {
         zipCode: '85001'
     };
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let createdAddress: resources.Address;
+    let profile: resources.Profile;
+    let market: resources.Market;
+    let address: resources.Address;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // add address
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -72,7 +74,7 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        createdAddress = res.getBody()['result'];
+        address = res.getBody()['result'];
     });
 
     test('Should fail to update because missing addressId', async () => {
@@ -84,7 +86,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing title', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -93,7 +95,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing firstName', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title
         ]);
         res.expectJson();
@@ -103,7 +105,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing lastName', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName
         ]);
@@ -114,7 +116,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing addressLine1', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName
@@ -126,7 +128,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing addressLine2', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -134,12 +136,12 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-         expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('addressLine2').getMessage());
     });
 
     test('Should fail to update because missing city', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -153,7 +155,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing state', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -168,7 +170,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing country', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -184,7 +186,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because missing zipCode', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            defaultProfile.id,
+            profile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -204,7 +206,7 @@ describe('AddressUpdateCommand', () => {
     test('Should update the Address', async () => {
 
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
+            address.id,
             testDataUpdated.title,
             testDataUpdated.firstName,
             testDataUpdated.lastName,
@@ -234,7 +236,7 @@ describe('AddressUpdateCommand', () => {
     test('Should update the Address with blank state field', async () => {
         // update address
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
+            address.id,
             testDataUpdated.title,
             testDataUpdated.firstName,
             testDataUpdated.lastName,
@@ -261,7 +263,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because invalid countryCode', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
+            address.id,
             testDataUpdated.title,
             testDataUpdated.firstName,
             testDataUpdated.lastName,
@@ -279,7 +281,7 @@ describe('AddressUpdateCommand', () => {
 
     test('Should fail to update because invalid country', async () => {
         const res = await testUtil.rpc(addressCommand, [addressUpdateCommand,
-            createdAddress.id,
+            address.id,
             testDataUpdated.title,
             testDataUpdated.firstName,
             testDataUpdated.lastName,

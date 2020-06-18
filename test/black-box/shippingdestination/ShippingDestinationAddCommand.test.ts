@@ -40,9 +40,10 @@ describe('ShippingDestinationAddCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
         profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation

@@ -20,6 +20,7 @@ describe('ProfileListCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
     });
 
     test('Should return the default Profile', async () => {

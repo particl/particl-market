@@ -18,18 +18,20 @@ describe('MarketAddCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil(0);
-    const testUtil2 = new BlackBoxTestUtil(1);
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
     const marketAddCommand = Commands.MARKET_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        await testUtil2.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
     });
 
@@ -51,7 +53,7 @@ describe('MarketAddCommand', () => {
 
     test('Should fail to create Market because missing name', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -68,7 +70,7 @@ describe('MarketAddCommand', () => {
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -78,14 +80,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid name', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             0,
             marketData.type,
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -95,14 +97,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid type', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             0,
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -112,14 +114,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid type', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             'INVALID',
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -129,14 +131,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid receiveKey', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             0,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -146,14 +148,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid receiveAddress', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
             0,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -163,14 +165,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid publishKey', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
             marketData.receiveAddress,
             true,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -180,14 +182,14 @@ describe('MarketAddCommand', () => {
     test('Should fail to create Market because invalid publishAddress', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             true,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -197,14 +199,14 @@ describe('MarketAddCommand', () => {
     test('Should create a new market', async () => {
 
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -219,14 +221,14 @@ describe('MarketAddCommand', () => {
 
     test('Should fail to create Market because duplicate name', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketData.name,
             marketData.type,
             marketData.receiveKey,
             marketData.receiveAddress,
             marketData.publishKey,
             marketData.publishAddress,
-            defaultProfile.Wallets[0].id
+            profile.Wallets[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -237,7 +239,7 @@ describe('MarketAddCommand', () => {
 
         const marketName = marketData.name + ' 2';
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            defaultProfile.id,
+            profile.id,
             marketName
         ]);
         res.expectJson();

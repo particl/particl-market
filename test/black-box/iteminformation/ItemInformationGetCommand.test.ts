@@ -23,13 +23,18 @@ describe('ItemInformationGetCommand', () => {
     const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInfoGetSubCommand = Commands.ITEMINFORMATION_GET.commandName;
 
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
-        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -43,9 +48,9 @@ describe('ItemInformationGetCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(

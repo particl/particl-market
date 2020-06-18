@@ -3,10 +3,10 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
 
 describe('ShoppingCartAddCommand', () => {
 
@@ -18,30 +18,32 @@ describe('ShoppingCartAddCommand', () => {
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartAddCommand = Commands.SHOPPINGCART_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     const shoppingCartName = 'Test Shopping Cart';
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
     });
 
     test('Should create a new ShoppingCart', async () => {
 
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
             shoppingCartName,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(shoppingCartName);
-        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.profileId).toBe(profile.id);
     });
 
     test('Should fail because we want to create a ShoppingCart without a name', async () => {

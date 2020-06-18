@@ -21,8 +21,8 @@ describe('ItemImageListCommand', () => {
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageListCommand = Commands.ITEMIMAGE_LIST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
@@ -30,9 +30,10 @@ describe('ItemImageListCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
@@ -66,7 +67,7 @@ describe('ItemImageListCommand', () => {
             false,                      // generateListingItemObjects
             false,                      // generateObjectDatas
             listingItemTemplate.hash,   // listingItemTemplateHash
-            defaultProfile.address,     // seller
+            profile.address,     // seller
             null                        // categoryId
         ]).toParamsArray();
 

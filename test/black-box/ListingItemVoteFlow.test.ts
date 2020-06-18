@@ -13,7 +13,6 @@ import { ItemVote } from '../../src/api/enums/ItemVote';
 import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { SmsgSendResponse } from '../../src/api/responses/SmsgSendResponse';
 
-
 describe('Happy ListingItem Vote Flow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -99,8 +98,8 @@ describe('Happy ListingItem Vote Flow', () => {
         ) as resources.Profile[];
         voterProfileNode2 = profiles[0];
 
-        marketNode1 = await testUtilNode1.getDefaultMarket();
-        marketNode2 = await testUtilNode2.getDefaultMarket();
+        marketNode1 = await testUtilNode1.getDefaultMarket(profileNode1.id);
+        marketNode2 = await testUtilNode2.getDefaultMarket(profileNode2.id);
         expect(marketNode1.id).toBeDefined();
         expect(marketNode2.id).toBeDefined();
         log.debug('marketNode1: ', JSON.stringify(marketNode1, null, 2));

@@ -65,8 +65,8 @@ describe('Happy Vote Flow', () => {
         log.debug('profileNode1: ', profileNode1.address);
         log.debug('profileNode2: ', profileNode2.address);
 
-        marketNode1 = await testUtilNode1.getDefaultMarket();
-        marketNode2 = await testUtilNode2.getDefaultMarket();
+        marketNode1 = await testUtilNode1.getDefaultMarket(profileNode1.id);
+        marketNode2 = await testUtilNode2.getDefaultMarket(profileNode2.id);
         expect(marketNode1.id).toBeDefined();
         expect(marketNode2.id).toBeDefined();
         log.debug('marketNode1: ', JSON.stringify(marketNode1, null, 2));

@@ -26,17 +26,18 @@ describe('MessagingInformationUpdateCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItemTemplates: resources.ListingItemTemplate[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -49,9 +50,9 @@ describe('MessagingInformationUpdateCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         // generate listingItemTemplate
@@ -119,7 +120,7 @@ describe('MessagingInformationUpdateCommand', () => {
             false,
             null,
             true,
-            defaultMarket.id
+            market.id
         ]).toParamsArray();
 
         // generate listingItemTemplate
@@ -135,7 +136,7 @@ describe('MessagingInformationUpdateCommand', () => {
         let res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplates[0].id,
             daysRetention,
-            defaultMarket.id
+            market.id
         ]);
         res.expectJson();
 

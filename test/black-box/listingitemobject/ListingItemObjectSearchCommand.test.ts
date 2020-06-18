@@ -22,10 +22,18 @@ describe('ListingItemObjectSearchCommand', () => {
     const itemObjectCommand = Commands.ITEMOBJECT_ROOT.commandName;
     const itemObjectsearchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
 
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let listingItemObjects: resources.ListingItemObject[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation

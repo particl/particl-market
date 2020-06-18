@@ -29,8 +29,8 @@ describe('ItemImageAddCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
     let image: resources.Image;
 
     let listingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
@@ -40,8 +40,10 @@ describe('ItemImageAddCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             false,      // generateItemInformation
@@ -160,9 +162,9 @@ describe('ItemImageAddCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             true,  // generateListingItem
-            defaultMarket.id   // marketId
+            market.id   // marketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(

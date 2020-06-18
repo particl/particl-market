@@ -16,7 +16,8 @@ describe('CurrencyPriceRootCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
     const currencyPriceCommand = Commands.CURRENCYPRICE_ROOT.commandName;
-    let currencyPrice: resources.CurrencyPrice[];
+
+    let currencyPrices: resources.CurrencyPrice[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -27,7 +28,7 @@ describe('CurrencyPriceRootCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.CurrencyPrice[] = res.getBody()['result'];
-        currencyPrice = result;
+        currencyPrices = result;
         expect(result.length).toBe(1);
         expect(result[0].from).toBe('PART');
         expect(result[0].to).toBe('INR');
@@ -43,7 +44,7 @@ describe('CurrencyPriceRootCommand', () => {
         expect(result.length).toBe(1);
         expect(result[0].from).toBe('PART');
         expect(result[0].to).toBe('INR');
-        expect(result[0].price).toBe(currencyPrice[0].price);
+        expect(result[0].price).toBe(currencyPrices[0].price);
         expect(result[0].createdAt).toBe(result[0].updatedAt);
     });
 

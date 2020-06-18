@@ -20,10 +20,18 @@ describe('ListingItemGetCommand', () => {
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemGetCommand = Commands.ITEM_GET.commandName;
 
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let createdListingItem: resources.ListingItem;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation

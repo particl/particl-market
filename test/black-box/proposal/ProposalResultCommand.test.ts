@@ -21,8 +21,9 @@ describe('ProposalResultCommand', () => {
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
     let proposal: resources.Proposal;
 
     const testTimeStamp = new Date().getTime();
@@ -31,9 +32,10 @@ describe('ProposalResultCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateProposalParams = new GenerateProposalParams([
             false,                  // generateListingItemTemplate
@@ -41,7 +43,7 @@ describe('ProposalResultCommand', () => {
             null,                   // listingItemHash,
             false,                  // generatePastProposal,
             voteCount,              // voteCount,
-            defaultProfile.address  // submitter
+            profile.address  // submitter
 
         ]).toParamsArray();
 

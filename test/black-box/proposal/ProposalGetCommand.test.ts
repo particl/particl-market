@@ -23,13 +23,18 @@ describe('ProposalGetCommand', () => {
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let createdProposal: resources.Proposal;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
+    let proposal: resources.Proposal;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // Generate a proposal
         const generateProposalsParams = new GenerateProposalParams([
@@ -38,7 +43,7 @@ describe('ProposalGetCommand', () => {
             null,                   // listingItemHash: string;
             false,                  // generatePastProposal = false;
             0,                      // voteCount
-            defaultProfile.address  // submitter
+            profile.address  // submitter
         ]).toParamsArray();
 
         // create Proposal for testing
@@ -48,24 +53,24 @@ describe('ProposalGetCommand', () => {
             true,                        // return model
             generateProposalsParams      // what kind of data to generate
         ) as Proposal[];
-        createdProposal = proposals[0];
+        proposal = proposals[0];
 
     });
 
     test('Should get the Proposal', async () => {
-        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, createdProposal.hash]);
+        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, proposal.hash]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.submitter).toBe(createdProposal.submitter);
-        expect(result.blockStart).toBe(createdProposal.blockStart);
-        expect(result.blockEnd).toBe(createdProposal.blockEnd);
-        expect(result.hash).toBe(createdProposal.hash);
-        expect(result.type).toBe(createdProposal.type);
-        expect(result.title).toBe(createdProposal.title);
-        expect(result.description).toBe(createdProposal.description);
-        expect(result.updatedAt).toBe(createdProposal.updatedAt);
-        expect(result.createdAt).toBe(createdProposal.createdAt);
+        expect(result.submitter).toBe(proposal.submitter);
+        expect(result.blockStart).toBe(proposal.blockStart);
+        expect(result.blockEnd).toBe(proposal.blockEnd);
+        expect(result.hash).toBe(proposal.hash);
+        expect(result.type).toBe(proposal.type);
+        expect(result.title).toBe(proposal.title);
+        expect(result.description).toBe(proposal.description);
+        expect(result.updatedAt).toBe(proposal.updatedAt);
+        expect(result.createdAt).toBe(proposal.createdAt);
     });
 });

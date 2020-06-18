@@ -27,8 +27,8 @@ describe('ListingItemSearchCommand', () => {
     const itemFlagCommand = Commands.ITEM_FLAG.commandName;
     const itemGetCommand = Commands.ITEM_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
@@ -38,8 +38,10 @@ describe('ListingItemSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -52,9 +54,9 @@ describe('ListingItemSearchCommand', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             true,   // generateListingItem
-            defaultMarket.id  // marketId
+            market.id  // marketId
         ]).toParamsArray();
 
         // generate ListingItemTemplate with ListingItem
@@ -69,8 +71,8 @@ describe('ListingItemSearchCommand', () => {
         // log.debug('listingItemTemplate:', JSON.stringify(createdListingItemTemplate, null, 2));
 
         // expect template is related to correct profile and ListingItem posted to correct market
-        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
+        expect(listingItemTemplate.Profile.id).toBe(profile.id);
+        expect(listingItemTemplate.ListingItems[0].market).toBe(market.receiveAddress);
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
@@ -602,7 +604,7 @@ describe('ListingItemSearchCommand', () => {
         // flag item
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
-            defaultProfile.id
+            profile.id
         ]);
         // make sure we got the expected result from posting the proposal
         const result: any = res.getBody()['result'];

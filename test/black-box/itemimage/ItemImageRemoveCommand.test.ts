@@ -24,8 +24,8 @@ describe('ItemImageRemoveCommand', () => {
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageRemoveCommand = Commands.ITEMIMAGE_REMOVE.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
 
@@ -33,8 +33,10 @@ describe('ItemImageRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -48,9 +50,9 @@ describe('ItemImageRemoveCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            defaultProfile.id,  // profileId
+            profile.id,  // profileId
             false,              // generateListingItem
-            defaultMarket.id    // marketId
+            market.id    // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -110,7 +112,7 @@ describe('ItemImageRemoveCommand', () => {
             false,                      // generateListingItemObjects
             false,                      // generateObjectDatas
             listingItemTemplate.hash,   // listingItemTemplateHash
-            defaultProfile.address,     // seller
+            profile.address,     // seller
             null                        // categoryId
         ]).toParamsArray();
 

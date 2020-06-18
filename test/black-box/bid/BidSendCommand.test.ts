@@ -14,7 +14,6 @@ import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
-
 describe('BidSendCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -49,11 +48,14 @@ describe('BidSendCommand', () => {
         await testUtilBuyerNode.cleanDb();
 
         // get default profile and market
-        // sellerMarket = await testUtilSellerNode.getDefaultMarket();
         sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        // sellerMarket = await testUtilSellerNode.getDefaultMarket();
 
-        market = await testUtilBuyerNode.getDefaultMarket();
         profile = await testUtilBuyerNode.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtilBuyerNode.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 /*
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([

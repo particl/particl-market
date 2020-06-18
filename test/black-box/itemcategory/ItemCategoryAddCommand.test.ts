@@ -34,8 +34,10 @@ describe('ItemCategoryAddCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        market = await testUtil.getDefaultMarket();
         profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // todo: test with existing category, not a custom one
         const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);

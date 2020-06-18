@@ -23,8 +23,8 @@ describe('FavoriteAddCommand', () => {
     const favoriteCommand =  Commands.FAVORITE_ROOT.commandName;
     const favoriteAddCommand = Commands.FAVORITE_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let createdListingItem1: resources.ListingItem;
 
@@ -33,8 +33,11 @@ describe('FavoriteAddCommand', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -69,7 +72,7 @@ describe('FavoriteAddCommand', () => {
 
     test('Should fail to add because missing listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -90,7 +93,7 @@ describe('FavoriteAddCommand', () => {
     // TODO: hash is supported, propably id shouldnt be
     test('Should fail to add because invalid listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             'INVALID'
         ]);
         res.expectJson();
@@ -112,7 +115,7 @@ describe('FavoriteAddCommand', () => {
     test('Should fail to add because ListingItem not found', async () => {
 
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             0
         ]);
         res.expectJson();
@@ -123,7 +126,7 @@ describe('FavoriteAddCommand', () => {
     test('Should add FavoriteItem', async () => {
 
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             createdListingItem1.id
         ]);
         res.expectJson();
@@ -131,13 +134,13 @@ describe('FavoriteAddCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result.ListingItem.id).toBe(createdListingItem1.id);
-        expect(result.Profile.id).toBe(defaultProfile.id);
+        expect(result.Profile.id).toBe(profile.id);
     });
 
     test('Should fail to add because ListingItem already added', async () => {
 
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             0
         ]);
         res.expectJson();

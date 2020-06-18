@@ -22,11 +22,19 @@ describe('ShippingDestinationListCommand', () => {
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const shippingDestinationListCommand = Commands.SHIPPINGDESTINATION_LIST.commandName;
 
-    let createdListingItem: resources.ListingItem;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         // create template without shipping destinations and store its id for testing
         const listingItemTemplates = await testUtil.generateData(
@@ -35,7 +43,7 @@ describe('ShippingDestinationListCommand', () => {
             true,                                   // return model
             new GenerateListingItemParams().toParamsArray()     // all true -> generate everything
         ) as ListingItemTemplate[];
-        createdListingItemTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
 
         // create listing item with shipping destinations (1-5) and store its id for testing
         const listingItems = await testUtil.generateData(
@@ -44,13 +52,13 @@ describe('ShippingDestinationListCommand', () => {
             true,                                    // return model
             new GenerateListingItemParams().toParamsArray()     // all true -> generate everything
         ) as ListingItem[];
-        createdListingItem = listingItems[0];
+        listingItem = listingItems[0];
     });
 
     test('Should list ShippingDestinations for ListingItemTemplate', async () => {
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
             'template',
-            createdListingItemTemplate.id
+            listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -61,7 +69,7 @@ describe('ShippingDestinationListCommand', () => {
     test('Should list ShippingDestinations for ListingItem', async () => {
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
             'item',
-            createdListingItem.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);

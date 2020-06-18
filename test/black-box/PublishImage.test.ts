@@ -19,8 +19,8 @@ describe('/publish-image', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil(0);
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let market: resources.Market;
+    let profile: resources.Profile;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     const httpOptions = {
@@ -31,8 +31,11 @@ describe('/publish-image', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -46,9 +49,9 @@ describe('/publish-image', () => {
             true,   // generateMessagingInformation
             false,  // generateListingItemObjects
             false,  // generateObjectDatas
-            defaultProfile.id, // profileId
+            profile.id, // profileId
             false,   // generateListingItem
-            defaultMarket.id  // marketId
+            market.id  // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(

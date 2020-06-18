@@ -27,6 +27,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     let profile: resources.Profile;
     let market: resources.Market;
+
     let rootCategory: resources.ItemCategory;
 
     beforeAll(async () => {

@@ -22,8 +22,8 @@ describe('ProposalListCommand', () => {
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let pastProposals: resources.Proposal[];
     let activeProposals: resources.Proposal[];
@@ -33,9 +33,10 @@ describe('ProposalListCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
         const generatePastProposalParams = new GenerateProposalParams([
             false,                  // generateListingItemTemplate
@@ -43,7 +44,7 @@ describe('ProposalListCommand', () => {
             null,                   // listingItemHash,
             true,                   // generatePastProposal,
             0,                      // voteCount
-            defaultProfile.address  // submitter
+            profile.address  // submitter
 
         ]).toParamsArray();
 
@@ -61,7 +62,7 @@ describe('ProposalListCommand', () => {
             null,                   // listingItemHash,
             false,                  // generatePastProposal,
             0,                      // voteCount
-            defaultProfile.address  // submitter
+            profile.address  // submitter
         ]).toParamsArray();
 
         // generate active proposals

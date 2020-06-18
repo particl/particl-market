@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
@@ -17,13 +18,21 @@ describe('ShoppingCartUpdateCommand', () => {
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartUpdateCommand = Commands.SHOPPINGCART_UPDATE.commandName;
 
-    let defaultShoppingCart;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
+    let defaultShoppingCart: resources.ShoppingCart;
     const shoppingCartName = 'New Shopping Cart';
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
-        defaultShoppingCart = defaultProfile.ShoppingCart[0];
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
+        defaultShoppingCart = profile.ShoppingCart[0];
     });
 
     test('Should update Shopping Cart', async () => {

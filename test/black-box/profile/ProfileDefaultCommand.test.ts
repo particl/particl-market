@@ -20,19 +20,37 @@ describe('ProfileDefaultCommand', () => {
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileDefaultCommand = Commands.PROFILE_DEFAULT.commandName;
 
-    const profileName = 'test-profile-' + Faker.random.uuid();
-
     let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
     });
 
-    test('Should be tested', async () => {
+    test('Should return the default Profile', async () => {
         const res = await testUtil.rpc(profileCommand, [profileDefaultCommand]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
+        res.expectStatusCode(200);
+
+        const result: resources.Profile = res.getBody()['result'];
+        expect(result.id).toBe(profile.id);
+    });
+
+    test('Should set the default Profile', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileDefaultCommand,
+            profile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Profile = res.getBody()['result'];
+        expect(result.id).toBe(profile.id);
     });
 
 });

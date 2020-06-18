@@ -6,6 +6,7 @@ import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from "resources";
 
 describe('ShoppingCartRemoveCommand', () => {
 
@@ -17,27 +18,34 @@ describe('ShoppingCartRemoveCommand', () => {
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartRemoveCommand = Commands.SHOPPINGCART_REMOVE.commandName;
 
-    let shoppingCartId;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
+    let shoppingCart: resources.ShoppingCart;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
 
-        const res = await testUtil.rpc(shoppingCartCommand, [Commands.SHOPPINGCART_ADD.commandName, 'New Shopping Cart', defaultProfile.id]);
-        shoppingCartId = res.getBody()['result'].id;
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
+        const res = await testUtil.rpc(shoppingCartCommand, [Commands.SHOPPINGCART_ADD.commandName, 'New Shopping Cart', profile.id]);
+        shoppingCart = res.getBody()['result'];
     });
 
     test('Should remove a ShoppingCart', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand, shoppingCartId]);
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand, shoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
     test('Should fail because we want to remove non-existing ShoppingCart', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand, shoppingCartId]);
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand, shoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier ${shoppingCartId} does not exist`);
+        expect(res.error.error.message).toBe(`Entity with identifier ${shoppingCart.id} does not exist`);
 
     });
 });
