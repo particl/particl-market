@@ -54,8 +54,11 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
 
+        this.log.debug('profile: ', profile.id);
+
         if (market) {
             // if market was given, we are setting...
+            this.log.debug('market: ', market.id);
             await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
         }
 
@@ -78,29 +81,32 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
             throw new MissingParamException('profileId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        const profileId = data.params[0];
+        const marketId = data.params[1];
+
+        if (profileId && typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'number') {
+        } else if (marketId && typeof marketId !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
         // make sure Profile with the id exists
-        data.params[0] = await this.profileService.findOne(data.params[0])
+        data.params[0] = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
 
-        if (data.params[1]) {
+        if (marketId) {
             // make sure Market with the id exists
-            const market: resources.Market = await this.marketService.findOne(data.params[1])
+            const market: resources.Market = await this.marketService.findOne(marketId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Market');
                 });
 
             // Market should also belong to the given Profile
-            if (market.Profile.id !== data.params[0]) {
+            if (market.Profile.id !== profileId) {
                 throw new MessageException('Given Market does not belong to the Profile.');
             }
 

@@ -40,6 +40,8 @@ describe('ItemCategoryUpdateCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        // categories can be only added to storefronts, so we need another market besides the default one
+
 
         // first get the rootCategory
         const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);

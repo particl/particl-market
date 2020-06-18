@@ -116,7 +116,7 @@ describe('BidSearchCommand', () => {
         ]).toParamsArray();
 
         // generate bid
-        const bids: any = await testUtil.generateData(
+        const bids: resources.Bid[] = await testUtil.generateData(
             CreatableModel.BID,
             1,
             true,
@@ -157,7 +157,7 @@ describe('BidSearchCommand', () => {
         log.debug('bidGenerateParams: ', bidGenerateParams);
 
         // generate bid
-        const bids: any = await testUtil.generateData(
+        const bids: resources.Bid[] = await testUtil.generateData(
             CreatableModel.BID,
             1,
             true,
