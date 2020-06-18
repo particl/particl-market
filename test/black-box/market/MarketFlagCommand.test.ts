@@ -8,8 +8,9 @@ import * as Faker from 'faker';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
-describe('MarketDefaultCommand', () => {
+describe('MarketFlagCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -17,7 +18,7 @@ describe('MarketDefaultCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
-    const marketDefaultCommand = Commands.MARKET_DEFAULT.commandName;
+    const marketFlagCommand = Commands.MARKET_FLAG.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -32,27 +33,13 @@ describe('MarketDefaultCommand', () => {
 
     });
 
-    test('Should return the default Market for Profile', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketDefaultCommand,
-            profile.id
-        ]);
+    test('Should fail to flag Market because of missing marketId', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketFlagCommand]);
         res.expectJson();
-        res.expectStatusCode(200);
-
-        const result: resources.Market = res.getBody()['result'];
-        expect(result.id).toBe(market.id);
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
 
-    test('Should set the default Market for Profile', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketDefaultCommand,
-            profile.id,
-            market.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        const result: resources.Market = res.getBody()['result'];
-        expect(result.id).toBe(market.id);
-    });
+    // TODO: add tests
 
 });
