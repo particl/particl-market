@@ -9,6 +9,8 @@ export class ListingItemTemplateSearchParams extends BaseSearchParams {
     public profileId?: number;
     public searchString?: string;
     public categories?: string[] | number[];
+    public isBaseTemplate?: boolean;
+    public marketReceiveAddress?: string;
     public hasListingItems?: boolean;
 
 }

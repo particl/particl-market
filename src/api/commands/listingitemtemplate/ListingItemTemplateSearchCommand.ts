@@ -4,6 +4,7 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -21,6 +22,9 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MarketService } from '../../services/model/MarketService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -29,6 +33,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_SEARCH);
@@ -45,25 +50,32 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profileId, number, optional
+     *  [4]: profile, resources.Profile, optional
      *  [5]: searchString, string, optional
      *  [6]: categories, optional, number[]|string>[], if string -> find using key
-     *  [7]: hasItems, boolean, optional
+     *  [7]: isBaseTemplate, boolean, optional, default true
+     *  [8]: market, resources.Market, optional
+     *  [9]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
 
+        const profile: resources.Profile = data.params[4];
+        const market: resources.Market = data.params[8];
+
         const searchParams = {
             page: data.params[0] || 0,
             pageLimit: data.params[1] || 10,
             order: data.params[2] || SearchOrder.ASC,
             orderField: data.params[3] || ListingItemTemplateSearchOrderField.UPDATED_AT,
-            profileId: data.params[4],
+            profileId: profile ? profile.id : undefined,
             searchString: data.params[5],
             categories: data.params[6],
-            hasListingItems: data.params[7]
+            isBaseTemplate: data.params[7],
+            marketReceiveAddress: market ? market.receiveAddress : undefined,
+            hasListingItems: data.params[9],
         } as ListingItemTemplateSearchParams;
 
         return await this.listingItemTemplateService.search(searchParams);
@@ -78,7 +90,9 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [4]: profileId, number, required
      *  [5]: searchString, string, * for all, optional
      *  [6]: categories, optional, number[]|string>[], if string -> find using key
-     *  [7]: hasItems, boolean, optional
+     *  [7]: isBaseTemplate, boolean, optional, default true
+     *  [8]: marketReceiveAddress, string, * for all, optional
+     *  [9]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<RpcRequest>}
      */
@@ -89,18 +103,35 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             throw new MissingParamException('profileId');
         }
 
-        const profileId = data.params[4];       // required
-        const searchString = data.params[5];    // optional
-        const categories = data.params[6];      // optional
-        const hasItems = data.params[7];        // optional
+        data.params[8] = (data.params[8] !== '*') ? data.params[8] : undefined;
+
+        const profileId = data.params[4];               // required
+        const searchString = data.params[5];            // optional
+        const categories = data.params[6];              // optional
+        const isBaseTemplate = data.params[7];          // optional
+        const marketReceiveAddress = data.params[8];    // optional
+        const hasItems = data.params[9];                // optional
+
 
         if (profileId && typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         } else if (searchString && typeof searchString !== 'string') {
             throw new InvalidParamException('searchString', 'string');
-        } else if (hasItems && typeof hasItems !== 'boolean') {
+        } else if (isBaseTemplate !== undefined && typeof isBaseTemplate !== 'boolean') {
+            throw new InvalidParamException('isBaseTemplate', 'boolean');
+        } else if (hasItems !== undefined && typeof hasItems !== 'boolean') {
             throw new InvalidParamException('hasItems', 'boolean');
         }
+
+        // make sure Profile with the id exists
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+        data.params[4] = profile;
+
+        data.params[5] = searchString !== '*' ? data.params[5] : undefined;
 
         if (categories) {
             // categories needs to be an array
@@ -116,16 +147,24 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
                 }
             }
             // don't need an empty category array
-            data.params[5] = categories.length > 0 ? categories : undefined;
+            data.params[6] = categories.length > 0 ? categories : undefined;
         }
 
-        data.params[5] = searchString !== '*' ? data.params[5] : undefined;
+
+        if (marketReceiveAddress) {
+            const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, marketReceiveAddress)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+            data.params[8] = market;
+        }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <profileId> [searchString] [categories] [hasItems] ';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <profileId> [searchString] [categories] [isBaseTemplate] [market] [hasItems] ';
     }
 
     public help(): string {
@@ -138,6 +177,8 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             + '    <searchString>           - [optional] String - A string that is used to searchBy for \n'
             + '                                ListingItemTemplates via title. \n'
             + '    <categories>             - [optional] Array - ItemCategory Ids or keys. \n'
+            + '    <isBaseTemplate>         - [optional] Boolean - if true then return only base ListingItemTemplates. \n'
+            + '    <market>                 - [optional] String - filter market ListingItemTemplates by the market\n'
             + '    <hasItems>               - [optional] Boolean - if true then filter ListingItemTemplates \n'
             + '                                by having or not having ListingItems. \n';
     }

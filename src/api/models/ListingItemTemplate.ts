@@ -146,6 +146,10 @@ ORDER BY lit.generated_at DESC;
                     }
                 }
 
+                if (options.marketReceiveAddress) {
+                    qb.where('listing_item_templates.market', '=', options.marketReceiveAddress);
+                }
+
                 if (options.profileId) {
                     qb.where('profile_id', '=', options.profileId);
                 }
@@ -153,6 +157,15 @@ ORDER BY lit.generated_at DESC;
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
+
+                if (options.isBaseTemplate !== undefined) {
+                    if (options.isBaseTemplate) {
+                        qb.whereNull('parent_listing_item_template_id');
+                    } else {
+                        qb.whereNotNull('parent_listing_item_template_id');
+                    }
+                }
+
                 if (options.hasListingItems !== undefined) {
                     // ListingItemTemplate.log.debug('hasListingItems', hasListingItems);
                     if (options.hasListingItems) {
