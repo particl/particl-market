@@ -24,7 +24,6 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
-import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -75,7 +74,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             categories: data.params[6],
             isBaseTemplate: data.params[7],
             marketReceiveAddress: market ? market.receiveAddress : undefined,
-            hasListingItems: data.params[9],
+            hasListingItems: data.params[9]
         } as ListingItemTemplateSearchParams;
 
         return await this.listingItemTemplateService.search(searchParams);

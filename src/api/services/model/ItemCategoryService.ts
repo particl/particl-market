@@ -112,8 +112,9 @@ export class ItemCategoryService {
 
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
+        // this.log.debug('create(), body:', JSON.stringify(body, null, 2));
         const itemCategory: resources.ItemCategory = await this.itemCategoryRepo.create(body).then(value => value.toJSON());
-        this.log.debug('create(), itemCategory:', JSON.stringify(itemCategory, null, 2));
+        // this.log.debug('create(), itemCategory:', JSON.stringify(itemCategory, null, 2));
 
         return await this.findOne(itemCategory.id);
     }

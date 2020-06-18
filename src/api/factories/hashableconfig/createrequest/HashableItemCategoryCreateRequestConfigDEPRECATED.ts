@@ -6,7 +6,7 @@ import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } fro
 import { HashableItemCategoryField } from '../HashableField';
 
 
-export class HashableItemCategoryCreateRequestConfig extends BaseHashableConfig {
+export class HashableItemCategoryCreateRequestConfigDEPRECATED extends BaseHashableConfig {
 
     public fields = [{
         from: 'name',

@@ -21,6 +21,8 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
 import { MarketType } from '../../enums/MarketType';
+import { hash } from 'omp-lib/dist/hasher/hash';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -29,6 +31,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
@@ -57,11 +60,18 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         const description = data.params[2];
         const parentItemCategory: resources.ItemCategory = data.params[3];
 
+        let path: string[] = await this.itemCategoryFactory.getArray(parentItemCategory);
+        path = [...path, name];
+        this.log.debug('path: ', JSON.stringify(path, null, 2));
+
         return await this.itemCategoryService.update(category.id, {
             name,
             description,
+            key: hash(path.toString()),
+            market: category.market,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryUpdateRequest);
+
     }
 
     /**

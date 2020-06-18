@@ -17,10 +17,10 @@ import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableItemCategoryCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
+import { hash } from 'omp-lib/dist/hasher/hash';
 import { MarketType } from '../../enums/MarketType';
 import { MessageException } from '../../exceptions/MessageException';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -28,6 +28,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
@@ -59,9 +60,9 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
-        createRequest.key = ConfigurableHasher.hash(createRequest, new HashableItemCategoryCreateRequestConfig());
-
-        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        let path: string[] = await this.itemCategoryFactory.getArray(parentItemCategory);
+        path = [...path, data.params[1]];
+        createRequest.key = hash(path.toString());
 
         return await this.itemCategoryService.create(createRequest);
     }
@@ -104,6 +105,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         const parentCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
 
         data.params[0] = market;
+        data.params[3] = parentCategory;
 
         if (market.type !== MarketType.STOREFRONT_ADMIN) {
             throw new MessageException('You can only add ItemCategories on Storefronts if you have the publish rights.');

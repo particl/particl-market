@@ -72,7 +72,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         }
 
         // create root category for market
-        await this.itemCategoryService.createMarketCategoriesFromArray(data.params[4], ['root']);
+        await this.itemCategoryService.insertRootItemCategoryForMarket(data.params[4]);
 
         return await this.marketService.create({
             profile_id: profile.id,
@@ -132,11 +132,11 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('name', 'string');
         } else if (type && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (receiveKey && typeof receiveKey !== 'string') {
+        } else if (!_.isEmpty(receiveKey) && typeof receiveKey !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        } else if (publishKey && typeof publishKey !== 'string') {
+        } else if (!_.isEmpty(publishKey) && typeof publishKey !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
-        } else if (identityId && typeof identityId !== 'number') {
+        } else if (!_.isEmpty(identityId) && typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
         }
 
@@ -189,6 +189,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             receiveAddress = PrivateKey.fromWIF(receiveKey).toPublicKey().toAddress(network).toString();
         }
 
+        this.log.debug('receiveKey: ', receiveKey);
+        this.log.debug('receiveAddress: ', receiveAddress);
+
         // we have receiveKey and receiveAddress, next get the publishKey and publishAddress
         switch (type) {
             case MarketType.MARKETPLACE:
@@ -225,6 +228,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 throw new NotImplementedException();
         }
 
+        this.log.debug('publishKey: ', publishKey);
+        this.log.debug('publishAddress: ', publishAddress);
+
         let identity: resources.Identity;
         if (identityId) {
             // make sure Identity with the id exists
@@ -239,7 +245,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 throw new MessageException('Identity does not belong to the Profile.');
             }
             data.params[7] = identity;
-
         }
 
         // make sure Market with the same receiveAddress doesnt exists
