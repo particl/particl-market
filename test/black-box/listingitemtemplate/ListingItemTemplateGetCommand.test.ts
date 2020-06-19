@@ -9,6 +9,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateGetCommand', () => {
 
@@ -43,9 +44,9 @@ describe('ListingItemTemplateGetCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            profile.id,  // profileId
+            profile.id,         // profileId
             false,              // generateListingItem
-            market.id    // marketId
+            market.id           // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -58,8 +59,17 @@ describe('ListingItemTemplateGetCommand', () => {
 
     });
 
+    test('Should fail because missing listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateGetCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
     test('Should return ListingItemTemplate by Id', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplate.id]);
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplate.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -110,7 +120,10 @@ describe('ListingItemTemplateGetCommand', () => {
 
     test('Should return base64 of image if return image data is true', async () => {
 
-        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplate.id, true]);
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplate.id,
+            true
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
@@ -118,6 +131,7 @@ describe('ListingItemTemplateGetCommand', () => {
         log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
         // todo: check that the data is actually an image
         expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
-
     });
+
+
 });

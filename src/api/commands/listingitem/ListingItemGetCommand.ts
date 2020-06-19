@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -14,13 +16,15 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 
-export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.ITEM_GET);
@@ -35,16 +39,25 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        return await this.listingItemService.findOne(data.params[0]);
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItem> {
 
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0]).then(value => value.toJSON());
+
+        if (data.params[1] && !_.isEmpty(listingItem.ItemInformation.ItemImages)) {
+            for (const image of listingItem.ItemInformation.ItemImages) {
+                for (const imageData of image.ItemImageDatas) {
+                    imageData.data = await this.itemImageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                }
+            }
+        }
+
+        return listingItem;
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemId
-     *
-     * TODO: this command should be refactored as in the future hash could return multiple items
+     *  [1]: returnImageData (optional)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -57,6 +70,8 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
         if (data.params[0] && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
+        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'boolean') {
+            throw new InvalidParamException('returnImageData', 'boolean');
         }
 
         return data;
@@ -68,7 +83,8 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>          - number - The Id of the ListingItem we want to retrieve. \n';
+            + '    <listingItemId>          - number - The Id of the ListingItem we want to retrieve. \n'
+            + '    <returnImageData>        - number, optional - Whether to return image data or not. ';
     }
 
     public description(): string {

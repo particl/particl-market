@@ -9,6 +9,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateCloneCommand', () => {
 
@@ -62,6 +63,13 @@ describe('ListingItemTemplateCloneCommand', () => {
 
         listingItemTemplate = listingItemTemplates[0];
 
+    });
+
+    test('Should fail because missing listingItemTemplateId', async () => {
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
     test('Should clone a new Market ListingItemTemplate from the Base ListingItemTemplate', async () => {

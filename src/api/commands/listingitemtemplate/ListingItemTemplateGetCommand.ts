@@ -42,10 +42,9 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItemTemplate> {
 
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON()); // throws if not found
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
 
-        if (data.params[1]) {
+        if (data.params[1] && !_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
             for (const image of listingItemTemplate.ItemInformation.ItemImages) {
                 for (const imageData of image.ItemImageDatas) {
                     imageData.data = await this.itemImageDataService.loadImageFile(image.hash, imageData.imageVersion);
@@ -61,8 +60,6 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
      *  [0]: listingItemTemplateId
      *  [1]: returnImageData (optional)
      *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
@@ -74,7 +71,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
         if (typeof data.params[0] !== 'number' ) {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'boolean') {
+        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('returnImageData', 'boolean');
         }
 
@@ -82,13 +79,13 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> ';
+        return this.getName() + ' <listingTemplateId> [returnImageData]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
-            + '                                     want to retrieve. ';
+            + '    <listingTemplateId>           - number - The ID of the ListingItemTemplate that we want to retrieve. '
+            + '    <returnImageData>             - number, optional - Whether to return image data or not. ';
     }
 
     public description(): string {
