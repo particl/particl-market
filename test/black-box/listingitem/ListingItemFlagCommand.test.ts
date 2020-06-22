@@ -54,7 +54,7 @@ describe('ListingItemFlagCommand', () => {
             false,                      // generateObjectDatas
             null,                       // listingItemTemplateHash
             // TODO: there is no profile.address anymore, use identity.adress
-            profile.address,            // seller
+            market.Identity.address,    // seller
             null                        // categoryId
         ]).toParamsArray();
 
@@ -62,7 +62,7 @@ describe('ListingItemFlagCommand', () => {
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             2,                      // how many to generate
-            true,                   // return model
+            true,                // return model
             generateListingItemParams    // what kind of data to generate
         ) as resources.ListingItem[];
         listingItem1 = listingItems[0];
@@ -77,13 +77,13 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should fail to flag ListingItem because of missing profileId', async () => {
+    test('Should fail to flag ListingItem because of missing identityId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
     });
 
     test('Should fail to flag ListingItem because of invalid listingItemId', async () => {
@@ -96,24 +96,24 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
-    test('Should fail to flag ListingItem because of invalid profileId (string)', async () => {
+    test('Should fail to flag ListingItem because of invalid identityId (string)', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.id,
             'INVALID-PROFILE-ID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
     });
 
-    test('Should fail to flag the ListingItem because Profile not found', async () => {
+    test('Should fail to flag the ListingItem because Identity not found', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.id,
             0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
     });
 
     test('Should fail to flag the ListingItem because ListingItem not found', async () => {
@@ -136,10 +136,10 @@ describe('ListingItemFlagCommand', () => {
         expect(result.FlaggedItem).toMatchObject({});
     });
 
-    test('Should flag the ListingItem using listingItemId and profileId', async () => {
+    test('Should flag the ListingItem using listingItemId and identityId', async () => {
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.id,
-            profile.id
+            market.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -170,7 +170,7 @@ describe('ListingItemFlagCommand', () => {
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem1.id,
-            profile.id
+            market.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
