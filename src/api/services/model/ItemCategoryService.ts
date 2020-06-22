@@ -202,7 +202,7 @@ export class ItemCategoryService {
 
         const categoryRequest = {
             name: 'ROOT',
-            description: 'root item category foor market: ' + market,
+            description: 'root item category for market: ' + market,
             market
         } as ItemCategoryCreateRequest;
 

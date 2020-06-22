@@ -67,6 +67,8 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             if (market.publishAddress !== smsgMessage.from) {
                 this.log.error('MPA_LISTING_ADD failed validation: Invalid message sender.');
                 throw new MessageException('Invalid message sender.');
+            } else {
+                this.log.debug('validateMessage(), publishAddress is valid.');
             }
 
             // - receive/process listingitems:
@@ -77,13 +79,15 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
 
             switch (market.type) {
                 case MarketType.MARKETPLACE:
-                    const key: string = hash(actionMessage.item.information.category);
-                    const category: resources.ItemCategory = await this.itemCategoryService.findOneByKeyAndMarket(key, '')
+                    const key: string = hash(actionMessage.item.information.category.toString());
+                    const category: resources.ItemCategory = await this.itemCategoryService.findOneDefaultByKey(key)
                         .then(value => value.toJSON())
                         .catch(reason => {
+                            this.log.error('validateMessage(), invalid custom ItemCategory.');
                             // no matching default category found
                             throw new MessageException('ItemCategory not found.');
                         });
+                    this.log.debug('validateMessage(), itemCategory is valid.');
                     return true;
                 case MarketType.STOREFRONT:
                 case MarketType.STOREFRONT_ADMIN:

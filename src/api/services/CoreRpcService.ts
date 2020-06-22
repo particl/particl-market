@@ -18,6 +18,7 @@ import { RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainI
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 import { CtRpc } from 'omp-lib/dist/abstract/rpc';
+import { VerifiableMessage } from './action/ListingItemAddActionService';
 
 
 decorate(injectable(), Rpc);
@@ -890,7 +891,7 @@ export class CoreRpcService extends CtRpc {
      * @param {any} message
      * @returns {Promise<string>}
      */
-    public async verifyMessage(address: string, signature: string, message: any): Promise<boolean> {
+    public async verifyMessage(address: string, signature: string, message: VerifiableMessage): Promise<boolean> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
         return await this.call('verifymessage', [address, signature, signableMessage]);
     }

@@ -80,12 +80,13 @@ export abstract class BaseActionService implements ActionServiceInterface {
         }
 
         // validate message with the messageValidator
-        await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING)
-            .catch(reason => {
-                this.log.error('ERROR:', reason);
-                throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
-            });
+        const validContent = await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING)
+            .catch(reason => false);
 
+        if (validContent) {
+            this.log.error('ActionMessage validation failed.');
+            throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
+        }
         // TODO: also validate the sequence?
         // await this.validator.validateSequence(marketplaceMessage, ActionDirection.OUTGOING);
 
