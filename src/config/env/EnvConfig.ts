@@ -38,6 +38,7 @@ export class EnvConfig {
         MARKET_RPC_PASSWORD: 'test',
         EXPRESS_ENABLED: true,
         SOCKETIO_ENABLED: true,
+        ZMQ_ENABLED: true,
         LOG_LEVEL: 'debug',
         LOG_PATH:  'market.log', // todo: separate log_path and log_file
         LOG_ADAPTER: 'winston',

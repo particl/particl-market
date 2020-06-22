@@ -85,7 +85,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - number - The ID of the ListingItemTemplate that we want to retrieve. '
-            + '    <returnImageData>             - number, optional - Whether to return image data or not. ';
+            + '    <returnImageData>             - boolean, optional - Whether to return image data or not. ';
     }
 
     public description(): string {
