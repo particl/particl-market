@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -39,12 +40,14 @@ import { ListingItemNotification } from '../../messages/notification/ListingItem
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {MissingParamException} from '../../exceptions/MissingParamException';
 
 export interface VerifiableMessage {
     // not empty
 }
 
-export interface SellerMessage extends VerifiableMessage{
+export interface SellerMessage extends VerifiableMessage {
     hash: string;               // item hash being added
     address: string;            // seller address
 }
@@ -97,20 +100,7 @@ export class ListingItemAddActionService extends BaseActionService {
             market,
             seller: market.Identity
         } as ListingItemAddRequest);
-/*
-        // convert the template to message
-        const action: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            listingItem: listingItemTemplate    // can be resources.ListingItem or resources.ListingItemTemplate
-            seller: actionRequest.seller,
-            // cryptoAddress, we could override the payment address here
-            signature
-        } as ListingItemAddMessageCreateParams);
 
-        const marketplaceMessage = {
-            version: ompVersion(),
-            action
-        } as MarketplaceMessage;
-*/
         // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         // let imageDataSize = 0;
@@ -139,9 +129,7 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
         const signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.listingItem.hash);
-        this.log.debug('createMarketplaceMessage(), signature: ', signature);
 
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
@@ -151,7 +139,7 @@ export class ListingItemAddActionService extends BaseActionService {
             signature
         } as ListingItemAddMessageCreateParams);
 
-        this.log.debug('createMarketplaceMessage(), actionMessage.item: ', JSON.stringify(actionMessage.item, null, 2));
+        // this.log.debug('createMarketplaceMessage(), actionMessage.item: ', JSON.stringify(actionMessage.item, null, 2));
 
         return {
             version: ompVersion(),
@@ -330,14 +318,26 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param hash
      */
     private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
+        if (_.isEmpty(wallet)) {
+            throw new MissingParamException('wallet');
+        }
+        if (_.isEmpty(address)) {
+            throw new MissingParamException('address');
+        }
+        if (_.isEmpty(hash)) {
+            throw new MissingParamException('hash');
+        }
         const message = {
             address,        // seller address
             hash            // item hash
         } as SellerMessage;
 
-        const signableMessage = JSON.stringify(message).split('').sort().toString();
+        this.log.debug('signSellerMessage(), message: ', JSON.stringify(message, null, 2));
 
-        return await this.coreRpcService.signMessage(wallet, address, signableMessage);
+        this.log.debug('signSellerMessage(), address: ', address);
+        this.log.debug('signSellerMessage(), hash: ', hash);
+
+        return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
 }

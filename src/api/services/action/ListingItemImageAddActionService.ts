@@ -17,8 +17,6 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ListingItemService } from '../model/ListingItemService';
@@ -30,22 +28,22 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { NotificationType } from '../../enums/NotificationType';
-import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
 import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
 import { ListingItemImageAddMessageCreateParams } from '../../requests/message/ListingItemImageAddMessageCreateParams';
 import { ListingItemImageAddValidator } from '../../messagevalidators/ListingItemImageAddValidator';
-import {ItemImageService} from '../model/ItemImageService';
-import {ItemImageDataService} from '../model/ItemImageDataService';
-import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
-import {ItemImageDataCreateRequest} from '../../requests/model/ItemImageDataCreateRequest';
-import {ItemImageCreateRequest} from '../../requests/model/ItemImageCreateRequest';
-import {ItemImageUpdateRequest} from '../../requests/model/ItemImageUpdateRequest';
-import {ListingItemImageNotification} from '../../messages/notification/ListingItemImageNotification';
+import { ItemImageService } from '../model/ItemImageService';
+import { ItemImageDataService } from '../model/ItemImageDataService';
+import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
+import { ItemImageUpdateRequest } from '../../requests/model/ItemImageUpdateRequest';
+import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
+import { VerifiableMessage } from './ListingItemAddActionService';
 
-export interface ImageAddMessage {
+// todo: move
+export interface ImageAddMessage extends VerifiableMessage {
     address: string;            // seller address
     hash: string;               // image hash being added
     target: string;             // listing hash the image is related to
@@ -92,10 +90,8 @@ export class ListingItemImageAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
         const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.image.hash,
             actionRequest.listingItem.hash);
-        // this.log.debug('createMarketplaceMessage(), signature: ', signature);
 
         const actionMessage: ListingItemImageAddMessage = await this.listingItemImageAddMessageFactory.get({
             listingItem: actionRequest.listingItem,

@@ -99,7 +99,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             }
         }
 
-        this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
+        // this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
 
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
 
@@ -145,17 +145,22 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             return false;
         }
 
+        const itemHash = listingItemAddMessage.hash;
+        const address = listingItemAddMessage.item.seller.address;
+        const signature = listingItemAddMessage.item.seller.signature;
+
         const message = {
-            address: listingItemAddMessage.item.seller.address,
-            hash: listingItemAddMessage.hash
+            address,
+            hash: itemHash
         } as SellerMessage;
 
         this.log.debug('verifySellerMessage(), message: ', JSON.stringify(message, null, 2));
-        this.log.debug('verifySellerMessage(), item.seller.address: ', listingItemAddMessage.item.seller.address);
-        this.log.debug('verifySellerMessage(), item.seller.signature: ', listingItemAddMessage.item.seller.signature);
 
-        const verified = await this.coreRpcService.verifyMessage(listingItemAddMessage.item.seller.address,
-                                                                 listingItemAddMessage.item.seller.signature, message);
+        this.log.debug('verifySellerMessage(), address: ', address);
+        this.log.debug('verifySellerMessage(), hash: ', itemHash);
+        this.log.debug('verifySellerMessage(), signature: ', signature);
+
+        const verified = await this.coreRpcService.verifyMessage(address, signature, message);
         this.log.debug('verifySellerMessage(), verified: ', verified);
 
         return verified;

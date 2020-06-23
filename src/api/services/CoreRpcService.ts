@@ -875,11 +875,12 @@ export class CoreRpcService extends CtRpc {
      *
      * @param wallet
      * @param {string} address
-     * @param {any} message
+     * @param {VerifiableMessage} message
      * @returns {Promise<string>}
      */
-    public async signMessage(wallet: string, address: string, message: any): Promise<string> {
+    public async signMessage(wallet: string, address: string, message: VerifiableMessage): Promise<string> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
+        this.log.debug('signMessage(), signableMessage: \"' + signableMessage + '\"');
         return await this.call('signmessage', [address, signableMessage], wallet);
     }
 
@@ -888,11 +889,12 @@ export class CoreRpcService extends CtRpc {
      *
      * @param {string} address
      * @param signature
-     * @param {any} message
+     * @param {VerifiableMessage} message
      * @returns {Promise<string>}
      */
     public async verifyMessage(address: string, signature: string, message: VerifiableMessage): Promise<boolean> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
+        this.log.debug('verifyMessage(), signableMessage: \"' + signableMessage + '\"');
         return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 

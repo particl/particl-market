@@ -5,7 +5,7 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import {  Logger as LoggerType } from '../../../core/Logger';
+import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
 import { SmsgService } from '../SmsgService';
@@ -46,13 +46,16 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { VerifiableMessage } from './ListingItemAddActionService';
 
-export interface VoteTicket {
+// todo: move
+export interface VoteTicket extends VerifiableMessage {
     proposalHash: string;       // proposal being voted for
     proposalOptionHash: string; // proposal option being voted for
     address: string;            // voting address having balance
 }
 
+// todo: move
 export interface AddressInfo {
     address: string;
     balance: number;            // in satoshis
@@ -97,10 +100,8 @@ export class VoteActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: VoteRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
         const signature = await this.signVote(actionRequest.sendParams.wallet, actionRequest.proposal, actionRequest.proposalOption,
             actionRequest.addressInfo.address);
-        // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: VoteMessage = await this.voteMessageFactory.get({
             proposalHash: actionRequest.proposal.hash,
@@ -508,6 +509,7 @@ export class VoteActionService extends BaseActionService {
             proposalOptionHash: proposalOption.hash,
             address
         } as VoteTicket;
+
         return await this.coreRpcService.signMessage(wallet, address, voteTicket);
     }
 

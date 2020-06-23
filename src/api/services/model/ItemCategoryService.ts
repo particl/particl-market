@@ -147,8 +147,8 @@ export class ItemCategoryService {
      */
     public async createMarketCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
 
-        this.log.debug('createMarketCategoriesFromArray(), market:', market);
-        this.log.debug('createMarketCategoriesFromArray(), categoryArray:', categoryArray);
+        // this.log.debug('createMarketCategoriesFromArray(), market:', market);
+        // this.log.debug('createMarketCategoriesFromArray(), categoryArray:', categoryArray);
 
         await this.findRoot(market)
             .then(value => value.toJSON())
@@ -159,7 +159,7 @@ export class ItemCategoryService {
                 return await this.insertRootItemCategoryForMarket(market)
                     .then(value => {
                         const root = value.toJSON();
-                        this.log.debug('createMarketCategoriesFromArray(), new ROOT:', JSON.stringify(root, null, 2));
+                        // this.log.debug('createMarketCategoriesFromArray(), new ROOT:', JSON.stringify(root, null, 2));
                         return root;
                     });
             });
@@ -186,14 +186,14 @@ export class ItemCategoryService {
                     // there was no child category, then create it
                     // root should have always been found, so parentCategory is always set
                     const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentPathToLookFor, parentCategory);
-                    this.log.debug('createMarketCategoriesFromArray(), createRequest:', JSON.stringify(createRequest, null, 2));
+                    // this.log.debug('createMarketCategoriesFromArray(), createRequest:', JSON.stringify(createRequest, null, 2));
 
                     return await this.create(createRequest).then(value => value.toJSON());
                 });
         }
 
         const category: resources.ItemCategory = await this.findOneByKeyAndMarket(hash(categoryArray.toString()), market).then(value => value.toJSON());
-        this.log.debug('createMarketCategoriesFromArray(), category:', JSON.stringify(category, null, 2));
+        // this.log.debug('createMarketCategoriesFromArray(), category:', JSON.stringify(category, null, 2));
 
         return category;
     }

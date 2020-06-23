@@ -99,7 +99,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
             listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
-
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
@@ -211,6 +210,12 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
 
         // check size limit
+        // we need listingItemTemplate.hash, otherwise this fails
+        // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
+        // since ListingItemTemplates with hash should not (CANT) be modified anymore.
+        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+        listingItemTemplate.hash = hash;
+
         const templateMessageDataSize = await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
         if (!templateMessageDataSize.fits) {
             this.log.debug('templateMessageDataSize:', JSON.stringify(templateMessageDataSize, null, 2));

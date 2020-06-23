@@ -81,9 +81,14 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // validate message with the messageValidator
         const validContent = await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING)
-            .catch(reason => false);
+            .catch(reason => {
+                this.log.error('Error: ', reason);
+                return false;
+            });
 
-        if (validContent) {
+        this.log.debug('validContent: ', validContent);
+
+        if (!validContent) {
             this.log.error('ActionMessage validation failed.');
             throw new ValidationException('Invalid MarketplaceMessage.', ['Send failed.']);
         }

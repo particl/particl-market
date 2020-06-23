@@ -30,8 +30,11 @@ import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
 import { CommentAction } from '../../enums/CommentAction';
+import { VerifiableMessage } from './ListingItemAddActionService';
 
-export interface CommentTicket {
+
+// todo: move
+export interface CommentTicket extends VerifiableMessage {
     address: string;
     type: string;
     target: string;
@@ -71,9 +74,7 @@ export class CommentAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: CommentAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMessage, params: ', JSON.stringify(params, null, 2));
         const signature = await this.signComment(actionRequest);
-        // this.log.debug('createMessage, signature: ', signature);
 
         const actionMessage: CommentAddMessage = await this.commentAddMessageFactory.get({
             sender: actionRequest.sender,
