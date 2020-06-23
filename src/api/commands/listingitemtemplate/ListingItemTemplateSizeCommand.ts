@@ -22,6 +22,8 @@ import { ListingItemAddActionService } from '../../services/action/ListingItemAd
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
@@ -50,7 +52,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const market: resources.Market = data.params[1];
 
-        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
+        // note!! template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
         // add some data to get a more realistic result
         if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
             || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
@@ -65,6 +67,12 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
                 listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress.type = CryptoAddressType.NORMAL;
             }
         }
+
+        // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
+        // since ListingItemTemplates with hash should not (CANT) be modified anymore.
+        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+        listingItemTemplate.hash = hash;
+
         return await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
 
     }

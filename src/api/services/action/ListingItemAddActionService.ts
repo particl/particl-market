@@ -40,8 +40,7 @@ import { ListingItemNotification } from '../../messages/notification/ListingItem
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import {MissingParamException} from '../../exceptions/MissingParamException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export interface VerifiableMessage {
     // not empty
@@ -193,7 +192,6 @@ export class ListingItemAddActionService extends BaseActionService {
             // we're creating the listingitem only when it arrives
             const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-            this.log.debug('processMessage(), listingItemAddMessage.item: ', JSON.stringify(listingItemAddMessage.item, null, 2));
             // if ListingItem contains a custom category, create them
             await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
 
