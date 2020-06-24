@@ -216,7 +216,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 */
 
                 // searchBy by item price
-                if (options.minPrice !== undefined && options.minPrice > 0 && options.maxPrice !== undefined && options.maxPrice > 0) {
+                if (options.minPrice !== undefined && options.minPrice >= 0 && options.maxPrice !== undefined && options.maxPrice >= 0) {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
@@ -232,17 +232,21 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (options.shippingDestination) {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
+                    qb.andWhere('shipping_destinations.shipping_availability', 'SHIPS');
                 }
 
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('listing_items.hash', '=', options.searchString);
                 }
 
                 if (options.flagged) {
                     // ListingItems having FlaggedItem
                     qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
                 } else {
-                    // Show all listingitems, but dont include the ones having ListingItem.removed
+                    // todo: why do we have this here and do we really need this?
                     qb.where('listing_items.removed', '=', false);
                 }
 

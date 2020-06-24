@@ -3,10 +3,8 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { getDataSet, reduce } from 'iso3166-2-db';
-import { NotFoundException } from '../../api/exceptions/NotFoundException';
 import { CountryCodeNotFoundException } from '../../api/exceptions/CountryCodeNotFoundException';
 import { CountryNotFoundException } from '../../api/exceptions/CountryNotFoundException';
-import { Logger as LoggerType } from '../../core/Logger';
 
 export class ShippingCountries {
     public static countryCodeList;
@@ -16,8 +14,8 @@ export class ShippingCountries {
         this.countryCodeList = reduce(getDataSet(), 'en');
         this.countryList = {}; // TODO: named as List even though it is not a list but an object,
 
-        for ( const x in this.countryCodeList ) {
-            if ( x ) {
+        for (const x in this.countryCodeList) {
+            if (x) {
                 this.countryList[this.countryCodeList[x].name.toUpperCase()] = x.toUpperCase();
             }
         }
@@ -94,7 +92,7 @@ export class ShippingCountries {
         countryCode = countryCode.toString().toUpperCase();
         if (ShippingCountries.isValidCountry(countryCode)) {
             countryCode = ShippingCountries.getCountryCode(countryCode);
-        } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
+        } else if (!ShippingCountries.isValidCountryCode(countryCode))  { //  Check if valid country code
             throw new CountryCodeNotFoundException(countryCode);
         }
         return countryCode;

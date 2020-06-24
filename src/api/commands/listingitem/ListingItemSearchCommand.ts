@@ -113,7 +113,6 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
         }
 
         const market = data.params[4];                  // required
-
         const categories = data.params[5];              // optional
         const seller = data.params[6];                  // optional
         const minPrice = data.params[7];                // optional
@@ -125,63 +124,82 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
         const listingItemHash = data.params[13];        // optional
 
         // make sure the params are of correct type
-        if (market && typeof market !== 'string') {
+        if (!_.isNil(market) && typeof market !== 'string') {
             throw new InvalidParamException('market', 'string');
         }
 
-        if (categories) {
+        if (!_.isNil(categories) && categories !== null) {
             // categories needs to be an array
             if (!_.isArray(categories)) {
                 throw new InvalidParamException('categories', 'number[] | string[]');
             } else {
                 // validate types, since we could have any[]...
-                const foundDifferent = _.find(categories, value => {
+                let foundDifferentTypes = _.find(categories, value => {
                     return typeof value !== typeof categories[0];
                 });
-                if (foundDifferent) {
+                foundDifferentTypes = foundDifferentTypes !== undefined;
+                if (foundDifferentTypes) {
                     throw new InvalidParamException('categories', 'number[] | string[]');
                 }
-            }
 
-            // don't need an empty category array
-            data.params[5] = categories.length > 0 ? categories : undefined;
+                // don't need an empty category array
+                data.params[5] = categories.length > 0 ? categories : undefined;
+            }
+        } else {
+            //
         }
 
         // check valid profile profileId searchBy params
-        if (seller && typeof seller !== 'string') {
+        if (!_.isNil(seller) && typeof seller !== 'string') {
             throw new InvalidParamException('seller', 'string');
-        } else if (minPrice && typeof minPrice !== 'number') {
+        } else if (!_.isNil(minPrice) && typeof minPrice !== 'number') {
             throw new InvalidParamException('minPrice', 'number');
-        } else if (maxPrice && typeof maxPrice !== 'number') {
+        } else if (!_.isNil(minPrice) && minPrice < 0) {
+            throw new InvalidParamException('minPrice');
+        } else if (!_.isNil(maxPrice) && typeof maxPrice !== 'number') {
             throw new InvalidParamException('maxPrice', 'number');
-        } else if (country && typeof country !== 'string') {
+        } else if (!_.isNil(maxPrice) && maxPrice < 0) {
+            throw new InvalidParamException('maxPrice');
+        } else if (!_.isNil(country) && typeof country !== 'string') {
             throw new InvalidParamException('country', 'string');
-        } else if (shippingDestination && typeof shippingDestination !== 'string') {
+        } else if (!_.isNil(shippingDestination) && typeof shippingDestination !== 'string') {
             throw new InvalidParamException('shippingDestination', 'string');
-        } else if (searchString && typeof searchString !== 'string') {
+        } else if (!_.isNil(searchString) && typeof searchString !== 'string') {
             throw new InvalidParamException('searchString', 'string');
-        } else if (!_.isUndefined(flagged) && !_.isBoolean(flagged)) {
+        } else if (!_.isNil(flagged) && !_.isBoolean(flagged)) {
             throw new InvalidParamException('flagged', 'boolean');
-        } else if (listingItemHash && typeof listingItemHash !== 'string') {
+        } else if (!_.isNil(listingItemHash) && typeof listingItemHash !== 'string') {
             throw new InvalidParamException('listingItemHash', 'string');
         }
 
-        if (seller === '*') {
+        if (_.isNil(seller) || seller === '*') {
             data.params[6] = undefined;
         }
 
-        if (country) {
-            data.params[9] = ShippingCountries.convertAndValidate(country);
+        if (_.isNil(minPrice)) {
+            data.params[7] = undefined;
+        }
+        if (_.isNil(maxPrice)) {
+            data.params[8] = undefined;
         }
 
-        if (shippingDestination) {
-            data.params[10] = ShippingCountries.convertAndValidate(shippingDestination);
+        data.params[9] = _.isNil(country)
+            ? undefined
+            : ShippingCountries.convertAndValidate(country + '');
+
+        data.params[10] = _.isNil(shippingDestination)
+            ? undefined
+            : ShippingCountries.convertAndValidate(shippingDestination + '');
+
+        if (_.isNil(searchString) || searchString === '*') {
+            data.params[11] = undefined;
         }
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <market> <categories>' +
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <market> [categories]' +
             ' [seller] [minPrice] [maxPrice] [country] [shippingDestination]' +
             ' [searchString] [flagged] [listingItemHash]';
     }

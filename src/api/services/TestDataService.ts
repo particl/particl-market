@@ -1429,8 +1429,9 @@ export class TestDataService {
         }
 
         const itemInformationCreateRequest = {
-            title: Faker.commerce.productName(),
-            shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
+            title: Faker.commerce.productAdjective() + Faker.commerce.productName(),
+            shortDescription: Faker.commerce.product() + ' ' + Faker.commerce.productAdjective() + ' ' + Faker.commerce.productAdjective() + ' '
+                + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
             item_category_id: generateParams.categoryId,
             itemLocation,
