@@ -156,7 +156,7 @@ export class VoteActionService extends BaseActionService {
     }
 
     /**
-     * vote for given Proposal and ProposalOption using all wallet addresses
+     * vote for given Proposal and ProposalOption using all identity wallet addresses
      *
      * - vote( profile, ... ):
      *   - get all addresses having balance
@@ -200,8 +200,13 @@ export class VoteActionService extends BaseActionService {
         // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
         // TODO: removed flag should not be needed anymore
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
+
+            this.log.debug('vote(), voteRequest.proposal.target: ', voteRequest.proposal.target);
+            this.log.debug('vote(), voteRequest.market.receiveAddress: ', voteRequest.market.receiveAddress);
+
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
-                voteRequest.proposal.item, voteRequest.market.receiveAddress).then(value => value.toJSON());
+                voteRequest.proposal.target, voteRequest.market.receiveAddress).then(value => value.toJSON());
+
             await this.listingItemService.setRemovedFlag(listingItem.id, voteRequest.proposalOption.description === ItemVote.REMOVE.toString());
             this.log.debug('vote(), removed flag set');
 
@@ -270,7 +275,7 @@ export class VoteActionService extends BaseActionService {
 
         // get the address balance
         // TODO: balance can be checked later
-        const balance = await this.coreRpcService.getAddressBalance([voteMessage.voter]).then(value => parseInt(value.balance, 10));
+        const balance = await this.coreRpcService.getAddressBalance(voteMessage.voter).then(value => parseInt(value.balance, 10));
         this.log.debug('processMessage(), voteMessage.voter: ', voteMessage.voter);
         this.log.debug('processMessage(), balance: ', balance);
 

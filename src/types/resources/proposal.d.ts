@@ -11,7 +11,7 @@ declare module 'resources' {
         msgid: string;
         submitter: string;
         hash: string;
-        item: string;
+        target: string;
         category: ProposalCategory;
         title: string;
         description: string;

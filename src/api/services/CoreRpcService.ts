@@ -390,13 +390,14 @@ export class CoreRpcService extends CtRpc {
      *   "balance"   (string) The current balance in satoshis
      *   "received"  (string) The total number of satoshis received (including change)
      * }
-     * @param wallet
-     * @param addresses
+     * @param address
      */
-    public async getAddressBalance(addresses: string[]): Promise<RpcAddressBalance> {
-        return await this.call('getaddressbalance', [{
-            addresses
-        }]);
+    // public async getAddressBalance(addresses: string[]): Promise<RpcAddressBalance> {
+    public async getAddressBalance(address: string): Promise<RpcAddressBalance> {
+        return await this.call('getaddressbalance', [address]);
+        // return await this.call('getaddressbalance', [{
+        //    addresses
+        // }]);
     }
 
     /**

@@ -20,7 +20,8 @@ describe('ListingItemFlagCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemFlagCommand = Commands.ITEM_FLAG.commandName;
@@ -29,44 +30,47 @@ describe('ListingItemFlagCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    let listingItem1: resources.ListingItem;
-    let listingItem2: resources.ListingItem;
+    let listingItem: resources.ListingItem;
 
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
 
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
+        log.debug('profile: ', profile.address);
+
+        // get seller and buyer markets
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
+        log.debug('market: ', JSON.stringify(market, null, 2));
 
         const generateListingItemParams = new GenerateListingItemParams([
-            true,                       // generateItemInformation
-            true,                       // generateItemLocation
-            true,                       // generateShippingDestinations
-            false,                      // generateItemImages
-            true,                       // generatePaymentInformation
-            true,                       // generateEscrow
-            true,                       // generateItemPrice
-            true,                       // generateMessagingInformation
-            true,                       // generateListingItemObjects
-            false,                      // generateObjectDatas
-            null,                       // listingItemTemplateHash
-            // TODO: there is no profile.address anymore, use identity.adress
-            market.Identity.address,    // seller
-            null                        // categoryId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            true,                           // generateListingItemObjects
+            false,                          // generateObjectDatas
+            undefined,                      // listingItemTemplateHash
+            market.Identity.address,        // seller
+            undefined,                      // categoryId
+            market.id                       // soldOnMarketId
         ]).toParamsArray();
 
         // create ListingItem for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
-            2,                      // how many to generate
+            1,                      // how many to generate
             true,                // return model
-            generateListingItemParams    // what kind of data to generate
+            generateListingItemParams       // what kind of data to generate
         ) as resources.ListingItem[];
-        listingItem1 = listingItems[0];
-        listingItem2 = listingItems[1];
+        listingItem = listingItems[0];
 
     });
 
@@ -79,7 +83,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should fail to flag ListingItem because of missing identityId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -98,7 +102,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should fail to flag ListingItem because of invalid identityId (string)', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem1.id,
+            listingItem.id,
             'INVALID-PROFILE-ID'
         ]);
         res.expectJson();
@@ -108,7 +112,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should fail to flag the ListingItem because Identity not found', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem1.id,
+            listingItem.id,
             0
         ]);
         res.expectJson();
@@ -128,7 +132,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should get empty FlaggedItem relation for the ListingItem, because ListingItem is not flagged yet', async () => {
         const res = await testUtil.rpc(itemCommand, [itemGetCommand,
-            listingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -138,7 +142,7 @@ describe('ListingItemFlagCommand', () => {
 
     test('Should flag the ListingItem using listingItemId and identityId', async () => {
         let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem1.id,
+            listingItem.id,
             market.Identity.id
         ]);
         res.expectJson();
@@ -152,7 +156,7 @@ describe('ListingItemFlagCommand', () => {
 
         res = await testUtil.rpcWaitFor(
             itemCommand,
-            [itemGetCommand, listingItem1.id],
+            [itemGetCommand, listingItem.id],
             8 * 60,
             200,
             'FlaggedItem.reason',
@@ -161,15 +165,15 @@ describe('ListingItemFlagCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const listingItem: resources.ListingItem = res.getBody()['result'];
+        const item: resources.ListingItem = res.getBody()['result'];
         // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
-        expect(listingItem.FlaggedItem.Proposal.title).toBe(listingItem.hash);
+        expect(item.FlaggedItem.Proposal.title).toBe(listingItem.hash);
     }, 600000); // timeout to 600s
 
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem1.id,
+            listingItem.id,
             market.Identity.id
         ]);
         res.expectJson();

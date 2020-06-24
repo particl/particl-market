@@ -106,7 +106,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             // prepare the VoteRequest for sending votes
             const voteRequest = {
                 sendParams: proposalAddRequest.sendParams,
-                sender: proposalAddRequest.sender,
+                sender: proposalAddRequest.sender,          // Identity
                 market: proposalAddRequest.market,
                 proposal,
                 proposalOption
@@ -115,7 +115,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             voteRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
 
             // we're not calling post here as post will only post a single message
-            // send the VoteMessages from each of senderProfiles addresses
+            // send the VoteMessages from each of senders Identity wallets addresses
             const voteSmsgSendResponse = await this.voteActionService.vote(voteRequest);
             smsgSendResponse.msgids = voteSmsgSendResponse.msgids;
             // ProposalResult will be calculated after each vote has been sent...

@@ -103,11 +103,11 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
         if (withRelated) {
-            return await Proposal.where<Proposal>({ item: value }).fetch({
+            return await Proposal.where<Proposal>({ target: value }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Proposal.where<Proposal>({ item: value }).fetch();
+            return await Proposal.where<Proposal>({ target: value }).fetch();
         }
     }
 

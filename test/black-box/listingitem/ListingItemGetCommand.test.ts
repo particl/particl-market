@@ -9,7 +9,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemGetCommand', () => {
 
@@ -66,7 +66,7 @@ describe('ListingItemGetCommand', () => {
     });
 
 
-    test('Should get the ListingItem by Id', async () => {
+    test('Should get the ListingItem by id', async () => {
 
         // find listing item using id
         const res = await testUtil.rpc(itemCommand, [itemGetCommand,
@@ -127,7 +127,8 @@ describe('ListingItemGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ListingItem = res.getBody()['result'];
 
-        log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+
         // todo: check that the data is actually an image
         expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
     });

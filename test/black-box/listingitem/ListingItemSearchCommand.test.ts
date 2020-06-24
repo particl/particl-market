@@ -12,7 +12,6 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
@@ -504,7 +503,7 @@ describe('ListingItemSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        expect(result.length).toBe(1);
+        expect(result.length).toBeGreaterThan(0);
         expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
     });
 
@@ -524,7 +523,7 @@ describe('ListingItemSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        expect(result.length).toBe(1);
+        expect(result.length).toBeGreaterThan(0);
         expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
     });
 

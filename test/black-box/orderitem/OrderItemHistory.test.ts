@@ -74,7 +74,6 @@ describe('OrderItemHistory', () => {
         log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
         log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
-        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation

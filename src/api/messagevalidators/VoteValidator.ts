@@ -73,10 +73,12 @@ export class VoteValidator implements ActionMessageValidatorInterface {
         }
 
         // address needs to have balance for the Vote to matter
-        const balance = await this.coreRpcService.getAddressBalance([actionMessage.voter]).then(value => parseInt(value.balance, 10));
-        if (balance <= 0) {
-            throw new MessageException('Vote address has no balance.');
-        }
+        const balance = await this.coreRpcService.getAddressBalance(actionMessage.voter).then(value => parseInt(value.balance, 10));
+        this.log.debug('balance: ', JSON.stringify(balance, null, 2));
+
+        // if (balance <= 0) {
+        //    throw new MessageException('Vote address has no balance.');
+        // }
 
         return true;
     }
