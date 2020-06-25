@@ -61,7 +61,7 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * validate that profile and item exists, replace possible hash with id
+     * validate that profile and item exists
      *
      * data.params[]:
      *  [0]: profileId
@@ -78,21 +78,24 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
             throw new MissingParamException('listingItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        const profileId = data.params[0];
+        const listingItemId = data.params[1];
+
+        if (profileId && typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (data.params[1] && typeof data.params[1] === 'number') {
+        } else if (listingItemId && typeof listingItemId !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
         }
 
         // make sure Profile exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
 
         // make sure ListingItem exists
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[1])
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');

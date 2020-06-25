@@ -7,11 +7,11 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('FavoriteAddCommand', () => {
 
@@ -26,11 +26,10 @@ describe('FavoriteAddCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    let createdListingItem1: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
     beforeAll(async () => {
-
-        // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
 
         profile = await testUtil.getDefaultProfile();
@@ -38,39 +37,43 @@ describe('FavoriteAddCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+        // generate ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            true,       // generateShippingDestinations
+            false,      // generateItemImages
+            true,       // generatePaymentInformation
+            true,       // generateEscrow
+            true,       // generateItemPrice
+            true,       // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
 
-        // create item and store its id for testing
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,         // what to generate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
-            true,                    // return model
-            generateListingItemParams           // what kind of data to generate
-        ) as resources.ListingItem[];
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
 
-        createdListingItem1 = listingItems[0];
+        listingItemTemplate = listingItemTemplates[0];
+        listingItem = listingItemTemplate.ListingItems[0];
 
     });
 
-    test('Should fail to add because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to add because missing listingItemId', async () => {
+    test('Should fail because missing listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id
         ]);
@@ -79,19 +82,17 @@ describe('FavoriteAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should fail to add because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             'INVALID',
-            createdListingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-/*
-    // TODO: hash is supported, propably id shouldnt be
-    test('Should fail to add because invalid listingItemId', async () => {
+    test('Should fail because invalid listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id,
             'INVALID'
@@ -100,12 +101,12 @@ describe('FavoriteAddCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
-*/
-    test('Should fail to add because Profile not found', async () => {
+
+    test('Should fail because Profile not found', async () => {
 
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             0,
-            createdListingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -127,13 +128,13 @@ describe('FavoriteAddCommand', () => {
 
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id,
-            createdListingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.ListingItem.id).toBe(createdListingItem1.id);
+        expect(result.ListingItem.id).toBe(listingItem.id);
         expect(result.Profile.id).toBe(profile.id);
     });
 

@@ -11,7 +11,6 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
@@ -27,16 +26,12 @@ describe('ListingItemSearchCommand', () => {
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
-    const itemFlagCommand = Commands.ITEM_FLAG.commandName;
-    const itemGetCommand = Commands.ITEM_GET.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
-
-    const defaultListingItemSearchParams = new ListingItemSearchParams();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
