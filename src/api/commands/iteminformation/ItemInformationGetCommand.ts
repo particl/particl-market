@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -41,7 +41,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        const listingItemTemplate = data.params[0];
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         return this.itemInformationService.findByListingItemTemplateId(listingItemTemplate.id);
     }
 
@@ -57,15 +57,13 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
             throw new MissingParamException('listingItemTemplateId');
         }
 
-        if (typeof data.params[0] !== 'number' || data.params[0] <= 0) {
+        if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         }
 
         // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
@@ -84,12 +82,11 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>       - Numeric - The listingItemTemplateId of the item information we want \n'
-            + '                                     to retrieve.';
+            + '    <listingItemTemplateId>       - number, The ID of the ListingItemTemplate which ItemInformation we want to retrieve.';
     }
 
     public description(): string {
-        return 'Get an iteminformations and associated with it with a listingItemTemplateId.';
+        return 'Get an ItemInformation.';
     }
 
     public example(): string {

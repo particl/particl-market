@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -62,7 +63,7 @@ describe('ItemInformationGetCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
     });
 
-    test('Should fail to get a ItemInformation because of missing listingItemTemplateId', async () => {
+    test('Should fail because of missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -70,43 +71,43 @@ describe('ItemInformationGetCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail to get a ItemInformation because of invalid listingItemTemplateId', async () => {
-        const fakeId = 'not a number';
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, fakeId]);
+    test('Should fail because of invalid listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+            false
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail to get a ItemInformation because of a non-existent listingItemTemplate', async () => {
-        const fakeId = 1000000000;
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, fakeId]);
+    test('Should fail because of a non-existent listingItemTemplate', async () => {
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+            0
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
-    test('Should fail to get a ItemInformation because it doesnt exist', async () => {
-        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
-        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+    test('Should fail because ItemInformation doesnt exist', async () => {
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            false,   // generateItemInformation
-            false,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,  // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,  // generateListingItem
-            defaultMarket.id   // marketId
+            false,              // generateItemInformation
+            false,              // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            false,              // generateListingItem
+            market.id           // soldOnMarketId
         ]).toParamsArray();
 
         const templatesWithoutItemInformation: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -117,7 +118,9 @@ describe('ItemInformationGetCommand', () => {
         );
         const template = templatesWithoutItemInformation[0];
 
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, template.id]);
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+            template.id
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
