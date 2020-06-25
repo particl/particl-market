@@ -20,7 +20,7 @@ import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdate
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
@@ -40,7 +40,6 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: escrowType
-     *  [1]: escrowType
      *  [2]: buyerRatio
      *  [3]: sellerRatio
      *  [4]: escrowReleaseType
@@ -58,7 +57,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             ratio: {
                 buyer: data.params[2],
                 seller: data.params[3]
-            } as EscrowRatioUpdateRequest
+            } as EscrowRatioUpdateRequest,
+            releaseType: data.params[4]
         } as EscrowUpdateRequest;
 
         return this.escrowService.update(listingItemTemplate.PaymentInformation.Escrow.id, escrowUpdateRequest);
@@ -84,8 +84,6 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new MissingParamException('buyerRatio');
         } else if (data.params.length < 4) {
             throw new MissingParamException('sellerRatio');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('escrowReleaseType');
         }
 
         // this.log.debug('data.params: ' + data.params);
@@ -97,8 +95,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('buyerRatio', 'number');
         } else if (typeof data.params[3] !== 'number') {
             throw new InvalidParamException('sellerRatio', 'number');
-        } else if (typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('escrowReleaseType', 'string');
+        } else if (!_.isNil(data.params[4]) && typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
         }
 
         const validEscrowTypes = [EscrowType.MAD_CT/*, EscrowType.MULTISIG, EscrowType.MAD, EscrowType.FE*/];
@@ -106,16 +104,19 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('escrowType');
         }
 
-        const escrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
-        if (escrowReleaseTypes.indexOf(data.params[1]) === -1) {
+        // force escrows to 100% for now
+        data.params[2] = 100;
+        data.params[3] = 100;
+        data.params[4] = _.isNil(data.params[4]) ? EscrowReleaseType.ANON : data.params[4];
+
+        const escrowReleaseTypes = [EscrowReleaseType.ANON/*, EscrowReleaseType.BLIND*/];
+        if (escrowReleaseTypes.indexOf(data.params[4]) === -1) {
             throw new InvalidParamException('escrowReleaseType');
         }
 
         // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
@@ -140,7 +141,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> <escrowReleaseType> ';
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> [escrowReleaseType] ';
     }
 
     public help(): string {

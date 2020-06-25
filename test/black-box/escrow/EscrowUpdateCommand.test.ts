@@ -2,15 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * from 'jest';
 import * as resources from 'resources';
-import * as _ from 'lodash';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
@@ -25,8 +25,6 @@ describe('EscrowUpdateCommand', () => {
 
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowUpdateCommand = Commands.ESCROW_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -50,9 +48,9 @@ describe('EscrowUpdateCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            profile.id,  // profileId
+            profile.id,         // profileId
             false,              // generateListingItem
-            market.id    // marketId
+            market.id           // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -106,7 +104,8 @@ describe('EscrowUpdateCommand', () => {
             'not a number',
             EscrowType.MAD_CT,
             100,
-            100
+            100,
+            EscrowReleaseType.ANON
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
@@ -151,6 +150,20 @@ describe('EscrowUpdateCommand', () => {
         const res: any = await testUtil.rpc(escrowCommand, testData);
         res.expectJson();
         expect(res.error.error.message).toBe(new InvalidParamException('sellerRatio', 'number').getMessage());
+    });
+
+    test('Should fail to update Escrow because of invalid escrowReleaseType', async () => {
+        const testData = [escrowUpdateCommand,
+            listingItemTemplate.id,
+            EscrowType.MAD_CT,
+            100,
+            100,
+            false
+        ];
+
+        const res: any = await testUtil.rpc(escrowCommand, testData);
+        res.expectJson();
+        expect(res.error.error.message).toBe(new InvalidParamException('escrowReleaseType', 'EscrowReleaseType').getMessage());
     });
 
     test('Should fail to update Escrow because of a non-existent ListingItemTemplate', async () => {

@@ -71,31 +71,22 @@ export class EscrowService {
 
         const body: EscrowUpdateRequest = JSON.parse(JSON.stringify(data));
 
-        // find the existing one without related
         const escrow = await this.findOne(id, false);
 
-        // set new values
         escrow.Type = body.type;
         escrow.SecondsToLock = body.secondsToLock;
         escrow.ReleaseType = body.releaseType;
 
-        // update escrow record
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());
 
-        // find related escrowratio
+        // find related escrowratio and update
         let relatedRatio = updatedEscrow.related('Ratio').toJSON();
-
-        // delete it
         await this.escrowRatioService.destroy(relatedRatio.id);
-
-        // and create new related data
         relatedRatio = body.ratio;
         relatedRatio.escrow_id = id;
         await this.escrowRatioService.create(relatedRatio);
 
-        // finally find and return the updated escrow
-        const newEscrow = await this.findOne(id);
-        return newEscrow;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {

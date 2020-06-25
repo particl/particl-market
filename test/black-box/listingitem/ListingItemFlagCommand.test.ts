@@ -39,12 +39,8 @@ describe('ListingItemFlagCommand', () => {
 
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
-        log.debug('profile: ', profile.address);
-
-        // get seller and buyer markets
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
-        log.debug('market: ', JSON.stringify(market, null, 2));
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,                           // generateItemInformation
