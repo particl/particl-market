@@ -94,11 +94,19 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             throw new MissingParamException('country');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        const listingItemTemplateId = data.params[0];   // required
+        const country = data.params[1];                 // required
+        const address = data.params[2];                 // optional
+        const gpsMarkerTitle = data.params[3];          // optional
+        const gpsMarkerDescription = data.params[4];    // optional
+        const gpsMarkerLatitude = data.params[5];       // optional
+        const gpsMarkerLongitude = data.params[6];      // optional
+
+        if (typeof listingItemTemplateId !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
+        } else if (typeof country !== 'string') {
             throw new InvalidParamException('country', 'string');
-        } else if (data.params[2] && typeof data.params[2] !== 'string') {
+        } else if (!_.isNil(address) && typeof address !== 'string') {
             throw new InvalidParamException('address', 'string');
         }
 
@@ -111,26 +119,24 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
                 throw new MissingParamException('gpsMarkerLongitude');
             }
 
-            if (typeof data.params[3] !== 'string') {
+            if (typeof gpsMarkerTitle !== 'string') {
                 throw new InvalidParamException('gpsMarkerTitle', 'string');
-            } else if (typeof data.params[4] !== 'string') {
+            } else if (typeof gpsMarkerDescription !== 'string') {
                 throw new InvalidParamException('gpsMarkerDescription', 'string');
-            } else if (typeof data.params[5] !== 'number') {
+            } else if (typeof gpsMarkerLatitude !== 'number') {
                 throw new InvalidParamException('gpsMarkerLatitude', 'number');
-            } else if (typeof data.params[6] !== 'number') {
+            } else if (typeof gpsMarkerLongitude !== 'number') {
                 throw new InvalidParamException('gpsMarkerLongitude', 'number');
             }
         }
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        data.params[1] = ShippingCountries.convertAndValidate(data.params[1]);
+        data.params[1] = ShippingCountries.convertAndValidate(country);
 
         // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
