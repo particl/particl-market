@@ -78,23 +78,6 @@ describe('AddressAddCommand', () => {
         expect(result.zipCode).toBe(testData.zipCode);
     });
 
-    test('Should fail to create an empty Address because missing type', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            testData.title,
-            testData.firstName,
-            testData.lastName,
-            testData.addressLine1,
-            testData.addressLine2,
-            testData.city,
-            testData.state,
-            testData.country,
-            'test'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId').getMessage());
-    });
-
     test('Should fail because we want to create an empty Address without required fields', async () => {
         const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             profile.id,
@@ -213,11 +196,29 @@ describe('AddressAddCommand', () => {
     });
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+    });
+
+    test('Should fail to create an empty Address because invalid profileId', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            false,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country,
+            'test'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
     test('Should fail to create Address because missing state', async () => {
@@ -235,7 +236,7 @@ describe('AddressAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('state').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('state', 'string').getMessage());
     });
 
     test('Should create a new Address with blank state', async () => {

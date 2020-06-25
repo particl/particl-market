@@ -7,8 +7,6 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('AddressListCommand', () => {
@@ -25,32 +23,6 @@ describe('AddressListCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    const testData = {
-        firstName: 'Johnny',
-        lastName: 'Depp',
-        title: 'Work',
-        addressLine1: '123 6th St',
-        addressLine2: 'Melbourne, FL 32904',
-        city: 'Melbourne',
-        state: 'Mel State',
-        country: 'Finland',
-        zipCode: '85001',
-        type: AddressType.SHIPPING_OWN
-    };
-
-    const testDataNotOwn = {
-        firstName: 'Johnny',
-        lastName: 'Depp',
-        title: 'Work',
-        addressLine1: '123 6th St',
-        addressLine2: 'Melbourne, FL 32904',
-        city: 'Melbourne',
-        state: 'Mel State',
-        country: 'Finland',
-        zipCode: '85001',
-        type: AddressType.SHIPPING_OWN
-    };
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -63,14 +35,16 @@ describe('AddressListCommand', () => {
     });
 
     test('Should list empty address list for default profile id', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressListCommand, profile.id]);
+        const res = await testUtil.rpc(addressCommand, [addressListCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Address[] = res.getBody()['result'];
         expect(result.length).toBe(0);
     });
 
-    test('Should return code 500 when no profile is given', async () => {
+    test('Should return code 404 when no profile is given', async () => {
         const res = await testUtil.rpc(addressCommand, [addressListCommand]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -80,6 +54,19 @@ describe('AddressListCommand', () => {
 
     test('Should list one address for default profile id', async () => {
 
+        const testData = {
+            firstName: 'Johnny',
+            lastName: 'Depp',
+            title: 'Work',
+            addressLine1: '123 6th St',
+            addressLine2: 'Melbourne, FL 32904',
+            city: 'Melbourne',
+            state: 'Mel State',
+            country: 'Finland',
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        };
+
         let res = await testUtil.rpc(addressCommand, [addressAddCommand,
             profile.id,
             testData.title,
@@ -95,8 +82,9 @@ describe('AddressListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        // list created addresses
-        res = await testUtil.rpc(addressCommand, [addressListCommand, profile.id]);
+        res = await testUtil.rpc(addressCommand, [addressListCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Address[] = res.getBody()['result'];
@@ -105,7 +93,20 @@ describe('AddressListCommand', () => {
     });
 
     test('Should list two addresses for default profile id', async () => {
-        // add address
+
+        const testData = {
+            firstName: 'Johnny',
+            lastName: 'Depp',
+            title: 'Work',
+            addressLine1: '123 6th St',
+            addressLine2: 'Melbourne, FL 32904',
+            city: 'Melbourne',
+            state: 'Mel State',
+            country: 'Finland',
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        };
+
         let res = await testUtil.rpc(addressCommand, [addressAddCommand,
             profile.id,
             testData.title,
@@ -122,15 +123,29 @@ describe('AddressListCommand', () => {
         res.expectStatusCode(200);
 
         // list created addresses
-        res = await testUtil.rpc(addressCommand, [addressListCommand, profile.id]);
+        res = await testUtil.rpc(addressCommand, [addressListCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Address[] = res.getBody()['result'];
         expect(result.length).toBe(2);
     });
 
-    test('Check against SHIPPING_OWN - should list two addresses by default and one otherwise', async () => {
-        // add address
+    test('Should still find the same two addresses after adding SHIPPING_BID type of address', async () => {
+        const testDataNotOwn = {
+            firstName: 'Johnny',
+            lastName: 'Depp',
+            title: 'Work',
+            addressLine1: '123 6th St',
+            addressLine2: 'Melbourne, FL 32904',
+            city: 'Melbourne',
+            state: 'Mel State',
+            country: 'Finland',
+            zipCode: '85001',
+            type: AddressType.SHIPPING_BID
+        };
+
         let res = await testUtil.rpc(addressCommand, [addressAddCommand,
             profile.id,
             testDataNotOwn.title,
@@ -142,58 +157,27 @@ describe('AddressListCommand', () => {
             testDataNotOwn.state,
             testDataNotOwn.country,
             testDataNotOwn.zipCode,
-            testDataNotOwn.type]);
+            testDataNotOwn.type
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        // list created addresses
-        res = await testUtil.rpc(addressCommand, [addressListCommand, profile.id]);
+        res = await testUtil.rpc(addressCommand, [addressListCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Address[] = res.getBody()['result'];
         expect(result.length).toBe(2);
 
-        res = await testUtil.rpc(addressCommand, [addressListCommand, profile.id, AddressType.SHIPPING_OWN]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const resultOrder: resources.Address[] = res.getBody()['result'];
-        expect(resultOrder.length).toBe(1);
-    });
-
-    test('Should return only for a particular Profile', async () => {
-
-        const generateProfileParams = new GenerateProfileParams([
-            false,
-            false
-        ]).toParamsArray();
-
-        const profiles = await testUtil.generateData(
-            CreatableModel.PROFILE,
-            1,
-            true,
-            generateProfileParams
-        ) as resources.Profile[];
-
-        let res = await testUtil.rpc(addressCommand, [addressAddCommand,
-            profiles[0].id,
-            testDataNotOwn.title,
-            testDataNotOwn.firstName,
-            testDataNotOwn.lastName,
-            testDataNotOwn.addressLine1,
-            testDataNotOwn.addressLine2,
-            testDataNotOwn.city,
-            testDataNotOwn.state,
-            testDataNotOwn.country,
-            testDataNotOwn.zipCode
+        res = await testUtil.rpc(addressCommand, [addressListCommand,
+            profile.id,
+            AddressType.SHIPPING_OWN
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-
-        // list created addresses
-        res = await testUtil.rpc(addressCommand, [addressListCommand, profiles[0].id]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: resources.Address[] = res.getBody()['result'];
-        expect(result.length).toBe(1);
+        const resultOrder: resources.Address[] = res.getBody()['result'];
+        expect(resultOrder.length).toBe(2);
     });
+
 });

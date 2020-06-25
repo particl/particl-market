@@ -17,6 +17,7 @@ declare module 'resources' {
         state: string;
         country: string;
         zipCode: string;
+        type: string;
         createdAt: Date;
         updatedAt: Date;
         Profile: Profile;

@@ -16,7 +16,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { DefaultSettingService } from '../../services/DefaultSettingService';
-import { DefaultProfileService } from '../../services/DefaultProfileService';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -66,7 +66,10 @@ export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInte
         }
 
         if (data.params[0]) {
-            await this.profileService.findOne(data.params[0]);  // throws unless found
+            await this.profileService.findOne(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
         }
 
         return data;

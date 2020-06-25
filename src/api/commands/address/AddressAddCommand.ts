@@ -54,18 +54,6 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
-
-        // If countryCode is country, convert to countryCode.
-        // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[8];
-        countryCode = ShippingCountries.convertAndValidate(countryCode);
-
-        // Validate ZIP code
-        const zipCodeStr = data.params[9];
-        if (!ShippingZips.validate(countryCode, zipCodeStr)) {
-            throw new ZipCodeNotFoundException(zipCodeStr);
-        }
-
         const newAddress = {
             profile_id: data.params[0],
             title: data.params[1],
@@ -75,9 +63,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
             addressLine2: data.params[5],
             city: data.params[6],
             state: data.params[7],
-            country: countryCode,
-            zipCode: zipCodeStr,
-            type: data.params[10] ? data.params[10] : AddressType.SHIPPING_OWN
+            country: data.params[8],
+            zipCode: data.params[9],
+            type: data.params[10]
         } as AddressCreateRequest;
 
         return await this.addressService.create(newAddress);
@@ -87,67 +75,66 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('profileId');
-        }
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId');
-        }
-        if (data.params.length < 2) {
+        } else if (data.params.length < 2) {
             throw new MissingParamException('title');
-        }
-        if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('title');
-        }
-        if (data.params.length < 3) {
+        } else if (data.params.length < 3) {
             throw new MissingParamException('firstName');
-        }
-        if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('firstName');
-        }
-        if (data.params.length < 4) {
+        } else if (data.params.length < 4) {
             throw new MissingParamException('lastName');
-        }
-        if (typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('lastName');
-        }
-        if (data.params.length < 5) {
+        } else if (data.params.length < 5) {
             throw new MissingParamException('addressLine1');
-        }
-        if (typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('addressLine1');
-        }
-        if (data.params.length < 6) {
+        } else if (data.params.length < 6) {
             throw new MissingParamException('addressLine2');
-        }
-        if (typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('addressLine2');
-        }
-        if (data.params.length < 7) {
+        } else if (data.params.length < 7) {
             throw new MissingParamException('city');
-        }
-        if (typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('city');
-        }
-        if (data.params.length < 8) {
+        } else if (data.params.length < 8) {
             throw new MissingParamException('state');
-        }
-        if (typeof data.params[7] !== 'string' && data.params[7] !== '') {
-            throw new InvalidParamException('state');
-        }
-        if (data.params.length < 9) {
+        } else if (data.params.length < 9) {
             throw new MissingParamException('country');
-        }
-        if (typeof data.params[8] !== 'string') {
-            throw new InvalidParamException('country');
-        }
-        if (data.params.length < 10) {
+        } else if (data.params.length < 10) {
             throw new MissingParamException('zipCode');
         }
-        if (data.params[10]) {
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
+        } else if (typeof data.params[1] !== 'string') {
+            throw new InvalidParamException('title', 'string');
+        } else if (typeof data.params[2] !== 'string') {
+            throw new InvalidParamException('firstName', 'string');
+        } else if (typeof data.params[3] !== 'string') {
+            throw new InvalidParamException('lastName', 'string');
+        } else if (typeof data.params[4] !== 'string') {
+            throw new InvalidParamException('addressLine1', 'string');
+        } else if (typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('addressLine2', 'string');
+        } else if (typeof data.params[6] !== 'string') {
+            throw new InvalidParamException('city', 'string');
+        } else if (typeof data.params[7] !== 'string') {
+            throw new InvalidParamException('state', 'string');
+        } else if (typeof data.params[8] !== 'string') {
+            throw new InvalidParamException('country', 'string');
+        } else if (typeof data.params[9] !== 'string') {
+            throw new InvalidParamException('zipCode', 'string');
+        }
+
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        data.params[8] = ShippingCountries.convertAndValidate(data.params[8]);
+
+        // TODO: why is zip given after country?
+        // Validate ZIP code
+        if (!ShippingZips.validate(data.params[8], data.params[9])) {
+            throw new ZipCodeNotFoundException(data.params[9]);
+        }
+
+        if (!_.isNil(data.params[10])) {
             const type = data.params[10];
             const validTypes = [AddressType.SHIPPING_BID, AddressType.SHIPPING_OWN];
             if (type && !_.includes(validTypes, type)) {
-                throw new InvalidParamException('zipCode');
+                throw new InvalidParamException('type', 'AddressType');
             }
+        } else {
+            data.params[10] = AddressType.SHIPPING_OWN;
         }
         return data;
     }

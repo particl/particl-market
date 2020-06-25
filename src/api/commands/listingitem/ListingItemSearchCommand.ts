@@ -149,7 +149,6 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
             //
         }
 
-        // check valid profile profileId searchBy params
         if (!_.isNil(seller) && typeof seller !== 'string') {
             throw new InvalidParamException('seller', 'string');
         } else if (!_.isNil(minPrice) && typeof minPrice !== 'number') {
