@@ -42,10 +42,6 @@ export class MarketRepository {
         return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
     }
 
-    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByProfileIdAndName(profileId, name, withRelated);
-    }
-
     public async create(data: any): Promise<Market> {
         const market = this.MarketModel.forge<Market>(data);
         try {

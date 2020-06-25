@@ -27,7 +27,7 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
 import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
-import {ItemCategoryService} from '../../services/model/ItemCategoryService';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -92,7 +92,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: name
      *  [2]: type: MarketType, optional, default=MARKETPLACE
      *  [3]: receiveKey, optional, private key in wif format
-     *  [4]: publishKey, optional, if type === STOREFRONT -> public key as DER hex encoded string, else private key in wif format
+     *  [4]: publishKey, optional, if type === STOREFRONT -> public key as DER hex encoded string
+     *                             if type === STOREFRONT_ADMIN -> private key in wif format
      *  [5]: identityId, optional
      *
      * @param {RpcRequest} data
@@ -125,18 +126,20 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         let publishAddress;
         const identityId = data.params[5];
 
+        this.log.debug('params: ', data.params);
+
         // make sure the params are of correct type
         if (typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         } else if (typeof name !== 'string') {
             throw new InvalidParamException('name', 'string');
-        } else if (type && typeof type !== 'string') {
+        } else if (!_.isNil(type) && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (!_.isEmpty(receiveKey) && typeof receiveKey !== 'string') {
+        } else if (!_.isNil(receiveKey) && typeof receiveKey !== 'string') {
             throw new InvalidParamException('receiveKey', 'string');
-        } else if (!_.isEmpty(publishKey) && typeof publishKey !== 'string') {
+        } else if (!_.isNil(publishKey) && typeof publishKey !== 'string') {
             throw new InvalidParamException('publishKey', 'string');
-        } else if (!_.isEmpty(identityId) && typeof identityId !== 'number') {
+        } else if (!_.isNil(identityId) && typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
         }
 
@@ -148,15 +151,18 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             });
 
         // make sure Market with the same name doesn't exists for the Profile
-        await this.marketService.findOneByProfileIdAndName(profile.id, name)
-            .then(value => {
-                throw new MessageException('Market with the name: ' + name + ' already exists.');
-            })
-            .catch(reason => {
-                //
+        await this.marketService.findAllByProfileId(profile.id)
+            .then(values => {
+                const markets: resources.Market[] = values.toJSON();
+                const found = _.find(markets, market => {
+                    return market.name === name;
+                });
+                if (!_.isNil(found)) {
+                    throw new MessageException('Market with the name: ' + name + ' already exists.');
+                }
             });
 
-        if (_.isEmpty(type)) {
+        if (_.isNil(type)) {
             // default market type to MARKETPLACE if not set
             type = MarketType.MARKETPLACE;
         } else if (!EnumHelper.containsName(MarketType, type)) {
@@ -171,16 +177,17 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         // the keys which are undefined should be generated
 
         // for STOREFRONT, both keys should have been given
-        if (type === MarketType.STOREFRONT && (_.isEmpty(receiveKey) || _.isEmpty(publishKey))) {
+        if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
             throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
         }
 
         const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
 
-        // generate new key if receiveKey wasnt given and get the address
+        // generate new key if receiveKey wasn't given and get the address
         // else just get the address for the given pk
-        if (_.isEmpty(receiveKey)) {
+
+        if (_.isNil(receiveKey)) {
             const privateKey: PrivateKey = PrivateKey.fromRandom(network);
             receiveKey = privateKey.toWIF();
             receiveAddress = privateKey.toPublicKey().toAddress(network).toString();
@@ -212,9 +219,9 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                     throw new MessageException('Adding a STOREFRONT_ADMIN requires different receive and publish keys.');
                 }
 
-                // generate new publish key if publishKey wasnt given and get the address
+                // generate new publish key if publishKey wasn't given and get the address
                 // else just get the address for the given pk
-                if (_.isEmpty(publishKey)) {
+                if (_.isNil(publishKey)) {
                     const privateKey: PrivateKey = PrivateKey.fromRandom(network);
                     publishKey = privateKey.toWIF();
                     publishAddress = privateKey.toPublicKey().toAddress(network).toString();

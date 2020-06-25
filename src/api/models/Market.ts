@@ -62,16 +62,6 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
-    public static async fetchByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
-        if (withRelated) {
-            return await Market.where<Market>({ profile_id: profileId, name }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Market.where<Market>({ profile_id: profileId, name }).fetch();
-        }
-    }
-
     public get tableName(): string { return 'markets'; }
     public get hasTimestamps(): boolean { return true; }
 

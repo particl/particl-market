@@ -63,15 +63,6 @@ export class MarketService {
         return market;
     }
 
-    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.findOneByProfileIdAndName(profileId, name, withRelated);
-        if (market === null) {
-            this.log.warn(`Market with the name=${name} was not found!`);
-            throw new NotFoundException(name);
-        }
-        return market;
-    }
-
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
         const body = JSON.parse(JSON.stringify(data));

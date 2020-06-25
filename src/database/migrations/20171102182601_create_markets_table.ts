@@ -28,7 +28,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('identity_id').references('id')
                 .inTable('identities').onDelete('CASCADE');
 
-            table.unique(['receive_address', 'profile_id']);
+            // table.unique(['receive_address', 'profile_id']);
             table.unique(['name', 'profile_id']);
 
         })
