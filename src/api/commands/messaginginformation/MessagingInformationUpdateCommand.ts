@@ -84,7 +84,6 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
             throw new InvalidParamException('publicKey', 'string');
         }
 
-        // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => {
                 return value.toJSON();
