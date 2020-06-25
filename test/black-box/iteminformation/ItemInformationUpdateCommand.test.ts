@@ -24,9 +24,6 @@ describe('ItemInformationUpdateCommand', () => {
 
     const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
-
     let profile: resources.Profile;
     let market: resources.Market;
 
@@ -41,99 +38,74 @@ describe('ItemInformationUpdateCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            profile.id, // profileId
-            false,  // generateListingItem
-            market.id   // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            false,          // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,
-            2,
+            1,
             true,
             generateListingItemTemplateParams
         );
         listingItemTemplate = listingItemTemplates[0];
-
-        const itemCategoryList: any = await testUtil.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
-        itemCategory = itemCategoryList.getBody()['result'];
+        itemCategory = listingItemTemplate.ItemInformation.ItemCategory;
 
     });
 
     test('Should fail because missing listingItemTemplateId', async () => {
-        const testData = [itemInformationUpdateCommand];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
     test('Should fail because missing title', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('title').getMessage());
     });
 
     test('Should fail because missing shortDescription', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title'
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('shortDescription').getMessage());
     });
 
     test('Should fail because missing longDescription', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
             'new short description'
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
 
-    test('Should fail because missing categoryId', async () => {
-        const testData = [itemInformationUpdateCommand,
-            listingItemTemplate.id,
-            'new title',
-            'new short description',
-            'new long description'
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
-    });
-
     test('Should fail because invalid listingItemTemplateId', async () => {
         const testData = [itemInformationUpdateCommand,
-            'INVALID', // listingItemTemplate.id,
+            false, // listingItemTemplate.id,
             'new title',
             'new short description',
             'new long description',
@@ -150,7 +122,7 @@ describe('ItemInformationUpdateCommand', () => {
     test('Should fail because invalid title', async () => {
         const testData = [itemInformationUpdateCommand,
             listingItemTemplate.id,
-            0,
+            false,
             'new short description',
             'new long description',
             itemCategory.id
@@ -166,7 +138,7 @@ describe('ItemInformationUpdateCommand', () => {
         const testData = [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
-            0,
+            false,
             'new long description',
             itemCategory.id
         ];
@@ -182,7 +154,7 @@ describe('ItemInformationUpdateCommand', () => {
             listingItemTemplate.id,
             'new title',
             'new short description',
-            0,
+            false,
             itemCategory.id
         ];
 
@@ -198,7 +170,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             'new short description',
             'new long description',
-            'INVALID'
+            false
         ];
 
         const res: any = await testUtil.rpc(itemInformationCommand, testData);
@@ -209,7 +181,7 @@ describe('ItemInformationUpdateCommand', () => {
 
     test('Should fail because missing ListingItemTemplate', async () => {
         const testData = [itemInformationUpdateCommand,
-            99999999,
+            0,
             'new title',
             'new short description',
             'new long description',
@@ -222,60 +194,98 @@ describe('ItemInformationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
-    // TODO: missing ItemInformation
+    test('Should fail because missing ItemInformation', async () => {
+
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            false,              // generateItemInformation
+            false,              // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            false,              // generateListingItem
+            market.id           // soldOnMarketId
+        ]).toParamsArray();
+
+        const templatesWithoutItemInformation: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+        const template = templatesWithoutItemInformation[0];
+
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            template.id,
+            'new title',
+            'new short description',
+            'new long description',
+            itemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ItemInformation').getMessage());
+    });
 
     test('Should fail because missing ItemCategory', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
             'new short description',
             'new long description',
-            99999999
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+            0
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
     test('Should update ItemInformation', async () => {
-        const testData = [itemInformationUpdateCommand,
-            listingItemTemplate.id,
-            'new title',
-            'new short description',
-            'new long description',
-            itemCategory.id
-        ];
+        const title = 'new title';
+        const shortDescription = 'new short description';
+        const longDescription = 'new long description';
 
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            listingItemTemplate.id,
+            title,
+            shortDescription,
+            longDescription,
+            itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.title).toBe(testData[2]);
-        expect(result.shortDescription).toBe(testData[3]);
-        expect(result.longDescription).toBe(testData[4]);
-        expect(result.ItemCategory.id).toBe(testData[5]);
+        expect(result.title).toBe(title);
+        expect(result.shortDescription).toBe(shortDescription);
+        expect(result.longDescription).toBe(longDescription);
+        expect(result.ItemCategory.id).toBe(itemCategory.id);
     });
 
-    test('Should fail to update ItemInformation because the ListingItemTemplate has been published', async () => {
+    test('Should fail because the ListingItemTemplate has been published', async () => {
 
         // create ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            profile.id, // profileId
-            true,  // generateListingItem
-            market.id   // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            true,           // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -287,15 +297,13 @@ describe('ItemInformationUpdateCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
 
         // then try to update
-        const testData = [itemInformationUpdateCommand,
+        const result = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'ASDF title',
             'ASDF short description',
             'ASDF long description',
             itemCategory.id
-        ];
-
-        const result = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         result.expectJson();
         result.expectStatusCode(400);
 

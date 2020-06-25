@@ -21,8 +21,8 @@ describe('ItemInformationGetCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
-    const itemInfoGetSubCommand = Commands.ITEMINFORMATION_GET.commandName;
+    const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
+    const itemInformationGetCommand = Commands.ITEMINFORMATION_GET.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -64,7 +64,7 @@ describe('ItemInformationGetCommand', () => {
     });
 
     test('Should fail because of missing listingItemTemplateId', async () => {
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand]);
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationGetCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -72,7 +72,7 @@ describe('ItemInformationGetCommand', () => {
     });
 
     test('Should fail because of invalid listingItemTemplateId', async () => {
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationGetCommand,
             false
         ]);
         res.expectJson();
@@ -82,7 +82,7 @@ describe('ItemInformationGetCommand', () => {
     });
 
     test('Should fail because of a non-existent listingItemTemplate', async () => {
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationGetCommand,
             0
         ]);
         res.expectJson();
@@ -91,7 +91,7 @@ describe('ItemInformationGetCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
-    test('Should fail because ItemInformation doesnt exist', async () => {
+    test('Should fail because missing ItemInformation', async () => {
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -118,7 +118,7 @@ describe('ItemInformationGetCommand', () => {
         );
         const template = templatesWithoutItemInformation[0];
 
-        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationGetCommand,
             template.id
         ]);
         res.expectJson();
@@ -129,7 +129,7 @@ describe('ItemInformationGetCommand', () => {
 
     test('Should get a ItemInformation using listingItemTemplateId', async () => {
         // get listingItemInformation by listingItemTemplateId
-        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, listingItemTemplate.id]);
+        const getDataRes: any = await testUtil.rpc(itemInformationCommand, [itemInformationGetCommand, listingItemTemplate.id]);
 
         const result: any = getDataRes.getBody()['result'];
         expect(result.title).toBe(listingItemTemplate.ItemInformation.title);
