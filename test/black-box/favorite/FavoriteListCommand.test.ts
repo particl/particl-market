@@ -11,6 +11,7 @@ import { GenerateListingItemParams } from '../../../src/api/requests/testdata/Ge
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('FavoriteListCommand', () => {
 
@@ -40,15 +41,16 @@ describe('FavoriteListCommand', () => {
         expect(market.id).toBeDefined();
 
         const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            false,          // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false           // generateObjectDatas
         ]).toParamsArray();
 
         // create two items
@@ -64,20 +66,29 @@ describe('FavoriteListCommand', () => {
 
     });
 
-    test('Should fail to return list because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteListCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to return list because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteListCommand,
-            'INVALID'                       // [0]: profile_id
+            'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail because Profile not found', async () => {
+        const res = await testUtil.rpc(favoriteCommand, [favoriteListCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
     test('Should return empty FavoriteItem list', async () => {

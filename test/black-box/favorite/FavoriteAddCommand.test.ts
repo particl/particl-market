@@ -103,7 +103,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail because Profile not found', async () => {
-
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             0,
             listingItem.id
@@ -114,7 +113,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail to add because ListingItem not found', async () => {
-
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id,
             0
@@ -125,7 +123,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should add FavoriteItem', async () => {
-
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id,
             listingItem.id
@@ -139,7 +136,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail to add because ListingItem already added', async () => {
-
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             profile.id,
             0
