@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -56,7 +57,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
             throw new MissingParamException('favoriteItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('favoriteItemId', 'number');
         }
 

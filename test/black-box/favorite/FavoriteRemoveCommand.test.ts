@@ -32,6 +32,9 @@ describe('FavoriteRemoveCommand', () => {
     let listingItem2: resources.ListingItem;
     let listingItem3: resources.ListingItem;
 
+    let favoriteItem1: resources.FavoriteItem;
+    let favoriteItem2: resources.FavoriteItem;
+
     beforeAll(async () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
@@ -43,15 +46,16 @@ describe('FavoriteRemoveCommand', () => {
         expect(market.id).toBeDefined();
 
         const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            false,          // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false           // generateObjectDatas
         ]).toParamsArray();
 
         // create two items
@@ -67,85 +71,50 @@ describe('FavoriteRemoveCommand', () => {
         listingItem3 = listingItems[2];
 
         // add favorite items
-        await testUtil.rpc(favoriteCommand, [favoriteAddCommand, profile.id, listingItem1.id]);
-        await testUtil.rpc(favoriteCommand, [favoriteAddCommand, profile.id, listingItem2.id]);
+        let res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand, profile.id, listingItem1.id]);
+        res.expectStatusCode(200);
+        favoriteItem1 = res.getBody()['result'];
+
+        res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand, profile.id, listingItem2.id]);
+        res.expectStatusCode(200);
+        favoriteItem2 = res.getBody()['result'];
+
+        expect(favoriteItem1.ListingItem.id).toBe(listingItem1.id);
+        expect(favoriteItem2.ListingItem.id).toBe(listingItem2.id);
+        expect(favoriteItem1.Profile.id).toBe(profile.id);
+        expect(favoriteItem2.Profile.id).toBe(profile.id);
+
     });
 
-    test('Should fail to remove because missing profileId', async () => {
+    test('Should fail because missing favoriteItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('favoriteItemId').getMessage());
     });
 
-    test('Should fail to remove because missing listingItemId', async () => {
+    test('Should fail because invalid favoriteItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            profile.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
-    });
-
-    test('Should fail to remove because invalid profileId', async () => {
-        const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            'INVALID',
-            listingItem1.id
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('favoriteItemId', 'number').getMessage());
     });
 
-    /*
-    // TODO: hash is supported, propably id shouldnt be
-    test('Should fail to add because invalid listingItemId', async () => {
-        const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            profile.id,
-            'INVALID'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
-    });
-    */
-    test('Should fail to remove because Profile not found', async () => {
+    test('Should fail because FavoriteItem not found', async () => {
 
         const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            0,
-            listingItem1.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
-    });
-
-    test('Should fail to remove because ListingItem not found', async () => {
-
-        const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            profile.id,
             0
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
-    });
-
-    test('Should fail to remove because FavoriteItem not found', async () => {
-
-        const res = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            profile.id,
-            listingItem3.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('FavoriteItem').getMessage());
     });
 
-    test('Should remove first FavoriteItem by id', async () => {
+    test('Should remove FavoriteItem by id', async () => {
         let res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            profile.id,
-            listingItem1.id
+            favoriteItem1.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -159,10 +128,9 @@ describe('FavoriteRemoveCommand', () => {
         expect(result.length).toBe(1);
     });
 
-    test('Should remove second FavoriteItem by hash', async () => {
+    test('Should remove second FavoriteItem by id', async () => {
         let res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
-            profile.id,
-            listingItem2.hash
+            favoriteItem2.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -177,10 +145,12 @@ describe('FavoriteRemoveCommand', () => {
     });
 
     test('Should fail remove FavoriteItem because its already removed', async () => {
-        // remove favorite
-        const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, profile.id, listingItem1.id]);
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand,
+            favoriteItem1.id
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('FavoriteItem').getMessage());
     });
+
 });
