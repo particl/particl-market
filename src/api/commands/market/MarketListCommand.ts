@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -54,19 +55,17 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         // make sure the params are of correct type
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         }
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
+        if (data.params.length === 0) {
             data.params[0] = await this.profileService.getDefault()
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Profile');
                 });
         } else {
-            // make sure Profile with the id exists
             data.params[0] = await this.profileService.findOne(data.params[0])
                 .then(value => value.toJSON())
                 .catch(reason => {
@@ -83,7 +82,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - number - The ID of the Profile. \n';
+            + '    <profileId>              - number, optional, The ID of the Profile. \n';
     }
 
     public description(): string {

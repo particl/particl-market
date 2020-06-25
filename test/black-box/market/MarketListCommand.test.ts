@@ -3,11 +3,11 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { MarketType } from '../../../src/api/enums/MarketType';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('MarketListCommand', () => {
@@ -24,15 +24,6 @@ describe('MarketListCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    const marketData = {
-        name: 'Test Market',
-        type: MarketType.MARKETPLACE,
-        receiveKey: 'receiveKey',
-        receiveAddress: 'receiveAddress',
-        publishKey: 'publishKey',
-        publishAddress: 'publishAddress'
-    };
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -44,46 +35,49 @@ describe('MarketListCommand', () => {
     });
 
     test('Should fail to list Markets because invalid profileId', async () => {
-
         const res: any = await testUtil.rpc(marketCommand, [marketListCommand,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should list only one default Market', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketListCommand, profile.id]);
+    test('Should list only one default Market for the default Profile', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
     });
 
-    test('Should list two Markets', async () => {
+    test('Should list only one default Market for specified Profile', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketListCommand,
+            profile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(1);
+    });
 
-        // add new one
+    test('Should list two Markets for the default Profile', async () => {
         await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
-            marketData.name,
-            marketData.type,
-            marketData.receiveKey,
-            marketData.receiveAddress,
-            marketData.publishKey,
-            marketData.publishAddress
+            Faker.finance.bitcoinAddress()
         ]);
 
-        const res = await testUtil.rpc(marketCommand, [marketListCommand, profile.id]);
+        const res = await testUtil.rpc(marketCommand, [marketListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
 
-    test('Should list two Markets for default Profile when no profileId is specified', async () => {
-
-        const res = await testUtil.rpc(marketCommand, [marketListCommand]);
+    test('Should list two Markets for specified Profile', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketListCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
