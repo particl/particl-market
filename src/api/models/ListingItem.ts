@@ -50,6 +50,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Bids.BidDatas',
         'Bids.OrderItem',
         'Bids.OrderItem.Order',
+        'FavoriteItems',
+        'FavoriteItems.Profile',
         'FlaggedItem',
         'FlaggedItem.Proposal',
         'FlaggedItem.Proposal.ProposalOptions'

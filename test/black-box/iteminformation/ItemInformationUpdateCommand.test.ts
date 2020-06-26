@@ -104,15 +104,13 @@ describe('ItemInformationUpdateCommand', () => {
     });
 
     test('Should fail because invalid listingItemTemplateId', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             false, // listingItemTemplate.id,
             'new title',
             'new short description',
             'new long description',
             itemCategory.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.success).toBe(false);
@@ -120,75 +118,65 @@ describe('ItemInformationUpdateCommand', () => {
     });
 
     test('Should fail because invalid title', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             false,
             'new short description',
             'new long description',
             itemCategory.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('title', 'string').getMessage());
     });
 
     test('Should fail because invalid shortDescription', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
             false,
             'new long description',
             itemCategory.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('shortDescription', 'string').getMessage());
     });
 
     test('Should fail because invalid longDescription', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
             'new short description',
             false,
             itemCategory.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('longDescription', 'string').getMessage());
     });
 
     test('Should fail because invalid categoryId', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
             'new short description',
             'new long description',
             false
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
     test('Should fail because missing ListingItemTemplate', async () => {
-        const testData = [itemInformationUpdateCommand,
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             0,
             'new title',
             'new short description',
             'new long description',
             itemCategory.id
-        ];
-
-        const res: any = await testUtil.rpc(itemInformationCommand, testData);
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());

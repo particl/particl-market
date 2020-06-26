@@ -116,16 +116,16 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
         } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('saleType', 'string');
+            throw new InvalidParamException('saleType', 'SaleType');
         } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('currency', 'string');
+            throw new InvalidParamException('currency', 'Cryptocurrency');
         } else if (typeof data.params[3] !== 'number' || data.params[3] < 0) {
             throw new InvalidParamException('basePrice', 'number');
         } else if (typeof data.params[4] !== 'number' || data.params[4] < 0) {
             throw new InvalidParamException('domesticShippingPrice', 'number');
         } else if (typeof data.params[5] !== 'number' || data.params[5] < 0) {
             throw new InvalidParamException('internationalShippingPrice', 'number');
-        } else if (data.params[6] && typeof data.params[6] !== 'string') {
+        } else if (!_.isNil(data.params[6]) && typeof data.params[6] !== 'string') {
             throw new InvalidParamException('paymentAddress', 'string');
         }
 
