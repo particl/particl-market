@@ -24,11 +24,19 @@ describe('SettingGetCommand', () => {
 
     let profile: resources.Profile;
     let market: resources.Market;
-    let setting: resources.Setting;
+
+    let setting1: resources.Setting;
+    let setting2: resources.Setting;
+    let setting3: resources.Setting;
 
     const testData = {
         key: 'key',
         value: 'value'
+    };
+
+    const testData2 = {
+        key: 'key2',
+        value: 'value2'
     };
 
     beforeAll(async () => {
@@ -39,15 +47,34 @@ describe('SettingGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // create setting
-        const res = await testUtil.rpc(settingCommand, [settingSetCommand,
+        let res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
             profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        setting = res.getBody()['result'];
+        setting1 = res.getBody()['result'];
+
+        res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData.key,
+            testData.value,
+            profile.id,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        setting2 = res.getBody()['result'];
+
+        res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData2.key,
+            testData2.value,
+            profile.id,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        setting3 = res.getBody()['result'];
 
     });
 
@@ -68,9 +95,8 @@ describe('SettingGetCommand', () => {
     });
 
     test('Should fail to return Setting because invalid key', async () => {
-        const invalidKey = 0;
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
-            invalidKey,
+            false,
             profile.id
         ]);
         res.expectJson();
@@ -79,10 +105,9 @@ describe('SettingGetCommand', () => {
     });
 
     test('Should fail to return Setting because invalid profileId', async () => {
-        const invalidProfileId = true;
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key,
-            invalidProfileId
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -90,17 +115,16 @@ describe('SettingGetCommand', () => {
     });
 
     test('Should fail to return Setting because missing Profile model', async () => {
-        const missingProfileId = 0;
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key,
-            missingProfileId
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should return Setting by key and profileId', async () => {
+    test('Should return Setting1 and Setting2 by key and profileId', async () => {
         //
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key,
@@ -109,11 +133,55 @@ describe('SettingGetCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Setting = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-        // expect(result.Profile).toBeDefined();
-        // expect(result.Profile.id).toBe(profile.id);
-        expect(result[0].key).toBe(setting.key);
-        expect(result[0].value).toBe(setting.value);
+        expect(result[0].Profile).toBeDefined();
+        expect(result[0].Profile.id).toBe(profile.id);
+        expect(result[0].key).toBe(setting1.key);
+        expect(result[0].value).toBe(setting1.value);
+        expect(result[0].Market).toBeUndefined();
+
+        expect(result[1].Profile).toBeDefined();
+        expect(result[1].Profile.id).toBe(profile.id);
+        expect(result[1].Market).toBeDefined();
+        expect(result[1].Market.id).toBe(market.id);
+        expect(result[1].key).toBe(setting2.key);
+        expect(result[1].value).toBe(setting2.value);
+
+    });
+
+    test('Should return Setting3 by key and profileId and marketId', async () => {
+        //
+        const res = await testUtil.rpc(settingCommand, [settingGetCommand,
+            testData.key,
+            profile.id,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Setting = res.getBody()['result'];
+        expect(result[0].Profile).toBeDefined();
+        expect(result[0].Profile.id).toBe(profile.id);
+        expect(result[0].Market).toBeDefined();
+        expect(result[0].Market.id).toBe(market.id);
+        expect(result[0].key).toBe(setting2.key);
+        expect(result[0].value).toBe(setting2.value);
+    });
+
+    test('Should return Setting3 by key and profileId and marketId', async () => {
+        //
+        const res = await testUtil.rpc(settingCommand, [settingGetCommand,
+            testData2.key,
+            profile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Setting = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result[0].Profile).toBeDefined();
+        expect(result[0].Profile.id).toBe(profile.id);
+        expect(result[0].Market).toBeDefined();
+        expect(result[0].Market.id).toBe(market.id);
+        expect(result[0].key).toBe(setting3.key);
+        expect(result[0].value).toBe(setting3.value);
     });
 
 });

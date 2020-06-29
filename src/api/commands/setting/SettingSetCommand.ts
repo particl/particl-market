@@ -14,9 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { SettingUpdateRequest } from '../../requests/model/SettingUpdateRequest';
 import { SettingService } from '../../services/model/SettingService';
-import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -55,13 +53,17 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
         const profile: resources.Profile = data.params[2];
         const market: resources.Market = data.params[3];
 
+        return await this.settingService.createOrUpdateProfileSetting(key, value, profile.id, !_.isNil(market) ? market.id : undefined);
+
+/*
         const settingRequest = {
             key,
             value,
-            profile_id: profile.id
+            profile_id: profile.id,
+            market_id: !_.isNil(market) ? market.id : undefined
         } as SettingCreateRequest | SettingUpdateRequest;
 
-        if (!_.isEmpty(market)) {
+        if (!_.isNil(market)) {
             // if market was given
 
             return await this.settingService.findOneByKeyAndProfileIdAndMarketId(key, profile.id, market.id)
@@ -104,7 +106,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
 
                 });
         }
-
+*/
     }
 
     /**
@@ -167,7 +169,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
             + '    <key>                    - String - The key of the Setting we want to fetch. \n'
             + '    <value>                  - String - The value of the Setting we want to set.'
             + '    <profileId>              - Numeric - The ID of the related Profile \n'
-            + '    <marketId>               - Numeric - The ID of the related Market \n';
+            + '    <marketId>               - Numeric, optional - The ID of the related Market \n';
     }
 
     public description(): string {

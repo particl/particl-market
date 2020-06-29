@@ -74,15 +74,23 @@ export class SettingService {
     // TODO: createOrUpdateProfileMarketSetting
     // TODO: createOrUpdateMarketSetting
 
-    public async createOrUpdateProfileSetting(key: string, newValue: string, profileId: number): Promise<Setting> {
+    public async createOrUpdateProfileSetting(key: string, newValue: string, profileId: number, marketId?: number): Promise<Setting> {
         return await this.findAllByKeyAndProfileId(key, profileId)
             .then(async values => {
                 const foundSettings: resources.Setting[] = values.toJSON();
                 const foundSetting = _.find(foundSettings, setting => {
-                    return setting.key === key && setting.Profile.id === profileId && _.isEmpty(setting.Market);
+                    const keyMatch = setting.key === key;
+                    const profileMatch = setting.Profile.id === profileId;
+                    let marketMatch = false;
+                    if (_.isNil(marketId)) {
+                        marketMatch = _.isNil(setting.Market);
+                    } else {
+                        marketMatch = !_.isNil(setting.Market) ? marketId === setting.Market.id : false;
+                    }
+                    return keyMatch && profileMatch && marketMatch;
                 });
 
-                if (foundSetting) {
+                if (!_.isNil(foundSetting)) {
                     const settingRequest = {
                         key,
                         value: newValue
@@ -91,6 +99,7 @@ export class SettingService {
                 } else {
                     const settingRequest = {
                         profile_id: profileId,
+                        market_id: marketId,
                         key,
                         value: newValue
                     } as SettingCreateRequest;
@@ -101,16 +110,10 @@ export class SettingService {
 
     @validate()
     public async update(id: number, @request(SettingUpdateRequest) body: SettingUpdateRequest): Promise<Setting> {
-
-        // find the existing one without related
         const setting = await this.findOne(id, false);
-
-        // set new values
         setting.Key = body.key;
         setting.Value = body.value;
-
-        const updatedSetting = await this.settingRepo.update(id, setting.toJSON());
-        return updatedSetting;
+        return await this.settingRepo.update(id, setting.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

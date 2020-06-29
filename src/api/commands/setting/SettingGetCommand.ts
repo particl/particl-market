@@ -60,7 +60,6 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
             return [setting];
 
         } else {
-            // no market
             return await this.settingService.findAllByKeyAndProfileId(key, profile.id).then(value => value.toJSON());
 
         }

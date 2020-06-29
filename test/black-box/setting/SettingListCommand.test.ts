@@ -24,8 +24,10 @@ describe('SettingListCommand', () => {
 
     let market: resources.Market;
     let profile: resources.Profile;
+
     let setting1: resources.Setting;
     let setting2: resources.Setting;
+    let setting3: resources.Setting;
 
     const testData1 = {
         key: 'key1',
@@ -37,6 +39,11 @@ describe('SettingListCommand', () => {
         value: 'value2'
     };
 
+    const testData3 = {
+        key: 'key3',
+        value: 'value3'
+    };
+
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -45,7 +52,7 @@ describe('SettingListCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // create setting
+        // create setting1
         let res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData1.key,
             testData1.value,
@@ -55,7 +62,7 @@ describe('SettingListCommand', () => {
         res.expectStatusCode(200);
         setting1 = res.getBody()['result'];
 
-        // create setting
+        // create setting2
         res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData2.key,
             testData2.value,
@@ -64,6 +71,17 @@ describe('SettingListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         setting2 = res.getBody()['result'];
+
+        // create setting3
+        res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData3.key,
+            testData3.value,
+            profile.id,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        setting3 = res.getBody()['result'];
 
     });
 
@@ -76,7 +94,7 @@ describe('SettingListCommand', () => {
 
     test('Should fail to list Settings because invalid profileId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingListCommand,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -86,7 +104,7 @@ describe('SettingListCommand', () => {
     test('Should fail to list Settings because invalid marketId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingListCommand,
             profile.id,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -104,17 +122,16 @@ describe('SettingListCommand', () => {
     });
 
     test('Should fail to list Settings because missing Market model', async () => {
-        const missingMarketId = 0;
         const res = await testUtil.rpc(settingCommand, [settingListCommand,
             profile.id,
-            missingMarketId
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
-    test('Should list two Settings using profileId', async () => {
+    test('Should list three Settings using profileId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingListCommand,
             profile.id]
         );
@@ -122,9 +139,20 @@ describe('SettingListCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.length).toBe(7);  // there are 5 settings created on startup
+        expect(result.length).toBe(4);  // there is only PROFILE_DEFAULT_MARKETPLACE_ID + 3 settings we created
     });
 
-    // TODO: create market specific settings, add tests
+    test('Should list 1 Setting using profileId and marketId', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingListCommand,
+            profile.id,
+            market.id]
+        );
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+    });
 
 });
