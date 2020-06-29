@@ -151,6 +151,19 @@ describe('ShippingDestinationListCommand', () => {
         expect(result.length).toBe(listingItemTemplate.ItemInformation.ShippingDestinations.length);
     });
 
+    test('Should list ShippingDestinations for ListingItemTemplate (uppercase template)', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
+            'TEMPLATE',
+            listingItemTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ShippingDestination[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
+        expect(result.length).toBe(listingItemTemplate.ItemInformation.ShippingDestinations.length);
+    });
+
     test('Should list ShippingDestinations for ListingItem', async () => {
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
             'item',
