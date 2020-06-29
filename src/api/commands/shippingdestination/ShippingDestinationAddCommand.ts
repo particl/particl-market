@@ -86,7 +86,7 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('country', 'string');
         } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('shippingAvailability', 'string');
+            throw new InvalidParamException('shippingAvailability', 'ShippingAvailability');
         }
 
         // make sure ListingItemTemplate with the id exists
@@ -131,22 +131,19 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
 
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability> ';
+        return this.getName() + ' <listingItemTemplateId> <country|countryCode> <shippingAvailability> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>            - Numeric - ID of the item template object we want \n'
-            + '                                          to link this shipping destination to. \n'
+            + '    <listingItemTemplateId>            - Numeric - ID of the ListingItemTemplate. \n'
             + '    <country>                          - String - The country name. \n'
             + '    <countryCode>                      - String - Two letter country code. \n'
-            + '                                          associated with this shipping destination. \n'
-            + '    <shippingAvailability>             - Enum{SHIPS,DOES_NOT_SHIP,ASK,UNKNOWN} - The \n'
-            + '                                          availability of shipping to the specified area. ';
+            + '    <shippingAvailability>             - Enum{SHIPS,DOES_NOT_SHIP,ASK,UNKNOWN} - The availability of shipping to the specified area. ';
     }
 
     public description(): string {
-        return 'Create a new shipping destination and associate it with an item information object.';
+        return 'Create a new ShippingDestination and associate it with a ListingItemTemplate.';
     }
 
     public example(): string {
@@ -156,8 +153,7 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
     private validateShippingAvailability(shippingAvailStr: string): ShippingAvailability {
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
         if ( ShippingAvailability[shippingAvail] === undefined ) {
-            this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
-            throw new MessageException(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+            throw new InvalidParamException('shippingAvailability', 'ShippingAvailability');
         }
         return shippingAvail;
     }

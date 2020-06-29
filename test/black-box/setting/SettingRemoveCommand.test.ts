@@ -60,7 +60,7 @@ describe('SettingRemoveCommand', () => {
 
     test('Should fail to remove Setting because invalid settingId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);

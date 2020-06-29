@@ -65,9 +65,7 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
         // make sure Setting with the id exists
         const setting: resources.Setting = await this.settingService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Setting');
             });
