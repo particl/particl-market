@@ -64,6 +64,7 @@ describe('ShippingDestinationAddCommand', () => {
             generateListingItemTemplateParams
         );
         listingItemTemplate = listingItemTemplates[0];
+
     });
 
     test('Should fail because missing listingItemTemplateId', async () => {
