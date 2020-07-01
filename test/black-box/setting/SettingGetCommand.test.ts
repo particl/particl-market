@@ -78,14 +78,14 @@ describe('SettingGetCommand', () => {
 
     });
 
-    test('Should fail to return Setting because missing key', async () => {
+    test('Should fail because missing key', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('key').getMessage());
     });
 
-    test('Should fail to return Setting because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key
         ]);
@@ -94,7 +94,7 @@ describe('SettingGetCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to return Setting because invalid key', async () => {
+    test('Should fail because invalid key', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             false,
             profile.id
@@ -104,7 +104,7 @@ describe('SettingGetCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('key', 'string').getMessage());
     });
 
-    test('Should fail to return Setting because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key,
             false
@@ -114,7 +114,7 @@ describe('SettingGetCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to return Setting because missing Profile model', async () => {
+    test('Should fail because missing Profile model', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
             testData.key,
             0

@@ -45,13 +45,10 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCart> {
         const profile: resources.Profile = data.params[0];
-        const createRequest = {
+        return this.shoppingCartService.create({
             profile_id : profile.id,
             name : data.params[1]
-        } as ShoppingCartCreateRequest;
-
-        this.log.debug('createRequest:', JSON.stringify(createRequest, null, 2));
-        return this.shoppingCartService.create(createRequest);
+        } as ShoppingCartCreateRequest);
     }
 
     /**

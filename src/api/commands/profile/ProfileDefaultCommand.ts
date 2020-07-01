@@ -16,7 +16,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { DefaultSettingService } from '../../services/DefaultSettingService';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ProfileDefaultCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
