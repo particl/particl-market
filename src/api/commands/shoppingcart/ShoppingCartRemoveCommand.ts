@@ -11,6 +11,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCartService } from '../../services/model/ShoppingCartService';
+import {MissingParamException} from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import * as resources from "resources";
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -26,17 +30,43 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: cartId
+     *  [0]: cart, resources.ShoppingCart
      *
      * @param data
      * @returns {Promise<void>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.shoppingCartService.destroy(data.params[0]);
+        const shoppingCart: resources.ShoppingCart = data.params[0];
+        return this.shoppingCartService.destroy(shoppingCart.id);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: cartId
+     *
+     * @param data
+     * @returns {Promise<void>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('id');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('id', 'number');
+        }
+
+        // make sure ShoppingCart with the id exists
+        data.params[0] = await this.shoppingCartService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ShoppingCart');
+            });
+
         return data;
     }
 

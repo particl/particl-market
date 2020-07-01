@@ -63,9 +63,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
 
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
