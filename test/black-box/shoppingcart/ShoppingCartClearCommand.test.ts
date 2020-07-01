@@ -71,7 +71,7 @@ describe('ShoppingCartClearCommand', () => {
         );
 
         listingItem1 = listingItemTemplates[0].ListingItems[0];
-        listingItem2 = listingItemTemplates[0].ListingItems[0];
+        listingItem2 = listingItemTemplates[1].ListingItems[0];
 
         // add listingItem to shoppingCart
         let res = await testUtil.rpc(cartItemCommand, [cartItemAddCommand,

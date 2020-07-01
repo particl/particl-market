@@ -24,7 +24,6 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
-        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_CLEAR);
@@ -41,7 +40,7 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         const shoppingCart: resources.ShoppingCart = data.params[0];
-        return this.shoppingCartItemService.clearCart(shoppingCart.id);
+        return this.shoppingCartService.clearCart(shoppingCart.id);
     }
 
     /**

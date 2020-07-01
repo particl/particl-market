@@ -78,8 +78,8 @@ export class ShoppingCartItemRepository {
         }
     }
 
-    public async clearCart(cartId: number): Promise<void> {
-        return this.ShoppingCartItemModel.clearCart(cartId);
+    public async destroyByCartId(cartId: number): Promise<void> {
+        return this.ShoppingCartItemModel.destroyByCartId(cartId);
     }
 
 }

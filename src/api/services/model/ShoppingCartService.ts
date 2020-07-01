@@ -12,12 +12,14 @@ import { ShoppingCartRepository } from '../../repositories/ShoppingCartRepositor
 import { ShoppingCart } from '../../models/ShoppingCart';
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
 import { ShoppingCartUpdateRequest } from '../../requests/model/ShoppingCartUpdateRequest';
+import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 export class ShoppingCartService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Repository) @named(Targets.Repository.ShoppingCartRepository) public shoppingCartRepo: ShoppingCartRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -58,6 +60,10 @@ export class ShoppingCartService {
 
     public async destroy(id: number): Promise<void> {
         await this.shoppingCartRepo.destroy(id);
+    }
+
+    public async clearCart(cartId: number): Promise<void> {
+        await this.shoppingCartItemService.destroyByCartId(cartId);
     }
 
 }

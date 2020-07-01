@@ -73,10 +73,8 @@ export class ShoppingCartItemService {
         await this.shoppingCartItemRepo.destroy(id);
     }
 
-    // TODO: rename to destroyByCartId and add clearCart method to ShoppingCartService, it doesn't make sense to look
-    // TODO: for a method called clearCart in ShoppingCartItemService.
-    public async clearCart(cartId: number): Promise<void> {
-        await this.shoppingCartItemRepo.clearCart(cartId);
+    public async destroyByCartId(cartId: number): Promise<void> {
+        await this.shoppingCartItemRepo.destroyByCartId(cartId);
     }
 
 }

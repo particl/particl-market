@@ -154,7 +154,7 @@ describe('ShoppingCartItem', () => {
     });
 
     test('Should clear all ShoppingCartItems of ShoppingCart by shoppingCartId', async () => {
-        const clearCart = await shoppingCartItemService.clearCart(shoppingCart.id);
+        const clearCart = await shoppingCartItemService.destroyByCartId(shoppingCart.id);
         const result: resources.ShoppingCartItem[] = await shoppingCartItemService.findAllByCartId(shoppingCart.id).then(value => value.toJSON());
         expect(result).toHaveLength(0);
     });

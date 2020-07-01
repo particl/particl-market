@@ -84,7 +84,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         }
     }
 
-    public static async clearCart(cartId: number): Promise<void> {
+    public static async destroyByCartId(cartId: number): Promise<void> {
         const ShoppingCartItemCollection = ShoppingCartItem.forge<ShoppingCartItem>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
