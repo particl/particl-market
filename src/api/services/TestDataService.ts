@@ -1564,11 +1564,10 @@ export class TestDataService {
 
     // -------------------
     // SmsgMessages
-    private async generateSmsgMessages(
-        amount: number, withRelated: boolean = true,
-        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
+    private async generateSmsgMessages(amount: number, withRelated: boolean = true,
+                                       generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
 
-        // this.log.debug('generateSmsgMessages, generateParams: ', generateParams);
+        this.log.debug('generateSmsgMessages, generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const items: resources.SmsgMessage[] = [];
 

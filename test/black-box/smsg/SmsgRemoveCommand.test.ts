@@ -4,6 +4,7 @@
 
 import * as resources from 'resources';
 import * from 'jest';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -58,9 +59,9 @@ describe('SmsgRemoveCommand', () => {
             true,               // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            profile.id,  // profileId
+            profile.id,         // profileId
             false,              // generateListingItem
-            market.id    // marketId
+            market.id           // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -73,7 +74,9 @@ describe('SmsgRemoveCommand', () => {
 
         // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const messageParams = {
-            listingItem: listingItemTemplate
+            listingItem: listingItemTemplate,
+            seller: market.Identity,
+            signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams;
 
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
@@ -86,8 +89,8 @@ describe('SmsgRemoveCommand', () => {
             Date.now() - (24 * 60 * 60 * 1000),     // sent
             Date.now() + (5 * 24 * 60 * 60 * 1000), // expiration
             DAYS_RETENTION,                         // daysretention
-            profile.address,                 // from
-            market.address,                  // to
+            market.publishAddress,                  // from
+            market.receiveAddress,                  // to
             messageParams                           // messageParams
             // text
         ]).toParamsArray();
@@ -110,7 +113,7 @@ describe('SmsgRemoveCommand', () => {
 
     test('Should fail to remove SmsgMessage because invalid msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
-            true
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
