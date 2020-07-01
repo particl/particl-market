@@ -16,14 +16,16 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ShippingDestinationAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;

@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -18,6 +20,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ShoppingCartService } from '../../services/model/ShoppingCartService';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ShoppingCartItemAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCartItem> {
 
@@ -35,17 +38,20 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
 
     /**
      * data.params[]:
-     *  [0]: cartId, number
-     *  [1]: listingItemId, number
+     *  [0]: cart, resources.ShoppingCart
+     *  [1]: listingItem, resources.ListingItem
      *
      * @param data
      * @returns {Promise<ShoppingCartItem>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCartItem> {
+        const shoppingCart: resources.ShoppingCart = data.params[0];
+        const listingItem: resources.ListingItem = data.params[1];
+
         return this.shoppingCartItemService.create({
-            shopping_cart_id: data.params[0],
-            listing_item_id: data.params[1]
+            shopping_cart_id: shoppingCart.id,
+            listing_item_id: listingItem.id
         } as ShoppingCartItemCreateRequest);
     }
 
@@ -64,24 +70,36 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
             throw new MissingParamException('listingItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('cartId', 'number');
-        } else if (data.params[1] && typeof data.params[1] === 'number') {
+        } else if (typeof data.params[1] !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
         }
 
+        const cartId: number = data.params[0];
+        const listingItemId: number = data.params[1];
+
         // make sure ShoppingCart exists
-        await this.shoppingCartService.findOne(data.params[0])
+        data.params[0] = await this.shoppingCartService.findOne(cartId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ShoppingCart');
             });
 
         // make sure ListingItem exists
-        await this.listingItemService.findOne(data.params[1])
+        data.params[1] = await this.listingItemService.findOne(listingItemId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
+            });
+
+        await this.shoppingCartItemService.findOneByCartIdAndListingItemId(cartId, listingItemId)
+            .then(value => {
+                this.log.warn(`ListingItem already added to ShoppingCart`);
+                throw new MessageException(`ListingItem already added to ShoppingCart`);
+            })
+            .catch(reason => {
+                // expected...
             });
 
         return data;

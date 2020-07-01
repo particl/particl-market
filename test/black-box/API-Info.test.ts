@@ -12,7 +12,9 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 describe('getnetworkinfo', () => {
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     test('Should connect to the particld daemon and successfully call getblockchaininfo', async () => {
         const rpcRequestBody = {

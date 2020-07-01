@@ -16,7 +16,9 @@ describe('ShoppingCartAddCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartAddCommand = Commands.SHOPPINGCART_ADD.commandName;
@@ -61,7 +63,7 @@ describe('ShoppingCartAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
-    test('Should fail because missing Profile model', async () => {
+    test('Should fail because missing Profile', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
             0,
             'name'

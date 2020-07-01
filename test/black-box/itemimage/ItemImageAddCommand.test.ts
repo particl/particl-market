@@ -22,12 +22,12 @@ describe('ItemImageAddCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;

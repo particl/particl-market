@@ -19,6 +19,10 @@ describe('/publish-image', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil(0);
 
+    // todo:
+    // const randomBoolean: boolean = Math.random() >= 0.5;
+    // const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+
     let market: resources.Market;
     let profile: resources.Profile;
 

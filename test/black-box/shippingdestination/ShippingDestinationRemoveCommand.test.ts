@@ -21,7 +21,9 @@ describe('ShippingDestinationRemoveCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const shippingDestinationRemoveCommand = Commands.SHIPPINGDESTINATION_REMOVE.commandName;

@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -11,10 +12,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCartService } from '../../services/model/ShoppingCartService';
-import {MissingParamException} from '../../exceptions/MissingParamException';
-import {InvalidParamException} from '../../exceptions/InvalidParamException';
-import * as resources from "resources";
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 

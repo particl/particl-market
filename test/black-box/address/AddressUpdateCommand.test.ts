@@ -8,7 +8,6 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
-import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
 
 describe('AddressUpdateCommand', () => {
@@ -16,7 +15,9 @@ describe('AddressUpdateCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const addressCommand = Commands.ADDRESS_ROOT.commandName;
     const addressUpdateCommand = Commands.ADDRESS_UPDATE.commandName;

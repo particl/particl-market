@@ -12,19 +12,19 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MessageSize } from '../../../src/api/responses/MessageSize';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+
 
 describe('ListingItemTemplateSizeCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateSizeCommand = Commands.TEMPLATE_SIZE.commandName;
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;

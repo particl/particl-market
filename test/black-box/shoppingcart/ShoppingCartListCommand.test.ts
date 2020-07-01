@@ -10,14 +10,15 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ShoppingCartListCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartListCommand = Commands.SHOPPINGCART_LIST.commandName;

@@ -4,11 +4,11 @@
 
 // tslint:disable:max-line-length
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { ProposalCategory } from '../../../src/api/enums/ProposalCategory';
 // tslint:enable:max-line-length
@@ -18,7 +18,9 @@ describe('ProposalListCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    const testUtil = new BlackBoxTestUtil();
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 

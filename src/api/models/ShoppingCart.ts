@@ -32,7 +32,7 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
         });
     }
 
-    public get tableName(): string { return 'shopping_cart'; }
+    public get tableName(): string { return 'shopping_carts'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }

@@ -10,17 +10,17 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
-    const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;

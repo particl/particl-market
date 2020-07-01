@@ -17,7 +17,9 @@ describe('ItemImageListCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    const testUtil = new BlackBoxTestUtil();
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+
     const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const itemImageListCommand = Commands.ITEMIMAGE_LIST.commandName;
 

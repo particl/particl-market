@@ -22,9 +22,8 @@ describe('VotePostCommand', () => {
     // todo: some weird shit happening on node 1, when calling vote post and then vote get afterwards
     // it seems to return different amount of outputs on getWalletAddressInfos()
 
-    // const randomBoolean: boolean = Math.random() >= 0.5;
-    // const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
-    const testUtil = new BlackBoxTestUtil(0);
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;

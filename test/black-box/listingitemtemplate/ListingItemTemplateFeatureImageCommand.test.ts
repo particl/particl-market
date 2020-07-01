@@ -9,19 +9,18 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
-import {GenerateListingItemParams} from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
+import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const featuredImageCommand = Commands.TEMPLATE_FEATURED_IMAGE.commandName;

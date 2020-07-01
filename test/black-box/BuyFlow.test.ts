@@ -22,7 +22,6 @@ describe('Happy Buy Flow', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);  // BUYER

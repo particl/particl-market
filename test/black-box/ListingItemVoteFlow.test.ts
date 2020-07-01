@@ -19,12 +19,9 @@ describe('Happy ListingItem Vote Flow', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
     const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
-    // const testUtilNode1 = new BlackBoxTestUtil(0);
-    // const testUtilNode2 = new BlackBoxTestUtil(1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;

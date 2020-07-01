@@ -93,7 +93,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         return;
     }
 
-    public get tableName(): string { return 'shopping_cart_item'; }
+    public get tableName(): string { return 'shopping_cart_items'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }

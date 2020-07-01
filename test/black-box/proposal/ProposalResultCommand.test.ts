@@ -15,11 +15,12 @@ describe('ProposalResultCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
