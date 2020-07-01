@@ -76,7 +76,7 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the ShoppingCart we want to remove. ';
+            + '    <cartId>                 - The id of the ShoppingCart. ';
     }
 
     public description(): string {

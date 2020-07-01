@@ -9,6 +9,11 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
+import {GenerateListingItemTemplateParams} from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {ShippingAvailability} from '../../../src/api/enums/ShippingAvailability';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ShoppingCartClearCommand', () => {
 
@@ -27,7 +32,8 @@ describe('ShoppingCartClearCommand', () => {
     let market: resources.Market;
     let shoppingCart: resources.ShoppingCart;
 
-    let listingItems: resources.ListingItem[];
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -40,38 +46,45 @@ describe('ShoppingCartClearCommand', () => {
 
         shoppingCart = profile.ShoppingCart[0];
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+        // create ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            true,           // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
-        // create item and store its id for testing
-        listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,         // what to generate
-            2,                          // how many to generate
-            true,                    // return model
-            generateListingItemParams           // what kind of data to generate
-        ) as resources.ListingItem[];
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
+
+        listingItem1 = listingItemTemplates[0].ListingItems[0];
+        listingItem2 = listingItemTemplates[0].ListingItems[0];
 
         // add listingItem to shoppingCart
         let res = await testUtil.rpc(cartItemCommand, [cartItemAddCommand,
             shoppingCart.id,
-            listingItems[0].id
+            listingItem1.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        // add listingItem to shoppingCart
+        // add second listingItem to shoppingCart
         res = await testUtil.rpc(cartItemCommand, [cartItemAddCommand,
             shoppingCart.id,
-            listingItems[1].id
+            listingItem2.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -86,13 +99,39 @@ describe('ShoppingCartClearCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+    test('Should fail because missing shoppingCartId', async () => {
+        const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
+    });
+
+    test('Should fail because invalid shoppingCartId', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+    });
+
+    test('Should fail because missing ShoppingCart', async () => {
+        const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ShoppingCart').getMessage());
+    });
+
     test('Should clear ShoppingCart', async () => {
-        // clear cart
-        let res = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand, shoppingCart.id]);
+        let res = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand,
+            shoppingCart.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        // check shopping cart is clear or not
+        // check whether ShoppingCart was cleared or not
         res = await testUtil.rpc(cartItemCommand, [cartItemListCommand, shoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);

@@ -16,6 +16,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ShippingDestinationAddCommand', () => {
 
@@ -135,6 +136,17 @@ describe('ShippingDestinationAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('shippingAvailability', 'ShippingAvailability').getMessage());
+    });
+
+    test('Should fail because missing ListingItemTemplate', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            0,
+            'South Africa',
+            ShippingAvailability.SHIPS
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
     test('Should fail to add ShippingDestination for country that wasn\'t found', async () => {
