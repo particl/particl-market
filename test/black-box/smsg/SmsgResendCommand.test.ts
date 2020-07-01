@@ -11,7 +11,7 @@ import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { ListingItemSearchOrderField, SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('SmsgResendCommand', () => {
 
@@ -31,7 +31,7 @@ describe('SmsgResendCommand', () => {
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
-    const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
 
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
@@ -44,8 +44,9 @@ describe('SmsgResendCommand', () => {
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
-    const ORDER = SearchOrder.ASC;
-    const ORDER_FIELD = SmsgMessageSearchOrderField.RECEIVED;
+    const SEARCHORDER = SearchOrder.ASC;
+    const SMSG_ORDERFIELD = SmsgMessageSearchOrderField.RECEIVED;
+    const LISTINGITEM_SEARCHORDERFILED = ListingItemSearchOrderField.CREATED_AT;
 
     const DAYS_RETENTION = 2;
 
@@ -60,16 +61,16 @@ describe('SmsgResendCommand', () => {
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
-        log.debug('sellerProfile: ', sellerProfile.address);
-        log.debug('buyerProfile: ', buyerProfile.address);
+        // log.debug('sellerProfile: ', sellerProfile.address);
+        // log.debug('buyerProfile: ', buyerProfile.address);
 
         // get seller and buyer markets
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -91,7 +92,7 @@ describe('SmsgResendCommand', () => {
         const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
             1,                              // how many to generate
-            true,                       // return model
+            true,                        // return model
             generateListingItemTemplateParams       // what kind of data to generate
         ) as resources.ListingItemTemplates[];
         listingItemTemplateOnSellerNode = listingItemTemplatesOnSellerNode[0];
@@ -107,10 +108,11 @@ describe('SmsgResendCommand', () => {
 
         await testUtilSellerNode.waitFor(5);
 
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
-            DAYS_RETENTION,
-            sellerMarket.id
+            DAYS_RETENTION
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -122,6 +124,8 @@ describe('SmsgResendCommand', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
+        expect(result.txid).toBeDefined();
+        expect(result.fee).toBeGreaterThan(0);
 
         log.debug('==[ posted ListingItemTemplate /// seller -> market ]================================');
         log.debug('result.msgid: ' + result.msgid);
@@ -133,7 +137,6 @@ describe('SmsgResendCommand', () => {
             + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.name);
         log.debug('========================================================================================');
     });
-
 
     test('Should get the updated ListingItemTemplate to get the hash', async () => {
         // sending should have succeeded for this test to work
@@ -149,8 +152,7 @@ describe('SmsgResendCommand', () => {
         log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
     });
 
-
-    test('Should have received ListingItem (MPA_LISTING_ADD) on BUYER node, ListingItem is created', async () => {
+    test('Should receive ListingItem (MPA_LISTING_ADD) on BUYER node', async () => {
 
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
@@ -159,32 +161,35 @@ describe('SmsgResendCommand', () => {
         log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilBuyerNode.rpcWaitFor(
+        const response: any = await testUtilBuyerNode.rpcWaitFor(
             listingItemCommand,
-            [listingItemGetCommand, listingItemTemplateOnSellerNode.hash],
+            [listingItemSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFILED,
+                buyerMarket.receiveAddress,
+                [],
+                '*',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                listingItemTemplateOnSellerNode.hash
+            ],
             15 * 60,
             200,
-            'hash',
+            '[0].hash',
             listingItemTemplateOnSellerNode.hash
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        // seller node allready received this, but wait a while, and refetch, just in case
-        await testUtilBuyerNode.waitFor(5);
+        const result: resources.ListingItem[] = response.getBody()['result'];
 
-        response = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
-            listingItemTemplateOnSellerNode.hash
-        ]);
-        response.expectJson();
-        response.expectStatusCode(200);
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
 
-        const result: resources.ListingItem = response.getBody()['result'];
-        expect(result).toBeDefined();
-        expect(result.hash).toBe(listingItemTemplateOnSellerNode.hash);
-
-        // store ListingItem for later tests
-        listingItemReceivedOnBuyerNode = result;
+        listingItemReceivedOnBuyerNode = result[0];
 
         log.debug('==> BUYER received MPA_LISTING_ADD.');
 
@@ -195,7 +200,7 @@ describe('SmsgResendCommand', () => {
 
         const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
             smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD],
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD],
             15 * 60,
             200,
             '[0].type',
@@ -224,7 +229,7 @@ describe('SmsgResendCommand', () => {
         res.expectStatusCode(200);
 
         res = await testUtilBuyerNode.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
+            PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -233,17 +238,17 @@ describe('SmsgResendCommand', () => {
         expect(result).toHaveLength(0);
     });
 
-
     test('Should resend SmsgMessage from SELLER node', async () => {
 
         let res: any = await testUtilSellerNode.rpc(smsgCommand, [smsgResendCommand,
-            smsgMessageReceivedOnBuyerNode.msgid
+            smsgMessageReceivedOnBuyerNode.msgid,
+            sellerMarket.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         res = await testUtilSellerNode.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
+            PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -257,7 +262,7 @@ describe('SmsgResendCommand', () => {
 
         const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
             smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD],
+            [smsgSearchCommand, PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD],
             15 * 60,
             200,
             '[0].type',

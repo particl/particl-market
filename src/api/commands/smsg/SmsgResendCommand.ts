@@ -76,6 +76,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: msgid
+     *  [1]: identityId
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -85,27 +86,32 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         // make sure the required params exist
         if (data.params.length < 1) {
             throw new MissingParamException('msgid');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('identityId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'string') {
             throw new InvalidParamException('msgid', 'string');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('identityId', 'number');
         }
 
         // make sure an outgoing SmsgMessage with the msgid exists
         const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(data.params[0],  ActionDirection.OUTGOING)
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('SmsgMessage');
             });
 
         // then find the identity which was used to send the message
-        const identity: resources.Identity = await this.identityService.findOneByAddress(smsgMessage.from)
-            .then(value => {
-                return value.toJSON();
-            })
+        // smsgMessage.from === market.publishAddress -> doesn't work here
+        // for MPA_LISTING_ADD we could find the seller address from the message, for others that's not possible.
+        // getting the identity using the market.publishAddress isn't possible since multiple profiles could have the same market.
+        // TODO: we could save the identity used to send the message and use that,
+        // but too lazy to add that now. -> add identityId param
+        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Identity');
             });
@@ -117,12 +123,13 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' <msgid> ';
+        return this.getName() + ' <msgid> <identityId>';
     }
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <msgid>              -  The msgid of the SmsgMessage we want to resend. \n';
+            + '    <msgid>              -  The msgid of the SmsgMessage we want to resend. \n'
+            + '    <identityId>         -  The identityId used to resend the message. \n';
     }
 
     public description(): string {
@@ -130,6 +137,6 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'smsg ' + this.getName() + ' 000000005d699e34c2d6cb37f087f41170ce6e776e7052f15bf5ff14';
+        return 'smsg ' + this.getName() + ' 000000005d699e34c2d6cb37f087f41170ce6e776e7052f15bf5ff14 1';
     }
 }

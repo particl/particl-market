@@ -17,7 +17,9 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
 
-describe('ListingItemSearchCommand', () => {
+describe('OrderSearchCommand', () => {
+
+    // TODO:
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -26,8 +28,8 @@ describe('ListingItemSearchCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const itemCommand = Commands.ITEM_ROOT.commandName;
-    const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const orderCommand = Commands.ORDER_ROOT.commandName;
+    const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -45,19 +47,19 @@ describe('ListingItemSearchCommand', () => {
 
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            true,       // generateListingItem
-            market.id   // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            true,               // generateListingItem
+            market.id           // marketId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -359,7 +361,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
     });
 
-    test('Should fail because invalid shippingDestination', async () => {
+    test('Should fail because invalid shipping destination', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
             PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
@@ -376,7 +378,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('shippingDestination', 'string').getMessage());
     });
 
-    test('Should fail because shippingDestination code not found', async () => {
+    test('Should fail because shipping destination code not found', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
             PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
@@ -393,7 +395,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe(new CountryCodeNotFoundException('NOT_FOUND').getMessage());
     });
 
-    test('Should search by market and shippingDestination', async () => {
+    test('Should search by market and shipping destination', async () => {
         const country = listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country;
         const shippingDestination = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
         log.debug('country: ', country);
@@ -419,7 +421,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
     });
 
-    test('Should search by market and country and shippingDestination', async () => {
+    test('Should search by market and country and shipping destination', async () => {
         const country = listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country;
         const shippingDestination = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
         log.debug('country: ', country);

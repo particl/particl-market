@@ -191,7 +191,6 @@ describe('ListingItemTemplatePostCommand', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
-
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
 

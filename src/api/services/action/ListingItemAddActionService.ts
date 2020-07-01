@@ -186,7 +186,7 @@ export class ListingItemAddActionService extends BaseActionService {
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
 
-        // this.log.debug('processMessage()');
+        this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
         if (actionDirection === ActionDirection.INCOMING) {
             // we're creating the listingitem only when it arrives
@@ -198,13 +198,20 @@ export class ListingItemAddActionService extends BaseActionService {
             // fetch the root category used to create the listingItemCreateRequest
             const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
 
-            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
-                    msgid: smsgMessage.msgid,
-                    market: smsgMessage.to,
-                    rootCategory
-                } as ListingItemCreateParams,
-                listingItemAddMessage,
-                smsgMessage);
+            const listingItemCreateParams = {
+                msgid: smsgMessage.msgid,
+                market: smsgMessage.to,
+                rootCategory
+            } as ListingItemCreateParams;
+
+            this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
+            this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
+            this.log.debug('processMessage(), smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+
+            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get(listingItemCreateParams,
+                listingItemAddMessage, smsgMessage);
+
+            this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
             // - create the ListingItem locally with the listingItemCreateRequest
             await this.listingItemService.create(listingItemCreateRequest)

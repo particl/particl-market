@@ -71,8 +71,12 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
         if (typeof data.params[0] !== 'number' ) {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'boolean') {
+        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('returnImageData', 'boolean');
+        }
+
+        if (_.isNil(data.params[1])) {
+            data.params[1] = false;
         }
 
         return data;

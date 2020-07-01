@@ -68,17 +68,20 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
             throw new MissingParamException('listingItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        if (typeof data.params[0] !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
-        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'boolean') {
+        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('returnImageData', 'boolean');
         }
 
+        if (_.isNil(data.params[1])) {
+            data.params[1] = false;
+        }
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemId> ';
+        return this.getName() + ' <listingItemId> [returnImageData]';
     }
 
     public help(): string {
