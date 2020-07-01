@@ -89,14 +89,6 @@ describe('ShoppingCartClearCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        // check listingItem is added
-        res = await testUtil.rpc(cartItemCommand, [cartItemListCommand,
-            shoppingCart.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(2);
     });
 
     test('Should fail because missing shoppingCartId', async () => {
