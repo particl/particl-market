@@ -43,13 +43,8 @@ export class ShoppingCartService {
 
     @validate()
     public async create( @request(ShoppingCartCreateRequest) body: any): Promise<ShoppingCart> {
-
-        // If the request body was valid we will create the shoppingCart
         const shoppingCart = await this.shoppingCartRepo.create(body);
-
-        // finally find and return the created shoppingCart
-        const newShoppingCart = await this.findOne(shoppingCart.id);
-        return newShoppingCart;
+        return await this.findOne(shoppingCart.id);
     }
 
     @validate()

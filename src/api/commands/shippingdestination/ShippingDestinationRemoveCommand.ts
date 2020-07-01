@@ -18,7 +18,7 @@ import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -76,9 +76,7 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
         // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
