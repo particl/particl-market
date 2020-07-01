@@ -82,7 +82,6 @@ describe('ShoppingCartItemListCommand', () => {
         listingItem1 = listingItemTemplates[0].ListingItems[0];
         listingItem2 = listingItemTemplates[1].ListingItems[0];
 
-
         // add listingItem to shoppingCart1
         res = await testUtil.rpc(shoppingCartItemCommand, [shoppingCartItemAddCommand,
             shoppingCart1.id,

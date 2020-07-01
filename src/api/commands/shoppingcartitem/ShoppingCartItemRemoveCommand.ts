@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -29,14 +30,15 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: shoppingCartItemId
+     *  [0]: shoppingCartItem, resources.ShoppingCartItem
      *
      * @param data
      * @returns {Promise<void>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.shoppingCartItemService.destroy(data.params[0]);
+        const shoppingCartItem: resources.ShoppingCartItem = data.params[0];
+        return this.shoppingCartItemService.destroy(shoppingCartItem.id);
     }
 
     /**
@@ -48,16 +50,18 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('shoppingCartItemId');
+            throw new MissingParamException('id');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('shoppingCartItemId', 'number');
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('id', 'number');
         }
 
-        // make sure FavoriteItem exists
-        await this.shoppingCartItemService.findOne(data.params[0])
+        data.params[0] = await this.shoppingCartItemService.findOne(data.params[0])
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ShoppingCartItem');
