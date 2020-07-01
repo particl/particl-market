@@ -28,8 +28,8 @@ export class ShoppingCartService {
         return this.shoppingCartRepo.findAll();
     }
 
-    public async findAllByProfileId(profileId: number): Promise<Bookshelf.Collection<ShoppingCart>> {
-        return await this.shoppingCartRepo.findAllByProfileId(profileId);
+    public async findAllByProfileId(profileId: number, withRelated: boolean = false): Promise<Bookshelf.Collection<ShoppingCart>> {
+        return await this.shoppingCartRepo.findAllByProfileId(profileId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCart> {

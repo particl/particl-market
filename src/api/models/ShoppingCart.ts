@@ -11,25 +11,25 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
 
     public static RELATIONS = [
         'Profile',
-        'ShoppingCartItems'
+        'ShoppingCartItems',
+        'ShoppingCartItems.ListingItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCart> {
-        if (withRelated) {
-            return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch();
-        }
+        return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
-    public static async fetchAllByProfileId(value: number): Promise<Collection<ShoppingCart>> {
+    public static async fetchAllByProfileId(value: number, withRelated: boolean = false): Promise<Collection<ShoppingCart>> {
         const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
                 qb.where('profile_id', '=', value);
             }).orderBy('id', 'ASC');
-        return await shoppingCart.fetchAll();
+
+        return await shoppingCart.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public get tableName(): string { return 'shopping_cart'; }

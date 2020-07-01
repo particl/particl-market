@@ -9,6 +9,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('MarketListCommand', () => {
 
@@ -34,13 +35,22 @@ describe('MarketListCommand', () => {
 
     });
 
-    test('Should fail to list Markets because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
         const res: any = await testUtil.rpc(marketCommand, [marketListCommand,
             false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+    test('Should fail because Profile not found', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketListCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
     test('Should list only one default Market for the default Profile', async () => {
