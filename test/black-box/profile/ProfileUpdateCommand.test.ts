@@ -33,42 +33,52 @@ describe('ProfileUpdateCommand', () => {
 
     });
 
-    test('Should fail to update the Profile because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(profileCommand, [profileUpdateCommand]);
         res.expectJson();
+        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
     });
 
-    test('Should fail to update the Profile because missing profileName', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, profile.id]);
+    test('Should fail because missing profileName', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand,
+            profile.id
+        ]);
         res.expectJson();
+        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
-    test('Should fail to update the Profile because invalid profileId', async () => {
-        // set up the test data
-        const invalidId = 'BAD STRING ID';
-        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
-        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, invalidId, profileName]);
+    test('Should fail because invalid profileId', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand,
+            false,
+            'UPDATED-DEFAULT-PROFILE-TEST'
+        ]);
         res.expectJson();
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
     });
 
-    test('Should fail to update the Profile because invalid profileName', async () => {
-        const invalidProfileName = null;
-        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, profile.id, invalidProfileName]);
+    test('Should fail because invalid profileName', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand,
+            profile.id,
+            false
+        ]);
         res.expectJson();
+        res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
     test('Should update the Profile', async () => {
-        const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
-        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, profile.id, profileName]);
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand,
+            profile.id,
+            'UPDATED-DEFAULT-PROFILE-TEST'
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        expect(result.name).toBe(profileName);
+        expect(result.name).toBe('UPDATED-DEFAULT-PROFILE-TEST');
     });
 
 });

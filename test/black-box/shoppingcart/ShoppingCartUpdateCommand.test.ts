@@ -7,6 +7,8 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ShoppingCartUpdateCommand', () => {
 
@@ -22,7 +24,6 @@ describe('ShoppingCartUpdateCommand', () => {
     let market: resources.Market;
 
     let defaultShoppingCart: resources.ShoppingCart;
-    const shoppingCartName = 'New Shopping Cart';
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -35,19 +36,52 @@ describe('ShoppingCartUpdateCommand', () => {
         defaultShoppingCart = profile.ShoppingCart[0];
     });
 
-    test('Should update Shopping Cart', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand, defaultShoppingCart.id, shoppingCartName]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(shoppingCartName);
-    });
-
-    test('Should fail because shoppingCartId is missing', async () => {
+    test('Should fail because missing shoppingCartId', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(`Request body is not valid`);
-
     });
+
+    test('Should fail because missing name', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
+            defaultShoppingCart.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
+    });
+
+    test('Should fail because invalid shoppingCartId', async () => {
+
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
+            false,
+            'NEW_NAME'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+    });
+
+    test('Should fail because invalid profileName', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
+            defaultShoppingCart.id,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
+    });
+
+    test('Should update ShoppingCart', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
+            defaultShoppingCart.id,
+            'NEW_NAME'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.name).toBe('NEW_NAME');
+    });
+
 });
