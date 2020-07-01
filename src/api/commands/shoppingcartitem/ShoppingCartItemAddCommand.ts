@@ -88,19 +88,18 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
 
         // make sure ListingItem exists
         data.params[1] = await this.listingItemService.findOne(listingItemId)
-            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
             });
 
-        await this.shoppingCartItemService.findOneByCartIdAndListingItemId(cartId, listingItemId)
-            .then(value => {
-                this.log.warn(`ListingItem already added to ShoppingCart`);
-                throw new MessageException(`ListingItem already added to ShoppingCart`);
-            })
-            .catch(reason => {
-                // expected...
-            });
+        const shoppingCartItem: resources.ShoppingCartItem = await this.shoppingCartItemService.findOneByCartIdAndListingItemId(cartId, listingItemId)
+            .then(value => value.toJSON())
+            .catch(reason => undefined);
+
+        if (!_.isNil(shoppingCartItem)) {
+            this.log.warn(`ListingItem already added to ShoppingCart`);
+            throw new MessageException(`ListingItem already added to ShoppingCart`);
+        }
 
         return data;
     }
