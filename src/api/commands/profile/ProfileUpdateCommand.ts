@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -70,26 +71,23 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
         }
 
         // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+        data.params[0] = await this.profileService.findOne(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
-        data.params[0] = profile;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <newProfileName> ';
+        return this.getName() + ' <profileId> <newName> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - Numeric - The ID of the Profile we want to modify. \n'
-            + '    <newProfileName>         - String - The new name we want to apply to the Profile. ';
+            + '    <profileId>       - Numeric - The ID of the Profile we want to modify. \n'
+            + '    <newName>         - String - The new name we want to apply to the Profile. ';
     }
 
     public description(): string {

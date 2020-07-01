@@ -7,8 +7,11 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import {SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import {Cryptocurrency} from 'omp-lib/dist/interfaces/crypto';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ShoppingCartUpdateCommand', () => {
 
@@ -39,8 +42,8 @@ describe('ShoppingCartUpdateCommand', () => {
     test('Should fail because missing shoppingCartId', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand]);
         res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`Request body is not valid`);
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
     });
 
     test('Should fail because missing name', async () => {
@@ -48,7 +51,7 @@ describe('ShoppingCartUpdateCommand', () => {
             defaultShoppingCart.id
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
@@ -71,6 +74,16 @@ describe('ShoppingCartUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
+    });
+
+    test('Should fail because missing ShoppingCart', async () => {
+        const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
+            0,
+            'NEW_NAME'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ShoppingCart').getMessage());
     });
 
     test('Should update ShoppingCart', async () => {
