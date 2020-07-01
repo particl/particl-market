@@ -13,8 +13,8 @@ import { SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('PaymentInformationUpdateCommand', () => {
 
@@ -25,8 +25,6 @@ describe('PaymentInformationUpdateCommand', () => {
 
     const paymentInformationCommand =  Commands.PAYMENTINFORMATION_ROOT.commandName;
     const paymentInformationUpdateCommand =  Commands.PAYMENTINFORMATION_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
