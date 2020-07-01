@@ -13,6 +13,8 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {CountryCodeNotFoundException} from '../../../src/api/exceptions/CountryCodeNotFoundException';
 
 describe('ShippingDestinationRemoveCommand', () => {
 
@@ -24,8 +26,6 @@ describe('ShippingDestinationRemoveCommand', () => {
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const shippingDestinationRemoveCommand = Commands.SHIPPINGDESTINATION_REMOVE.commandName;
     const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -53,13 +53,13 @@ describe('ShippingDestinationRemoveCommand', () => {
             true,               // generateMessagingInformation
             true,               // generateListingItemObjects
             true,               // generateObjectDatas
-            profile.id,  // profileId
+            profile.id,         // profileId
             false,              // generateListingItem
-            market.id,   // marketId
+            market.id,          // marketId
             null                // categoryId
         ]).toParamsArray();
 
-        // create template without shipping destinations and listingitems
+        // create ListingItemTemplate without ShippingDestinations and ListingItems
         let listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
             1,                              // how many to generate
@@ -68,7 +68,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
-        // create one shipping destination for the previously generated template
+        // create one ShippingDestination for the previously generated ListingItemTemplate
         // we are shipping to south africa
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
             listingItemTemplate.id,
@@ -90,13 +90,13 @@ describe('ShippingDestinationRemoveCommand', () => {
             true,               // generateMessagingInformation
             true,               // generateListingItemObjects
             true,               // generateObjectDatas
-            profile.id,  // profileId
+            profile.id,         // profileId
             true,               // generateListingItem
-            market.id,   // marketId
+            market.id,          // marketId
             null                // categoryId
         ]).toParamsArray();
 
-        // create template with shipping destinations listingitem
+        // create ListingItemTemplate with ShippingDestinations and ListingItem
         listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
             1,                              // how many to generate
@@ -107,25 +107,50 @@ describe('ShippingDestinationRemoveCommand', () => {
 
     });
 
-    test('Should fail to remove ShippingDestination using invalid country', async () => {
-        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
-            listingItemTemplate.id,
-            'invalid-country-code'
+    test('Should fail because missing listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail because missing country', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Country code INVALID-COUNTRY-CODE was not found!`);
+        expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
     });
 
     test('Should fail to remove ShippingDestination using invalid listingItemTemplateId', async () => {
-        const invalidTemplateId = 'INVALID';
         const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
-            invalidTemplateId,
+            false,
             countryList.ZA.iso
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+    test('Should fail to remove ShippingDestination using invalid country', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
+            listingItemTemplate.id,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('country', 'string').getMessage());
+    });
+
+    test('Should fail to remove ShippingDestination using country thats not found', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationRemoveCommand,
+            listingItemTemplate.id,
+            'INVALID-COUNTRY-CODE'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('INVALID-COUNTRY-CODE').getMessage());
     });
 
     test('Should remove ShippingDestination from ListingItemTemplate', async () => {
@@ -147,53 +172,10 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(res.error.error.message).toBe('ShippingDestination not found.');
     });
 
-    test('Should fail to add the ShippingDestination because the ListingItemTemplate has been published', async () => {
+    test('Should fail to remove the ShippingDestination because the ListingItemTemplate has been published', async () => {
 
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,    // generateListingItemObjects
-            false,
-            null,
-            true,
-            market.id
-        ]).toParamsArray();
-
-        // generate listingItemTemplate
-        const listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
-        listingItemTemplate = listingItemTemplates[0];
-
-        // post template
-        const daysRetention = 4;
-        let res = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplates[0].id,
-            daysRetention,
-            market.id
-        ]);
-        res.expectJson();
-
-        // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-        const sent = result.result === 'Sent.';
-        if (!sent) {
-            log.debug(JSON.stringify(result, null, 2));
-        }
-        expect(result.result).toBe('Sent.');
-
-        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
-            listingItemTemplate.id,
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
+            listingItemTemplateWithListingItem.id,
             'South Africa',
             ShippingAvailability.SHIPS
         ]);
