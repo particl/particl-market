@@ -58,7 +58,7 @@ export class ZmqWorker {
         };
 
         const particld = new ParticlZmq({
-            // hashtx: addr,
+            hashtx: addr,
             hashblock: addr,
             // rawtx: addr,
             // rawblock: addr,

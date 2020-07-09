@@ -150,7 +150,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' [<itemhash|*> [<buyer|*> [<seller|*>]]]';
+        return this.getName() + ' [itemhash|*] [buyer|*] [seller|*]';
     }
 
     public help(): string {

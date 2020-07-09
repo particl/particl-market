@@ -43,10 +43,11 @@ import { MPAction  } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
 import { BidNotification } from '../../messages/notification/BidNotification';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
+import { ProfileService } from '../model/ProfileService';
+import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
 
 export class BidActionService extends BaseActionService {
 
@@ -58,6 +59,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
@@ -89,10 +91,11 @@ export class BidActionService extends BaseActionService {
         // note: factory checks that the hashes match
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.listingItem
+            listingItem: actionRequest.listingItem,
+            sellerAddress: actionRequest.listingItem.seller
         } as ListingItemAddRequest);
 
-        this.log.debug('createMessage(), listingItemAddMPM: ', JSON.stringify(listingItemAddMPM, null, 2));
+        // this.log.debug('createMessage(), listingItemAddMPM: ', JSON.stringify(listingItemAddMPM, null, 2));
 
         // create a hash for the Order so it can be sent to the seller
         const orderHash = ConfigurableHasher.hash({
@@ -116,8 +119,6 @@ export class BidActionService extends BaseActionService {
 
         // todo: add product variations etc bid related actionRequest
 
-        // todo: cryptocurrency hardcoded to PART for now
-        // todo: ...and propably hardcoded already on the Command level, so could be passed with the BidRequest actionRequest
         const config: BidConfiguration = {
             cryptocurrency: Cryptocurrency.PART,
             escrow: actionRequest.listingItem.PaymentInformation.Escrow.type,
@@ -165,37 +166,60 @@ export class BidActionService extends BaseActionService {
      *   - also creates the hash, which should later be passed also to the seller
      * - create the Order with OrderItems
      *
-     * @param marketplaceMessage
-     * @param actionDirection
-     * @param actionRequest
-     * @param smsgMessage
+     * @param marketplaceMessage, the message being posted or received
+     * @param actionDirection, incoming/outgoing
+     * @param smsgMessage, the inbox/outbox smsgMessage
+     * @param actionRequest, contains the data to create the Bid, exists only when we are posting
      */
     public async processMessage(marketplaceMessage: MarketplaceMessage,
                                 actionDirection: ActionDirection,
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: BidRequest): Promise<resources.SmsgMessage> {
 
+        this.log.debug('processMessage(), actionDirection: ', actionDirection);
+
         const bidMessage: BidMessage = marketplaceMessage.action as BidMessage;
 
-        // first get the Market
-        const marketReceiveAddress = _.find(bidMessage.objects || [], (kvs: KVS) => {
+        // first get the Market address on which the bid was made on
+        const marketReceiveAddressKVS: KVS | undefined = _.find(bidMessage.objects || [], (kvs: KVS) => {
             return kvs.key === ActionMessageObjects.BID_ON_MARKET;
         });
+        const marketReceiveAddress = marketReceiveAddressKVS!.value as string;
+        // smsgMessage.to should be the same?
 
+        // then
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(bidMessage.item,
-            marketReceiveAddress!.value as string).then(async value => value.toJSON());
+            marketReceiveAddress).then(value => value.toJSON());
+
+        this.log.debug('Processing a Bid for listingItem: ', JSON.stringify(listingItem, null, 2));
+        this.log.debug('bidMessage: ', JSON.stringify(bidMessage, null, 2));
+
+        let address: AddressCreateRequest;
 
         if (ActionDirection.INCOMING === actionDirection && _.isEmpty(listingItem.ListingItemTemplate)) {
-            // if we're receiving a Bid, there should be a ListingItemTemplate
+            // incoming message -> we are the seller, there should be a ListingItemTemplate
             throw new MessageException('Received a Bid for a ListingItem which has no relation to ListingItemTemplate.');
+
+        } else if (ActionDirection.INCOMING === actionDirection) {
+            // incoming message -> we are the seller, there should be a ListingItemTemplate
+
+            // add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
+            address = bidMessage.buyer.shippingAddress as AddressCreateRequest;
+            address.profile_id = listingItem.ListingItemTemplate.Profile.id;
+            address.type = AddressType.SHIPPING_BID;
+
+
+        } else { // (ActionDirection.OUTGOING === actionDirection) {
+            // outgoing message -> we are the bidder, there is no ListingItemTemplate
+
+            // actionRequest exists and should contain AddressCreateRequest
+            address = actionRequest!.address;
         }
 
-        // add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
-        const address = bidMessage.buyer.shippingAddress as AddressCreateRequest;
-        address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-        address.type = AddressType.SHIPPING_BID;
+        const profile: resources.Profile = await this.profileService.findOne(address.profile_id).then(value => value.toJSON());
 
         const bidCreateRequest: BidCreateRequest = await this.bidFactory.get({
+                profile,
                 listingItem,
                 address,
                 bidder: smsgMessage.from
@@ -206,8 +230,7 @@ export class BidActionService extends BaseActionService {
 
         // TODO: currently we support just one OrderItem per Order
 
-        // create Bid
-        const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(async value => value.toJSON());
+        const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
         this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
         // if we're the buyer, Order hash was generated before posting the BidMessage to the seller
@@ -215,18 +238,21 @@ export class BidActionService extends BaseActionService {
         const orderHash = _.find(bidMessage.objects || [], (kvs: KVS) => {
             return kvs.key === ActionMessageObjects.ORDER_HASH;
         });
-
         this.log.debug('createBid(), orderHash: ', orderHash);
 
         const orderCreateRequest: OrderCreateRequest = await this.orderFactory.get({
                 bids: [bid],
                 addressId: bid.ShippingAddress.id,
-                buyer: bid.bidder,
-                seller: bid.ListingItem.seller,
+                buyer: bid.bidder,                      // smsgMessage.from
+                seller: bid.ListingItem.seller,         // smsgMessage.to
                 status: smsgMessage.direction === ActionDirection.INCOMING ? OrderStatus.RECEIVED : OrderStatus.SENT,
                 generatedAt: bid.generatedAt,
                 hash: orderHash!.value
             } as OrderCreateParams);
+
+        if (bid.bidder !== smsgMessage.from || bid.ListingItem.seller !== smsgMessage.to) {
+            throw new MessageException('Something funny going on with the seller/buyer addresses.');
+        }
 
         // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
 
@@ -255,7 +281,7 @@ export class BidActionService extends BaseActionService {
 
             if (bid) {
                 const notification: MarketplaceNotification = {
-                    event: NotificationType.MPA_BID,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    event: MPAction.MPA_BID,
                     payload: {
                         id: bid.id,
                         hash: bid.hash,

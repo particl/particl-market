@@ -643,6 +643,7 @@ export class TestDataService {
 
                 const listingItemCreateRequest = {
                     seller: sellersMarketIdentityAddress,
+                    // TODO: signature
                     market: soldOnMarket.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
@@ -714,7 +715,7 @@ export class TestDataService {
 
         const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             listingItem,
-            seller: sellerIdentity,
+            sellerAddress: sellerIdentity.address,
             signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams);
 
@@ -1329,6 +1330,7 @@ export class TestDataService {
 
         const listingItemCreateRequest = {
             seller,
+            // TODO: signature:
             itemInformation,
             paymentInformation,
             messagingInformation,
@@ -1473,7 +1475,7 @@ export class TestDataService {
             ? {
                 currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 // todo:
-                basePrice: toSatoshis(+_.random(0.1, 1.00).toFixed(8)),
+                basePrice: toSatoshis(+_.random(0.1, 0.50).toFixed(8)),
                 shippingPrice: {
                     domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
                     international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))

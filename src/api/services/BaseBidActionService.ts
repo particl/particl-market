@@ -27,9 +27,8 @@ import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
 import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
-import { NotificationType } from '../enums/NotificationType';
 import { BidNotification } from '../messages/notification/BidNotification';
-import {unmanaged} from 'inversify';
+import { unmanaged } from 'inversify';
 
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
@@ -75,6 +74,7 @@ export abstract class BaseBidActionService extends BaseActionService {
 
         const bidCreateParams = {
             msgid: smsgMessage.msgid,
+            profile: mpaBid.Profile,
             listingItem,
             bidder: mpaBid.bidder,
             parentBid: mpaBid
@@ -92,7 +92,7 @@ export abstract class BaseBidActionService extends BaseActionService {
 
         if (bid) {
             return {
-                event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                event: marketplaceMessage.action.type,
                 payload: {
                     id: bid.id,
                     hash: bid.hash,

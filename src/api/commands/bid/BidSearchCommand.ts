@@ -111,25 +111,22 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const listingItemId = data.params[4];       // optional
-        const type = data.params[5];                // optional
+        let type = data.params[5];                  // optional
         const searchString = data.params[6];        // optional
         const market = data.params[7];              // optional
 
-        if (listingItemId && listingItemId !== '*' && typeof listingItemId !== 'number') {
+        if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
-        } else if (type && typeof type !== 'string') {
+        } else if (!_.isNil(type) && typeof type !== 'string') {
             throw new InvalidParamException('type', 'string');
-        } else if (searchString && typeof searchString !== 'string') {
+        } else if (!_.isNil(searchString) && typeof searchString !== 'string') {
             throw new InvalidParamException('searchString', 'string');
-        } else if (market && typeof market !== 'string') {
+        } else if (!_.isNil(market) && typeof market !== 'string') {
             throw new InvalidParamException('market', 'string');
         }
 
-        // type: MPAction | MPActionExtended
-        const validTypeFields = [MPAction.MPA_BID, MPAction.MPA_LOCK, MPAction.MPA_REJECT, MPAction.MPA_CANCEL, MPAction.MPA_ACCEPT, MPAction.MPA_LISTING_ADD,
-            MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND, MPActionExtended.MPA_COMPLETE, MPActionExtended.MPA_SHIP];
-        if (!_.includes(validTypeFields, type)) {
-            throw new InvalidParamException('type');
+        if (!_.isNil(type)) {
+            type = this.validateStatus(type);
         }
 
         // todo: validate that market exists
@@ -137,7 +134,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
 
         // * -> undefined
         data.params[4] = listingItemId !== '*' ? listingItemId : undefined;
-        data.params[5] = type ? this.validateStatus(type) : undefined;
+        data.params[5] = type;
         data.params[6] = searchString !== '*' ? searchString : undefined;
         data.params[7] = market !== '*' ? market : undefined;
 
@@ -183,6 +180,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 return MPAction.MPA_ACCEPT;
             case 'MPA_REJECT':
                 return MPAction.MPA_REJECT;
+            case 'MPA_LOCK':
+                return MPAction.MPA_LOCK;
             case 'MPA_CANCEL':
                 return MPAction.MPA_CANCEL;
             case 'MPA_COMPLETE':
@@ -209,6 +208,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 return undefined;
             default:
                 throw new MessageException('Invalid status.');
+
         }
     }
 }

@@ -19,8 +19,6 @@ import { CountryCodeNotFoundException } from '../../../src/api/exceptions/Countr
 
 describe('OrderSearchCommand', () => {
 
-    // TODO:
-
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -54,7 +52,7 @@ describe('OrderSearchCommand', () => {
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
-            true,               // generateMessagingInformation
+            false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             profile.id,         // profileId
@@ -76,44 +74,20 @@ describe('OrderSearchCommand', () => {
         expect(listingItemTemplate.Profile.id).toBe(profile.id);
         expect(listingItemTemplate.ListingItems[0].market).toBe(market.receiveAddress);
 
-        // generate ListingItem without a ListingItemTemplate
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            true,       // generateListingItemObjects
-            true        // generateObjectDatas
-                        // listingItemTemplateHash
-                        // seller
-                        // categoryId
-                        // soldOnMarketId
-        ]).toParamsArray();
 
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,         // what to generate
-            1,                          // how many to generate
-            true,                    // return model
-            generateListingItemParams           // what kind of data to generate
-        ) as resources.ListingItem[];
-
-        listingItem = listingItems[0];
+        listingItem = listingItemTemplate.ListingItems[0];
     });
 
     const PAGE = 0;
     const PAGELIMIT = 10;
     const SEARCHORDER = SearchOrder.ASC;
-    const SEARCHORDERFILED = ListingItemSearchOrderField.CREATED_AT;
+    const SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
 
 
     test('Should fail because missing market', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -123,7 +97,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress
         ]);
         res.expectJson();
@@ -137,7 +111,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid category', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             ''  // should be string[] or number[]
         ]);
@@ -149,7 +123,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because mixed types of categories', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             ['string', 0]  // should be string[] or number[]
         ]);
@@ -161,7 +135,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market and categories (using ids)', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id, listingItem.ItemInformation.ItemCategory.id]
         ]);
@@ -176,7 +150,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market and categories (using keys)', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key]
         ]);
@@ -191,7 +165,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid seller', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
             true
@@ -204,7 +178,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market and categories (using keys) and seller', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
             listingItem.seller
@@ -220,7 +194,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market and seller', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             listingItem.seller
@@ -236,7 +210,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid minPrice', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
             listingItem.seller,
@@ -250,7 +224,7 @@ describe('OrderSearchCommand', () => {
     test('Should search by market and minPrice', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -267,7 +241,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid maxPrice', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
             listingItem.seller,
@@ -292,7 +266,7 @@ describe('OrderSearchCommand', () => {
             : listingItem.PaymentInformation.ItemPrice.basePrice - 1;
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -310,7 +284,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid country', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -326,7 +300,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because country code not found', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -345,7 +319,7 @@ describe('OrderSearchCommand', () => {
         const isSameCountry = (listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country === listingItem.ItemInformation.ItemLocation.country);
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -364,7 +338,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid shipping destination', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -381,7 +355,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because shipping destination code not found', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -404,7 +378,7 @@ describe('OrderSearchCommand', () => {
         const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -431,7 +405,7 @@ describe('OrderSearchCommand', () => {
         const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -451,7 +425,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid searchString', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -468,7 +442,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and title searchString', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -488,7 +462,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and shortDescription searchString', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -508,7 +482,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and longDescription searchString', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -528,7 +502,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and hash searchString', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -549,7 +523,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid flagged', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -567,7 +541,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -589,7 +563,7 @@ describe('OrderSearchCommand', () => {
     test('Should fail because invalid hash', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',
@@ -608,7 +582,7 @@ describe('OrderSearchCommand', () => {
 
     test('Should search by market and hash', async () => {
         const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFILED,
+            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
             market.receiveAddress,
             [],
             '*',

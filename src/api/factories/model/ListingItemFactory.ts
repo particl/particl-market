@@ -80,14 +80,10 @@ export class ListingItemFactory implements ModelFactoryInterface {
             listingItemObjects = await this.getModelListingItemObjects(listingItemAddMessage.item.objects);
         }
 
-        // use smsgMessage.from if listingItemAddMessage.item.seller.address is not set
-        const seller = _.isEmpty(listingItemAddMessage.item.seller) || _.isEmpty(listingItemAddMessage.item.seller.address)
-            ? smsgMessage.from
-            : listingItemAddMessage.item.seller.address;
-
         const createRequest = {
             msgid: params.msgid,
-            seller,
+            seller: listingItemAddMessage.item.seller.address,
+            signature: listingItemAddMessage.item.seller.signature,
             market: params.market,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,

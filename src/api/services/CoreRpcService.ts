@@ -13,8 +13,10 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './observer/CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainInfo, RpcExtKeyGenesisImport, RpcMnemonic, RpcNetworkInfo, RpcRawTx,
-    RpcUnspentOutput, RpcWallet, RpcWalletDir, RpcWalletInfo, RpcExtKey, RpcExtKeyResult } from 'omp-lib/dist/interfaces/rpc';
+import {
+    RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainInfo, RpcExtKeyGenesisImport, RpcMnemonic, RpcNetworkInfo, RpcRawTx,
+    RpcUnspentOutput, RpcWallet, RpcWalletDir, RpcWalletInfo, RpcExtKey, RpcExtKeyResult, RpcBalances
+} from 'omp-lib/dist/interfaces/rpc';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 import { CtRpc } from 'omp-lib/dist/abstract/rpc';
@@ -188,6 +190,14 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Returns an object with all balances in PART.
+     * @param wallet
+     */
+    public async getBalances(wallet: string): Promise<RpcBalances> {
+        return await this.call('getbalances', [], wallet);
+    }
+
+    /**
      * Set secure messaging to use the specified wallet.
      * SMSG can only be enabled on one wallet.
      * Call with no parameters to unset the active wallet.
@@ -198,6 +208,21 @@ export class CoreRpcService extends CtRpc {
         const result: RpcWallet = await this.call('smsgsetwallet', [walletName]);
         // this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
         return result;
+    }
+
+    /**
+     * Add address and matching public key to database.
+     *
+     * 1. address    (string, required) Address to add.
+     * 2. pubkey     (string, required) Public key for "address".
+     *
+     * @param walletName
+     * @param address
+     * @param pubkey
+     */
+    public async smsgAddAddress(wallet: string, address: string, pubkey: string): Promise<boolean> {
+        const result: any = await this.call('smsgaddaddress', [address, pubkey], wallet);
+        return result.result === 'Public key added to db.';
     }
 
     /**
@@ -505,14 +530,12 @@ export class CoreRpcService extends CtRpc {
 
 /*
     public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // todo: create an enum for the outputtype
         this.log.debug('getBlindPrevouts(), type: ' + type + ', satoshis: ' + satoshis + ', blind: ' + blind);
         return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
     }
 */
     public async getPrevouts(wallet: string, typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // todo: create an enum for the outputtype
-        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeIn: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeOut: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
         const prevOuts: BlindPrevout[] = [];
         const newPrevOut = await this.createPrevoutFrom(wallet, typeIn, typeOut, satoshis, blind);
         prevOuts.push(newPrevOut);
@@ -692,7 +715,7 @@ export class CoreRpcService extends CtRpc {
      */
     public async sendTypeTo(wallet: string, typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
         const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs], wallet);
-        this.log.debug('txid: ', txid);
+        this.log.debug('sendTypeTo(), txid: ', txid);
         return txid;
     }
 
@@ -781,10 +804,24 @@ export class CoreRpcService extends CtRpc {
     /**
      * Return the raw transaction data.
      *
+     * By default this function only works for mempool transactions. When called with a blockhash
+     * argument, getrawtransaction will return the transaction if the specified block is available and
+     * the transaction is found in that block. When called without a blockhash argument, getrawtransaction
+     * will return the transaction if it is in the mempool, or if -txindex is enabled and the transaction
+     * is in a block in the blockchain.
+     *
+     * Hint: Use gettransaction for wallet transactions.
+     *
+     * If verbose is 'true', returns an Object with information about 'txid'.
+     * If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.
+     *
      * @returns {Promise<any>}
-     * @param txid
-     * @param verbose
-     * @param blockhash
+     * @param txid                  (string, required) The transaction id
+     * @param verbose               (boolean, optional, default=true) If false, return a string, otherwise return a json object
+     * @param blockhash             (string, optional) The block in which to look for the transaction
+     *
+     * TODO: should optionally return string (when verbose=false)
+     * TODO: needs to be fixed in omp-lib also
      */
     public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<RpcRawTx> {
         const params: any[] = [];

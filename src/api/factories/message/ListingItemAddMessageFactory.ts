@@ -72,14 +72,14 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
         const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
 
-        if (_.isEmpty(params.seller)) {
+        if (_.isEmpty(params.sellerAddress)) {
             throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
         }
 
         const item = {
             information,
             seller: {
-                address: params.seller.address,
+                address: params.sellerAddress,
                 signature: params.signature
             } as SellerInfo,
             payment,
@@ -94,8 +94,10 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             hash: 'recalculateandvalidate'
         } as ListingItemAddMessage;
 
-        // this.log.debug('messageToHash:', JSON.stringify(message, null, 2));
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
+
+        this.log.debug('params.listingItem.hash:', JSON.stringify(params.listingItem.hash, null, 2));
+        this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
 
         // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
         if (params.listingItem.hash && params.listingItem.hash !== message.hash) {

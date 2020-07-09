@@ -137,7 +137,7 @@ export class BidService {
 
         // MPAction.MPA_BID needs to contain shipping address, for other types its optional
         if (body.type === MPAction.MPA_BID) {
-            if (!body.address && !body.address_id) {
+            if (_.isEmpty(body.address) && _.isEmpty(body.address_id)) {
                 this.log.error('Request body is not valid, address missing');
                 throw new ValidationException('Request body is not valid', ['address missing']);
             } else { // if (!body.address_id) {

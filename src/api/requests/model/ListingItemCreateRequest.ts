@@ -21,6 +21,8 @@ export class ListingItemCreateRequest extends RequestBody implements ModelReques
 
     @IsNotEmpty()
     public seller: string;
+    @IsNotEmpty()
+    public signature: string;
 
     @IsNotEmpty()
     public market: string;

@@ -78,8 +78,9 @@ export class BidFactory implements ModelFactoryInterface {
 
         // create and return the request that can be used to create the bid
         const createRequest = {
-            msgid: smsgMessage.msgid,
+            profile_id: params.profile.id,
             listing_item_id: params.listingItem.id,
+            msgid: smsgMessage.msgid,
             generatedAt: bidMessage.generated,
             type: bidMessage.type,
             bidder: params.bidder,
@@ -112,8 +113,8 @@ export class BidFactory implements ModelFactoryInterface {
         }
 
         this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
-        this.log.debug('bidMessage.hash:', bidMessage.hash);
-        this.log.debug('createRequest.hash:', createRequest.hash);
+        this.log.debug('get(), bidMessage.hash:', bidMessage.hash);
+        this.log.debug('get(), createRequest.hash:', createRequest.hash);
 
         return createRequest;
     }

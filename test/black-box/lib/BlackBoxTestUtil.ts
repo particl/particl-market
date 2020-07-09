@@ -89,7 +89,7 @@ export class BlackBoxTestUtil {
 
         const defaultProfile: resources.Profile = res.getBody()['result'];
 
-        this.log.debug('defaultProfile', JSON.stringify(defaultProfile, null, 2));
+        // this.log.debug('defaultProfile', JSON.stringify(defaultProfile, null, 2));
 
         if (_.isEmpty(defaultProfile.ShippingAddresses
             || _.find(defaultProfile.ShippingAddresses, (address: resources.Address) => {
@@ -163,6 +163,28 @@ export class BlackBoxTestUtil {
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
+    }
+
+    /**
+     *
+     * @param wallet
+     */
+    public async unlockLockedOutputs(wallet: string): Promise<resources.Market> {
+
+        let response: any = await this.rpc(Commands.DAEMON_ROOT.commandName, [wallet, 'listlockunspent']);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result = response.getBody()['result'];
+
+        if (result.length > 0) {
+            this.log.debug('==> Found locked outputs:', JSON.stringify(result, null, 2));
+            response = await this.rpc(Commands.DAEMON_ROOT.commandName, [wallet, 'lockunspent', true, result]);
+            response.expectJson();
+            response.expectStatusCode(200);
+            this.log.debug('==> No locked outputs left.');
+        } else {
+            this.log.debug('==> No locked outputs.');
+        }
     }
 
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {

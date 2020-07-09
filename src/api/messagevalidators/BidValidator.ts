@@ -31,19 +31,8 @@ export class BidValidator extends FV_MPA_BID implements ActionMessageValidatorIn
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_BID]);
         }
 
-        const marketAddress = _.find(message.action.objects || [], (kvs: KVS) => {
-            return kvs.key === ActionMessageObjects.BID_ON_MARKET;
-        });
-        if (_.isEmpty(marketAddress)) {
-            throw new MessageException('Missing ActionMessageObjects.BID_ON_MARKET.');
-        }
-
-        const orderHash = _.find(message.action.objects || [], (kvs: KVS) => {
-            return kvs.key === ActionMessageObjects.ORDER_HASH;
-        });
-        if (_.isEmpty(orderHash)) {
-            throw new MessageException('Missing ActionMessageObjects.ORDER_HASH.');
-        }
+        this.keyExists(ActionMessageObjects.BID_ON_MARKET, message.action.objects);
+        this.keyExists(ActionMessageObjects.ORDER_HASH, message.action.objects);
 
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
         return FV_MPA_BID.validate(message as MPM);
@@ -53,11 +42,13 @@ export class BidValidator extends FV_MPA_BID implements ActionMessageValidatorIn
         return true;
     }
 
-    // TODO: move to util
-    private getKVSValueByKey(values: resources.BidData[] | KVS[], keyToFind: string): string | number | undefined {
-        const kvsValue = _.find(values, value => {
-            return value.key === keyToFind;
+    private keyExists(keyToFind: string, values: KVS[] = []): boolean {
+        const kvsValue = _.find(values, (kvs: KVS) => {
+            return kvs.key === keyToFind;
         });
-        return kvsValue ? kvsValue.value : undefined;
+        if (_.isEmpty(kvsValue)) {
+            throw new MessageException('Missing ActionMessageObjects.' + keyToFind + '.');
+        }
+        return true;
     }
 }

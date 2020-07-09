@@ -46,7 +46,7 @@ describe('SmsgResendCommand', () => {
     const PAGE_LIMIT = 10;
     const SEARCHORDER = SearchOrder.ASC;
     const SMSG_ORDERFIELD = SmsgMessageSearchOrderField.RECEIVED;
-    const LISTINGITEM_SEARCHORDERFILED = ListingItemSearchOrderField.CREATED_AT;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
 
     const DAYS_RETENTION = 2;
 
@@ -86,7 +86,7 @@ describe('SmsgResendCommand', () => {
             false,              // generateObjectDatas
             sellerProfile.id,   // profileId
             false,              // generateListingItem
-            sellerMarket.id     // marketId
+            sellerMarket.id     // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
@@ -164,7 +164,7 @@ describe('SmsgResendCommand', () => {
         const response: any = await testUtilBuyerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemSearchCommand,
-                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFILED,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
                 '*',

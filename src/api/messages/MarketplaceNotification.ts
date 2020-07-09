@@ -2,10 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { NotificationType } from '../enums/NotificationType';
 import { ActionNotificationInterface } from './notification/ActionNotificationInterface';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class MarketplaceNotification {
-    public event: NotificationType;
+    public event: ActionMessageTypes;
     public payload: ActionNotificationInterface;
 }

@@ -9,6 +9,7 @@ declare module 'resources' {
         msgid: string;
         hash: string;
         seller: string;
+        signature: string;
         market: string;
         expiryTime: number;
         generatedAt: number;

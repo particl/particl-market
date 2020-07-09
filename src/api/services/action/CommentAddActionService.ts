@@ -24,7 +24,6 @@ import { CommentCreateParams } from '../../factories/model/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
 import { NotificationService } from '../NotificationService';
 import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
@@ -224,7 +223,7 @@ export class CommentAddActionService extends BaseActionService {
                 }
 
                 const notification: MarketplaceNotification = {
-                    event: NotificationType.NEW_COMMENT,    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    event: CommentAction.MPA_COMMENT_ADD,
                     payload: {
                         id: comment.id,
                         hash: comment.hash,

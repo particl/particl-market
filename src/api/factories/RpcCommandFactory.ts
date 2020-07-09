@@ -481,7 +481,7 @@ export class RpcCommandFactory {
 
     /**
      * todo: if requested commandType is rootCommand, the loop through the rootCommands and match using name.
-     * this should allow 'links' from subcommands back to root commadns
+     * this should allow 'links' from subcommands back to root commands
      *
      * @param commandType
      * @returns {RpcCommandInterface<any>}

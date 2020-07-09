@@ -27,7 +27,6 @@ import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
@@ -90,7 +89,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
 
-        const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.image.hash,
+        const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.image.hash,
             actionRequest.listingItem.hash);
 
         const actionMessage: ListingItemImageAddMessage = await this.listingItemImageAddMessageFactory.get({
@@ -188,7 +187,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
             // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {
-                event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                event: marketplaceMessage.action.type,
                 payload: {
                     hash: imageAddMessage.hash,
                     listingItemHash: imageAddMessage.target

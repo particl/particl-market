@@ -19,10 +19,10 @@ export class ListingItemImageAddRequest extends RequestBody implements ActionReq
     @IsNotEmpty()
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 
-    @IsNotEmpty()
-    public market: resources.Market;
+    // @IsNotEmpty()
+    // public market: resources.Market;
 
     @IsNotEmpty()
-    public seller: resources.Identity;
-
+    // public seller: resources.Identity;
+    public sellerAddress: string;      // <- Identity.address
 }

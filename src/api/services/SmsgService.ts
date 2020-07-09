@@ -238,7 +238,11 @@ export class SmsgService {
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                           estimateFee: boolean = false, options?: SmsgSendOptions, coinControl?: SmsgSendCoinControl): Promise<SmsgSendResponse> {
 
+        // set secure messaging to use the specified wallet
         await this.coreRpcService.smsgSetWallet(wallet);
+
+        // enable receiving messages on the sending address, just in case
+        await this.smsgAddLocalAddress(fromAddress);
 
         this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);
         const params: any[] = [
@@ -258,6 +262,25 @@ export class SmsgService {
             throw new MessageException(`Failed to send message: ${response.error}`);
         }
         return response;
+    }
+
+
+    /**
+     * Enable receiving messages on <address>.
+     * Key for "address" must exist in the wallet.
+     *
+     * @returns {Promise<boolean>}
+     */
+    public async smsgAddLocalAddress(address: string): Promise<boolean> {
+        const response = await this.coreRpcService.call('smsgaddlocaladdress', [address]);
+        // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
+
+        if (response.result === 'Receiving messages enabled for address.'
+            || (response.result === 'Address not added.' && response.reason === 'Key exists in database')) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

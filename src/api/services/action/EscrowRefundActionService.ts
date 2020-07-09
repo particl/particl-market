@@ -93,7 +93,8 @@ export class EscrowRefundActionService extends BaseBidActionService {
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem
+            listingItem: actionRequest.bid.ListingItem,
+            sellerAddress: actionRequest.bid.ListingItem.seller
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 

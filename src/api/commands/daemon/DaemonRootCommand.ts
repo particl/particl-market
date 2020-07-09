@@ -26,8 +26,6 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     /**
-     * data.params[]:
-     *  [0]: address id
      *
      * @param data
      * @param rpcCommandFactory
@@ -36,23 +34,31 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         this.log.debug('data.params:', data.params);
+        const wallet = data.params.shift();
         const command = data.params.shift();
 
-        const response = await this.coreRpcService.call(command, data.params);
+        const response = await this.coreRpcService.call(command, data.params, wallet);
         this.log.debug('response: ', JSON.stringify(response));
         return response;
     }
 
+    /**
+     *
+     * @param data
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        // todo: validations
+        data.params[0] = data.params[0] === '*' ? undefined : data.params[0];
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <command> [arg] [arg] [...]  -  ' + this.description();
+        return this.getName() + ' <wallet|*> <command> [arg] [arg] [...]  -  ' + this.description();
     }
 
     public help(): string {
         return this.usage() + '\n'
+            + '    <wallet>     - string - The wallet to execute the command on. \n'
             + '    <command>    - string - The command to execute. \n'
             + '    <arg>        - string - An argument for the rpc command. ';
     }

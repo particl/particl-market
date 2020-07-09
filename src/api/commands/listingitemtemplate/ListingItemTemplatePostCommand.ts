@@ -111,8 +111,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 estimateFee
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
-            market, // TODO: remove this? it doesn't seem to be used
-            seller: market.Identity
+            // market, // TODO: remove this? it doesn't seem to be used
+            sellerAddress: market.Identity.address
         } as ListingItemAddRequest;
 
         this.log.debug('execute(), posting...');
@@ -309,8 +309,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const imageAddRequest = {
             sendParams: listingItemAddRequest.sendParams,
             listingItem: listingItemTemplate,
-            market: listingItemAddRequest.market, // TODO: remove this? it doesn't seem to be used
-            seller: listingItemAddRequest.seller
+            // market: listingItemAddRequest.market, // TODO: remove this? it doesn't seem to be used
+            sellerAddress: listingItemAddRequest.sellerAddress
         } as ListingItemImageAddRequest;
 
         imageAddRequest.sendParams.paidMessage = false; // sending images is free for now

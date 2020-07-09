@@ -32,15 +32,15 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {MessagingProtocol, MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationType } from '../../enums/NotificationType';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import {MessageException} from '../../exceptions/MessageException';
 
 export interface VerifiableMessage {
     // not empty
@@ -96,8 +96,8 @@ export class ListingItemAddActionService extends BaseActionService {
                 wallet: market.Identity.wallet
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
-            market,
-            seller: market.Identity
+            // market,
+            sellerAddress: market.Identity.address
         } as ListingItemAddRequest);
 
         // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
@@ -128,13 +128,39 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
-        const signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.seller.address, actionRequest.listingItem.hash);
+        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
+
+        let signature;
+        let pubkey;
+
+        if (_.isEmpty(actionRequest.listingItem['signature'])) {
+            // listingItem already has the signature, so this is a listingItemTemplate being posted
+            // sign it and add the seller pubkey to the MessagingInformation
+            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.listingItem.hash);
+            pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
+                .then(value => {
+                    if (value.ismine) {
+                        return value.pubkey;
+                    } else {
+                        throw new MessageException('Seller address is not yours.');
+                    }
+                });
+            // not saving the pubkey as part of the ListingItemTemplate because we can use multiple identities to post those,
+            // it will be stored as part of the ListingItem once its received.
+            actionRequest.listingItem.MessagingInformation.push({
+                protocol: MessagingProtocol.SMSG,
+                publicKey: pubkey
+            } as resources.MessagingInformation);
+
+        } else {
+            signature = (actionRequest.listingItem as resources.ListingItem).signature;
+        }
 
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
             listingItem: actionRequest.listingItem,
-            seller: actionRequest.seller,
-            // cryptoAddress, we could override the payment address here
+            sellerAddress: actionRequest.sellerAddress,
+            // cryptoAddress: ...we could override the payment address here
             signature
         } as ListingItemAddMessageCreateParams);
 
@@ -202,7 +228,7 @@ export class ListingItemAddActionService extends BaseActionService {
                 msgid: smsgMessage.msgid,
                 market: smsgMessage.to,
                 rootCategory
-            } as ListingItemCreateParams;
+            } as ListingItemCreateParams; // TODO: get rid of these xxxCreateParams
 
             this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
             this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
@@ -250,7 +276,7 @@ export class ListingItemAddActionService extends BaseActionService {
 
             if (listingItem) {
                 const notification: MarketplaceNotification = {
-                    event: NotificationType[marketplaceMessage.action.type],    // TODO: NotificationType could be replaced with ActionMessageTypes
+                    event: marketplaceMessage.action.type,
                     payload: {
                         id: listingItem.id,
                         hash: listingItem.hash,

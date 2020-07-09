@@ -16,10 +16,10 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     @IsNotEmpty()
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 
-    @IsNotEmpty()
-    public market: resources.Market;
+    // @IsNotEmpty()
+    // public market: resources.Market;
 
     @IsNotEmpty()
-    public seller: resources.Identity;
-
+    public sellerAddress: string;
+    // public seller: resources.Identity;
 }

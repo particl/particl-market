@@ -48,6 +48,7 @@ export interface ItemImageCreateParams extends ModelCreateParams {
 
 export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
+    profile: resources.Profile;
     address?: AddressCreateRequest;
     bidder: string;
     parentBid?: resources.Bid;  // the bid that happened before this

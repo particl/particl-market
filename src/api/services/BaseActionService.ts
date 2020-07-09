@@ -86,7 +86,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
                 return false;
             });
 
-        this.log.debug('validContent: ', validContent);
+        this.log.debug('post(), validContent: ', validContent);
 
         if (!validContent) {
             this.log.error('ActionMessage validation failed.');
