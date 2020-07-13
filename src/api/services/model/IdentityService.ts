@@ -20,6 +20,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../CoreRpcService';
+import { SmsgService } from '../SmsgService';
 
 export class IdentityService {
 
@@ -29,6 +30,7 @@ export class IdentityService {
         @inject(Types.Repository) @named(Targets.Repository.IdentityRepository) public identityRepository: IdentityRepository,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -239,6 +241,8 @@ export class IdentityService {
 
         const address = await this.coreRpcService.getNewAddress(walletName);
         this.log.debug('createProfileIdentity(), identity.address: ' + address);
+
+        await this.smsgService.smsgAddLocalAddress(address);
 
         const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(walletName);
 
