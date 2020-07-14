@@ -282,6 +282,12 @@ export class ServerStartedListener implements interfaces.Listener {
      */
     private async loadWalletsForProfile(profile: resources.Profile): Promise<string[]> {
         const identitiesToLoad: resources.Identity[] = await this.identityService.findAllByProfileId(profile.id).then(value => value.toJSON());
+
+        // make sure the addresses are added as smsg receive addresses
+        for (const identity of identitiesToLoad) {
+            await this.smsgService.smsgAddLocalAddress(identity.address);
+        }
+
         const walletsToLoad: string[] = identitiesToLoad.map( value => {
             return value.wallet;
         });
@@ -289,102 +295,4 @@ export class ServerStartedListener implements interfaces.Listener {
         return await this.coreRpcService.loadWallets(walletsToLoad);
     }
 
-
-
-
-
-
-
-    /*
-        private async checkConnection(): Promise<boolean> {
-            let isConnected = await this.coreRpcService.isConnected();
-            let hasMarketConfiguration = false;
-
-            if (isConnected) {
-
-                if (this.previousState !== isConnected) {
-                    this.log.info('connection with particld established.');
-
-                    const hasWallet = await this.coreRpcService.hasWallet();
-                    this.log.debug('hasWallet: ' + hasWallet);
-
-                    if (hasWallet) {
-                        this.log.info('wallet is ready.');
-
-                        // seed the default Profile
-                        const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
-                            .then(value => value.toJSON());
-
-                        // save the default env vars as settings
-                        await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
-
-                        // check whether we have the required default marketplace configuration to continue
-                        hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
-
-                        // currently, we have the requirement for the particl-desktop user to create the market wallet manually
-                        // we'll skip this nonsense if process.env.STANDALONE=true
-                        if (!Environment.isTruthy(process.env.STANDALONE)) {
-                            const hasRequiredMarketWallet = await this.coreRpcService.walletExists('market');
-                            this.log.warn('Not running in standalone mode, wallet created: ', hasRequiredMarketWallet);
-                            hasMarketConfiguration = hasRequiredMarketWallet && hasMarketConfiguration;
-                            this.INTERVAL = 10000;
-                        }
-
-                        // if there's no configuration for the market, set the isConnected back to false
-                        isConnected = hasMarketConfiguration;
-
-                        if (hasMarketConfiguration) {
-
-                            // seed the default market
-                            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
-                                .then(value => value.toJSON());
-
-                            // seed the default categories
-                            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
-
-                            // start message polling and other stuff, unless we're running integration tests
-                            if (process.env.NODE_ENV !== 'test') {
-                                this.expiredListingItemProcessor.scheduleProcess();
-                                this.proposalResultProcessor.scheduleProcess();
-
-                                // poll for waiting smsgmessages to be processed
-                                // this.waitingMessageProcessor.schedulePoll();
-
-                                // request new messages to be pushed through zmq
-                                await this.smsgService.pushUnreadCoreSmsgMessages();
-
-                            }
-                            this.INTERVAL = 10000;
-                        } else {
-                            isConnected = false;
-                            this.log.error('market not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
-                        }
-
-                    } else {
-                        isConnected = false;
-                        this.log.error('wallet not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
-                    }
-                }
-
-                // this.log.info('connected to particld, checking again in ' + this.INTERVAL + 'ms.');
-            } else {
-
-                if (this.previousState !== isConnected && hasMarketConfiguration) {
-                    this.log.info('connection with particld disconnected.');
-
-                    // stop message polling
-                    // await this.coreCookieService.stop();
-                    this.INTERVAL = 1000;
-                }
-
-                if (process.env.NODE_ENV !== 'test') {
-                    this.log.error('failed to connect to particld, retrying in ' + this.INTERVAL + 'ms.');
-                }
-            }
-
-            this.previousState = isConnected;
-
-            return isConnected;
-        }
-    */
 }

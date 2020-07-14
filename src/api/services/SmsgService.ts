@@ -264,26 +264,6 @@ export class SmsgService {
         return response;
     }
 
-
-    /**
-     * Enable receiving messages on <address>.
-     * Key for "address" must exist in the wallet.
-     *
-     * @returns {Promise<boolean>}
-     */
-    public async smsgAddLocalAddress(address: string): Promise<boolean> {
-        const response = await this.coreRpcService.call('smsgaddlocaladdress', [address]);
-        // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
-
-        if (response.result === 'Receiving messages enabled for address.'
-            || (response.result === 'Address not added.' && response.reason === 'Key exists in database')) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
     /**
      * List and manage keys.
      * ﻿﻿[whitelist|all|wallet|recv <+/-> <address>|anon <+/-> <address>]
