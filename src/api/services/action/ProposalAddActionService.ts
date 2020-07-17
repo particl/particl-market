@@ -35,6 +35,7 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { ProposalNotification } from '../../messages/notification/ProposalNotification';
 
 export class ProposalAddActionService extends BaseActionService {
 
@@ -183,7 +184,29 @@ export class ProposalAddActionService extends BaseActionService {
     public async createNotification(marketplaceMessage: MarketplaceMessage,
                                     actionDirection: ActionDirection,
                                     smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
-        // undefined -> don't send notifications
+
+        const proposalAddMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection
+            && proposalAddMessage.category === ProposalCategory.ITEM_VOTE) {
+
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
+                proposalAddMessage.target!, smsgMessage.to)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
+
+            const notification: MarketplaceNotification = {
+                event: marketplaceMessage.action.type,
+                payload: {
+                    category: proposalAddMessage.category,
+                    hash: proposalAddMessage.hash,
+                    target: proposalAddMessage.target,
+                    market: listingItem.market
+                } as ProposalNotification
+            };
+            return notification;
+        }
         return undefined;
     }
 

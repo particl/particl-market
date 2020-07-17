@@ -217,7 +217,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
             + '    <country>                - [optional] String - The country of the ListingItem. \n'
             + '    <shippingDestination>    - [optional] String - The shipping destination of the ListingItem. \n'
             + '    <searchString>           - [optional] String - ListingItems title. \n'
-            + '    <flagged>                - [optional] Boolean - Flagged ListingItem (default: false). \n'
+            + '    <flagged>                - [optional] Boolean - Flagged ListingItems (default: false). \n'
             + '    <listingItemHash>        - [optional] String - ListingItems hash. \n';
     }
 

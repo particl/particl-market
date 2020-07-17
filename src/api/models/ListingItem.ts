@@ -55,7 +55,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'FlaggedItem',
         'FlaggedItem.Proposal',
         'FlaggedItem.Proposal.ProposalOptions'
-        // 'FlaggedItem.Proposal.ProposalResults',
+        // 'FlaggedItem.Proposal.ProposalOptions.Votes'
+        // 'FlaggedItem.Proposal.ProposalResults'
     ];
 
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
