@@ -116,19 +116,36 @@ export class Bid extends Bookshelf.Model<Bid> {
                 qb.join('listing_items', 'bids.listing_item_id', 'listing_items.id');
 
                 if (options.listingItemId) {
-                    qb.where('listing_items.id', '=', options.listingItemId);
-                }
-
-                if (options.market) {
-                    qb.where('listing_items.market', '=', options.market);
-                }
-
-                if (options.profileId) {
-                    qb.where('bids.profile_id', '=', options.profileId);
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('listing_items.id', '=', options.listingItemId);
+                    });
                 }
 
                 if (options.type) {
-                    qb.where('bids.type', '=', options.type);
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('bids.type', '=', options.type);
+                    });
+                }
+
+                if (options.searchString) {
+                    qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('item_informations.title', 'LIKE', '%' + options.searchString + '%')
+                            .orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%')
+                            .orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
+                    });
+                }
+
+                if (options.market) {
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('listing_items.market', '=', options.market);
+                    });
+                }
+
+                if (options.profileId) {
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('bids.profile_id', '=', options.profileId);
+                    });
                 }
 
                 if (options.orderItemStatus) {
@@ -136,22 +153,18 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('order_items.status', '=', options.orderItemStatus);
                 }
 
-                if (options.searchString) {
-                    qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%')
-                        .orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%')
-                        .orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
-                }
-
                 if (!_.isEmpty(options.bidders)) {
-                    qb.whereIn('bids.bidder', options.bidders);
+                    qb.andWhere( qbInner => {
+                        return qbInner.whereIn('bids.bidder', options.bidders);
+                    });
                 }
 
             })
             .orderBy('bids.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
-                offset: options.page * options.pageLimit
+                offset: options.page * options.pageLimit,
+                debug: true
             });
 
         if (withRelated) {
