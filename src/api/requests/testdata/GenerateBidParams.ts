@@ -42,7 +42,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.generateListingItem = generateParams[1] ? true : false;
             this.listingItemId = generateParams[2] ? generateParams[2] : null;
 
-            // if item hash was given, set generateListingItem to false
+            // if item id was given, set generateListingItem to false
             this.generateListingItem = !this.listingItemId;
 
             this.type = generateParams[3] ? generateParams[3] : null;

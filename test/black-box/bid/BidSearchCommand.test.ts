@@ -9,10 +9,11 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBidParams';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { BidSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('BidSearchCommand', () => {
 
@@ -21,56 +22,75 @@ describe('BidSearchCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const bidCommand =  Commands.BID_ROOT.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
-    let market: resources.Market;
-    let profile: resources.Profile;
-    let listingItems: resources.ListingItem[];
-    let bid: resources.Bid;
+    let sellerMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+
+    let buyerProfile: resources.Profile;
+    let buyerMarket: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let mpaBid: resources.Bid;
+    let acceptBid: resources.Bid;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
-    const ORDERING = SearchOrder.ASC;
+    const SEARCHORDER = SearchOrder.ASC;
+    const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
 
-        // get default profile and market
-        profile = await testUtil.getDefaultProfile();
-        expect(profile.id).toBeDefined();
-        market = await testUtil.getDefaultMarket(profile.id);
-        expect(market.id).toBeDefined();
+        // get default sellerProfile and sellerMarket
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
 
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(buyerMarket.id).toBeDefined();
 
-        // create ListingItem
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        // create ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateItemImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            sellerProfile.id,     // profileId
+            true,           // generateListingItem
+            sellerMarket.id       // soldOnMarketId
         ]).toParamsArray();
 
-        listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateListingItemParams           // what kind of data to generate
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
         );
+        listingItem = listingItemTemplates[0].ListingItems[0];
+
+        // log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
 
     });
 
     test('Should return empty result because Bids do not exist for the given ListingItem', async () => {
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
-            listingItems[0].hash
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -78,107 +98,128 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    // TODO: test all paging params, for missing+invalid
-    test('Should fail to searchBy for Bids because invalid page', async () => {
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid']);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('page', 'number').getMessage());
-    });
-
-    test('Should fail to searchBy for Bids because invalid pageLimit', async () => {
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 0, 'invalid']);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('pageLimit', 'number').getMessage());
-    });
-
-    test('Should fail to searchBy for Bids because invalid ListingItem.hash', async () => {
-        // searchBy bid by item hash
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
-            'INVALID HASH'
+    test('Should fail to searchBy for Bids because invalid ListingItemId', async () => {
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            true
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        // TODO: should be throwing ModelNotFoundException
-        expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
-    test('Should generate a Bid and return one Bid when searched by ListingItem.hash', async () => {
-
+    test('Should generate a Bid (MPA_BID)', async () => {
+        expect(listingItem).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
-            false,                       // generateListingItemTemplate
-            false,                       // generateListingItem
-            listingItems[0].hash,       // listingItem.hash
-            MPAction.MPA_BID,           // type
-            profile.address,     // bidder
-            undefined,                  // seller
-            undefined                   // parentBidId
+            false,                          // generateListingItemTemplate
+            false,                          // generateListingItem
+            listingItem.id,                 // listingItem.id
+            MPAction.MPA_BID,               // type
+            buyerMarket.Identity.address,    // bidder
+            sellerMarket.Identity.address,   // seller
+            undefined                       // parentBidId
         ]).toParamsArray();
 
-        // generate bid
-        const bids: resources.Bid[] = await testUtil.generateData(
+        const bids: resources.Bid[] = await testUtilSellerNode.generateData(
             CreatableModel.BID,
             1,
             true,
             bidGenerateParams);
+        mpaBid = bids[0];
+    });
 
-        // log.debug('bids: ', JSON.stringify(bids, null, 2));
+    test('Should find the generated Bid when searching by listingItemId', async () => {
 
-        // searchBy bid by item hash
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, PAGE, PAGE_LIMIT, ORDERING, bids[0].ListingItem.hash]);
+        expect(mpaBid).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItem.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Bid[] = res.getBody()['result'];
 
         // log.debug('result: ', JSON.stringify(result, null, 2));
-
-        bid = result[0];
-
+        mpaBid = result[0];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-
     });
 
-    test('Should generate a second Bid and return two Bids when searchBy by ListingItem.hash', async () => {
-
-        log.debug('bid.id: ', bid.id);
-
-        // create second bid
+    test('Should generate accept Bid (MPA_ACCEPT)', async () => {
+        expect(listingItem).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
-            false,                       // generateListingItemTemplate
-            false,                       // generateListingItem
-            listingItems[0].hash,       // listingItemhash
-            MPAction.MPA_ACCEPT,        // type
-            profile.address,     // bidder
-            undefined,                  // seller
-            bid.id                      // parentBidId
+            false,                              // generateListingItemTemplate
+            false,                              // generateListingItem
+            listingItem.id,                     // listingItem.id
+            MPAction.MPA_ACCEPT,                // type
+            buyerMarket.Identity.address,       // bidder
+            sellerMarket.Identity.address,      // seller
+            mpaBid.id                           // parentBidId
         ]).toParamsArray();
 
-        log.debug('bidGenerateParams: ', bidGenerateParams);
-
-        // generate bid
-        const bids: resources.Bid[] = await testUtil.generateData(
+        const bids: resources.Bid[] = await testUtilSellerNode.generateData(
             CreatableModel.BID,
             1,
             true,
             bidGenerateParams);
+        acceptBid = bids[0];
+    });
 
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
-            listingItems[0].hash
+    test('Should return two Bids when searching by listingItemId', async () => {
+
+        expect(mpaBid).toBeDefined();
+        expect(acceptBid).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
+
         const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(2);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
+        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[1].type).toBe(MPAction.MPA_ACCEPT);
+        expect(result[1].ListingItem.id).toBe(listingItem.id);
     });
 
+    test('Should fail to searchBy for Bids because invalid type', async () => {
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItem.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('type', 'MPAction').getMessage());
+    });
+
+    test('Should return one Bid when searching by listingItemId and type ', async () => {
+
+        expect(mpaBid).toBeDefined();
+        expect(acceptBid).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItem.id,
+            MPAction.MPA_ACCEPT
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
+        expect(result[0].ListingItem.id).toBe(listingItem.id);
+    });
+
+/*
     test('Should return all two Bids when searching without any params', async () => {
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand]);
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -191,7 +232,7 @@ describe('BidSearchCommand', () => {
 
     // TODO: add test where bids are searched using bid.OrderItems status
     test('Should searchBy Bids by ListingItem.hash and Bid.status and find one', async () => {
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
             MPAction.MPA_BID
@@ -211,10 +252,10 @@ describe('BidSearchCommand', () => {
             listingItems[0].hash,
             MPAction.MPA_BID,
             '*',
-            profile.address
+            sellerProfile.address
         ];
 
-        const res: any = await testUtil.rpc(bidCommand, bidSearchCommandParams);
+        const res: any = await testUtilSellerNode.rpc(bidCommand, bidSearchCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -226,7 +267,7 @@ describe('BidSearchCommand', () => {
 
     test('Should fail to searchBy Bids because invalid MPAction enum', async () => {
         // searchBy bid by item hash
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
             'INVALID STATUS'
@@ -238,7 +279,7 @@ describe('BidSearchCommand', () => {
 
     test('Should return empty searchBy result because Bid with status MPA_REJECT does not exist', async () => {
         // searchBy bid by item hash
-        const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
             listingItems[0].hash,
             MPAction.MPA_REJECT
@@ -254,5 +295,5 @@ describe('BidSearchCommand', () => {
     // TODO: missing tests for searching using searchString
     // TODO: missing tests for searching using bidder
     // TODO: missing tests for searching using multiple bidders
-
+*/
 });

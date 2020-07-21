@@ -115,12 +115,12 @@ export class Bid extends Bookshelf.Model<Bid> {
 
                 qb.join('listing_items', 'bids.listing_item_id', 'listing_items.id');
 
-                if (options.market) {
-                    qb.where('listing_items.market', '=', options.market);
+                if (options.listingItemId) {
+                    qb.where('listing_items.id', '=', options.listingItemId);
                 }
 
-                if (options.listingItemId) {
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                if (options.market) {
+                    qb.where('listing_items.market', '=', options.market);
                 }
 
                 if (options.profileId) {

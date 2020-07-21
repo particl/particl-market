@@ -61,6 +61,18 @@ export interface AddressInfo {
     balance: number;            // in satoshis
 }
 
+export interface CombinedVote {
+    voter: string;
+    weight: number;
+    postedAt: number;
+    receivedAt: number;
+    expiredAt: number;
+    votedProposalOption: resources.ProposalOption;
+    proposalOptions: resources.ProposalOption[]
+    createdAt: number;
+    updatedAt: number;
+}
+
 export class VoteActionService extends BaseActionService {
 
     constructor(
@@ -404,7 +416,7 @@ export class VoteActionService extends BaseActionService {
      * @param identity
      * @param proposal
      */
-    public async getCombinedVote(identity: resources.Identity, proposal: resources.Proposal): Promise<resources.Vote> {
+    public async getCombinedVote(identity: resources.Identity, proposal: resources.Proposal): Promise<CombinedVote> {
 
         // TODO: move this and getPublicWalletAddressInfos elsewhere, maybe VoteService
         const addressInfos: AddressInfo[] = await this.getPublicWalletAddressInfos(identity.wallet);
@@ -425,7 +437,6 @@ export class VoteActionService extends BaseActionService {
         }
 
         const combinedVote = {
-            id: 0,
             voter: identity.address,
             weight: 0,
             postedAt: Date.now(),
@@ -433,12 +444,13 @@ export class VoteActionService extends BaseActionService {
             expiredAt: Date.now(),
             createdAt: Date.now(),
             updatedAt: Date.now(),
-            ProposalOption: {} as resources.ProposalOption
-        } as resources.Vote;
+            // votedProposalOption: undefined,
+            proposalOptions: proposal.ProposalOptions
+        } as CombinedVote;
 
         for (const vote of votes) {
             combinedVote.weight = combinedVote.weight + vote.weight;
-            combinedVote.ProposalOption = vote.ProposalOption;
+            combinedVote.votedProposalOption = vote.ProposalOption;
         }
 
         return combinedVote;

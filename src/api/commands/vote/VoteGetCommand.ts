@@ -17,11 +17,11 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { VoteActionService } from '../../services/action/VoteActionService';
+import { CombinedVote, VoteActionService } from '../../services/action/VoteActionService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MarketService } from '../../services/model/MarketService';
 
-export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<resources.Vote> {
+export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<CombinedVote> {
 
     public log: LoggerType;
 
@@ -48,7 +48,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<r
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<CombinedVote> {
 
         const market: resources.Market = data.params[0];
         const identity: resources.Identity = data.params[1];

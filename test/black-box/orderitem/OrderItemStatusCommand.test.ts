@@ -365,11 +365,11 @@ describe('OrderItemStatus', () => {
         // TODO
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItemReceivedBuyerNode.id         // listingItemId
-            // MPAction.MPA_BID,                       // type
-            // '*',                                    // search string
-            // '*',                                    // market
-            // buyerMarket.Identity.address            // bidder
+            listingItemReceivedBuyerNode.id             // listingItemId
+            // MPAction.MPA_BID,                        // type
+            // '*',                                     // search string
+            // '*',                                     // market
+            // buyerMarket.Identity.address             // bidder
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -395,10 +395,10 @@ describe('OrderItemStatus', () => {
 
     }, 600000); // timeout to 600s
 
-/*
     test('Should have received Bid (MPA_BID) on SELLER node', async () => {
 
         expect(sent).toBeTruthy();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
 
         // Bid should have been created on buyer node
         expect(bidOnBuyerNode).toBeDefined();
@@ -410,15 +410,13 @@ describe('OrderItemStatus', () => {
         // wait for some time to make sure the Bid has been created
         await testUtilSellerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(
-            bidCommand,
-            [
-                bidSearchCommand,
-                PAGE, PAGE_LIMIT, SEARCHORDER,
-                listingItemReceivedBuyerNode.hash,
-                MPAction.MPA_BID,
-                '*',
-                buyerProfile.address
+        const res: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                listingItemReceivedOnSellerNode.id,
+                MPAction.MPA_BID                        // type
+                // '*',                                     // search string
+                // '*',                                     // market
+                // buyerMarket.Identity.address             // bidder
             ],
             8 * 60,
             200,
@@ -454,7 +452,7 @@ describe('OrderItemStatus', () => {
 
     }, 600000); // timeout to 600s
 
-
+/*
     test('Should get OrderItemStatus from BUYER node (bidtype=MPA_BID)', async () => {
 
         expect(sent).toBeTruthy();

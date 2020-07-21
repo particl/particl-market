@@ -122,6 +122,8 @@ import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 import { ServerStartedListener } from '../listeners/ServerStartedListener';
+import {SellerMessage} from './action/ListingItemAddActionService';
+import {ActionMessageObjects} from '../enums/ActionMessageObjects';
 
 
 export class TestDataService {
@@ -625,7 +627,7 @@ export class TestDataService {
                 listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
 
                 const soldOnMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
-                const sellersMarketIdentityAddress: string = await this.profileService.findOne(generateParams.profileId)
+                const sellersMarketIdentity: resources.Identity = await this.profileService.findOne(generateParams.profileId)
                     .then(value => {
                         const sellerProfile: resources.Profile = value.toJSON();
                         const foundMarket = _.find(sellerProfile.Markets, sellersMarket => {
@@ -633,17 +635,16 @@ export class TestDataService {
                         });
 
                         if (foundMarket) {
-                            return foundMarket.Identity.address;
+                            return foundMarket.Identity;
                         } else {
                             throw new MessageException('Seller does not have a market on which the ListingItem is posted on.');
                         }
                     });
 
-                this.log.debug('sellersMarketIdentityAddress: ', sellersMarketIdentityAddress);
+                this.log.debug('sellersMarketIdentityAddress: ', sellersMarketIdentity.address);
 
                 const listingItemCreateRequest = {
-                    seller: sellersMarketIdentityAddress,
-                    // TODO: signature
+                    seller: sellersMarketIdentity.address,
                     market: soldOnMarket.receiveAddress,
                     listing_item_template_id: listingItemTemplate.id,
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
@@ -658,18 +659,27 @@ export class TestDataService {
                     generatedAt: listingItemTemplateCreateRequest.generatedAt
                 } as ListingItemCreateRequest;
 
-                // this.log.debug('listingItemCreateRequestToHash:', JSON.stringify(listingItemCreateRequest, null, 2));
+                this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
+                this.log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
                 this.log.debug('listingItem.hash:', listingItemCreateRequest.hash);
 
                 // make sure the hashes match
                 if (listingItemCreateRequest.hash !== listingItemTemplate.hash) {
                     throw new MessageException('ListingItemTemplate and ListingItem hashes dont match.');
                 }
+
+                const message = {
+                    address: sellersMarketIdentity.address,
+                    hash: listingItemCreateRequest.hash
+                } as SellerMessage;
+                const signature = await this.coreRpcService.signMessage(sellersMarketIdentity.wallet, sellersMarketIdentity.address, message);
+                listingItemCreateRequest.signature = signature;
+
                 const listingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
                 // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-                // this.log.debug('created listingItem, hash: ', listingItem.hash);
+                this.log.debug('created listingItem, hash: ', listingItem.hash);
 
                 listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
             }
@@ -808,9 +818,9 @@ export class TestDataService {
         const items: resources.Bid[] = [];
         for (let i = amount; i > 0; i--) {
             const bidCreateRequest = await this.generateBidData(generateParams);
-            const bidderBid: resources.Bid = await this.bidService.create(bidCreateRequest[0]).then(value => value.toJSON());
-            const sellerBid: resources.Bid = await this.bidService.create(bidCreateRequest[1]).then(value => value.toJSON());
-            items.push(bidderBid, sellerBid);
+            this.log.debug('bidCreateRequest:', JSON.stringify(bidCreateRequest, null, 2));
+            const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
+            items.push(bid);
         }
 
         // this.log.debug('bids:', JSON.stringify(items, null, 2));
@@ -818,35 +828,58 @@ export class TestDataService {
         return this.generateResponse(items, withRelated);
     }
 
-    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest[]> {
-
+    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
         // this.log.debug('generateBidData, generateParams: ', JSON.stringify(generateParams, null, 2));
-
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(generateParams.listingItemId).then(value => value.toJSON());
-        const bidderIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.bidder).then(value => value.toJSON());
-        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.seller).then(value => value.toJSON());
-        const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
 
-        // TODO: generate biddatas
+        const bidderIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.bidder)
+            .then(value => value.toJSON())
+            .catch(reason => undefined);
+        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(generateParams.seller)
+            .then(value => value.toJSON())
+            .catch(reason => undefined);
+
+        let profileId;
+
+        if (_.isNil(bidderIdentity)) {
+            // creating for seller
+            profileId = sellerIdentity.Profile.id;
+        } else {
+            profileId = bidderIdentity.Profile.id;
+        }
+
+        const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
         const bidDatas = [{
             key: 'size',
             value: 'XL'
         }, {
             key: 'color',
             value: 'pink'
-        }] as BidDataCreateRequest[];
+        }];
 
-        const bidCreateRequestForBidder = {
+        // TODO: other types
+        if (type === MPAction.MPA_BID) {
+            bidDatas.push({
+                key: ActionMessageObjects.BID_ON_MARKET,
+                value: listingItem.market
+            });
+            bidDatas.push({
+                key: ActionMessageObjects.ORDER_HASH,
+                value: Faker.random.uuid()
+            });
+        }
+
+        const bidCreateRequest = {
             listing_item_id: listingItem.id,
-            profile_id: bidderIdentity.Profile.id,
+            profile_id: profileId,
             parent_bid_id: generateParams.parentBidId,
             type,
-            bidder: bidderIdentity.address,
+            bidder: generateParams.bidder,
             bidDatas,
             generatedAt: +Date.now(),
             msgid: Faker.random.uuid(),
             address: MPAction.MPA_BID === type ? {
-                profile_id: bidderIdentity.Profile.id,
+                profile_id: profileId,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 addressLine1: Faker.address.streetAddress(),
@@ -854,13 +887,13 @@ export class TestDataService {
                 city: Faker.address.city(),
                 state: Faker.address.state(),
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
-                type: AddressType.SHIPPING_OWN
+                type: AddressType.SHIPPING_BID
             } as AddressCreateRequest : undefined
         } as BidCreateRequest;
 
         // TODO: this hash is incorrect and should be fixed.
         // TODO: add market to the hash?
-        bidCreateRequestForBidder.hash = ConfigurableHasher.hash(bidCreateRequestForBidder, new HashableBidCreateRequestConfig([{
+        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
             value: listingItem.hash,
             to: HashableBidField.ITEM_HASH
         }, {
@@ -871,15 +904,7 @@ export class TestDataService {
             to: HashableBidField.PAYMENT_CRYPTO
         }]));
 
-        const bidCreateRequestForSeller: BidCreateRequest = JSON.parse(JSON.stringify(bidCreateRequestForBidder));
-        bidCreateRequestForSeller.profile_id = sellerIdentity.Profile.id;
-        bidCreateRequestForSeller.address.profile_id = sellerIdentity.Profile.id;
-        bidCreateRequestForSeller.address.type = AddressType.SHIPPING_BID;
-
-        // this.log.debug('bidCreateRequestForBidder: ' + JSON.stringify(bidCreateRequestForBidder, null, 2));
-        // this.log.debug('bidCreateRequestForSeller: ' + JSON.stringify(bidCreateRequestForSeller, null, 2));
-
-        return [bidCreateRequestForBidder, bidCreateRequestForSeller];
+        return bidCreateRequest;
     }
 
     // -------------------
@@ -1345,6 +1370,12 @@ export class TestDataService {
         } as ListingItemCreateRequest;
 
         listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
+        const message = {
+            address: market.Identity.address,
+            hash: listingItemCreateRequest.hash
+        } as SellerMessage;
+        const signature = await this.coreRpcService.signMessage(market.Identity.wallet, market.Identity.address, message);
+        listingItemCreateRequest.signature = signature;
 
         // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
