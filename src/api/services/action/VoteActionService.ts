@@ -68,7 +68,7 @@ export interface CombinedVote {
     receivedAt: number;
     expiredAt: number;
     votedProposalOption: resources.ProposalOption;
-    proposalOptions: resources.ProposalOption[]
+    proposalOptions: resources.ProposalOption[];
     createdAt: number;
     updatedAt: number;
 }
