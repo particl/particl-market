@@ -64,8 +64,7 @@ export class ListingItemService {
      * @returns {Promise<ListingItem>}
      */
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        const listingItems = await this.listingItemRepo.findAllByHash(hash, withRelated);
-        return listingItems;
+        return await this.listingItemRepo.findAllByHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {

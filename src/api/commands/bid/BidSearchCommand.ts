@@ -16,16 +16,15 @@ import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/search/BidSearchParams';
 import { Commands } from '../CommandEnumType';
-import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import {MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BidSearchOrderField } from '../../enums/SearchOrderField';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
+import { MarketService } from '../../services/model/MarketService';
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -34,6 +33,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.BID_SEARCH);
@@ -84,7 +84,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
 
         const searchParams = {
             page, pageLimit, order, orderField,
-            listingItemId: listingItem.id,
+            listingItemId: listingItem ? listingItem.id : undefined,
             type,
             searchString,
             bidders: data.params,
@@ -140,12 +140,26 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         searchString = searchString !== '*' ? searchString : undefined;
         market = market !== '*' ? market : undefined;
 
-        if (listingItemId) {
+        this.log.debug('listingItemId: ', JSON.stringify(listingItemId, null, 2));
+
+        if (!_.isNil(listingItemId)) {
             // make sure ListingItemTemplate with the id exists
             data.params[4] = await this.listingItemService.findOne(listingItemId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('ListingItem');
+                });
+            this.log.debug('data.params[4]: ', JSON.stringify(data.params[4], null, 2));
+        }
+
+        if (!_.isNil(market)) {
+            await this.marketService.findAllByReceiveAddress(market)
+                .then(results => {
+                    const markets: resources.Market[] = results.toJSON();
+                    this.log.debug('markets: ', JSON.stringify(markets, null, 2));
+                    if (_.isEmpty(markets)) {
+                        throw new ModelNotFoundException('Market');
+                    }
                 });
         }
 

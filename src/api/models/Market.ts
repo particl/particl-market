@@ -36,7 +36,7 @@ export class Market extends Bookshelf.Model<Market> {
     public static async fetchAllByReceiveAddress(receiveAddress: string, withRelated: boolean = true): Promise<Collection<Market>> {
         const MarketCollection = Market.forge<Model<Market>>()
             .query(qb => {
-                qb.where('receive_address', '=', receiveAddress);
+                qb.where('receive_address', 'LIKE', receiveAddress);
             })
             .orderBy('id', 'ASC');
         return await MarketCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
