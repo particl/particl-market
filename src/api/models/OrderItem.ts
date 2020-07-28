@@ -9,8 +9,11 @@ import { Bid } from './Bid';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderSearchOrderField } from '../enums/SearchOrderField';
 import { OrderItemSearchParams } from '../requests/search/OrderItemSearchParams';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class OrderItem extends Bookshelf.Model<OrderItem> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'Order',
@@ -26,13 +29,7 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<OrderItem> {
-        if (withRelated) {
-            return await OrderItem.where<OrderItem>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await OrderItem.where<OrderItem>({ id: value }).fetch();
-        }
+        return OrderItem.where<OrderItem>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async searchBy(options: OrderItemSearchParams, withRelated: boolean = true): Promise<Collection<OrderItem>> {
@@ -41,26 +38,31 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || OrderSearchOrderField.UPDATED_AT;
 
-        const collection = Order.forge<Model<OrderItem>>()
+        const collection = OrderItem.forge<Model<OrderItem>>()
             .query( qb => {
+
                 if (options.market || options.listingItemId) {
-                    qb.join('bids', 'order_items.bid_id', 'bids.id');
-                    qb.join('listing_items', 'bid.listing_item_id', 'listing_items.id');
+                    qb.join('bids', 'bid_id', 'bids.id');
 
                     if (options.market) {
-                        qb.where('listing_items.market', '=', options.market);
+                        qb.innerJoin('listing_items', 'bid.listing_item_id', 'listing_items.id');
+                        qb.andWhere( qbInner => {
+                            return qbInner.where('listing_items.market', '=', options.market);
+                        });
                     }
+
                     if (options.listingItemId) {
                         qb.where('bids.listing_item_id', '=', options.listingItemId);
                     }
                 }
 
                 if (options.status && typeof options.status === 'string') {
-                    qb.where('order_items.status', '=', options.status);
+                    qb.where('status', '=', options.status);
                 }
 
-                if (options.market || options.listingItemId) {
-                    qb.join('orders', 'order_times.order_id', 'orders.id');
+                if (options.buyerAddress || options.sellerAddress) {
+                    qb.join('orders', 'order_id', 'orders.id');
+
                     if (options.buyerAddress) {
                         qb.where('orders.buyer', '=', options.buyerAddress);
                     }
@@ -70,19 +72,14 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
                 }
 
             })
-            .orderBy('order_items.' + options.orderField, options.order)
+            .orderBy(/*'order_items.' + */options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
-                offset: options.page * options.pageLimit
+                offset: options.page * options.pageLimit,
+                debug: true
             });
 
-        if (withRelated) {
-            return await collection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await collection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'order_items'; }

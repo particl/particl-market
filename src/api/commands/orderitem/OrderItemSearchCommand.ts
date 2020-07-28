@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -15,11 +17,13 @@ import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { OrderItemSearchOrderField } from '../../enums/SearchOrderField';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { CommentType } from '../../enums/CommentType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { OrderItem } from '../../models/OrderItem';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchParams';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { MarketService } from '../../services/model/MarketService';
 
 export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
 
@@ -27,6 +31,8 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
     ) {
         super(Commands.ORDERITEM_SEARCH);
@@ -43,7 +49,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: listingItemId, number, optional
+     *  [4]: listingItem, resources.ListingItem, optional
      *  [5]: status, OrderItemStatus, optional
      *  [6]: buyerAddress, string, optional
      *  [7]: sellerAddress, string, optional
@@ -59,7 +65,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
         const pageLimit = data.params[1];
         const order = data.params[2];
         const orderField = data.params[3];
-        const listingItemId = data.params[4];
+        const listingItem: resources.ListingItem = data.params[4];
         const status = data.params[5];
         const buyerAddress = data.params[6];
         const sellerAddress = data.params[7];
@@ -67,7 +73,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
 
         const orderSearchParams = {
             page, pageLimit, order, orderField,
-            listingItemId,
+            listingItemId: listingItem.id,
             status,
             buyerAddress,
             sellerAddress,
@@ -95,35 +101,61 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const listingItemId = data.params[4];       // optional
-        const status = data.params[5];              // optional
-        const buyerAddress = data.params[6];        // optional
-        const sellerAddress = data.params[7];       // optional
-        const market = data.params[8];              // optional
+        let listingItemId = data.params[4];       // optional
+        let status = data.params[5];              // optional
+        let buyerAddress = data.params[6];        // optional
+        let sellerAddress = data.params[7];       // optional
+        let market = data.params[8];              // optional
 
-        if (listingItemId && typeof listingItemId !== 'number') {
+        if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');
-        } else if (status && typeof status !== 'string') {
+        } else if (!_.isNil(status) && typeof status !== 'string') {
             throw new InvalidParamException('status', 'string');
-        } else if (buyerAddress && typeof buyerAddress !== 'string') {
+        } else if (!_.isNil(buyerAddress) && typeof buyerAddress !== 'string') {
             throw new InvalidParamException('buyerAddress', 'string');
-        } else if (sellerAddress && typeof sellerAddress !== 'string') {
+        } else if (!_.isNil(sellerAddress) && typeof sellerAddress !== 'string') {
             throw new InvalidParamException('sellerAddress', 'string');
-        } else if (market && typeof market !== 'string') {
+        } else if (!_.isNil(market) && typeof market !== 'string') {
             throw new InvalidParamException('market', 'string');
         }
 
         // * -> undefined
-        data.params[4] = listingItemId !== '*' ? listingItemId : undefined;
-        if (status && !EnumHelper.containsName(OrderItemStatus, status)) {
-            if (status === '*') {
-                data.params[5] = undefined;
-            }
-            throw new InvalidParamException('type', 'CommentType');
+        listingItemId = listingItemId !== '*' ? listingItemId : undefined;
+
+        if (status === '*') {
+            status = undefined;
         }
-        data.params[6] = buyerAddress !== '*' ? buyerAddress : undefined;
-        data.params[7] = sellerAddress !== '*' ? sellerAddress : undefined;
-        data.params[8] = market !== '*' ? market : undefined;
+        if (status && !EnumHelper.containsName(OrderItemStatus, status)) {
+            throw new InvalidParamException('status', 'OrderItemStatus');
+        }
+
+        buyerAddress = buyerAddress !== '*' ? buyerAddress : undefined;
+        sellerAddress = sellerAddress !== '*' ? sellerAddress : undefined;
+        market = market !== '*' ? market : undefined;
+
+        if (!_.isNil(listingItemId)) {
+            // make sure ListingItemTemplate with the id exists
+            data.params[4] = await this.listingItemService.findOne(listingItemId)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('ListingItem');
+                });
+        }
+
+        if (!_.isNil(market)) {
+            await this.marketService.findAllByReceiveAddress(market)
+                .then(results => {
+                    const markets: resources.Market[] = results.toJSON();
+                    if (_.isEmpty(markets)) {
+                        throw new ModelNotFoundException('Market');
+                    }
+                });
+        }
+
+        data.params[5] = status;
+        data.params[6] = buyerAddress;
+        data.params[7] = sellerAddress;
+        data.params[8] = market;
 
         return data;
     }

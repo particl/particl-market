@@ -49,7 +49,7 @@ export class OrderItemService {
      */
     @validate()
     public async search(@request(OrderItemSearchParams) options: OrderItemSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<OrderItem>> {
-        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        // this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.orderItemRepo.search(options, withRelated);
     }
 

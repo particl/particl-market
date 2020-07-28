@@ -128,6 +128,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
         if (status && (!EnumHelper.containsName(OrderStatus, status) && !EnumHelper.containsName(OrderItemStatus, status))) {
             throw new InvalidParamException('status', 'OrderStatus|OrderItemStatus');
         }
+
         buyerAddress = buyerAddress !== '*' ? buyerAddress : undefined;
         sellerAddress = sellerAddress !== '*' ? sellerAddress : undefined;
         market = market !== '*' ? market : undefined;

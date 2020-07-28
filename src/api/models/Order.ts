@@ -44,7 +44,7 @@ export class Order extends Bookshelf.Model<Order> {
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || OrderSearchOrderField.UPDATED_AT;
 
-        const orderCollection = Order.forge<Model<Order>>()
+        const collection = Order.forge<Model<Order>>()
             .query( qb => {
                 qb.innerJoin('order_items', 'orders.id', 'order_items.order_id');
 
@@ -88,13 +88,7 @@ export class Order extends Bookshelf.Model<Order> {
                 // debug: true
             });
 
-        if (withRelated) {
-            return await orderCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await orderCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'orders'; }

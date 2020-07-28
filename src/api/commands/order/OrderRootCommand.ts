@@ -41,7 +41,7 @@ export class OrderRootCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public description(): string {
-        return 'Commands for managing orders.';
+        return 'Commands for managing Orders.';
     }
 
     public example(): string {

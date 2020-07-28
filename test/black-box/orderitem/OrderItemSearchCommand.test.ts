@@ -17,9 +17,8 @@ import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoun
 import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../../src/api/enums/OrderItemStatus';
-import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 
-describe('OrderSearchCommand', () => {
+describe('OrderItemSearchCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -29,8 +28,8 @@ describe('OrderSearchCommand', () => {
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
-    const orderCommand = Commands.ORDER_ROOT.commandName;
-    const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
+    const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
+    const orderItemSearchCommand = Commands.ORDERITEM_SEARCH.commandName;
 
     let sellerMarket: resources.Market;
     let sellerProfile: resources.Profile;
@@ -93,7 +92,7 @@ describe('OrderSearchCommand', () => {
 
 
     test('Should fail to search because invalid ListingItemId', async () => {
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             true
         ]);
@@ -104,7 +103,7 @@ describe('OrderSearchCommand', () => {
 
 
     test('Should fail to search because ListingItem not found', async () => {
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             0
         ]);
@@ -114,8 +113,8 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should return empty result because Orders do not exist for the given ListingItem', async () => {
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+    test('Should return empty result because OrderItems do not exist for the given ListingItem', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id
         ]);
@@ -156,24 +155,23 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should find the generated Order when searching by listingItemId', async () => {
+    test('Should find the generated OrderItem when searching by listingItemId', async () => {
         expect(bid).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.OrderItem[] = res.getBody()['result'];
 
         // log.debug('result: ', JSON.stringify(result, null, 2));
         order = result[0];
         expect(result.length).toBe(1);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].itemHash).toBe(listingItem.hash);
+        expect(result[0].Bid.id).toBe(bid.id);
     });
 
 
@@ -181,7 +179,7 @@ describe('OrderSearchCommand', () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
             true
@@ -196,22 +194,22 @@ describe('OrderSearchCommand', () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
             'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('status', 'OrderStatus|OrderItemStatus').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('status', 'OrderItemStatus').getMessage());
     });
 
 
-    test('Should return one Order when searching by listingItemId and status (OrderItemStatus) ', async () => {
+    test('Should return one OrderItem when searching by listingItemId and status (OrderItemStatus) ', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
             OrderItemStatus.BIDDED
@@ -219,40 +217,12 @@ describe('OrderSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.OrderItem[] = res.getBody()['result'];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].status).toBe(OrderStatus.PROCESSING);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
-    });
-
-    // TODO: generate second Order with MPA_ACCEPT
-
-    test('Should return one Order when searching by listingItemId and status (OrderStatus) ', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            OrderStatus.PROCESSING
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        const result: resources.Order[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
-        expect(result.length).toBe(1);
-        expect(result[0].status).toBe(OrderStatus.PROCESSING);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].itemHash).toBe(listingItem.hash);
+        expect(result[0].Bid.id).toBe(bid.id);
     });
 
 
@@ -260,10 +230,10 @@ describe('OrderSearchCommand', () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
-            OrderStatus.PROCESSING,
+            OrderItemStatus.BIDDED,
             true
         ]);
         res.expectJson();
@@ -272,11 +242,11 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should return one Order when searching by buyerAddress', async () => {
+    test('Should return one OrderItem when searching by buyerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             '*',
             '*',
@@ -285,15 +255,12 @@ describe('OrderSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.OrderItem[] = res.getBody()['result'];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].status).toBe(OrderStatus.PROCESSING);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].itemHash).toBe(listingItem.hash);
+        expect(result[0].Bid.id).toBe(bid.id);
     });
 
 
@@ -301,10 +268,10 @@ describe('OrderSearchCommand', () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
-            OrderStatus.PROCESSING,
+            OrderItemStatus.BIDDED,
             buyerMarket.Identity.address,
             true
         ]);
@@ -314,11 +281,11 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should return one Order when searching by buyerAddress and sellerAddress', async () => {
+    test('Should return one OrderItem when searching by buyerAddress and sellerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             '*',
             '*',
@@ -328,15 +295,12 @@ describe('OrderSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.OrderItem[] = res.getBody()['result'];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].status).toBe(OrderStatus.PROCESSING);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].itemHash).toBe(listingItem.hash);
+        expect(result[0].Bid.id).toBe(bid.id);
     });
 
 
@@ -344,10 +308,10 @@ describe('OrderSearchCommand', () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
-            OrderStatus.PROCESSING,
+            OrderItemStatus.BIDDED,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address,
             true
@@ -359,10 +323,10 @@ describe('OrderSearchCommand', () => {
 
 
     test('Should fail to search because Market not found', async () => {
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,
-            OrderStatus.PROCESSING,
+            OrderItemStatus.BIDDED,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address,
             'ADDRESS_NOT_FOUND'
@@ -373,11 +337,11 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should return one Order when searching by buyerAddress and sellerAddress and market', async () => {
+    test('Should return one OrderItem when searching by buyerAddress and sellerAddress and market', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             '*',
             '*',
@@ -388,15 +352,12 @@ describe('OrderSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.OrderItem[] = res.getBody()['result'];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].status).toBe(OrderStatus.PROCESSING);
-        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
-        expect(result[0].seller).toBe(sellerMarket.Identity.address);
-        expect(result[0].OrderItems).toBeDefined();
-        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
-        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].status).toBe(OrderItemStatus.BIDDED);
+        expect(result[0].itemHash).toBe(listingItem.hash);
+        expect(result[0].Bid.id).toBe(bid.id);
     });
 
 });
