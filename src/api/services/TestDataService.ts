@@ -122,8 +122,8 @@ import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 import { ServerStartedListener } from '../listeners/ServerStartedListener';
-import {SellerMessage} from './action/ListingItemAddActionService';
-import {ActionMessageObjects} from '../enums/ActionMessageObjects';
+import { SellerMessage } from './action/ListingItemAddActionService';
+import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 
 
 export class TestDataService {
@@ -820,7 +820,7 @@ export class TestDataService {
 
             const orderGenerateParams = new GenerateOrderParams([true, bid.id]);
 
-            if (generateParams.generateOrder) {
+            if (generateParams.generateOrder && bid.type === MPAction.MPA_BID) {
                 await this.generateOrders(1, true, orderGenerateParams);
                 bid = await this.bidService.findOne(bid.id).then(value => value.toJSON());
             }

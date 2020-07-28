@@ -35,7 +35,7 @@ describe('BidSearchCommand', () => {
     let buyerProfile: resources.Profile;
     let buyerMarket: resources.Market;
 
-    let listingItem: resources.ListingItem;
+    let listingItemOnSellerNode: resources.ListingItem;
     let mpaBid: resources.Bid;
     let acceptBid: resources.Bid;
 
@@ -45,35 +45,43 @@ describe('BidSearchCommand', () => {
     const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
 
     beforeAll(async () => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
         await testUtilSellerNode.cleanDb();
         await testUtilBuyerNode.cleanDb();
 
-        // get default sellerProfile and sellerMarket
-        sellerProfile = await testUtilSellerNode.getDefaultProfile();
-        expect(sellerProfile.id).toBeDefined();
-        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
-        expect(sellerMarket.id).toBeDefined();
+        log.debug('SELLER IS NODE' + (randomBoolean ? 1 : 2));
+        log.debug('BUYER IS NODE' + (randomBoolean ? 2 : 1));
 
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
+        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
+        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // create ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            true,           // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            true,           // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false,          // generateObjectDatas
-            sellerProfile.id,     // profileId
-            true,           // generateListingItem
-            sellerMarket.id       // soldOnMarketId
+            true,                   // generateItemInformation
+            true,                   // generateItemLocation
+            true,                   // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            true,                   // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            sellerProfile.id,       // profileId
+            true,                   // generateListingItem
+            sellerMarket.id         // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
@@ -82,22 +90,12 @@ describe('BidSearchCommand', () => {
             true,
             generateListingItemTemplateParams
         );
-        listingItem = listingItemTemplates[0].ListingItems[0];
+        listingItemOnSellerNode = listingItemTemplates[0].ListingItems[0];
 
-        // log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+        // log.debug('listingItemOnSellerNode: ', JSON.stringify(listingItemOnSellerNode, null, 2));
 
     });
 
-    test('Should return empty result because Bids do not exist for the given ListingItem', async () => {
-        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(0);
-    });
 
     test('Should fail to search because invalid ListingItemId', async () => {
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
@@ -109,6 +107,7 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
+
     test('Should fail to search because ListingItem not found', async () => {
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
@@ -119,13 +118,26 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
 
+
+    test('Should return empty result because Bids do not exist for the given ListingItem', async () => {
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItemOnSellerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.length).toBe(0);
+    });
+
+
     test('Should generate a Bid (MPA_BID)', async () => {
-        expect(listingItem).toBeDefined();
+        expect(listingItemOnSellerNode).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
             false,                          // generateListingItemTemplate
             false,                          // generateListingItem
             true,                           // generateOrder
-            listingItem.id,                 // listingItem.id
+            listingItemOnSellerNode.id,                 // listingItemOnSellerNode.id
             MPAction.MPA_BID,               // type
             buyerMarket.Identity.address,   // bidder
             sellerMarket.Identity.address,  // seller
@@ -138,7 +150,14 @@ describe('BidSearchCommand', () => {
             true,
             bidGenerateParams);
         mpaBid = bids[0];
+
+        expect(mpaBid.type).toBe(MPAction.MPA_BID);
+        expect(mpaBid.OrderItem).toBeDefined();
+        expect(mpaBid.OrderItem.Order).toBeDefined();
+        expect(mpaBid.ListingItem).toBeDefined();
+        expect(mpaBid.ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
+
 
     test('Should find the generated Bid when searching by listingItemId', async () => {
 
@@ -146,7 +165,7 @@ describe('BidSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id
+            listingItemOnSellerNode.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -156,15 +175,19 @@ describe('BidSearchCommand', () => {
         mpaBid = result[0];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_BID);
+        expect(result[0].bidder).toBe(buyerMarket.Identity.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemOnSellerNode.hash);
+        expect(result[0].ListingItem.seller).toBe(sellerMarket.Identity.address);
     });
 
+
     test('Should generate accept Bid (MPA_ACCEPT)', async () => {
-        expect(listingItem).toBeDefined();
+        expect(listingItemOnSellerNode).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
-            true,                               // generateOrder
-            listingItem.id,                     // listingItem.id
+            false,                              // generateOrder
+            listingItemOnSellerNode.id,         // listingItemOnSellerNode.id
             MPAction.MPA_ACCEPT,                // type
             buyerMarket.Identity.address,       // bidder
             sellerMarket.Identity.address,      // seller
@@ -179,13 +202,14 @@ describe('BidSearchCommand', () => {
         acceptBid = bids[0];
     });
 
+
     test('Should return two Bids when searching by listingItemId', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id
+            listingItemOnSellerNode.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -193,10 +217,11 @@ describe('BidSearchCommand', () => {
         const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(2);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
         expect(result[1].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[1].ListingItem.id).toBe(listingItem.id);
+        expect(result[1].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
+
 
     test('Should fail to search because invalid type', async () => {
         expect(mpaBid).toBeDefined();
@@ -204,7 +229,7 @@ describe('BidSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             true
         ]);
         res.expectJson();
@@ -212,13 +237,14 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('type', 'MPAction').getMessage());
     });
 
+
     test('Should return one Bid when searching by listingItemId and type ', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_ACCEPT
         ]);
         res.expectJson();
@@ -228,8 +254,9 @@ describe('BidSearchCommand', () => {
         // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
+
 
     test('Should fail to search because invalid searchString', async () => {
         expect(mpaBid).toBeDefined();
@@ -237,7 +264,7 @@ describe('BidSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_ACCEPT,
             true
         ]);
@@ -246,10 +273,11 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('searchString', 'string').getMessage());
     });
 
+
     test('Should return one Bid when searching by type and searchString', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
@@ -263,14 +291,15 @@ describe('BidSearchCommand', () => {
         const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
 
+
     test('Should fail to search because invalid market', async () => {
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_ACCEPT,
             searchStr,
             true
@@ -280,11 +309,12 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
     });
 
+
     test('Should fail to search because Market not found', async () => {
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_ACCEPT,
             searchStr,
             sellerMarket.receiveAddress + 'x'
@@ -294,14 +324,15 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
+
     test('Should return one Bid when searching by listingItemId, type and market', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_ACCEPT,
             '*',
             sellerMarket.receiveAddress
@@ -312,17 +343,18 @@ describe('BidSearchCommand', () => {
         const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
+
 
     test('Should return no Bids when searching by listingItemId and market and type which doesnt exist', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             MPAction.MPA_REJECT,
             '*',
             sellerMarket.receiveAddress
@@ -334,14 +366,15 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
+
     test('Should return two Bids when searching by listingItemId, market and bidder', async () => {
         expect(mpaBid).toBeDefined();
         expect(acceptBid).toBeDefined();
-        const searchStr = listingItem.ItemInformation.longDescription.substring(0, 10);
+        const searchStr = listingItemOnSellerNode.ItemInformation.longDescription.substring(0, 10);
 
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItem.id,
+            listingItemOnSellerNode.id,
             '*',
             '*',
             sellerMarket.receiveAddress,
@@ -353,10 +386,11 @@ describe('BidSearchCommand', () => {
         const result: resources.Bid[] = res.getBody()['result'];
         expect(result.length).toBe(2);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
         expect(result[1].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[1].ListingItem.id).toBe(listingItem.id);
+        expect(result[1].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
+
 
     test('Should return all two Bids when searching without any params', async () => {
         const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
@@ -367,9 +401,9 @@ describe('BidSearchCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].ListingItem.id).toBe(listingItem.id);
+        expect(result[0].ListingItem.id).toBe(listingItemOnSellerNode.id);
         expect(result[1].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[1].ListingItem.id).toBe(listingItem.id);
+        expect(result[1].ListingItem.id).toBe(listingItemOnSellerNode.id);
     });
 
 });

@@ -11,14 +11,13 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { ListingItemSearchOrderField, OrderSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { OrderSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBidParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import {OrderItemStatus} from '../../../src/api/enums/OrderItemStatus';
-import {OrderStatus} from '../../../src/api/enums/OrderStatus';
-import {MarketType} from '../../../src/api/enums/MarketType';
+import { OrderItemStatus } from '../../../src/api/enums/OrderItemStatus';
+import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 
 describe('OrderSearchCommand', () => {
 
@@ -32,8 +31,6 @@ describe('OrderSearchCommand', () => {
 
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
-    const marketCommand = Commands.MARKET_ROOT.commandName;
-    const marketAddCommand = Commands.MARKET_ADD.commandName;
 
     let sellerMarket: resources.Market;
     let sellerProfile: resources.Profile;
@@ -49,7 +46,6 @@ describe('OrderSearchCommand', () => {
     const PAGE_LIMIT = 10;
     const SEARCHORDER = SearchOrder.ASC;
     const ORDER_SEARCHORDERFIELD = OrderSearchOrderField.CREATED_AT;
-    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
 
     beforeAll(async () => {
         await testUtilSellerNode.cleanDb();
@@ -95,6 +91,7 @@ describe('OrderSearchCommand', () => {
         listingItem = listingItemTemplates[0].ListingItems[0];
     });
 
+
     test('Should return empty result because Orders do not exist for the given ListingItem', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -106,6 +103,7 @@ describe('OrderSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
+
     test('Should fail to search because invalid ListingItemId', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -116,6 +114,7 @@ describe('OrderSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
+
     test('Should fail to search because ListingItem not found', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -125,6 +124,7 @@ describe('OrderSearchCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
+
 
     test('Should generate a Bid (MPA_BID) with an Order and OrderItem', async () => {
         expect(listingItem).toBeDefined();
@@ -155,6 +155,7 @@ describe('OrderSearchCommand', () => {
         expect(bid.ListingItem.id).toBe(listingItem.id);
     });
 
+
     test('Should find the generated Order when searching by listingItemId', async () => {
         expect(bid).toBeDefined();
 
@@ -175,6 +176,7 @@ describe('OrderSearchCommand', () => {
         expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
     });
 
+
     test('Should fail to search because invalid status', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -189,6 +191,7 @@ describe('OrderSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('status', 'string').getMessage());
     });
 
+
     test('Should fail to search because invalid status', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -202,6 +205,7 @@ describe('OrderSearchCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('status', 'OrderStatus|OrderItemStatus').getMessage());
     });
+
 
     test('Should return one Order when searching by listingItemId and status (OrderItemStatus) ', async () => {
         expect(bid).toBeDefined();
@@ -251,6 +255,7 @@ describe('OrderSearchCommand', () => {
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
     });
 
+
     test('Should fail to search because invalid buyerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -265,6 +270,7 @@ describe('OrderSearchCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('buyerAddress', 'string').getMessage());
     });
+
 
     test('Should return one Order when searching by buyerAddress', async () => {
         expect(bid).toBeDefined();
@@ -290,6 +296,7 @@ describe('OrderSearchCommand', () => {
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
     });
 
+
     test('Should fail to search because invalid sellerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -305,6 +312,7 @@ describe('OrderSearchCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('sellerAddress', 'string').getMessage());
     });
+
 
     test('Should return one Order when searching by buyerAddress and sellerAddress', async () => {
         expect(bid).toBeDefined();
@@ -331,6 +339,7 @@ describe('OrderSearchCommand', () => {
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
     });
 
+
     test('Should fail to search because invalid market', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -348,6 +357,7 @@ describe('OrderSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
     });
 
+
     test('Should fail to search because Market not found', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -361,6 +371,7 @@ describe('OrderSearchCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
+
 
     test('Should return one Order when searching by buyerAddress and sellerAddress and market', async () => {
         expect(bid).toBeDefined();
