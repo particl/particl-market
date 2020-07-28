@@ -718,7 +718,13 @@ export class TestDataService {
 
     private async createListingItemSmsgMessage(listingItem: resources.ListingItem): Promise<resources.SmsgMessage> {
 
-        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(listingItem.seller).then(value => value.toJSON());
+        const sellerIdentity: resources.Identity = await this.identityService.findOneByAddress(listingItem.seller)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                return {
+                    address: Faker.finance.bitcoinAddress()
+                } as resources.Identity;
+            });
 
         const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             listingItem,
@@ -1320,6 +1326,8 @@ export class TestDataService {
      */
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
+        this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+
         // TODO: refactor this GenerateListingItemParams mess
         const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
@@ -1335,8 +1343,6 @@ export class TestDataService {
 
         // this.log.debug('seller: ', seller);
         // this.log.debug('market: ', JSON.stringify(market, null, 2));
-
-        // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const itemInformation = generateParams.generateItemInformation ? await this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? await this.generatePaymentInformationData(generateParams) : {};
@@ -1372,14 +1378,13 @@ export class TestDataService {
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id
         if (generateParams.listingItemTemplateHash) {
             const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService
-                .findOneByHash(generateParams.listingItemTemplateHash)
-                .then(value => value.toJSON());
+                .findOneByHash(generateParams.listingItemTemplateHash).then(value => value.toJSON());
             listingItemCreateRequest.listing_item_template_id = listingItemTemplate.id;
             listingItemCreateRequest.hash = listingItemTemplate.hash;
             this.log.debug('generateParams.listingItemTemplateHash: ', generateParams.listingItemTemplateHash);
         }
 
-        // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+        this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
         return listingItemCreateRequest;
     }
 
@@ -1470,17 +1475,18 @@ export class TestDataService {
 
         // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
 
-        let address;
+        const address = Faker.finance.bitcoinAddress();
+/*
+        // todo: fix bid send test data generation
         if (generateParams.soldOnMarketId) {
             address = await this.marketService.findOne(generateParams.soldOnMarketId).then(async value => {
                 const market: resources.Market = value.toJSON();
                 return (await this.coreRpcService.getNewStealthAddress(market.Identity.wallet)).address;
-
             });
         } else {
             address = Faker.finance.bitcoinAddress();
         }
-
+*/
         const escrow = generateParams.generateEscrow
             ? {
                 type: EscrowType.MAD_CT, // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
@@ -1519,8 +1525,8 @@ export class TestDataService {
 
     private generateMessagingInformationData(): MessagingInformationCreateRequest[] {
         const messagingInformations: MessagingInformationCreateRequest[] = [{
-            protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocol)),
-            publicKey: Faker.random.uuid()
+            protocol: MessagingProtocol.SMSG,
+            publicKey: 'pubkey'                     // todo: sellers pubkey should be added here
         }] as MessagingInformationCreateRequest[];
         return messagingInformations;
     }

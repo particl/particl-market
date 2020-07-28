@@ -191,7 +191,7 @@ export class BidActionService extends BaseActionService {
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(bidMessage.item,
             marketReceiveAddress).then(value => value.toJSON());
 
-        this.log.debug('Processing a Bid for listingItem: ', JSON.stringify(listingItem, null, 2));
+        this.log.debug('Processing a Bid for listingItem: ', listingItem.id);
         this.log.debug('bidMessage: ', JSON.stringify(bidMessage, null, 2));
 
         let address: AddressCreateRequest;
@@ -231,7 +231,7 @@ export class BidActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
 
         const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
-        this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+        // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
 
         // if we're the buyer, Order hash was generated before posting the BidMessage to the seller
         // if we're the seller, we should have received the Order hash from the buyer in the message
@@ -257,7 +257,7 @@ export class BidActionService extends BaseActionService {
         // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
 
         const order: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
-        this.log.debug('createBid(), created Order: ', JSON.stringify(order, null, 2));
+        this.log.debug('createBid(), created Order: ', order.id);
 
         return smsgMessage;
     }

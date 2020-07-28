@@ -270,8 +270,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS,
-                debug: true
+                withRelated: this.RELATIONS
+                // debug: true
             });
         } else {
             return await listingCollection.fetchAll();

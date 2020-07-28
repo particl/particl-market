@@ -162,9 +162,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemId');
+            throw new InvalidParamException('listingItemId', 'number');
         } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('identityId');
+            throw new InvalidParamException('identityId', 'number');
         }
 
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
@@ -175,7 +175,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 }
             }
         } else if (typeof data.params[2] !== 'number') {
-            throw new InvalidParamException('addressId');
+            throw new InvalidParamException('addressId', 'number');
         }
 
         // make sure required data exists and fetch it
@@ -326,7 +326,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                             address.country = paramValue;
                             break;
                         default:
-                            throw new InvalidParamException('addressKey');
+                            throw new InvalidParamException('addressKey', 'BidDataValue');
                     }
                 }
             }

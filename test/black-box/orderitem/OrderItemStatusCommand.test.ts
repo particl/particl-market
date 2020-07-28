@@ -135,7 +135,6 @@ describe('OrderItemStatus', () => {
         expect(result.id).toBe(listingItemTemplatesSellerNode[0].id);
 
         log.debug('==> Setup DONE.');
-
     });
 
     test('Should unlock the possibly locked outputs left from other tests', async () => {

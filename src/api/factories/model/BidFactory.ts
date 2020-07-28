@@ -112,7 +112,7 @@ export class BidFactory implements ModelFactoryInterface {
             }]));
         }
 
-        this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
         this.log.debug('get(), bidMessage.hash:', bidMessage.hash);
         this.log.debug('get(), createRequest.hash:', createRequest.hash);
 
