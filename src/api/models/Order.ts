@@ -46,22 +46,31 @@ export class Order extends Bookshelf.Model<Order> {
 
         const orderCollection = Order.forge<Model<Order>>()
             .query( qb => {
-                qb.join('order_items', 'orders.id', 'order_items.order_id');
+                qb.innerJoin('order_items', 'orders.id', 'order_items.order_id');
 
                 if (options.market || options.listingItemId) {
-                    qb.join('bids', 'order_items.bid_id', 'bids.id');
-                    qb.join('listing_items', 'bid.listing_item_id', 'listing_items.id');
+                    qb.innerJoin('bids', 'order_items.bid_id', 'bids.id');
 
                     if (options.market) {
-                        qb.where('listing_items.market', '=', options.market);
+                        qb.innerJoin('listing_items', 'bid.listing_item_id', 'listing_items.id');
+                        qb.andWhere( qbInner => {
+                            return qbInner.where('bids.listing_items.market', '=', options.market);
+                        });
                     }
+
                     if (options.listingItemId) {
-                        qb.where('bids.listing_item_id', '=', options.listingItemId);
+                        qb.andWhere( qbInner => {
+                            return qbInner.where('bids.listing_item_id', '=', options.listingItemId);
+                        });
                     }
                 }
 
                 if (options.status && typeof options.status === 'string') {
-                    qb.where('order_items.status', '=', options.status);
+                    qb.andWhere( qbInner => {
+                        return qbInner
+                            .where('order_items.status', '=', options.status)
+                            .orWhere('orders.status', '=', options.status);
+                    });
                 }
 
                 if (options.buyerAddress) {
@@ -76,6 +85,7 @@ export class Order extends Bookshelf.Model<Order> {
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
+                // debug: true
             });
 
         if (withRelated) {

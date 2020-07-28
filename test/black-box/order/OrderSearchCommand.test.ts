@@ -10,12 +10,15 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
-import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { ListingItemSearchOrderField, OrderSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { GenerateBidParams } from '../../../src/api/requests/testdata/GenerateBidParams';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {OrderItemStatus} from '../../../src/api/enums/OrderItemStatus';
+import {OrderStatus} from '../../../src/api/enums/OrderStatus';
+import {MarketType} from '../../../src/api/enums/MarketType';
 
 describe('OrderSearchCommand', () => {
 
@@ -24,583 +27,365 @@ describe('OrderSearchCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
+    const marketCommand = Commands.MARKET_ROOT.commandName;
+    const marketAddCommand = Commands.MARKET_ADD.commandName;
 
-    let profile: resources.Profile;
-    let market: resources.Market;
+    let sellerMarket: resources.Market;
+    let sellerProfile: resources.Profile;
 
-    let listingItemTemplate: resources.ListingItemTemplate;
+    let buyerProfile: resources.Profile;
+    let buyerMarket: resources.Market;
+
     let listingItem: resources.ListingItem;
+    let order: resources.Order;
+    let bid: resources.Bid;
+
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const SEARCHORDER = SearchOrder.ASC;
+    const ORDER_SEARCHORDERFIELD = OrderSearchOrderField.CREATED_AT;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
 
-        profile = await testUtil.getDefaultProfile();
-        expect(profile.id).toBeDefined();
-        market = await testUtil.getDefaultMarket(profile.id);
-        expect(market.id).toBeDefined();
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
+
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        expect(buyerProfile.id).toBeDefined();
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(buyerMarket.id).toBeDefined();
+
+        // TODO: add 'identity add' command to create a new identity
+        // use that identity to bid for the same item creating two orders
+        // then confirm that the search works when theres multiple orders on the sellers side
 
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            false,              // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            true,               // generateListingItem
-            market.id           // marketId
+            true,                   // generateItemInformation
+            true,                   // generateItemLocation
+            true,                   // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            false,                  // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            sellerProfile.id,       // profileId
+            true,                   // generateListingItem
+            sellerMarket.id         // soldOnMarketId
         ]).toParamsArray();
 
-        const listingItemTemplates = await testUtil.generateData(
+        const listingItemTemplates = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
 
-        listingItemTemplate = listingItemTemplates[0];
-        // log.debug('listingItemTemplate:', JSON.stringify(createdListingItemTemplate, null, 2));
-
-        // expect template is related to correct profile and ListingItem posted to correct market
-        expect(listingItemTemplate.Profile.id).toBe(profile.id);
-        expect(listingItemTemplate.ListingItems[0].market).toBe(market.receiveAddress);
-
-
-        listingItem = listingItemTemplate.ListingItems[0];
+        listingItem = listingItemTemplates[0].ListingItems[0];
     });
 
-    const PAGE = 0;
-    const PAGELIMIT = 10;
-    const SEARCHORDER = SearchOrder.ASC;
-    const SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
-
-
-    test('Should fail because missing market', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('market').getMessage());
-    });
-
-    test('Should search by market', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress
+    test('Should return empty result because Orders do not exist for the given ListingItem', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result.length).toBe(0);
     });
 
-    test('Should fail because invalid category', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            ''  // should be string[] or number[]
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('categories', 'number[] | string[]').getMessage());
-    });
-
-    test('Should fail because mixed types of categories', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            ['string', 0]  // should be string[] or number[]
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('categories', 'number[] | string[]').getMessage());
-    });
-
-    test('Should search by market and categories (using ids)', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id, listingItem.ItemInformation.ItemCategory.id]
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and categories (using keys)', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key]
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid seller', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
+    test('Should fail to search because invalid ListingItemId', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             true
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('seller', 'string').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
-    test('Should search by market and categories (using keys) and seller', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
-            listingItem.seller
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and seller', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            listingItem.seller
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid minPrice', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
-            listingItem.seller,
-            -1
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('minPrice').getMessage());
-    });
-
-    test('Should search by market and minPrice', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
+    test('Should fail to search because ListingItem not found', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             0
         ]);
         res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid maxPrice', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
-            listingItem.seller,
-            0,
-            -1
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('maxPrice').getMessage());
-    });
-
-    test('Should search by market and between minPrice and maxPrice', async () => {
-
-        const largestBasePrice
-            = (listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice > listingItem.PaymentInformation.ItemPrice.basePrice)
-            ? listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 1
-            : listingItem.PaymentInformation.ItemPrice.basePrice + 1;
-
-        const lowestBasePrice
-            = (listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice < listingItem.PaymentInformation.ItemPrice.basePrice)
-            ? listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 1
-            : listingItem.PaymentInformation.ItemPrice.basePrice - 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            lowestBasePrice,
-            largestBasePrice
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid country', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            1
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('country', 'string').getMessage());
-    });
-
-    test('Should fail because country code not found', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            'INVALID'
-        ]);
-        res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('INVALID').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
 
-    test('Should search by market and country', async () => {
-        log.debug('country1: ', listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country);
-        log.debug('country2: ', listingItem.ItemInformation.ItemLocation.country);
-        const isSameCountry = (listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country === listingItem.ItemInformation.ItemLocation.country);
+    test('Should generate a Bid (MPA_BID) with an Order and OrderItem', async () => {
+        expect(listingItem).toBeDefined();
+        const bidGenerateParams = new GenerateBidParams([
+            false,                          // generateListingItemTemplate
+            false,                          // generateListingItem
+            true,                           // generateOrder
+            listingItem.id,                 // listingItem.id
+            MPAction.MPA_BID,               // type
+            buyerMarket.Identity.address,   // bidder
+            sellerMarket.Identity.address,  // seller
+            undefined                       // parentBidId
+        ]).toParamsArray();
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
+        const bids: resources.Bid[] = await testUtilSellerNode.generateData(
+            CreatableModel.BID,
+            1,
+            true,
+            bidGenerateParams);
+        bid = bids[0];
+
+        // log.debug('bid: ', JSON.stringify(bid, null, 2));
+
+        expect(bid.type).toBe(MPAction.MPA_BID);
+        expect(bid.OrderItem).toBeDefined();
+        expect(bid.OrderItem.Order).toBeDefined();
+        expect(bid.ListingItem).toBeDefined();
+        expect(bid.ListingItem.id).toBe(listingItem.id);
+    });
+
+    test('Should find the generated Order when searching by listingItemId', async () => {
+        expect(bid).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Bid[] = res.getBody()['result'];
 
-        expect(result.length).toBe(isSameCountry ? 2 : 1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        order = result[0];
+        expect(result.length).toBe(1);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
     });
 
-    test('Should fail because invalid shipping destination', async () => {
+    test('Should fail to search because invalid status', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            false
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            true
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('shippingDestination', 'string').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('status', 'string').getMessage());
     });
 
-    test('Should fail because shipping destination code not found', async () => {
+    test('Should fail to search because invalid status', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            'NOT_FOUND'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('NOT_FOUND').getMessage());
-    });
-
-    test('Should search by market and shipping destination', async () => {
-        const country = listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country;
-        const shippingDestination = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
-        log.debug('country: ', country);
-        log.debug('shippingDestination: ', shippingDestination);
-
-        const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            shippingDestination
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(hasSameShippingDestination ? 2 : 1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and country and shipping destination', async () => {
-        const country = listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country;
-        const shippingDestination = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
-        log.debug('country: ', country);
-        log.debug('shippingDestination: ', shippingDestination);
-
-        const isSameCountry = (listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country === listingItem.ItemInformation.ItemLocation.country);
-        const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            country,
-            shippingDestination
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(hasSameShippingDestination || isSameCountry ? 2 : 1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid searchString', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            false
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('searchString', 'string').getMessage());
-    });
-
-    test('Should search by market and title searchString', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            null,
-            null,
-            null,
-            null,
-            listingItemTemplate.ListingItems[0].ItemInformation.title.substr(0, 10)
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and shortDescription searchString', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            null,
-            null,
-            null,
-            null,
-            listingItemTemplate.ListingItems[0].ItemInformation.shortDescription.substr(0, 5)
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and longDescription searchString', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            null,
-            null,
-            null,
-            null,
-            listingItemTemplate.ListingItems[0].ItemInformation.longDescription.substr(0, 10)
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBeGreaterThan(0);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should search by market and hash searchString', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            null,
-            null,
-            null,
-            null,
-            listingItemTemplate.ListingItems[0].hash
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-    });
-
-    test('Should fail because invalid flagged', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            null,
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
             'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('flagged', 'boolean').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('status', 'OrderStatus|OrderItemStatus').getMessage());
     });
 
-    test('Should search by market and flagged', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            null,
-            null,
-            null,
-            null,
-            null,
-            false
+    test('Should return one Order when searching by listingItemId and status (OrderItemStatus) ', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderItemStatus.BIDDED
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
 
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
     });
 
-    test('Should fail because invalid hash', async () => {
+    // TODO: generate second Order with MPA_ACCEPT
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
-            '*',
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            null,
-            null,
-            false
+    test('Should return one Order when searching by listingItemId and status (OrderStatus) ', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderStatus.PROCESSING
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+    });
+
+    test('Should fail to search because invalid buyerAddress', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderStatus.PROCESSING,
+            true
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('listingItemHash', 'string').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('buyerAddress', 'string').getMessage());
     });
 
-    test('Should search by market and hash', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER, SEARCHORDERFIELD,
-            market.receiveAddress,
-            [],
+    test('Should return one Order when searching by buyerAddress', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             '*',
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            listingItemTemplate.ListingItems[0].hash
+            '*',
+            buyerMarket.Identity.address
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
 
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
     });
 
+    test('Should fail to search because invalid sellerAddress', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderStatus.PROCESSING,
+            buyerMarket.Identity.address,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('sellerAddress', 'string').getMessage());
+    });
+
+    test('Should return one Order when searching by buyerAddress and sellerAddress', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            '*',
+            '*',
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+    });
+
+    test('Should fail to search because invalid market', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderStatus.PROCESSING,
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
+    });
+
+    test('Should fail to search because Market not found', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderStatus.PROCESSING,
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            'ADDRESS_NOT_FOUND'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
+    });
+
+    test('Should return one Order when searching by buyerAddress and sellerAddress and market', async () => {
+        expect(bid).toBeDefined();
+        expect(order).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            '*',
+            '*',
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            sellerMarket.address
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Bid[] = res.getBody()['result'];
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.length).toBe(1);
+        expect(result[0].status).toBe(OrderStatus.PROCESSING);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].OrderItems).toBeDefined();
+        expect(result[0].OrderItems[0].Bid.id).toBe(bid.id);
+        expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.BIDDED);
+    });
 
 });

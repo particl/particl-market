@@ -91,7 +91,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             market
         } as BidSearchParams;
 
-        this.log.debug('execute(), searchParams: ', JSON.stringify(searchParams, null, 2));
+        // this.log.debug('execute(), searchParams: ', JSON.stringify(searchParams, null, 2));
 
         return await this.bidService.search(searchParams);
     }
@@ -140,7 +140,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         searchString = searchString !== '*' ? searchString : undefined;
         market = market !== '*' ? market : undefined;
 
-        this.log.debug('listingItemId: ', JSON.stringify(listingItemId, null, 2));
+        // this.log.debug('listingItemId: ', JSON.stringify(listingItemId, null, 2));
 
         if (!_.isNil(listingItemId)) {
             // make sure ListingItemTemplate with the id exists
@@ -149,14 +149,12 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 .catch(reason => {
                     throw new ModelNotFoundException('ListingItem');
                 });
-            this.log.debug('data.params[4]: ', JSON.stringify(data.params[4], null, 2));
         }
 
         if (!_.isNil(market)) {
             await this.marketService.findAllByReceiveAddress(market)
                 .then(results => {
                     const markets: resources.Market[] = results.toJSON();
-                    this.log.debug('markets: ', JSON.stringify(markets, null, 2));
                     if (_.isEmpty(markets)) {
                         throw new ModelNotFoundException('Market');
                     }

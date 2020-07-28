@@ -156,6 +156,7 @@ export class BidAcceptActionService extends BaseBidActionService {
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
+                this.log.debug('processMessage(), bid: ', JSON.stringify(bid, null, 2));
                 await this.orderItemService.updateStatus(bid.ParentBid.OrderItem.id, OrderItemStatus.AWAITING_ESCROW);
                 await this.orderService.updateStatus(bid.ParentBid.OrderItem.Order.id, OrderStatus.PROCESSING);
 

@@ -47,7 +47,6 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Profile> {
 
-        // create default Profile
         const profile: resources.Profile = await this.profileService.create({
             name: data.params[0]
         } as ProfileCreateRequest).then(value => value.toJSON());

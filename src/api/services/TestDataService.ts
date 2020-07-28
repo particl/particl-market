@@ -395,6 +395,7 @@ export class TestDataService {
         const bidParams = new GenerateBidParams([
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
+            false,                              // generateOrder
             listingItemId,                      // listingItemId
             type,                               // type
             bidderMarket.Identity.address,      // bidder
@@ -415,14 +416,10 @@ export class TestDataService {
     /**
      * Generates a new Order
      */
-    public async generateOrder(bidderBid: resources.Bid, sellerBid: resources.Bid, bidderMarket: resources.Market,
-                               sellerMarket: resources.Market, generateOrderItems: boolean): Promise<resources.Order[]> {
+    public async generateOrder(bid: resources.Bid, generateOrderItems: boolean): Promise<resources.Order[]> {
         const orderGenerateParams = new GenerateOrderParams([
             generateOrderItems,             // generateOrderItems
-            bidderBid.id,                   // bidderBidId
-            sellerBid.id,                   // sellerBidId
-            bidderMarket.id,                // bidderMarketId
-            sellerMarket.id                 // sellerMarketId
+            bid.id                          // bidId
         ]);
 
         const orders: resources.Order[] = await this.generate({
@@ -815,17 +812,24 @@ export class TestDataService {
             generateParams.listingItemId = listingItem.id;
         }
 
-        const items: resources.Bid[] = [];
+        const bids: resources.Bid[] = [];
         for (let i = amount; i > 0; i--) {
             const bidCreateRequest = await this.generateBidData(generateParams);
-            this.log.debug('bidCreateRequest:', JSON.stringify(bidCreateRequest, null, 2));
-            const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
-            items.push(bid);
+            // this.log.debug('bidCreateRequest:', JSON.stringify(bidCreateRequest, null, 2));
+            let bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
+
+            const orderGenerateParams = new GenerateOrderParams([true, bid.id]);
+
+            if (generateParams.generateOrder) {
+                await this.generateOrders(1, true, orderGenerateParams);
+                bid = await this.bidService.findOne(bid.id).then(value => value.toJSON());
+            }
+            bids.push(bid);
         }
 
         // this.log.debug('bids:', JSON.stringify(items, null, 2));
 
-        return this.generateResponse(items, withRelated);
+        return this.generateResponse(bids, withRelated);
     }
 
     private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
@@ -912,49 +916,35 @@ export class TestDataService {
     private async generateOrders(amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams): Promise<resources.Order[]> {
         const orders: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
-            const orderCreateRequests: OrderCreateRequest[] = await this.generateOrderData(generateParams);
-
-            // this.log.debug('orderCreateRequests:', JSON.stringify(orderCreateRequests, null, 2));
-            const bidderOrder: resources.Order = await this.orderService.create(orderCreateRequests[0]).then(value => value.toJSON());
-            const sellerOrder: resources.Order = await this.orderService.create(orderCreateRequests[1]).then(value => value.toJSON());
-            orders.push(bidderOrder, sellerOrder);
+            const orderCreateRequest: OrderCreateRequest = await this.generateOrderData(generateParams);
+            const order: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
+            orders.push(order);
         }
 
         return this.generateResponse(orders, withRelated);
     }
 
-    private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest[]> {
+    private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
 
         // this.log.debug('generateOrderData, generateParams: ', JSON.stringify(generateParams, null, 2));
-
-        const bidderBid: resources.Bid = await this.bidService.findOne(generateParams.bidderBidId).then(value => value.toJSON());
-        const sellerBid: resources.Bid = await this.bidService.findOne(generateParams.sellerBidId).then(value => value.toJSON());
+        const bid: resources.Bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
 
         const orderCreateParamsForBidder = {
-            bids: [bidderBid],
-            addressId: bidderBid.ShippingAddress.id,
+            bids: [bid],
+            addressId: bid.ShippingAddress.id,
             status: OrderStatus.PROCESSING,
-            buyer: bidderBid.bidder,
-            seller: bidderBid.ListingItem.seller,
+            buyer: bid.bidder,
+            seller: bid.ListingItem.seller,
             generatedAt: +Date.now()
         } as OrderCreateParams;
 
-        const orderCreateRequestForBidder: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForBidder);
-
-        const orderCreateParamsForSeller: OrderCreateParams = JSON.parse(JSON.stringify(orderCreateParamsForBidder));
-        orderCreateParamsForSeller.bids = [sellerBid];
-        orderCreateParamsForSeller.addressId = sellerBid.ShippingAddress.id;
-        const orderCreateRequestForSeller: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForSeller);
-
-        // this.log.debug('orderCreateRequestForBidder:', JSON.stringify(orderCreateRequestForBidder, null, 2));
-        //  this.log.debug('orderCreateParamsForSeller:', JSON.stringify(orderCreateParamsForSeller, null, 2));
+        const orderCreateRequest: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForBidder);
 
         if (!generateParams.generateOrderItem) {
-            orderCreateRequestForBidder.orderItems = [];
-            orderCreateRequestForSeller.orderItems = [];
+            orderCreateRequest.orderItems = [];
         }
 
-        return [orderCreateRequestForBidder, orderCreateRequestForSeller];
+        return orderCreateRequest;
     }
 
     // -------------------

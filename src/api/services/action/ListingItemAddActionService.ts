@@ -230,14 +230,14 @@ export class ListingItemAddActionService extends BaseActionService {
                 rootCategory
             } as ListingItemCreateParams; // TODO: get rid of these xxxCreateParams
 
-            this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
-            this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
-            this.log.debug('processMessage(), smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+            // this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
+            // this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
+            // this.log.debug('processMessage(), smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
 
             const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get(listingItemCreateParams,
                 listingItemAddMessage, smsgMessage);
 
-            this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+            // this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
             // - create the ListingItem locally with the listingItemCreateRequest
             await this.listingItemService.create(listingItemCreateRequest)

@@ -37,7 +37,6 @@ import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionMessageProcessor } from './action/CommentAddActionMessageProcessor';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 
-
 export class MarketplaceMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;

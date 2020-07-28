@@ -170,6 +170,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         if (withRelated) {
             return await bidCollection.fetchAll({
                 withRelated: this.RELATIONS
+                // debug: true
             });
         } else {
             return await bidCollection.fetchAll();

@@ -111,8 +111,6 @@ export class ListingItemService {
     @validate()
     public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams,
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        // if valid params
-        // todo: check whether category is string or number, if string, try to find the Category by key
 
         // this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
         return await this.listingItemRepo.search(options, withRelated);

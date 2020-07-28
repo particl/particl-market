@@ -14,7 +14,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { BidSearchOrderField } from '../../../src/api/enums/SearchOrderField';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('BidSearchCommand', () => {
 
@@ -55,7 +55,7 @@ describe('BidSearchCommand', () => {
         expect(sellerMarket.id).toBeDefined();
 
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
-        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+        expect(buyerProfile.id).toBeDefined();
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(buyerMarket.id).toBeDefined();
 
@@ -109,15 +109,26 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
+    test('Should fail to search because ListingItem not found', async () => {
+        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
+    });
+
     test('Should generate a Bid (MPA_BID)', async () => {
         expect(listingItem).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
             false,                          // generateListingItemTemplate
             false,                          // generateListingItem
+            true,                           // generateOrder
             listingItem.id,                 // listingItem.id
             MPAction.MPA_BID,               // type
-            buyerMarket.Identity.address,    // bidder
-            sellerMarket.Identity.address,   // seller
+            buyerMarket.Identity.address,   // bidder
+            sellerMarket.Identity.address,  // seller
             undefined                       // parentBidId
         ]).toParamsArray();
 
@@ -147,21 +158,12 @@ describe('BidSearchCommand', () => {
         expect(result[0].type).toBe(MPAction.MPA_BID);
     });
 
-    test('Should fail to search because ListingItem not found', async () => {
-        const res: any = await testUtilSellerNode.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            0
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
-    });
-
     test('Should generate accept Bid (MPA_ACCEPT)', async () => {
         expect(listingItem).toBeDefined();
         const bidGenerateParams = new GenerateBidParams([
             false,                              // generateListingItemTemplate
             false,                              // generateListingItem
+            true,                               // generateOrder
             listingItem.id,                     // listingItem.id
             MPAction.MPA_ACCEPT,                // type
             buyerMarket.Identity.address,       // bidder

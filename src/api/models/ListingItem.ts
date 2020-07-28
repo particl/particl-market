@@ -249,7 +249,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     // ListingItems having FlaggedItem
                     qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
                 } else {
-                    // todo: why do we have this here and do we really need this?
                     qb.where('listing_items.removed', '=', false);
                 }
 
@@ -271,8 +270,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS
-                // debug: true
+                withRelated: this.RELATIONS,
+                debug: true
             });
         } else {
             return await listingCollection.fetchAll();

@@ -133,7 +133,7 @@ export class BidService {
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body: BidCreateRequest = JSON.parse(JSON.stringify(data));
-        // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
+        this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
         // MPAction.MPA_BID needs to contain shipping address, for other types its optional
         if (body.type === MPAction.MPA_BID) {
