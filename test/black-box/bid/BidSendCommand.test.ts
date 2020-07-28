@@ -15,7 +15,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { BidSearchOrderField, ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 
 describe('BidSendCommand', () => {

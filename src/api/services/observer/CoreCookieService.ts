@@ -90,25 +90,23 @@ export class CoreCookieService extends BaseObserverService {
         // this.log.debug('process.platform: ', process.platform);
 
         switch (process.platform) {
-          case 'linux': {
-            dir = path.join(homeDir, '.' + appName.toLowerCase());
-            break;
-          }
-
-          case 'darwin': {
-            dir = path.join(homeDir, 'Library', 'Application Support', appName);
-            break;
-          }
-
-          case 'win32': {
-            const temp = path.join(process.env['APPDATA'], appName);
-            if (this.checkIfExists(temp)) {
-                dir = temp;
-            } else {
-                dir = path.join(homeDir, 'AppData', 'Roaming', appName);
-            }
-            break;
-          }
+            case 'linux':
+                dir = path.join(homeDir, '.' + appName.toLowerCase());
+                break;
+            case 'darwin':
+                dir = path.join(homeDir, 'Library', 'Application Support', appName);
+                break;
+            case 'win32':
+                const temp = path.join(process.env['APPDATA'], appName);
+                if (this.checkIfExists(temp)) {
+                    dir = temp;
+                } else {
+                    dir = path.join(homeDir, 'AppData', 'Roaming', appName);
+                }
+                break;
+            default:
+                this.log.error('process.platform not supported: ', process.platform);
+                throw new Error('process.platform not supported: ' + process.platform);
         }
 
         // just check if it exist so it logs an error just in case

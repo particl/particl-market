@@ -97,7 +97,8 @@ export class RpcController {
                 return 'Invalid params';
             case RpcErrorCode.InternalError:
                 return 'Internal error';
+            default:
+                return 'Unknown Error';
         }
-        return 'Unknown Error';
     }
 }

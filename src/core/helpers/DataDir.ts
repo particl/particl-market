@@ -40,20 +40,17 @@ export class DataDir {
         const checkpoint = '03';
 
         switch (process.platform) {
-            case 'linux': {
+            case 'linux':
                 dir = path.join(homeDir, '.' + appName);
                 break;
-            }
-
-            case 'darwin': {
+            case 'darwin':
                 dir = path.join(homeDir, 'Library', 'Application Support', appName);
                 break;
-            }
-
-            case 'win32': {
+            case 'win32':
                 dir = path.join(process.env['APPDATA'], appName);
                 break;
-            }
+            default:
+                throw new Error('process.platform not supported: ' + process.platform);
         }
 
         // return path to datadir (mainnet vs testnet)

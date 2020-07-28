@@ -156,6 +156,15 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                 case ShippingAvailability.DOES_NOT_SHIP:
                     shippingDesArray.push('-' + destination.country);
                     break;
+                case ShippingAvailability.ASK:
+                    //
+                    break;
+                case ShippingAvailability.UNKNOWN:
+                    //
+                    break;
+                default:
+                    //
+                    break;
             }
         }
 
