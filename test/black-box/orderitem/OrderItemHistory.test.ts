@@ -12,6 +12,10 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { BidSearchOrderField, ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('OrderItemHistory', () => {
 
@@ -29,6 +33,7 @@ describe('OrderItemHistory', () => {
     const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
     const orderItemHistoryCommand = Commands.ORDERITEM_HISTORY.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
@@ -43,11 +48,14 @@ describe('OrderItemHistory', () => {
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
 
-    let bidOnBuyerNode: resources.Bid;
+    let mpaBidOnBuyerNode: resources.Bid;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
-    const ORDER = SearchOrder.ASC;
+    const SEARCHORDER = SearchOrder.ASC;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
+    const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
+
     const DAYS_RETENTION = 2;
 
     let sent = false;
@@ -74,6 +82,7 @@ describe('OrderItemHistory', () => {
         log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
         log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
+        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
@@ -82,35 +91,45 @@ describe('OrderItemHistory', () => {
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
-            true,               // generateMessagingInformation
+            false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             sellerProfile.id,   // profileId
             false,              // generateListingItem
-            sellerMarket.id     // marketId
+            sellerMarket.id     // soldOnMarketId
         ]).toParamsArray();
 
-        const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
-            1,                              // how many to generate
+        const listingItemTemplatesSellerNode = await testUtilSellerNode.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
             true,                       // return model
-            generateListingItemTemplateParams       // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
-        listingItemTemplateOnSellerNode = listingItemTemplatesOnSellerNode[0];
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+
+        listingItemTemplateOnSellerNode = listingItemTemplatesSellerNode[0];
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        // start with clean outputs in case something went wrong earlier
-        let res = await testUtilSellerNode.rpc(daemonCommand, ['lockunspent', true]);
+        // we should be also able to get the ListingItemTemplate
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
-
-        res = await testUtilBuyerNode.rpc(daemonCommand, ['lockunspent', true]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
+        log.debug('result.id:', result.id);
+        expect(result.id).toBe(listingItemTemplatesSellerNode[0].id);
 
         log.debug('==> Setup DONE.');
 
     });
+
+
+    test('Should unlock the possibly locked outputs left from other tests', async () => {
+        await testUtilSellerNode.unlockLockedOutputs(sellerMarket.Identity.wallet);
+        await testUtilBuyerNode.unlockLockedOutputs(buyerMarket.Identity.wallet);
+    }, 600000); // timeout to 600s
+
 
     test('Should post ListingItem from SELLER node', async () => {
 
@@ -119,11 +138,12 @@ describe('OrderItemHistory', () => {
         log.debug('========================================================================================');
 
         await testUtilSellerNode.waitFor(5);
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        // Post ListingItemTemplate to create ListingItem
+        const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
-            DAYS_RETENTION,
-            sellerMarket.id
+            DAYS_RETENTION
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -135,23 +155,15 @@ describe('OrderItemHistory', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
+        expect(result.txid).toBeDefined();
+        expect(result.fee).toBeGreaterThan(0);
 
-        log.debug('==[ posted ListingItemTemplate /// seller -> market ]================================');
-        log.debug('result.msgid: ' + result.msgid);
-        log.debug('item.id: ' + listingItemTemplateOnSellerNode.id);
-        log.debug('item.hash: ' + listingItemTemplateOnSellerNode.hash);
-        log.debug('item.title: ' + listingItemTemplateOnSellerNode.ItemInformation.title);
-        log.debug('item.desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
-        log.debug('item.category: [' + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.id + '] '
-            + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.name);
-        log.debug('========================================================================================');
-    });
+        log.debug('==> ListingItemTemplate posted.');
+
+    }, 600000); // timeout to 600s
 
 
-    test('Should get the updated ListingItemTemplate to get the hash', async () => {
-        // sending should have succeeded for this test to work
-        expect(sent).toBeTruthy();
-
+    test('Should get the updated ListingItemTemplate with the hash', async () => {
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
             listingItemTemplateOnSellerNode.id
         ]);
@@ -159,6 +171,7 @@ describe('OrderItemHistory', () => {
         res.expectStatusCode(200);
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
+        expect(listingItemTemplateOnSellerNode.hash).toBeDefined();
         log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
     });
 
@@ -174,20 +187,36 @@ describe('OrderItemHistory', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(
             listingItemCommand,
-            [listingItemGetCommand, listingItemTemplateOnSellerNode.hash],
+            [listingItemSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+                buyerMarket.receiveAddress,
+                [],
+                '*',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                listingItemTemplateOnSellerNode.hash
+            ],
             15 * 60,
             200,
-            'hash',
+            '[0].hash',
             listingItemTemplateOnSellerNode.hash
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        // seller node allready received this, but wait a while, and refetch, just in case
+        const results: resources.ListingItem[] = response.getBody()['result'];
+        expect(results.length).toBe(1);
+        expect(results[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
+
+        // seller node already received this, but wait a while, and refetch, just in case
         await testUtilBuyerNode.waitFor(5);
 
         response = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
-            listingItemTemplateOnSellerNode.hash
+            results[0].id
         ]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -200,25 +229,19 @@ describe('OrderItemHistory', () => {
         listingItemReceivedOnBuyerNode = result;
 
         log.debug('==> BUYER received MPA_LISTING_ADD.');
-
     }, 600000); // timeout to 600s
 
 
     test('Should post Bid (MPA_BID) from BUYER node', async () => {
 
-        // ListingItem should have been received on buyer node
         expect(listingItemReceivedOnBuyerNode).toBeDefined();
         sent = false;
 
-        log.debug('========================================================================================');
-        log.debug('BUYER POSTS MPA_BID for the ListingItem to the seller');
-        log.debug('========================================================================================');
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
-            listingItemReceivedOnBuyerNode.hash,
-            buyerProfile.id,
+        const res = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
             buyerProfile.ShippingAddresses[0].id,
-            'colour',   // TODO: make sure created template/item has these options and test that these end up in the Order
+            'colour',
             'black',
             'size',
             'xl'
@@ -232,14 +255,8 @@ describe('OrderItemHistory', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
-
-        log.debug('==[ sent Bid /// buyer node -> seller node ]===================================');
-        log.debug('msgid: ' + result.msgid);
-        log.debug('item.hash: ' + listingItemReceivedOnBuyerNode.hash);
-        log.debug('item.seller: ' + listingItemReceivedOnBuyerNode.seller);
-        log.debug('bid.bidder: ' + buyerProfile.address);
-        log.debug('===============================================================================');
-
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('==> Bid posted.');
     });
 
 
@@ -252,47 +269,72 @@ describe('OrderItemHistory', () => {
         await testUtilBuyerNode.waitFor(5);
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER,
-            listingItemReceivedOnBuyerNode.hash,
-            MPAction.MPA_BID,
-            '*',
-            buyerProfile.address
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            listingItemReceivedOnBuyerNode.id             // listingItemId
+            // MPAction.MPA_BID,                        // type
+            // '*',                                     // search string
+            // '*',                                     // market
+            // buyerMarket.Identity.address             // bidder
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Bid = res.getBody()['result'];
-
-        log.debug('result bid: ', JSON.stringify(result, null, 2));
+        const result: resources.Bid[] = res.getBody()['result'];
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].bidder).toBe(buyerMarket.Identity.address);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedOnBuyerNode.hash);
-        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerMarket.Identity.address);
 
-        // there should be no relation to ListingItemTemplate on the buyer side
+        // there should be no relation to template on the buyer side
         expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
-        bidOnBuyerNode = result[0];
+        mpaBidOnBuyerNode = result[0];
 
         // expect Order and OrderItem to be created
         expect(result[0].OrderItem.id).toBeDefined();
         expect(result[0].OrderItem.Order.id).toBeDefined();
-
-        // todo: this is not defined, should it be?
-        // expect(result[0].OrderItem.ListingItem.id).toBeDefined();
 
         log.debug('==> Bid found on buyer node.');
 
     }, 600000); // timeout to 600s
 
 
+    test('Should fail because missing orderItemId', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemHistoryCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('orderItemId').getMessage());
+    });
+
+
+    test('Should fail because invalid orderItemId', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemHistoryCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('orderItemId', 'number').getMessage());
+    });
+
+
+    test('Should fail because OrderItem not found', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemHistoryCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('OrderItem').getMessage());
+    });
+
+
     test('Should receive OrderItem history with two SmsgMessages', async () => {
 
         expect(sent).toBeTruthy();
-        expect(bidOnBuyerNode).toBeDefined();
+        expect(mpaBidOnBuyerNode).toBeDefined();
 
         const res = await testUtilBuyerNode.rpc(orderItemCommand, [orderItemHistoryCommand,
-            bidOnBuyerNode.OrderItem.id
+            mpaBidOnBuyerNode.OrderItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);

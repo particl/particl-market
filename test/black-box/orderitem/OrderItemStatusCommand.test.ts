@@ -638,7 +638,7 @@ describe('OrderItemStatus', () => {
         orderItemStatusRes.expectJson();
         orderItemStatusRes.expectStatusCode(200);
         const myOrderItems: OrderItemStatusResponse[] = orderItemStatusRes.getBody()['result'];
-        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
 
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
@@ -719,7 +719,7 @@ describe('OrderItemStatus', () => {
         res.expectStatusCode(200);
 
         const result: resources.Order = res.getBody()['result'];
-        log.debug(JSON.stringify(result, null, 2));
+        // log.debug(JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);

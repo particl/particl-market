@@ -87,12 +87,12 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         if (data.params.length < 1) {
-            throw new MissingParamException('id');
+            throw new MissingParamException('orderItemId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
+            throw new InvalidParamException('orderItemId', 'number');
         }
 
         const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0], true)
