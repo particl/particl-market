@@ -55,9 +55,7 @@ describe('ItemCategoryAddCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const res = await testUtil.rpc(categoryCommand, [categoryListCommand,
-            market.id
-        ]);
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         parentCategory = res.getBody()['result'];

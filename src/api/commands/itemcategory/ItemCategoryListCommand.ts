@@ -16,7 +16,7 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
 import { MarketType } from '../../enums/MarketType';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryListCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
