@@ -45,12 +45,10 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ShoppingCart[]> {
 
         const profile: resources.Profile = data.params[0];
-        const withRelated: boolean = data.params[1];
-
         const carts: resources.ShoppingCart[] = [];
 
         for (const identity of profile.Identities) {
-            const identityCarts: resources.ShoppingCart[] = await this.shoppingCartService.findAllByIdentityId(identity.id, withRelated)
+            const identityCarts: resources.ShoppingCart[] = await this.shoppingCartService.findAllByIdentityId(identity.id, true)
                 .then(value => value.toJSON());
             carts.push(...identityCarts);
         }
@@ -60,7 +58,6 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     /**
      * data.params[]:
      *  [0]: profileId, optional
-     *  [1]: withRelated, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -70,8 +67,6 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
         // make sure the params are of correct type
         if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
-        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
-            throw new InvalidParamException('withRelated', 'boolean');
         }
 
         if (data.params.length === 0) {
@@ -87,8 +82,6 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
                     throw new ModelNotFoundException('Profile');
                 });
         }
-
-        data.params[1] = _.isNil(data.params[1]) ? false : data.params[1];
 
         return data;
     }

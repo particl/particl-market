@@ -55,17 +55,15 @@ describe('ShoppingCartListCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should list only one default ShoppingCart for the default Profile', async () => {
+    test('Should list only one default ShoppingCart', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(1);
 
-        expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(profile.id);
+        expect(result).toHaveLength(1);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
     });
 
     test('Should list only one default ShoppingCart for specified Profile', async () => {
@@ -77,17 +75,23 @@ describe('ShoppingCartListCommand', () => {
         const result: resources.ShoppingCart[] = res.getBody()['result'];
         expect(result).toHaveLength(1);
 
-        expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(profile.id);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
+    });
+
+    test('Should create a second ShoppingCart for specified Identity', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
+            market.Identity.id,
+            'NEW_CART_NAME'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ShoppingCart = res.getBody()['result'];
+        expect(result.name).toBe('NEW_CART_NAME');
+        expect(result.Identity.id).toBe(market.Identity.id);
     });
 
     test('Should list two ShoppingCarts for the default Profile', async () => {
-        await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            profile.id,
-            'NEW_CART_NAME'
-        ]);
 
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand]);
         res.expectJson();
@@ -96,14 +100,12 @@ describe('ShoppingCartListCommand', () => {
         expect(result).toHaveLength(2);
 
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(profile.id);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
 
         expect(result[1].Profile).not.toBeDefined();
-        expect(result[1].ShoppingCartItems).not.toBeDefined();
         expect(result[1].name).toBe('NEW_CART_NAME');
-        expect(result[1].profileId).toBe(profile.id);
+        expect(result[1].Identity.id).toBe(market.Identity.id);
     });
 
     test('Should list two Markets for specified Profile', async () => {
@@ -115,38 +117,13 @@ describe('ShoppingCartListCommand', () => {
         const result: resources.ShoppingCart[] = res.getBody()['result'];
         expect(result).toHaveLength(2);
 
-        log.debug('result: ', JSON.stringify(result, null , 2));
-
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(profile.id);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
 
         expect(result[1].Profile).not.toBeDefined();
-        expect(result[1].ShoppingCartItems).not.toBeDefined();
         expect(result[1].name).toBe('NEW_CART_NAME');
-        expect(result[1].profileId).toBe(profile.id);
-    });
-
-    test('Should list two Markets for specified Profile with Related', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
-            profile.id,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: resources.ShoppingCart[] = res.getBody()['result'];
-        expect(result).toHaveLength(2);
-
-        expect(result[0].Profile).toBeDefined();
-        expect(result[0].Profile.id).toBe(profile.id);
-        expect(result[0].ShoppingCartItems).toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-
-        expect(result[1].Profile).toBeDefined();
-        expect(result[1].Profile.id).toBe(profile.id);
-        expect(result[1].ShoppingCartItems).toBeDefined();
-        expect(result[1].name).toBe('NEW_CART_NAME');
+        expect(result[1].Identity.id).toBe(market.Identity.id);
     });
 
 });

@@ -84,12 +84,6 @@ export class IdentityService {
         // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
 
-        // create default shoppingCart
-        await this.shoppingCartService.create({
-            name: 'DEFAULT',
-            identity_id: identity.id
-        } as ShoppingCartCreateRequest);
-
         return await this.findOne(identity.id);
     }
 
@@ -180,14 +174,22 @@ export class IdentityService {
         // this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
 
         // create Identity for Market, using the created wallet
-        return await this.create({
+        const marketIdentity: resources.Identity = await this.create({
             profile_id: profile.id,
             wallet: marketWalletName,
             address,
             hdseedid: walletInfo.hdseedid,
             path: keyInfo.key_info.path,
             type: IdentityType.MARKET
-        } as IdentityCreateRequest);
+        } as IdentityCreateRequest).then(value => value.toJSON());
+
+        // create default shoppingCart
+        await this.shoppingCartService.create({
+            name: address,
+            identity_id: marketIdentity.id
+        } as ShoppingCartCreateRequest);
+
+        return await this.findOne(marketIdentity.id);
     }
 
     /**
