@@ -46,21 +46,21 @@ describe('ShoppingCartClearCommand', () => {
 
         shoppingCart = profile.ShoppingCart[0];
 
-        // create ListingItemTemplate
+        // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            true,           // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            true,           // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false,          // generateObjectDatas
-            profile.id,     // profileId
-            true,           // generateListingItem
-            market.id       // soldOnMarketId
+            true,                   // generateItemInformation
+            true,                   // generateItemLocation
+            true,                   // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            false,                  // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            profile.id,             // profileId
+            true,                   // generateListingItem
+            market.id               // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -69,6 +69,8 @@ describe('ShoppingCartClearCommand', () => {
             true,
             generateListingItemTemplateParams
         );
+
+        log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
 
         listingItem1 = listingItemTemplates[0].ListingItems[0];
         listingItem2 = listingItemTemplates[1].ListingItems[0];
@@ -95,7 +97,7 @@ describe('ShoppingCartClearCommand', () => {
         const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartClearCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('cartId').getMessage());
     });
 
     test('Should fail because invalid shoppingCartId', async () => {

@@ -12,7 +12,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -53,12 +52,12 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('id');
+            throw new MissingParamException('cartId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
+            throw new InvalidParamException('cartId', 'number');
         }
 
         // make sure ShoppingCart with the id exists
