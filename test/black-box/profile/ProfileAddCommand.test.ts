@@ -4,7 +4,6 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as Faker from 'faker';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
@@ -23,8 +22,6 @@ describe('ProfileAddCommand', () => {
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileAddCommand = Commands.PROFILE_ADD.commandName;
-
-    const profileName = 'test-profile-' + Faker.random.uuid();
 
     let profile: resources.Profile;
 
@@ -48,26 +45,35 @@ describe('ProfileAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
-    test('Should create a new Profile', async () => {
+    test('Should fail to create because wallet already exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand,
-            profileName
+            'TEST-1'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Wallet with the same name already exists.').getMessage());
+    });
+
+    test('Should create a new Profile even with existing wallet', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileAddCommand,
+            'TEST-1',
+            true
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         profile = result;
-        expect(result.name).toBe(profileName);
+        expect(result.name).toBe('TEST-1');
     });
 
     test('Should fail to create because given name already exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand,
-            profileName
+            'TEST-1'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MessageException('Profile with the same name already exists.').getMessage());
     });
-
 
 });

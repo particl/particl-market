@@ -60,6 +60,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: name
+     *  [1]: force, optional, force creation even if wallet exists
      *
      * @param data
      * @returns {Promise<Profile>}
@@ -72,6 +73,13 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
 
         if (typeof data.params[0] !== 'string') {
             throw new InvalidParamException('name', 'string');
+        }
+
+        let force = false;
+        if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
+            throw new InvalidParamException('force', 'boolean');
+        } else if (!_.isNil(data.params[1])) {
+            force = data.params[1];
         }
 
         // check if profile already exists for the given name
@@ -90,11 +98,10 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
         // check if wallet file already exists for the given name
         const walletName = 'profiles/' + data.params[0];
         exists = await this.coreRpcService.walletExists(walletName);
-        if (exists || data.params[0] === 'wallet') {
+        if ((exists && !force) || data.params[0] === 'wallet') {
             throw new MessageException('Wallet with the same name already exists.');
         }
 
-        data.params[1] = walletName;
         return data;
     }
 
