@@ -14,6 +14,7 @@ import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { MarketType } from '../../../src/api/enums/MarketType';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
 
+
 describe('ItemCategoryAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

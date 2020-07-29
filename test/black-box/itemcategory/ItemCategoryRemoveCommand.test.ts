@@ -12,6 +12,10 @@ import { GenerateListingItemParams } from '../../../src/api/requests/testdata/Ge
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { MarketType } from '../../../src/api/enums/MarketType';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('ItemCategoryRemoveCommand', () => {
 
@@ -26,12 +30,24 @@ describe('ItemCategoryRemoveCommand', () => {
     const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
     const categoryListCommand = Commands.CATEGORY_LIST.commandName;
     const categoryRemoveCommand = Commands.CATEGORY_REMOVE.commandName;
+    const marketCommand = Commands.MARKET_ROOT.commandName;
+    const marketAddCommand = Commands.MARKET_ADD.commandName;
 
     let market: resources.Market;
     let profile: resources.Profile;
+    let storefront: resources.Market;
 
-    let rootCategory: resources.ItemCategory;
-    let customCategory: resources.ItemCategory;
+    let defaultRootCategory: resources.ItemCategory;
+    let storefrontRootCategory: resources.ItemCategory;
+    let customStorefrontCategory: resources.ItemCategory;
+
+    const storeFrontAdminData = {
+        name: 'TEST-2',
+        type: MarketType.STOREFRONT_ADMIN,
+        receiveKey: 'receiveKey',
+        publishKey: 'publishKey'
+        // receiveKey !== publishKey
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -41,48 +57,88 @@ describe('ItemCategoryRemoveCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // first get the rootCategory
-        let res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
-        rootCategory = res.getBody()['result'];
+        defaultRootCategory = res.getBody()['result'];
 
-        // create a custom category
-        res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
-            market.id,
-            'customcategoryname',
-            'description',
-            rootCategory.id
+        const network = Networks.testnet;
+        let privateKey: PrivateKey = PrivateKey.fromRandom(Networks.testnet);
+
+        privateKey = PrivateKey.fromRandom(network);
+        storeFrontAdminData.receiveKey = privateKey.toWIF();
+        privateKey = PrivateKey.fromRandom(network);
+        storeFrontAdminData.publishKey = privateKey.toWIF();    // but different
+        storeFrontAdminData.name = storeFrontAdminData.receiveKey;
+    });
+
+
+    test('Should create a new storefront (STOREFRONT_ADMIN)', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            storeFrontAdminData.name,
+            storeFrontAdminData.type,
+            storeFrontAdminData.receiveKey,
+            storeFrontAdminData.publishKey,
+            market.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        customCategory = res.getBody()['result'];
+        const result: resources.Market = res.getBody()['result'];
+        expect(result.name).toBe(storeFrontAdminData.name);
+        expect(result.type).toBe(storeFrontAdminData.type);
+        expect(result.receiveKey).toBe(storeFrontAdminData.receiveKey);
+        expect(result.receiveAddress).toBeDefined();
+        expect(result.publishKey).toBe(storeFrontAdminData.publishKey);
+        expect(result.publishAddress).toBeDefined();
+        expect(result.receiveKey).not.toBe(result.publishKey);
 
-        expect(customCategory.ParentItemCategory.id).toBe(rootCategory.id);
-
-        log.debug('createdCategory.id: ', customCategory.id);
-        log.debug('rootCategory.id: ', rootCategory.id);
-
-        // TODO: categories should be related to market
+        storefront = result;
     });
 
-    test('Should fail to remove ItemCategory because missing categoryId', async () => {
+
+    test('Should create custom ItemCategory on the new storefront', async () => {
+
+        let res = await testUtil.rpc(categoryCommand, [categoryListCommand,
+            storefront.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        storefrontRootCategory = res.getBody()['result'];
+
+        res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            storefront.id,
+            'customcategoryname',
+            'description',
+            storefrontRootCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        customStorefrontCategory = res.getBody()['result'];
+
+        expect(customStorefrontCategory.name).toBe('customcategoryname');
+        expect(customStorefrontCategory.description).toBe('description');
+        expect(customStorefrontCategory.ParentItemCategory.id).toBe(storefrontRootCategory.id);
+    });
+
+
+    test('Should fail because missing categoryId', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
     });
 
-    test('Should fail to delete ItemCategory because invalid categoryId', async () => {
+    test('Should fail because invalid categoryId', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
-            'INVALID_CATEGORY_DOESNT_EXIST'
+            true
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
     });
 
-    test('Should not delete ItemCategory because it cant be found', async () => {
+    test('Should not delete ItemCategory because not found', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
             0
         ]);
@@ -91,64 +147,123 @@ describe('ItemCategoryRemoveCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
-    test('Should delete the ItemCategory', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
-            customCategory.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-    });
 
-    test('Should not delete the default/root ItemCategory', async () => {
-        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, rootCategory.id]);
+    test('Should not delete default ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            defaultRootCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Default ItemCategory cannot be removed.').getMessage());
     });
 
-    test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
 
-        let res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
-            market.id,
-            'customcategoryname2',
-            'description',
-            rootCategory.id
+    test('Should delete the ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            customStorefrontCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        customCategory = res.getBody()['result'];
+    });
 
-        expect(customCategory.ParentItemCategory.id).toBe(rootCategory.id);
 
-        // create listing item
+    test('Should create new custom ItemCategory on the new storefront', async () => {
+
+        let res = await testUtil.rpc(categoryCommand, [categoryListCommand,
+            storefront.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        storefrontRootCategory = res.getBody()['result'];
+
+        res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            storefront.id,
+            'customcategoryname2',
+            'description2',
+            storefrontRootCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        customStorefrontCategory = res.getBody()['result'];
+
+        expect(customStorefrontCategory.name).toBe('customcategoryname2');
+        expect(customStorefrontCategory.description).toBe('description2');
+        expect(customStorefrontCategory.ParentItemCategory.id).toBe(storefrontRootCategory.id);
+    });
+
+
+    test('Should create new ListingItem having custom ItemCategory on the new storefront', async () => {
+
         const generateListingItemParams = new GenerateListingItemParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            null,               // listingItemTemplateHash
-            null,               // seller
-            customCategory.id  // categoryId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            null,                           // listingItemTemplateHash
+            null,                           // seller
+            customStorefrontCategory.id     // categoryId
         ]).toParamsArray();
 
-        // create listing item for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                      // how many to generate
             true,                // return model
-            generateListingItemParams           // what kind of data to generate
+            generateListingItemParams       // what kind of data to generate
         );
-
-        res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, customCategory.id]);
-        res.expectJson();
-        res.expectStatusCode(404);
     });
 
-    // TODO: Should not delete the ItemCategory if theres ListingItemTemplate related with ItemCategory
+
+    test('Should not delete the ItemCategory if there is a ListingItem related with ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            customStorefrontCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException(`ItemCategory associated with ListingItem cannot be deleted.`).getMessage());
+    });
+
+
+    test('Should create new ListingItemTemplate having custom ItemCategory on the new storefront', async () => {
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            storefront.id,                  // soldOnMarketId
+            customStorefrontCategory.id     // categoryId
+        ]).toParamsArray();
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+    });
+
+
+    test('Should not delete the ItemCategory if there is a ListingItemTemplate related with ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand,
+            customStorefrontCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException(`ItemCategory associated with ListingItemTemplate cannot be deleted.`).getMessage());
+    });
 
 });
