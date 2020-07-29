@@ -18,14 +18,16 @@ import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 import { ProfileService } from '../../services/model/ProfileService';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { IdentityService } from '../../services/model/IdentityService';
 
-export class ShoppingCartListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ShoppingCart>> {
+export class ShoppingCartListCommand extends BaseCommand implements RpcCommandInterface<resources.ShoppingCart[]> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_LIST);
@@ -35,17 +37,24 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     /**
      * data.params[]:
      *  [0]: profile: resources.Profile
-     *  [1]: withRelated
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<ShoppingCart>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCart>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ShoppingCart[]> {
 
         const profile: resources.Profile = data.params[0];
         const withRelated: boolean = data.params[1];
-        return await this.shoppingCartService.findAllByProfileId(profile.id, withRelated);
+
+        const carts: resources.ShoppingCart[] = [];
+
+        for (const identity of profile.Identities) {
+            const identityCarts: resources.ShoppingCart[] = await this.shoppingCartService.findAllByIdentityId(identity.id, withRelated)
+                .then(value => value.toJSON());
+            carts.push(...identityCarts);
+        }
+        return carts;
     }
 
     /**

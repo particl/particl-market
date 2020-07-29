@@ -12,6 +12,6 @@ export class ShoppingCartCreateRequest extends RequestBody implements ModelReque
     public name: string;
 
     @IsNotEmpty()
-    public profile_id: number;
+    public identity_id: number;
 }
 // tslint:enable:variable-name

@@ -4,13 +4,13 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import { Profile } from './Profile';
+import { Identity } from './Identity';
 import { ShoppingCartItem } from './ShoppingCartItem';
 
 export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
 
     public static RELATIONS = [
-        'Profile',
+        'Identity',
         'ShoppingCartItems',
         'ShoppingCartItems.ListingItem'
     ];
@@ -21,10 +21,10 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
         });
     }
 
-    public static async fetchAllByProfileId(value: number, withRelated: boolean = false): Promise<Collection<ShoppingCart>> {
+    public static async fetchAllByIdentityId(value: number, withRelated: boolean = false): Promise<Collection<ShoppingCart>> {
         const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
-                qb.where('profile_id', '=', value);
+                qb.where('identity_id', '=', value);
             }).orderBy('id', 'ASC');
 
         return await shoppingCart.fetchAll({
@@ -47,8 +47,8 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public Profile(): Profile {
-        return this.belongsTo(Profile, 'profile_id', 'id');
+    public Identity(): Identity {
+        return this.belongsTo(Identity, 'identity_id', 'id');
     }
 
     public ShoppingCartItems(): Collection<ShoppingCartItem> {
