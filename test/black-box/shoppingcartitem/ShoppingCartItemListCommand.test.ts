@@ -45,7 +45,7 @@ describe('ShoppingCartItemListCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        shoppingCart1 = profile.ShoppingCart[0];
+        shoppingCart = market.Identity.ShoppingCarts[0];
 
         let res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
             profile.id,

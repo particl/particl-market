@@ -45,7 +45,7 @@ describe('ShoppingCartItemRemoveCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        shoppingCart = profile.ShoppingCart[0];
+        shoppingCart = market.Identity.ShoppingCarts[0];
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([

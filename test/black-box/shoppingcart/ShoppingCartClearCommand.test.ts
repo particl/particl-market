@@ -44,7 +44,7 @@ describe('ShoppingCartClearCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        shoppingCart = profile.ShoppingCart[0];
+        shoppingCart = market.Identity.ShoppingCarts[0];
 
         // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -69,8 +69,6 @@ describe('ShoppingCartClearCommand', () => {
             true,
             generateListingItemTemplateParams
         );
-
-        log.debug('listingItemTemplates: ', JSON.stringify(listingItemTemplates, null, 2));
 
         listingItem1 = listingItemTemplates[0].ListingItems[0];
         listingItem2 = listingItemTemplates[1].ListingItems[0];
@@ -106,7 +104,7 @@ describe('ShoppingCartClearCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('cartId', 'number').getMessage());
     });
 
     test('Should fail because missing ShoppingCart', async () => {
