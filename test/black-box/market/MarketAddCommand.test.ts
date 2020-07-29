@@ -12,7 +12,7 @@ import { MarketType } from '../../../src/api/enums/MarketType';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
-import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
 
 describe('MarketAddCommand', () => {
 
