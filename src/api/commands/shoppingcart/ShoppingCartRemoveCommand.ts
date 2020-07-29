@@ -52,12 +52,12 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('id');
+            throw new MissingParamException('cartId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
+            throw new InvalidParamException('cartId', 'number');
         }
 
         // make sure ShoppingCart with the id exists

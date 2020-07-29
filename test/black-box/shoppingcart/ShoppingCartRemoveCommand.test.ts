@@ -23,6 +23,7 @@ describe('ShoppingCartRemoveCommand', () => {
 
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartRemoveCommand = Commands.SHOPPINGCART_REMOVE.commandName;
+    const shoppingCartAddCommand = Commands.SHOPPINGCART_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -37,8 +38,8 @@ describe('ShoppingCartRemoveCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const res = await testUtil.rpc(shoppingCartCommand, [Commands.SHOPPINGCART_ADD.commandName,
-            profile.id,
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
+            market.Identity.id,
             'NEW_CART'
         ]);
         res.expectJson();
@@ -46,21 +47,21 @@ describe('ShoppingCartRemoveCommand', () => {
         shoppingCart = res.getBody()['result'];
     });
 
-    test('Should fail because missing id', async () => {
+    test('Should fail because missing cartId', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('cartId').getMessage());
     });
 
-    test('Should fail because invalid id', async () => {
+    test('Should fail because invalid cartId', async () => {
 
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand,
             false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('cartId', 'number').getMessage());
     });
 
     test('Should fail because missing ShoppingCart', async () => {
@@ -73,7 +74,9 @@ describe('ShoppingCartRemoveCommand', () => {
     });
 
     test('Should remove a ShoppingCart', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand, shoppingCart.id]);
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartRemoveCommand,
+            shoppingCart.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
     });

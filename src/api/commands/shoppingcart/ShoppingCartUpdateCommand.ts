@@ -60,14 +60,14 @@ export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommand
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('id');
+            throw new MissingParamException('cartId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('name');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
+            throw new InvalidParamException('cartId', 'number');
         } else if (typeof data.params[1] !== 'string') {
             throw new InvalidParamException('name', 'string');
         }
