@@ -18,6 +18,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ItemCategorySearchParams } from '../../requests/search/ItemCategorySearchParams';
 import { MarketService } from '../../services/model/MarketService';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategorySearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
@@ -53,7 +54,7 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
     /**
      * data.params[]:
      *  [0]: name, search string
-     *  [0]: marketId
+     *  [1]: marketId
      *
      * @param data
      * @returns {Promise<ItemCategory>}
@@ -71,7 +72,11 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
             throw new InvalidParamException('marketId', 'number');
         }
 
-        data.params[1] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[1] = await this.marketService.findOne(data.params[1])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
 
         return data;
     }
