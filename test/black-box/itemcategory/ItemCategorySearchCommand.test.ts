@@ -54,7 +54,7 @@ describe('ItemCategorySearchCommand', () => {
         expect(market.id).toBeDefined();
 
         // first get the defaultRootCategory
-        let res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         defaultRootCategory = res.getBody()['result'];
