@@ -49,19 +49,20 @@ describe('SmsgRemoveCommand', () => {
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            false,              // generateListingItem
-            market.id           // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            undefined                       // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -72,10 +73,15 @@ describe('SmsgRemoveCommand', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
+    });
+
+
+    test('Should generate SmsgMessages (MPA_LISTING_ADD) based on the ListingItemTemplate', async () => {
+
         // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const messageParams = {
             listingItem: listingItemTemplate,
-            seller: market.Identity,
+            sellerAddress: market.Identity.address,
             signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams;
 
@@ -102,16 +108,19 @@ describe('SmsgRemoveCommand', () => {
             generateSmsgMessageParams               // what kind of data to generate
         ) as resources.SmsgMessage[];
 
+        log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
     });
 
-    test('Should fail to remove SmsgMessage because missing msgid', async () => {
+
+    test('Should fail because missing msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('msgid').getMessage());
     });
 
-    test('Should fail to remove SmsgMessage because invalid msgid', async () => {
+
+    test('Should fail because invalid msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
             false
         ]);
@@ -120,7 +129,8 @@ describe('SmsgRemoveCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
     });
 
-    test('Should remove SmsgMessage using smsgMessage.msgid', async () => {
+
+    test('Should remove using smsgMessage.msgid', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
             smsgMessages[0].msgid
         ]);
@@ -128,7 +138,8 @@ describe('SmsgRemoveCommand', () => {
         res.expectStatusCode(200);
     });
 
-    test('Should fail to remove SmsgMessage because its already removed', async () => {
+
+    test('Should fail because already removed', async () => {
         const res = await testUtil.rpc(smsgCommand, [smsgRemoveCommand,
             smsgMessages[0].msgid
         ]);

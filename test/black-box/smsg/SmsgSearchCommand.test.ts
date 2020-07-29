@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -49,7 +50,6 @@ describe('SmsgSearchCommand', () => {
 
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
-
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
         // log.debug('market: ', JSON.stringify(market, null, 2));
@@ -89,7 +89,7 @@ describe('SmsgSearchCommand', () => {
         const messageParams = {
             listingItem: listingItemTemplate,
             sellerAddress: market.Identity.address,
-            signature: 'fake-signature'
+            signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams;
 
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
