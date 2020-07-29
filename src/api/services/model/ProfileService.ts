@@ -124,12 +124,6 @@ export class ProfileService {
             await this.identityService.create(identity);
         }
 
-        // create default shoppingCart
-        await this.shoppingCartService.create({
-            name: 'DEFAULT',
-            profile_id: profile.id
-        } as ShoppingCartCreateRequest);
-
         // finally find and return the created profileId
         return await this.findOne(profile.id);
     }

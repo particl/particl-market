@@ -13,7 +13,6 @@ declare module 'resources' {
         ShippingAddresses: Address[];
         CryptocurrencyAddresses: CryptocurrencyAddress[];
         FavoriteItems: FavoriteItem[];
-        ShoppingCart: ShoppingCart[];
         Markets: Market[];
         Identities: Identity[];
         Settings: Setting[];

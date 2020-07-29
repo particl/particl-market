@@ -21,6 +21,9 @@ import { RpcExtKey, RpcExtKeyResult, RpcMnemonic, RpcWallet, RpcWalletInfo } fro
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../CoreRpcService';
 import { SmsgService } from '../SmsgService';
+import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
+import { ShoppingCartService } from './ShoppingCartService';
+
 
 export class IdentityService {
 
@@ -29,6 +32,7 @@ export class IdentityService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.IdentityRepository) public identityRepository: IdentityRepository,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) public shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -79,9 +83,14 @@ export class IdentityService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const identity: resources.Identity = await this.identityRepository.create(body).then(value => value.toJSON());
-        const result = await this.findOne(identity.id);
-        // this.log.debug('create(), result: ', JSON.stringify(result, null, 2));
-        return result;
+
+        // create default shoppingCart
+        await this.shoppingCartService.create({
+            name: 'DEFAULT',
+            identity_id: identity.id
+        } as ShoppingCartCreateRequest);
+
+        return await this.findOne(identity.id);
     }
 
     /**

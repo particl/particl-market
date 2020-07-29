@@ -59,7 +59,7 @@ describe('ShoppingCartItem', () => {
         // get default profile + market + shoppingcart
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-        shoppingCart = profile.ShoppingCart[0];
+        shoppingCart = market.Identity.ShoppingCart[0];
 
         const generateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
@@ -168,8 +168,8 @@ describe('ShoppingCartItem', () => {
         shoppingCartItem = await shoppingCartItemService.create(testData).then(value => value.toJSON());
 
         expect(shoppingCartItem.id).not.toBeUndefined();
-        expect(shoppingCartItem.shoppingCartId).toBe(testData.shopping_cart_id);
-        expect(shoppingCartItem.listingItemId).toBe(testData.listing_item_id);
+        expect(shoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
+        expect(shoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
 
         await shoppingCartItemService.destroy(shoppingCartItem.id);
         await shoppingCartItemService.findOne(shoppingCartItem.id).catch(e =>

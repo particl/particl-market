@@ -66,7 +66,7 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
         }
 
         const identityId = data.params[0];
-        const name = data.params[0];              // optional
+        const name = data.params[1];              // optional
 
         if (typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');

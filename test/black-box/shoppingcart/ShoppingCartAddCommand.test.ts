@@ -36,26 +36,26 @@ describe('ShoppingCartAddCommand', () => {
 
     });
 
-    test('Should fail because missing profileId', async () => {
+    test('Should fail because missing identityId', async () => {
         const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
     });
 
-    test('Should fail because invalid profileId', async () => {
+    test('Should fail because invalid identityId', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
             false,
             'name'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
     });
 
     test('Should fail because invalid name', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            profile.id,
+            market.Identity.id,
             false
         ]);
         res.expectJson();
@@ -63,36 +63,36 @@ describe('ShoppingCartAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
-    test('Should fail because missing Profile', async () => {
+    test('Should fail because Identity not found', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
             0,
             'name'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
     });
 
     test('Should create a new ShoppingCart', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            profile.id,
+            market.Identity.id,
             'name'
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
-        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Identity.id).toBe(market.Identity.id);
         expect(result.name).toBe('name');
     });
 
     test('Should create a new ShoppingCart without specifying a name', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            profile.id
+            market.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
-        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Identity.id).toBe(market.Identity.id);
     });
 
 });

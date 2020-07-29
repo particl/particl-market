@@ -19,7 +19,6 @@ export class Profile extends Bookshelf.Model<Profile> {
         'ShippingAddresses',
         'CryptocurrencyAddresses',
         'FavoriteItems',
-        'ShoppingCart',
         'Markets',
         'Markets.Identity',
         'Identities',
@@ -73,11 +72,6 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public FavoriteItems(): Collection<FavoriteItem> {
         return this.hasMany(FavoriteItem, 'profile_id', 'id');
-    }
-
-    // TODO: rename to ShoppingCarts
-    public ShoppingCart(): Collection<ShoppingCart> {
-        return this.hasMany(ShoppingCart, 'profile_id', 'id');
     }
 
     public Markets(): Collection<Market> {

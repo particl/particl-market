@@ -10,7 +10,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import { MessageException } from '../../exceptions/MessageException';
 import { ShoppingCartItemRepository } from '../../repositories/ShoppingCartItemRepository';
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
 import { ShoppingCartItemCreateRequest } from '../../requests/model/ShoppingCartItemCreateRequest';

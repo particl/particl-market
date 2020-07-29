@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {IdentityType} from '../../api/enums/IdentityType';
+import { IdentityType } from '../../api/enums/IdentityType';
 
 declare module 'resources' {
 
@@ -21,6 +21,7 @@ declare module 'resources' {
 
         Profile: Profile;
         Markets: Market[];
+        ShoppingCarts: ShoppingCart[];
     }
 
 }
