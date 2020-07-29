@@ -31,7 +31,7 @@ describe('ItemCategoryAddCommand', () => {
 
     let market: resources.Market;
     let profile: resources.Profile;
-    let parentCategory: resources.ItemCategory;
+    let rootCategory: resources.ItemCategory;
     let storefront: resources.Market;
 
     const categoryData = {
@@ -58,7 +58,7 @@ describe('ItemCategoryAddCommand', () => {
         const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
-        parentCategory = res.getBody()['result'];
+        rootCategory = res.getBody()['result'];
 
         // storefront admin
         const network = Networks.testnet;
@@ -139,7 +139,7 @@ describe('ItemCategoryAddCommand', () => {
             market.id,
             true,
             categoryData.description,
-            parentCategory.id
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -151,7 +151,7 @@ describe('ItemCategoryAddCommand', () => {
             market.id,
             categoryData.name,
             true,
-            parentCategory.id
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -163,7 +163,7 @@ describe('ItemCategoryAddCommand', () => {
             market.id,
             categoryData.name,
             categoryData.description,
-            parentCategory.id
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -199,7 +199,7 @@ describe('ItemCategoryAddCommand', () => {
             storefront.id,
             categoryData.name,
             categoryData.description,
-            parentCategory.id
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -207,19 +207,19 @@ describe('ItemCategoryAddCommand', () => {
             new MessageException('Parent ItemCategory belongs to different Market.').getMessage());
     });
 
-    test('Should create the ItemCategory under parentCategory', async () => {
+    test('Should create the ItemCategory under rootCategory', async () => {
         let res = await testUtil.rpc(categoryCommand, [categoryListCommand,
             storefront.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        parentCategory = res.getBody()['result'];
+        rootCategory = res.getBody()['result'];
 
         res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
             storefront.id,
             categoryData.name,
             categoryData.description,
-            parentCategory.id
+            rootCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -227,7 +227,7 @@ describe('ItemCategoryAddCommand', () => {
         const result: resources.ItemCategory = res.getBody()['result'];
         expect(result.name).toBe(categoryData.name);
         expect(result.description).toBe(categoryData.description);
-        expect(result.ParentItemCategory.id).toBe(parentCategory.id);
+        expect(result.ParentItemCategory.id).toBe(rootCategory.id);
     });
 
 });

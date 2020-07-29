@@ -15,6 +15,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -30,14 +31,17 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: id or key
+     *  [1]: id
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        return await this.itemCategoryService.findOne(data.params[0]);
+        return await this.itemCategoryService.findOne(data.params[0])
+            .catch(reason => {
+                throw new ModelNotFoundException('ItemCategory');
+            });
     }
 
     /**
