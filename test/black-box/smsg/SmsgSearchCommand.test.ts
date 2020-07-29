@@ -54,41 +54,44 @@ describe('SmsgSearchCommand', () => {
         expect(market.id).toBeDefined();
         // log.debug('market: ', JSON.stringify(market, null, 2));
 
-        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            true,               // generateListingItem
-            market.id           // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            undefined                       // categoryId
         ]).toParamsArray();
 
         const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
             1,                              // how many to generate
-            true,                       // return model
+            true,                        // return model
             generateListingItemTemplateParams       // what kind of data to generate
         ) as resources.ListingItemTemplates[];
         listingItemTemplate = listingItemTemplatesOnSellerNode[0];
         expect(listingItemTemplate.id).toBeDefined();
 
+    });
+
+
+    test('Should generate SmsgMessages (MPA_LISTING_ADD) based on the ListingItemTemplate', async () => {
+
+        // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const messageParams = {
             listingItem: listingItemTemplate,
-            seller: {
-                address: market.Identity.address
-            } as resources.Identity,
+            sellerAddress: market.Identity.address,
             signature: 'fake-signature'
         } as ListingItemAddMessageCreateParams;
 
-        // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
             MPAction.MPA_LISTING_ADD,               // type
             SmsgMessageStatus.PROCESSED,            // status
@@ -113,7 +116,6 @@ describe('SmsgSearchCommand', () => {
         ) as resources.SmsgMessage[];
 
         log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
-
     });
 
 
@@ -128,6 +130,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should fail to search SmsgMessages because invalid type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -137,6 +140,7 @@ describe('SmsgSearchCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('type', 'ActionMessageTypes[]').getMessage());
     });
+
 
     test('Should search SmsgMessages using single type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -150,6 +154,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should search SmsgMessages using multiple types', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -161,6 +166,7 @@ describe('SmsgSearchCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
+
 
     test('Should search SmsgMessages using * as type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -174,6 +180,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should fail to search SmsgMessages because invalid status', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -183,8 +190,8 @@ describe('SmsgSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('status', 'SmsgMessageStatus').getMessage());
-
     });
+
 
     test('Should search SmsgMessages using type and status', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -199,6 +206,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should search SmsgMessages using type and * as status', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -212,6 +220,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should fail to search SmsgMessages because invalid direction', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -223,6 +232,7 @@ describe('SmsgSearchCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('direction', 'ActionDirection').getMessage());
     });
+
 
     test('Should search SmsgMessages using type and status and direction', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -238,6 +248,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should search SmsgMessages using type and status and * as direction', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -252,6 +263,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should fail to search SmsgMessages because invalid age', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -263,8 +275,8 @@ describe('SmsgSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('age', 'number').getMessage());
-
     });
+
 
     test('Should search SmsgMessages using type and status and direction and age', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -281,6 +293,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should search SmsgMessages using type and status and direction and undefined age', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -296,6 +309,7 @@ describe('SmsgSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should fail to search SmsgMessages because invalid msgid', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
@@ -308,8 +322,8 @@ describe('SmsgSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
-
     });
+
 
     test('Should search SmsgMessages using type and status and direction and age and msgid', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
@@ -324,8 +338,6 @@ describe('SmsgSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
-
     });
-
 
 });
