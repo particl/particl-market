@@ -58,8 +58,6 @@ describe('ProfileAddCommand', () => {
         const result: any = res.getBody()['result'];
         profile = result;
         expect(result.name).toBe(profileName);
-        expect(result.ShoppingCart).toHaveLength(1);
-        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
     test('Should fail to create because given name already exist', async () => {

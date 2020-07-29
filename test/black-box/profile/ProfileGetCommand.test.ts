@@ -8,6 +8,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ProfileGetCommand', () => {
 
@@ -34,8 +36,37 @@ describe('ProfileGetCommand', () => {
 
     });
 
+    test('Should fail because invalid id/name', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('id|name', 'number|string').getMessage());
+    });
+
+    test('Should fail because not found by name', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand,
+            'invalid_profile_name'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+   });
+
+    test('Should fail because not found by id', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+    });
+
     test('Should return one Profile by id', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, profile.id]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand,
+            profile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -46,11 +77,12 @@ describe('ProfileGetCommand', () => {
         expect(result.CryptocurrencyAddresses).toBeDefined();
         expect(result.FavoriteItems).toBeDefined();
         expect(result.ShippingAddresses).toBeDefined();
-        expect(result.ShoppingCart).toBeDefined();
     });
 
     test('Should return one Profile by name', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, profile.name]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand,
+            profile.name
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -61,23 +93,6 @@ describe('ProfileGetCommand', () => {
         expect(result.CryptocurrencyAddresses).toBeDefined();
         expect(result.FavoriteItems).toBeDefined();
         expect(result.ShippingAddresses).toBeDefined();
-        expect(result.ShoppingCart).toBeDefined();
-    });
-
-    test('Should fail to return Profile with invalid name', async () => {
-        const badProfileName = 'invalid_profile_name';
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, badProfileName]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new NotFoundException(badProfileName).getMessage());
-   });
-
-    test('Should fail to return Profile with invalid id', async () => {
-        const badProfileId = 123123;
-        const res = await testUtil.rpc(profileCommand, [profileGetCommand, badProfileId]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new NotFoundException(badProfileId).getMessage());
     });
 
 });

@@ -99,9 +99,6 @@ describe('Profile', () => {
 
         expect(result.name).toBe(testData.name);
         expect(result.ShippingAddresses).toHaveLength(2);
-        expect(result.ShoppingCart).toHaveLength(1);
-        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
-
         profile = result;
     });
 
@@ -115,7 +112,6 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toBe(undefined);           // doesnt fetch related
         expect(result.CryptocurrencyAddresses).toBe(undefined);     // doesnt fetch related
         expect(result.FavoriteItems).toBe(undefined);               // doesnt fetch related
-        expect(result.ShoppingCart).toBe(undefined);               // doesnt fetch related
     });
 
     test('Should return one Profile', async () => {
@@ -125,7 +121,6 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toHaveLength(2);
         expect(result.CryptocurrencyAddresses).toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
-        expect(result.ShoppingCart).toHaveLength(1);
     });
 
     test('Should update the Profile', async () => {
@@ -133,7 +128,6 @@ describe('Profile', () => {
 
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.ShippingAddresses).toHaveLength(2);
-        expect(result.ShoppingCart).toHaveLength(1);
 
         profile = result;
     });
@@ -155,9 +149,6 @@ describe('Profile', () => {
         });
         await addressService.findOne(result.ShippingAddresses[1].id).catch(e => {
             expect(e).toEqual(new NotFoundException(result.ShippingAddresses[1].id));
-        });
-        await shoppingCartService.findOne(result.ShoppingCart[0].id).catch(e => {
-            expect(e).toEqual(new NotFoundException(result.ShoppingCart[0].id));
         });
     });
 

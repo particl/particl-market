@@ -59,7 +59,7 @@ describe('ShoppingCartItem', () => {
         // get default profile + market + shoppingcart
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-        shoppingCart = market.Identity.ShoppingCart[0];
+        shoppingCart = market.Identity.ShoppingCarts[0];
 
         const generateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation

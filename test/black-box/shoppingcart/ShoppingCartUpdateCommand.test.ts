@@ -36,14 +36,14 @@ describe('ShoppingCartUpdateCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        defaultShoppingCart = profile.ShoppingCart[0];
+        defaultShoppingCart = market.Identity.ShoppingCarts[0];
     });
 
-    test('Should fail because missing shoppingCartId', async () => {
+    test('Should fail because missing cartId', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('cartId').getMessage());
     });
 
     test('Should fail because missing name', async () => {
@@ -55,7 +55,7 @@ describe('ShoppingCartUpdateCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
-    test('Should fail because invalid shoppingCartId', async () => {
+    test('Should fail because invalid cartId', async () => {
 
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartUpdateCommand,
             false,
@@ -63,7 +63,7 @@ describe('ShoppingCartUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('cartId', 'number').getMessage());
     });
 
     test('Should fail because invalid profileName', async () => {
