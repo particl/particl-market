@@ -56,7 +56,7 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
+            throw new InvalidParamException('cartId', 'number');
         }
 
         data.params[0] = await this.shoppingCartService.findOne(data.params[0])

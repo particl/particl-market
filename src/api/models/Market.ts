@@ -11,9 +11,10 @@ import { FlaggedItem } from './FlaggedItem';
 export class Market extends Bookshelf.Model<Market> {
 
     public static RELATIONS = [
+        'FlaggedItem',
         'Profile',
         'Identity',
-        'FlaggedItem'
+        'Identity.ShoppingCarts'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Market>> {

@@ -38,12 +38,15 @@ describe('ShoppingCartGetCommand', () => {
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
+        expect(market.Identity).toBeDefined();
+        expect(market.Identity.id).toBeDefined();
+        expect(market.Identity.ShoppingCarts.length).toBeGreaterThan(0);
 
-        defaultShoppingCart = profile.ShoppingCart[0];
+        defaultShoppingCart = market.Identity.ShoppingCarts[0];
 
         // add a second shopping cart
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            profile.id,
+            market.Identity.id,
             'TEST-CART-NAME'
         ]);
         res.expectJson();
@@ -65,7 +68,7 @@ describe('ShoppingCartGetCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('cartId', 'number').getMessage());
     });
 
     test('Should fail because ShoppingCart not found', async () => {
@@ -85,7 +88,7 @@ describe('ShoppingCartGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
         expect(result.name).toBe(defaultShoppingCart.name);
-        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Identity.id).toBe(market.Identity.id);
     });
 
     test('Should get the second ShoppingCart', async () => {
@@ -96,7 +99,7 @@ describe('ShoppingCartGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ShoppingCart = res.getBody()['result'];
         expect(result.name).toBe(secondShoppingCart.name);
-        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Identity.id).toBe(market.Identity.id);
     });
 
 });
