@@ -3,12 +3,14 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ProposalResultCommand', () => {
 
@@ -27,7 +29,7 @@ describe('ProposalResultCommand', () => {
 
     let proposal: resources.Proposal;
 
-    const testTimeStamp = new Date().getTime();
+    const testTimeStamp = Date.now();
     const voteCount = 50;
 
     beforeAll(async () => {
@@ -38,41 +40,58 @@ describe('ProposalResultCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const generateProposalParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate
-            false,                  // generateListingItem
-            null,                   // listingItemHash,
-            false,                  // generatePastProposal,
-            voteCount,              // voteCount,
-            profile.address  // submitter
-
+        const generateActiveProposalParams = new GenerateProposalParams([
+            undefined,                  // listingItemId,
+            false,                      // generatePastProposal,
+            voteCount,                  // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            true,                       // generateOptions
+            true                        // generateResults
         ]).toParamsArray();
 
-        // generate proposals
+        // generate active proposals
         const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,    // what to generate
-            1,                  // how many to generate
-            true,            // return model
-            generateProposalParams      // what kind of data to generate
+            CreatableModel.PROPOSAL,        // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateActiveProposalParams    // what kind of data to generate
         ) as resources.Proposal[];
-
         proposal = proposals[0];
     });
 
+
+    test('Should fail because missing proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('proposalHash').getMessage());
+    });
+
+
+    test('Should fail because invalid proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
+    });
+
+
     test('Should return ProposalResult', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand, proposal.hash]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand,
+            proposal.hash
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.ProposalResult = res.getBody()['result'];
-        expect(result).hasOwnProperty('Proposal');
-        expect(result).hasOwnProperty('ProposalOptionResults');
 
         expect(result.calculatedAt).toBeGreaterThan(testTimeStamp);
         expect(result.ProposalOptionResults[0].voters).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
         expect(result.ProposalOptionResults[0].voters + result.ProposalOptionResults[1].voters).toBe(voteCount);
-
     });
 
 });

@@ -11,6 +11,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { Proposal } from '../../../src/api/models/Proposal';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 // tslint:enable:max-line-length
 
 describe('ProposalGetCommand', () => {
@@ -38,29 +40,46 @@ describe('ProposalGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // Generate a proposal
-        const generateProposalsParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate = true;
-            false,                  // generateListingItem = true;
-            null,                   // listingItemHash: string;
-            false,                  // generatePastProposal = false;
-            0,                      // voteCount
-            profile.address  // submitter
+        const generateActiveProposalParams = new GenerateProposalParams([
+            undefined,                  // listingItemId,
+            false,                      // generatePastProposal,
+            0,                          // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            true,                       // generateOptions
+            true                        // generateResults
         ]).toParamsArray();
 
-        // create Proposal for testing
+        // generate active proposals
         const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,     // what to generate
-            1,                           // how many to generate
-            true,                        // return model
-            generateProposalsParams      // what kind of data to generate
-        ) as Proposal[];
+            CreatableModel.PROPOSAL,        // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateActiveProposalParams    // what kind of data to generate
+        ) as resources.Proposal[];
         proposal = proposals[0];
+    });
 
+    test('Should fail because missing proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalGetCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('proposalHash').getMessage());
+    });
+
+    test('Should fail because invalid proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalGetCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
     });
 
     test('Should get the Proposal', async () => {
-        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, proposal.hash]);
+        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand,
+            proposal.hash
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
