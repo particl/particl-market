@@ -83,10 +83,10 @@ describe('ProposalGetCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
+        const result: resources.Proposal = res.getBody()['result'];
         expect(result.submitter).toBe(proposal.submitter);
-        expect(result.blockStart).toBe(proposal.blockStart);
-        expect(result.blockEnd).toBe(proposal.blockEnd);
+        expect(result.timeStart).toBe(proposal.timeStart);
+        expect(result.expiredAt).toBe(proposal.expiredAt);
         expect(result.hash).toBe(proposal.hash);
         expect(result.type).toBe(proposal.type);
         expect(result.title).toBe(proposal.title);
