@@ -37,7 +37,8 @@ export class CommentAddMessageFactory implements MessageFactoryInterface {
             target: params.target,
             message: params.message,
             parentCommentHash: params.parentComment ? params.parentComment.hash : '',
-            signature: params.signature
+            signature: params.signature,
+            generated: Date.now()
         } as CommentAddMessage;
 
         commentMessage.hash = ConfigurableHasher.hash(commentMessage, new HashableCommentAddMessageConfig());

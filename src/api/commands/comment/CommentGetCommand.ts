@@ -46,10 +46,18 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
         }
     }
 
+    /**
+     * data.params[]:
+     *  [0]: marketId, optional, if market isn't given, return the list of default categories
+     *
+     * @param data
+     * @returns {Promise<ItemCategory>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('hash');
         }
+
         return data;
     }
 
@@ -59,11 +67,11 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <hash>              - [optional] String - The hash of the comment we want to retrieve. ';
+            + '    <hash>              - String - The hash of the Comment we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a comment via hash.';
+        return 'Get a Comment via hash.';
     }
 
     public example(): string {

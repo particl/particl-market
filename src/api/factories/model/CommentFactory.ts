@@ -29,11 +29,11 @@ export class CommentFactory implements ModelFactoryInterface {
     /**
      *
      * @param {CommentCreateParams} params
-     * @param {CommentAddMessage} commentMessage
+     * @param {CommentAddMessage} commentAddMessage
      * @param {resources.SmsgMessage} smsgMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(params: CommentCreateParams, commentMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage):
+    public async get(params: CommentCreateParams, commentAddMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage):
         Promise<CommentCreateRequest | CommentUpdateRequest> {
 
         const smsgData: any = {
@@ -56,17 +56,18 @@ export class CommentFactory implements ModelFactoryInterface {
             target: params.target,
             message: params.message,
             parent_comment_id: params.parentCommentId,
+            generatedAt: commentAddMessage.generated,
             ...smsgData
         } as CommentCreateRequest || CommentUpdateRequest;
 
         commentRequest.hash = ConfigurableHasher.hash({
             ...commentRequest,
-            parentCommentHash: commentMessage.parentCommentHash
+            parentCommentHash: commentAddMessage.parentCommentHash
         }, new HashableCommentCreateRequestConfig());
 
-        // validate that the commentMessage.hash should have a matching hash with the incoming or outgoing message
-        if (commentMessage.hash !== commentRequest.hash) {
-            const error = new HashMismatchException('CommentCreateRequest', commentMessage.hash, commentRequest.hash);
+        // validate that the commentAddMessage.hash should have a matching hash with the incoming or outgoing message
+        if (commentAddMessage.hash !== commentRequest.hash) {
+            const error = new HashMismatchException('CommentCreateRequest', commentAddMessage.hash, commentRequest.hash);
             this.log.error(error.getMessage());
             throw error;
         }

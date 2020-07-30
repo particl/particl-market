@@ -104,8 +104,6 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // TODO: theres no support for other than CommentType.LISTINGITEM_QUESTION_AND_ANSWERS yet
-
         if (data.params.length < 1) {
             throw new MissingParamException('identityId');
         } else if (data.params.length < 2) {
@@ -227,7 +225,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'Commands for posting Comments.';
+        return 'Post a Comment.';
     }
 
     public example(): string {

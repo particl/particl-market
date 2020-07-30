@@ -22,6 +22,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('type').notNullable();
             table.string('target').nullable();          // ListingItem hash
             table.text('message').notNullable();
+            table.timestamp('generated_at').notNullable();
 
             table.timestamp('posted_at').notNullable();
             table.timestamp('expired_at').notNullable();

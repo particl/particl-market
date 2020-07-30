@@ -170,6 +170,9 @@ export class Comment extends Bookshelf.Model<Comment> {
     public get Message(): string { return this.get('message'); }
     public set Message(value: string) { this.set('message', value); }
 
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
+
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }
 

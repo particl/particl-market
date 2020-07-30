@@ -4,10 +4,14 @@
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { HashableCommentAddField } from '../HashableField';
+import {HashableCommonField} from 'omp-lib/dist/interfaces/omp-enums';
 
 export class HashableCommentAddMessageConfig extends BaseHashableConfig {
 
     public fields = [{
+        from: 'generated',
+        to: HashableCommonField.GENERATED
+    }, {
         from: 'sender',
         to: HashableCommentAddField.COMMENT_SENDER
     }, {

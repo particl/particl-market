@@ -17,6 +17,7 @@ declare module 'resources' {
         target: string;
         message: string;
         commentType: CommentType;
+        generatedAt: number;
 
         postedAt: number;
         expiredAt: number;

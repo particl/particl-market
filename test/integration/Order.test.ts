@@ -111,7 +111,7 @@ describe('Order', () => {
             }] as OrderItemCreateRequest[],
             buyer: bidderBid.bidder,
             seller: listingItem1.seller,
-            generatedAt: +new Date().getTime()
+            generatedAt: Date.now()
         } as OrderCreateRequest;
 
         // log.debug('order testData: ', JSON.stringify(testData, null, 2));
@@ -132,7 +132,7 @@ describe('Order', () => {
             }] as OrderItemCreateRequest[],
             buyer: bidderBid.bidder,
             seller: listingItem1.seller,
-            generatedAt: +new Date().getTime()
+            generatedAt: Date.now()
         } as OrderCreateRequest;
 
         // log.debug('order testData: ', JSON.stringify(testData, null, 2));
