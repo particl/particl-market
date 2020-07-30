@@ -12,6 +12,7 @@ import { GenerateProposalParams } from '../../../src/api/requests/testdata/Gener
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { CombinedVote } from '../../../src/api/services/action/VoteActionService';
 
 describe('VoteGetCommand', () => {
 
@@ -42,33 +43,34 @@ describe('VoteGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const generateProposalParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate
-            false,                  // generateListingItem
-            null,                   // listingItemHash,
-            false,                  // generatePastProposal,
-            0,                      // voteCount
-            profile.address  // submitter
+        const generateActiveProposalParams = new GenerateProposalParams([
+            undefined,                  // listingItemId,
+            false,                      // generatePastProposal,
+            0,                          // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            true,                       // generateOptions
+            false                       // generateResults
         ]).toParamsArray();
 
-        // generate proposal, no votes
+        // generate active proposals
         const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,    // what to generate
-            1,                  // how many to generate
-            true,            // return model
-            generateProposalParams      // what kind of data to generate
+            CreatableModel.PROPOSAL,        // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateActiveProposalParams    // what kind of data to generate
         ) as resources.Proposal[];
         proposal = proposals[0];
-
     });
 
 
-    test('Should fail to get because missing profileId', async () => {
+    test('Should fail because missing marketId', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
+
 
     test('Should fail to get because missing proposalHash', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
@@ -79,19 +81,19 @@ describe('VoteGetCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('proposalHash').getMessage());
     });
 
-    test('Should fail to add because invalid profileId', async () => {
 
+    test('Should fail to add because invalid marketId', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            'INVALID',
+            true,
             proposal.hash
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
     });
 
-    test('Should fail to add because invalid profileId', async () => {
 
+    test('Should fail to add because invalid proposalHash', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             profile.id,
             true
@@ -101,21 +103,21 @@ describe('VoteGetCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
     });
 
-    test('Should fail to add because Profile not found', async () => {
 
+    test('Should fail to add because Market not found', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             0,
             proposal.hash
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
-    test('Should fail to add because Proposal not found', async () => {
 
+    test('Should fail to add because Proposal not found', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            profile.id,
+            market.id,
             0
         ]);
         res.expectJson();
@@ -123,10 +125,10 @@ describe('VoteGetCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Proposal').getMessage());
     });
 
-    test('Should fail to return a Vote', async () => {
 
+    test('Should fail to return a Vote', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
-            profile.id,
+            market.id,
             proposal.hash
         ]);
         res.expectJson();
@@ -134,11 +136,10 @@ describe('VoteGetCommand', () => {
         expect(res.error.error.message).toBe('No Votes found.');
     });
 
-    test('Should create and return a Vote', async () => {
 
-        // post a vote
-        let response: any = await testUtil.rpc(voteCommand, [votePostCommand,
-            profile.id,
+    test('Should post a Vote', async () => {
+        const response: any = await testUtil.rpc(voteCommand, [votePostCommand,
+            market.id,
             proposal.hash,
             proposal.ProposalOptions[0].optionId
         ]);
@@ -147,65 +148,74 @@ describe('VoteGetCommand', () => {
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
         sent = result.result === 'Sent.';
+        expect(sent).toBeTruthy();
+    });
 
+
+    test('Should receive a Vote', async () => {
         expect(sent).toBeTruthy();
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
-                profile.id,
+        const response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
+                market.id,
                 proposal.hash
             ],
             8 * 60,
             200,
-            'ProposalOption.optionId',
+            'votedProposalOption.optionId',
             proposal.ProposalOptions[0].optionId
         );
         response.expectJson();
         response.expectStatusCode(200);
-        const vote: resources.Vote = response.getBody()['result'];
+        const vote: CombinedVote = response.getBody()['result'];
         createdVote = vote;
 
-        expect(vote).hasOwnProperty('ProposalOption');
-        expect(vote.voter).toBe(profile.address);
-        expect(vote.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
+        expect(vote.voter).toBe(market.Identity.address);
+        expect(vote.votedProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     });
 
-    test('Should return Vote with different result after voting again', async () => {
 
-        // post a vote
-        let response: any = await testUtil.rpc(voteCommand, [votePostCommand,
-            profile.id,
+    test('Should vote again', async () => {
+        const response: any = await testUtil.rpc(voteCommand, [votePostCommand,
+            market.id,
             proposal.hash,
             proposal.ProposalOptions[1].optionId
         ]);
         response.expectJson();
         response.expectStatusCode(200);
-        let result: any = response.getBody()['result'];
+        const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
         sent = result.result === 'Sent.';
+
+        expect(sent).toBeTruthy();
+    });
+
+
+    test('Should return different result after voting again', async () => {
+        expect(sent).toBeTruthy();
 
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
-                profile.id,
+        const response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
+                market.id,
                 proposal.hash
             ],
             8 * 60,
             200,
-            'ProposalOption.optionId',
+            'votedProposalOption.optionId',
             proposal.ProposalOptions[1].optionId
         );
         response.expectJson();
         response.expectStatusCode(200);
 
-        result = response.getBody()['result'];
-        expect(result).hasOwnProperty('ProposalOption');
-        expect(result.weight).toBe(createdVote.weight);
-        expect(result.voter).toBe(profile.address);
-        expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
+        const vote: CombinedVote = response.getBody()['result'];
+        createdVote = vote;
+        expect(vote.voter).toBe(market.Identity.address);
+        expect(vote.votedProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
+        expect(vote.weight).toBe(createdVote.weight);
     });
 
 });
