@@ -42,7 +42,6 @@ describe('CommentGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,                           // generateItemInformation
             true,                           // generateItemLocation
@@ -67,7 +66,6 @@ describe('CommentGetCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
         listingItem = listingItemTemplates[0].ListingItems[0];
-
     });
 
 
