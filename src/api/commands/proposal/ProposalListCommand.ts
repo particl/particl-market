@@ -19,6 +19,7 @@ import { ProposalSearchParams } from '../../requests/search/ProposalSearchParams
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 
@@ -75,34 +76,34 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
         let timeStart: number | string = '*';
         let timeEnd: number | string = '*';
-        let proposalCategory: ProposalCategory = ProposalCategory.PUBLIC_VOTE;
+        let proposalCategory;
         let order: SearchOrder = SearchOrder.ASC;
 
         if (_.isString(data.params[0]) || (_.isFinite(data.params[0]) && +data.params[0] > 0) ) {
             timeStart = data.params[0];
             if (typeof timeStart === 'string' && timeStart !== '*') {
-                throw new InvalidParamException('timeStart', 'number or \'*\'');
+                throw new InvalidParamException('timeStart', 'number|*');
             }
+        } else {
+            throw new InvalidParamException('timeStart', 'number|*');
         }
 
         if (_.isString(data.params[1]) || (_.isFinite(data.params[1]) && +data.params[1] > 0) ) {
             timeEnd = data.params[1];
             if (typeof timeEnd === 'string' && timeEnd !== '*') {
-                throw new InvalidParamException('timeEnd', 'number or \'*\'');
-            }
-        }
-
-        if (_.isString(data.params[2]) && data.params[2].length) {
-            proposalCategory = data.params[2];
-            if (proposalCategory.toUpperCase() === ProposalCategory.ITEM_VOTE.toString()) {
-                proposalCategory = ProposalCategory.ITEM_VOTE;
-            } else if (proposalCategory.toUpperCase() === ProposalCategory.PUBLIC_VOTE.toString()) {
-                proposalCategory = ProposalCategory.PUBLIC_VOTE;
-            } else {
-                proposalCategory = ProposalCategory.PUBLIC_VOTE;
+                throw new InvalidParamException('timeEnd', 'number|*');
             }
         } else {
-            proposalCategory = ProposalCategory.PUBLIC_VOTE; // default
+            throw new InvalidParamException('timeEnd', 'number|*');
+        }
+
+        if (data.params[2] === '*') {
+            proposalCategory = ProposalCategory.PUBLIC_VOTE;
+        } else if (!_.isNil(data.params[2])
+            && (typeof data.params[2] !== 'string' || !EnumHelper.containsName(ProposalCategory, data.params[2]))) {
+            throw new InvalidParamException('proposalCategory', 'ProposalCategory');
+        } else {
+            proposalCategory = !_.isNil(data.params[2]) ? data.params[2] : undefined;
         }
 
         if (_.isString(data.params[3]) && data.params[3].length) {
@@ -114,16 +115,17 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             }
         }
 
-        data.params = [];
         data.params[0] = timeStart;
         data.params[1] = timeEnd;
         data.params[2] = proposalCategory;
         data.params[3] = order;
+
+        this.log.debug('data.params', data.params);
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <startTime> <endTime> <proposalCategory> <order> ';
+        return this.getName() + ' <startTime> <endTime> [proposalCategory] [order] ';
     }
 
     public help(): string {

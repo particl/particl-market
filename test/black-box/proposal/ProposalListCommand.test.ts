@@ -11,6 +11,8 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { ProposalCategory } from '../../../src/api/enums/ProposalCategory';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 // tslint:enable:max-line-length
 
 describe('ProposalListCommand', () => {
@@ -30,7 +32,7 @@ describe('ProposalListCommand', () => {
     let pastProposals: resources.Proposal[];
     let activeProposals: resources.Proposal[];
 
-    const testTimeStamp = new Date().getTime();
+    const testTimeStamp = Date.now();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -41,13 +43,13 @@ describe('ProposalListCommand', () => {
         expect(market.id).toBeDefined();
 
         const generatePastProposalParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate
-            false,                  // generateListingItem
-            null,                   // listingItemHash,
-            true,                   // generatePastProposal,
-            0,                      // voteCount
-            profile.address  // submitter
-
+            undefined,                  // listingItemId,
+            true,                       // generatePastProposal,
+            0,                          // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            false,                      // generateOptions
+            false                       // generateResults
         ]).toParamsArray();
 
         // generate past proposals
@@ -59,12 +61,13 @@ describe('ProposalListCommand', () => {
         ) as resources.Proposal[];
 
         const generateActiveProposalParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate
-            false,                  // generateListingItem
-            null,                   // listingItemHash,
-            false,                  // generatePastProposal,
-            0,                      // voteCount
-            profile.address  // submitter
+            undefined,                  // listingItemId,
+            false,                      // generatePastProposal,
+            0,                          // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            false,                      // generateOptions
+            false                       // generateResults
         ]).toParamsArray();
 
         // generate active proposals
@@ -77,8 +80,51 @@ describe('ProposalListCommand', () => {
 
     });
 
+
+    test('Should fail because invalid timeStart', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            true,
+            '*',
+            ProposalCategory.PUBLIC_VOTE,
+            SearchOrder.ASC
+        ]);
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('timeStart', 'number|*').getMessage());
+    });
+
+
+    test('Should fail because invalid timeEnd', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            true,
+            ProposalCategory.PUBLIC_VOTE,
+            SearchOrder.ASC
+        ]);
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('timeEnd', 'number|*').getMessage());
+    });
+
+
+    test('Should fail because invalid proposalCategory', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*',
+            true,
+            SearchOrder.ASC
+        ]);
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('proposalCategory', 'ProposalCategory').getMessage());
+    });
+
+
     test('Should list all Proposals', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*']);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*'
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -87,8 +133,12 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(3);
     });
 
+
     test('Should list past Proposals', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', testTimeStamp]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            testTimeStamp
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -97,8 +147,12 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(2);
     });
 
+
     test('Should list active Proposals', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, testTimeStamp, '*']);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            testTimeStamp,
+            '*'
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -107,8 +161,13 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(1);
     });
 
+
     test('Should list 3 Proposals with category PUBLIC_VOTE', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalCategory.PUBLIC_VOTE]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*',
+            ProposalCategory.PUBLIC_VOTE
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -116,14 +175,18 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(3);
     });
 
+
     test('Should not list any Proposals with category ITEM_VOTE', async () => {
-        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalCategory.ITEM_VOTE]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*',
+            ProposalCategory.ITEM_VOTE
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(0);
     });
-
 
 });

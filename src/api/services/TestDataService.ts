@@ -1040,16 +1040,16 @@ export class TestDataService {
 
         const timeStart = generateParams.generatePastProposal
             ? _.random(1, (currentTime / 2), false)
-            : _.random(currentTime, currentTime + 1, false);
+            : _.random(currentTime + 10000, currentTime + 100000, false);
 
         const timeEnd = generateParams.generatePastProposal
             ? _.random((currentTime / 2) + 100, currentTime - 1000, false)
             : _.random(currentTime + 1000000, currentTime + 2000000, false);
 
         // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
-        // this.log.debug('currentblock: ', currentblock);
-        // this.log.debug('blockStart: ', blockStart);
-        // this.log.debug('blockEnd: ', blockEnd);
+        // this.log.debug('currentTime: ', currentTime);
+        // this.log.debug('timeStart:   ', timeStart);
+        // this.log.debug('timeEnd:     ', timeEnd);
 
         const options: ProposalOptionCreateRequest[] = [];
 
