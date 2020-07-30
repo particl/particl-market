@@ -74,7 +74,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             type: data.params[4],
             receiver: data.params[5],
             target: data.params[6],
-            parentCommentId: parentComment.id
+            parentCommentId: parentComment ? parentComment.id : undefined
 
         } as CommentSearchParams;
 
@@ -128,7 +128,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
                 .then(value => {
                     const markets: resources.Market[] = value.toJSON();
                     if (_.isEmpty(markets)) {
-                        throw new NotFoundException(receiver);
+                        throw new ModelNotFoundException('Market');
                     }
                 })
                 .catch(() => {

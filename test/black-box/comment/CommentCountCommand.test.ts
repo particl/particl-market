@@ -100,6 +100,7 @@ describe('CommentGetCommand', () => {
         expect(response.error.error.message).toBe(new MissingParamException('type').getMessage());
     });
 
+
     test('Should fail because missing target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS

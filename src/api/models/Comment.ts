@@ -17,33 +17,21 @@ export class Comment extends Bookshelf.Model<Comment> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Comment> {
-        if (withRelated) {
-            return await Comment.where<Comment>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Comment.where<Comment>({ id: value }).fetch();
-        }
+        return Comment.where<Comment>({ id: value }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async fetchByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
-        if (withRelated) {
-            return await Comment.where<Comment>({ hash }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Comment.where<Comment>({ hash }).fetch();
-        }
+        return Comment.where<Comment>({ hash }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async fetchByMsgId(msgId: string, withRelated: boolean = true): Promise<Comment> {
-        if (withRelated) {
-            return await Comment.where<Comment>({ msgid: msgId }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Comment.where<Comment>({ msgid: msgId }).fetch();
-        }
+        return Comment.where<Comment>({ msgid: msgId }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async fetchAllByTypeAndTarget(type: string, target: string): Promise<Collection<Comment>> {
@@ -52,23 +40,19 @@ export class Comment extends Bookshelf.Model<Comment> {
                 qb.where('comments.type', '=', type);
                 qb.where('comments.target', '=', target);
             });
-      return await commentResultCollection.fetchAll();
+      return commentResultCollection.fetchAll();
     }
 
     public static async fetchAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
-        const commentResultCollection = Comment.forge<Model<Comment>>()
+        const collection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.hash', '=', hash);
                 qb.whereIn('comments.sender', addresses);
             })
             .orderBy('id', SearchOrder.DESC);
-        if (withRelated) {
-            return await commentResultCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await commentResultCollection.fetchAll();
-        }
+        return collection.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async countBy(options: CommentSearchParams): Promise<number> {
@@ -100,7 +84,7 @@ export class Comment extends Bookshelf.Model<Comment> {
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || CommentSearchOrderField.POSTED_AT;
 
-        const commentCollection = Comment.forge<Model<Comment>>()
+        const collection = Comment.forge<Model<Comment>>()
             .query( qb => {
 
                 if (CommentType[options.type]) {
@@ -134,13 +118,9 @@ export class Comment extends Bookshelf.Model<Comment> {
                 offset: options.page * options.pageLimit
             });
 
-        if (withRelated) {
-            return await commentCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await commentCollection.fetchAll();
-        }
+        return collection.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public get tableName(): string { return 'comments'; }

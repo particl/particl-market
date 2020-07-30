@@ -33,12 +33,14 @@ export enum OrderItemSearchOrderField {
 }
 
 export enum CommentSearchOrderField {
+    ID = 'id',
     HASH = 'hash',
     SENDER = 'sender',
     RECEIVER = 'receiver',
     TARGET = 'target',
     MESSAGE = 'message',
     TYPE = 'type',
+    GENERATED_AT = 'generated_at',
     POSTED_AT = 'posted_at',
     EXPIRED_AT = 'expired_at',
     UPDATED_AT = 'updated_at',

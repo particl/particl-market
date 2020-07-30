@@ -131,7 +131,7 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should fail to search SmsgMessages because invalid type', async () => {
+    test('Should fail because invalid type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             true
@@ -181,7 +181,7 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should fail to search SmsgMessages because invalid status', async () => {
+    test('Should fail because invalid status', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
@@ -221,7 +221,7 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should fail to search SmsgMessages because invalid direction', async () => {
+    test('Should fail because invalid direction', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
@@ -264,7 +264,7 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should fail to search SmsgMessages because invalid age', async () => {
+    test('Should fail because invalid age', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
@@ -310,7 +310,7 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should fail to search SmsgMessages because invalid msgid', async () => {
+    test('Should fail because invalid msgid', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
