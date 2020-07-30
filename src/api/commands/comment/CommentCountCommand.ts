@@ -19,6 +19,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { CommentType } from '../../enums/CommentType';
 
+
 export class CommentCountCommand extends BaseCommand implements RpcCommandInterface<number> {
 
     public log: LoggerType;
@@ -57,7 +58,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
      * data.params[]:
      *  [0]: type, CommentType
      *  [1]: target
-     *  [2]: parentHash, optional
+     *  [2]: parentCommentHash, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -80,7 +81,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
             parentHash = data.params[2];
 
             if (typeof parentHash !== 'string') {
-                throw new InvalidParamException('parentHash', 'string');
+                throw new InvalidParamException('parentCommentHash', 'string');
             }
 
             if (parentHash && parentHash.length > 0) {

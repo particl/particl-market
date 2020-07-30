@@ -10,9 +10,11 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { CommentType } from '../../../src/api/enums/CommentType';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+
 
 describe('CommentGetCommand', () => {
 
@@ -29,9 +31,8 @@ describe('CommentGetCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    let createdListingItemHash;
-
-    let createdCommentListingItemQandA: resources.Comment;
+    let listingItem: resources.ListingItem;
+    let comment: resources.Comment;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -42,117 +43,129 @@ describe('CommentGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false   // generateListingItemObjects
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            undefined                       // categoryId
         ]).toParamsArray();
 
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                              // how many to generate
-            true,                           // return model
-            generateListingItemParams       // what kind of data to generate
-        );
-        createdListingItemHash = listingItems[0].hash;
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        listingItem = listingItemTemplates[0].ListingItems[0];
+    });
 
-        const generateCommentParamsQandA = new GenerateCommentParams([
-            false,
-            false,
-            false,
-            profile.address,                         // sender
-            market.address,                          // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,   // type
-            createdListingItemHash                          // target
+
+    test('Should generate Comment about ListingItem', async () => {
+
+        const generateCommentParams = new GenerateCommentParams([
+            false,                                              // generateListingItemTemplate
+            false,                                              // generateListingItem
+            false,                                              // generatePastComment
+            market.Identity.address,                            // sender
+            market.receiveAddress,                              // receiver
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            listingItem.hash                                    // target
         ]).toParamsArray();
 
-        const commentsQandA = await testUtil.generateData(
+        const comments = await testUtil.generateData(
             CreatableModel.COMMENT,     // what to generate
             1,                  // how many to generate
             true,            // return model
-            generateCommentParamsQandA  // what kind of data to generate
+            generateCommentParams       // what kind of data to generate
         );
-        createdCommentListingItemQandA = commentsQandA[0];
-
+        comment = comments[0];
+        log.debug('comment: ', JSON.stringify(comment, null, 2));
     });
 
-    test('Should fail to return a number of Comments because missing type', async () => {
-        // comment get (<commentId> | <commendHash>)
+
+    test('Should fail because missing type', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand]);
         response.expectJson();
         response.expectStatusCode(404);
         expect(response.error.error.message).toBe(new MissingParamException('type').getMessage());
     });
 
-    test('Should fail to return a number of Comments because missing target', async () => {
-        // comment get (<commentId> | <commendHash>)
+    test('Should fail because missing target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
-            ]
-        );
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+        ]);
         response.expectJson();
         response.expectStatusCode(404);
         expect(response.error.error.message).toBe(new MissingParamException('target').getMessage());
     });
 
-    test('Should fail to return a number of Comments because invalid type', async () => {
-        // comment get (<commentId> | <commendHash>)
+
+    test('Should fail because invalid type', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-                false,
-                createdListingItemHash
-            ]
-        );
+            false,
+            listingItem.hash
+        ]);
         response.expectJson();
         response.expectStatusCode(400);
         expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
     });
 
-    test('Should fail to return a number of Comments because invalid target', async () => {
-        // comment get (<commentId> | <commendHash>)
+
+    test('Should fail because invalid target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                false
-            ]
-        );
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            false
+        ]);
         response.expectJson();
         response.expectStatusCode(400);
         expect(response.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
     });
 
-    test('Should fail to return a number of Comments because invalid parentHash', async () => {
-        // comment get (<commentId> | <commendHash>)
+
+    test('Should fail because invalid parentCommentHash', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                createdListingItemHash,
-                false
-            ]
-        );
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            listingItem.hash,
+            false
+        ]);
         response.expectJson();
         response.expectStatusCode(400);
-        expect(response.error.error.message).toBe(new InvalidParamException('parentHash', 'string').getMessage());
+        expect(response.error.error.message).toBe(new InvalidParamException('parentCommentHash', 'string').getMessage());
     });
 
+
+    test('Should fail because parent Comment not found', async () => {
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            listingItem.hash,
+            comment.hash + 'NOTFOUND'
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new ModelNotFoundException('Comment').getMessage());
+    });
+
+
     test('Should return a number of Comments for type and target', async () => {
-        const response = await testUtil.rpc(
-            commentCommand, [commentCountCommand,
-                CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                createdListingItemHash
-            ]
-        );
+        const response = await testUtil.rpc(commentCommand, [commentCountCommand,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            listingItem.hash
+        ]);
         response.expectJson();
         response.expectStatusCode(200);
         const commentCount: number = response.getBody()['result'];
 
         expect(commentCount).toBe(1);
     });
-
-    // TODO: add test with missing ListingItem hash
-    // TODO: add test with parentHash
 
 });
