@@ -14,7 +14,6 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -52,21 +51,22 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
 
         // make sure the required params exist
         if (data.params.length < 1) {
-            throw new MissingParamException('template/item');
+            throw new MissingParamException('template|item');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('listingItemTemplateId/listingItemId');
+            throw new MissingParamException('listingItemTemplateId|listingItemId');
         }
 
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('template/item', 'string');
+            throw new InvalidParamException('template|item', 'string');
+        }
+
+        if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('listingItemTemplateId|listingItemId', 'number');
         }
 
         const typeSpecifier = data.params[0];
         if (typeSpecifier === 'template') {
-            if (typeof data.params[1] !== 'number') {
-                throw new InvalidParamException('listingItemTemplateId', 'number');
-            }
 
             // make sure required data exists and fetch it
             data.params[1] = await this.listingItemTemplateService.findOne(data.params[1])
@@ -76,9 +76,6 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
                 });
 
         } else if (typeSpecifier === 'item') {
-            if (typeof data.params[1] !== 'number') {
-                throw new InvalidParamException('listingItemId', 'number');
-            }
 
             // make sure required data exists and fetch it
             data.params[1] = await this.listingItemService.findOne(data.params[1])
@@ -88,13 +85,13 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
                 });
 
         } else {
-            throw new InvalidParamException('typeSpecifier', 'template/item');
+            throw new InvalidParamException('typeSpecifier', 'template|item');
         }
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' (template <listingItemTemplateId>|item <listingItemId>) ';
+        return this.getName() + ' <template|item> <listingItemTemplateId|listingItemId> ';
     }
 
     public help(): string {
