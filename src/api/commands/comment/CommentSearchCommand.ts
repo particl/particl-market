@@ -26,7 +26,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MarketService} from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MessageException } from '../../exceptions/MessageException';
-import { NotFoundException } from '../../exceptions/NotFoundException';
+
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
 

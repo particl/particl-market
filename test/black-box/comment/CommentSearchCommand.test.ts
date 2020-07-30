@@ -16,7 +16,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('CommentSearchCommand', () => {
 
