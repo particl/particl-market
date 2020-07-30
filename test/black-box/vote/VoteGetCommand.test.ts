@@ -137,8 +137,7 @@ describe('VoteGetCommand', () => {
     test('Should create and return a Vote', async () => {
 
         // post a vote
-        let response: any = await testUtil.rpc(voteCommand, [
-            votePostCommand,
+        let response: any = await testUtil.rpc(voteCommand, [votePostCommand,
             profile.id,
             proposal.hash,
             proposal.ProposalOptions[0].optionId
@@ -154,9 +153,10 @@ describe('VoteGetCommand', () => {
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        response = await testUtil.rpcWaitFor(
-            voteCommand,
-            [voteGetCommand, profile.id, proposal.hash],
+        response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
+                profile.id,
+                proposal.hash
+            ],
             8 * 60,
             200,
             'ProposalOption.optionId',
@@ -175,8 +175,7 @@ describe('VoteGetCommand', () => {
     test('Should return Vote with different result after voting again', async () => {
 
         // post a vote
-        let response: any = await testUtil.rpc(voteCommand, [
-            votePostCommand,
+        let response: any = await testUtil.rpc(voteCommand, [votePostCommand,
             profile.id,
             proposal.hash,
             proposal.ProposalOptions[1].optionId
@@ -190,9 +189,10 @@ describe('VoteGetCommand', () => {
         // wait for some time to make sure vote is received
         await testUtil.waitFor(5);
 
-        response = await testUtil.rpcWaitFor(
-            voteCommand,
-            [voteGetCommand, profile.id, proposal.hash],
+        response = await testUtil.rpcWaitFor(voteCommand, [voteGetCommand,
+                profile.id,
+                proposal.hash
+            ],
             8 * 60,
             200,
             'ProposalOption.optionId',

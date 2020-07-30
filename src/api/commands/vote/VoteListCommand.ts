@@ -16,6 +16,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProposalOptionService } from '../../services/model/ProposalOptionService';
 
 export class VoteListCommand extends BaseCommand implements RpcCommandInterface<resources.Vote[]> {
 
@@ -23,6 +24,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.VOTE_LIST);
@@ -45,9 +47,12 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalHash)
             .then(value => value.toJSON());
 
+        this.log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+
         const votes: resources.Vote[] = [];
         for (const proposalOption of proposal.ProposalOptions) {
-            votes.push(...proposalOption.Votes);
+            const option = await this.proposalOptionService.findOne(proposalOption.id).then(value => value.toJSON());
+            votes.push(...option.Votes);
         }
         return votes;
     }
@@ -64,7 +69,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
             throw new MissingParamException('proposalHash');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'string') {
+        if (typeof data.params[0] !== 'string') {
             throw new InvalidParamException('proposalHash', 'string');
         }
 

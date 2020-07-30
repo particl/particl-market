@@ -12,7 +12,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {CombinedVote} from '../../../src/api/services/action/VoteActionService';
+import { CombinedVote } from '../../../src/api/services/action/VoteActionService';
 
 describe('VotePostCommand', () => {
 
