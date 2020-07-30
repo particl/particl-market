@@ -50,7 +50,6 @@ import { GenerateBidParams } from '../requests/testdata/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/testdata/GenerateProposalParams';
 import { AddressCreateRequest } from '../requests/model/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/model/CryptocurrencyAddressCreateRequest';
-import { BidDataCreateRequest } from '../requests/model/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/testdata/GenerateOrderParams';
@@ -1149,30 +1148,6 @@ export class TestDataService {
             throw new NotImplementedException();
         }
 
-        const defaultProfile = await this.profileService.getDefault();
-
-        let sender;
-        if (!generateParams.sender) {
-            const profile = defaultProfile.toJSON();
-            // TODO: there is no profile.address anymore, use identity.adress
-            sender = profile.address;
-        } else {
-            sender = generateParams.sender;
-        }
-
-        let receiver;
-        if (!generateParams.receiver) {
-            const defaultMarket = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id);
-            const market = defaultMarket.toJSON();
-            receiver = market.receiveAddress;
-        } else {
-            receiver = generateParams.sender;
-        }
-
-        const target = generateParams.target;
-
-        const type = generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS;
-
         const currentTime = Date.now();
 
         // Generate comment in the past
@@ -1194,12 +1169,13 @@ export class TestDataService {
         };
 
         const commentCreateRequest = {
-            sender,
-            receiver,
-            type,
-            target,
+            sender: generateParams.sender,
+            receiver: generateParams.receiver,
+            type: generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            target: generateParams.target,
             message: Faker.lorem.lines(1),
             parentCommentId: null,
+            generatedAt: timeStart,
             ...smsgData
         } as CommentCreateRequest;
 

@@ -50,6 +50,5 @@ export enum HashableCommentAddField {
     COMMENT_TARGET = 'target',
     COMMENT_MESSAGE = 'message',
     COMMENT_TYPE = 'type',
-    COMMENT_TIME = 'time',
     COMMENT_PARENT_COMMENT_HASH = 'parent_comment_hash'
 }

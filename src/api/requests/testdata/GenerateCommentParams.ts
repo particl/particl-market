@@ -15,10 +15,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     public generateListingItemTemplate = true;
     public generateListingItem = true;
     public generatePastComment = false;
-    public type = null;
-    public sender = null;
-    public receiver = null;
-    public target = null;
+    public type = undefined;
+    public sender = undefined;
+    public receiver = undefined;
+    public target = undefined;
 
     /**
      * generateParams[]:
@@ -30,10 +30,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.generateListingItemTemplate = generateParams[0] ? true : false;
             this.generateListingItem = generateParams[1] ? true : false;
             this.generatePastComment = generateParams[2] ? generateParams[2] : false;
-            this.sender = generateParams[3] ? generateParams[3] : null;
-            this.receiver = generateParams[4] ? generateParams[4] : null;
-            this.type = generateParams[5] ? generateParams[5] : null;
-            this.target = generateParams[6] ? generateParams[6] : null;
+            this.sender = generateParams[3] ? generateParams[3] : undefined;
+            this.receiver = generateParams[4] ? generateParams[4] : undefined;
+            this.type = generateParams[5] ? generateParams[5] : undefined;
+            this.target = generateParams[6] ? generateParams[6] : undefined;
         }
     }
 

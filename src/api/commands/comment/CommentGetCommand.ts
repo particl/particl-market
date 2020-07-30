@@ -15,6 +15,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
@@ -40,22 +42,32 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Comment> {
         if (typeof data.params[0] === 'number') {
-            return await this.commentService.findOne(data.params[0]);
+            return await this.commentService.findOne(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Comment');
+                });
         } else {
-            return await this.commentService.findOneByHash(data.params[0]);
+            return await this.commentService.findOneByHash(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Comment');
+                });
         }
     }
 
     /**
      * data.params[]:
-     *  [0]: marketId, optional, if market isn't given, return the list of default categories
+     *  [0]: id or hash
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
-            throw new MissingParamException('hash');
+            throw new MissingParamException('id|hash');
+        }
+
+        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('id|hash', 'number|string');
         }
 
         return data;
