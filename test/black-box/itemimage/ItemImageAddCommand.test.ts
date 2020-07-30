@@ -33,7 +33,6 @@ describe('ItemImageAddCommand', () => {
     let market: resources.Market;
     let image: resources.Image;
 
-    let listingItemTemplateWithoutItemInformation: resources.ListingItemTemplate;
     let listingItemTemplate: resources.ListingItemTemplate;
     let itemImages: resources.ItemImageData[];
 
@@ -45,57 +44,173 @@ describe('ItemImageAddCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            false,      // generateItemInformation
-            false,      // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateItemImages
-            false,      // generatePaymentInformation
-            false,      // generateEscrow
-            false,      // generateItemPrice
-            false,      // generateMessagingInformation
-            false       // generateListingItemObjects
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            false,              // generateListingItem
+            market.id           // soldOnMarketId
         ]).toParamsArray();
 
-        let listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
-        listingItemTemplateWithoutItemInformation = listingItemTemplates[0];
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,     // what to generate
+            1,                              // how many to generate
+            true,                        // return model
+            generateListingItemTemplateParams       // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
 
-        generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            true,       // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            false,      // generateMessagingInformation
-            false       // generateListingItemObjects
-        ]).toParamsArray();
-
-        listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
     });
 
-    test('Should fail to add ItemImage because missing param listingItemTemplateId', async () => {
+    test('Should fail because missing listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail to add ItemImage because ListingItemTemplate missing relation to ItemInformation', async () => {
+
+    test('Should fail because missing dataId', async () => {
         const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
-            listingItemTemplateWithoutItemInformation.id,
+            listingItemTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('dataId').getMessage());
+    });
+
+
+    test('Should fail because missing protocol', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
+    });
+
+
+    test('Should fail because missing encoding', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('encoding').getMessage());
+    });
+
+
+    test('Should fail because missing data', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64',
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('data').getMessage());
+    });
+
+
+    test('Should fail because invalid listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            true,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcat
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+
+    test('Should fail because invalid dataId', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            true,
+            ProtocolDSN.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcat
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('dataId', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid protocol', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            true,
+            'BASE64',
+            ImageProcessing.milkcat
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('protocol', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid encoding', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            true,
+            ImageProcessing.milkcat
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('encoding', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid data', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            ProtocolDSN.LOCAL,
+            'BASE64',
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('data', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid protocolDSN', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            listingItemTemplate.id,
+            'TEST-DATA-ID',
+            'INVALID',
+            'BASE64',
+            ImageProcessing.milkcatWide
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('protocol', 'ProtocolDSN').getMessage());
+    });
+
+
+    test('Should fail because ListingItemTemplate not found', async () => {
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+            0,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
             'BASE64',
@@ -103,33 +218,9 @@ describe('ItemImageAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('ItemInformation').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
 
-    test('Should fail to add ItemImage without ItemImageData', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
-            listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('data').getMessage());
-    });
-
-    test('Should fail to add ItemImage because invalid ItemImageData protocol', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
-            listingItemTemplate.id,
-            'TEST-DATA-ID',
-            'INVALID_PROTOCOL',
-            'BASE64',
-            ImageProcessing.milkcat
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('protocol').getMessage());
-    });
 
     test('Should add ItemImage with ItemImageData', async () => {
         const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
@@ -144,13 +235,11 @@ describe('ItemImageAddCommand', () => {
         const result: any = res.getBody()['result'];
         image = result;
         itemImages = result.ItemImageDatas;
-        // TODO: this test is just testing that the command response is 200, its not verifying that the itemimage was actually inserted
-
+        // TODO: this test is just testing that the command response is 200
     });
 
-    test('Should not be able to add ItemImage because ListingItemTemplate is not modifiable', async () => {
 
-        // create ListingItemTemplate with ListingItem
+    test('Should fail because ListingItemTemplate is not modifiable', async () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateItemLocation

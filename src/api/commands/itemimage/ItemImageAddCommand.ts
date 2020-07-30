@@ -22,9 +22,9 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
-import {ItemImageDataCreateRequest} from '../../requests/model/ItemImageDataCreateRequest';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableItemImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -131,7 +131,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
         const validProtocolTypes = [ProtocolDSN.IPFS, ProtocolDSN.LOCAL, ProtocolDSN.SMSG, ProtocolDSN.URL];
         if (validProtocolTypes.indexOf(data.params[2]) === -1) {
-            throw new InvalidParamException('protocol');
+            throw new InvalidParamException('protocol', 'ProtocolDSN');
         }
 
         // make sure ListingItemTemplate with the id exists
@@ -159,21 +159,22 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> [dataId] [protocol] [encoding] [data>] ';
+        return this.getName() + ' <listingItemTemplateId> <dataId> <protocol> <encoding> <data> [skipResize]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
+            + '    <listingItemTemplateId>       - Numeric - The ID of the ListingItemTemplate \n'
             + '                                     we want to associate this item image with. \n'
-            + '    <dataId>                      - [optional] String - [TODO] \n'
-            + '    <protocol>                    - [optional] Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image. \n'
-            + '    <encoding>                    - [optional] Enum{BASE64} - The format the image is encoded in. \n'
-            + '    <data>                        - [optional] String - The image\'s data. ';
+            + '    <dataId>                      - String - ID for the data. \n'
+            + '    <protocol>                    - Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image. \n'
+            + '    <encoding>                    - Enum{BASE64} - The format the image is encoded in. \n'
+            + '    <data>                        - String - The image\'s data. '
+            + '    <skipResize>                  - boolean - skip Image resize. ';
     }
 
     public description(): string {
-        return 'Add an item image to a listing item template, identified by its ID.';
+        return 'Add an ItemImage to a ListingItemTemplate, identified by its ID.';
     }
 
     public example(): string {
