@@ -62,6 +62,9 @@ describe('DataAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('withRelated', 'boolean').getMessage());
     });
 
+/*
+    TODO: remove this command?
+
     test('Should create test data for Profile', async () => {
         const res = await testUtil.rpc(dataCommand, [dataAddCommand,
             CreatableModel.PROFILE,
@@ -73,6 +76,6 @@ describe('DataAddCommand', () => {
         expect(result.name).toBe(testProfileData.name);
         expect(result.address).toBe(testProfileData.address);
     });
-
+*/
 });
 
