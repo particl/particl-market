@@ -126,10 +126,14 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new InvalidParamException('daysRetention', 'number');
         } else if (data.params[4] !== undefined && typeof data.params[4] !== 'boolean') {
             throw new InvalidParamException('estimateFee', 'boolean');
+        } else if (data.params[5] !== undefined && typeof data.params[5] !== 'string') {
+            throw new InvalidParamException('option1Description', 'string');
+        } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
+            throw new InvalidParamException('option2Description', 'string');
         }
 
         if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+            throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
         // make sure the Market exists

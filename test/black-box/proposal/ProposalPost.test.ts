@@ -10,6 +10,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
@@ -21,13 +23,14 @@ describe('ProposalPostCommand', () => {
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
+    const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
 
     const title = Faker.lorem.words();
     const description = Faker.lorem.paragraph();
-    const daysRetention = 2;
+    const daysRetention = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
     let estimateFee = true;
 
     const options: string[] = [
@@ -40,33 +43,35 @@ describe('ProposalPostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile and market
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-
     });
 
-    test('Should fail to post a Proposal because missing profileId', async () => {
+    test('Should fail because missing marketId', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing proposalTitle', async () => {
+
+    test('Should fail because missing proposalTitle', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id
+            market.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('proposalTitle').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing proposalDescription', async () => {
+
+    test('Should fail because missing proposalDescription', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title
         ]);
         res.expectJson();
@@ -74,9 +79,10 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('proposalDescription').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing daysRetention', async () => {
+
+    test('Should fail because missing daysRetention', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description
         ]);
@@ -85,9 +91,10 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('daysRetention').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing estimateFee', async () => {
+
+    test('Should fail because missing estimateFee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention
@@ -97,9 +104,10 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('estimateFee').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing option1Description', async () => {
+
+    test('Should fail because missing option1Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention,
@@ -110,9 +118,10 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('option1Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because missing option2Description', async () => {
+
+    test('Should fail because missing option2Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention,
@@ -124,9 +133,10 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('option2Description').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid profileId', async () => {
+
+    test('Should fail because invalid marketId', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            'INVALID',
+            true,
             title,
             description,
             daysRetention,
@@ -136,13 +146,14 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid proposalTitle', async () => {
+
+    test('Should fail because invalid proposalTitle', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
-            0,
+            market.id,
+            true,
             description,
             daysRetention,
             estimateFee,
@@ -153,12 +164,13 @@ describe('ProposalPostCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('proposalTitle', 'string').getMessage());
     });
-/*
-    test('Should fail to post a Proposal because invalid proposalDescription', async () => {
+
+
+    test('Should fail because invalid proposalDescription', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
-            0,
+            true,
             daysRetention,
             estimateFee,
             options[0],
@@ -169,12 +181,13 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('proposalDescription', 'string').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid daysRetention', async () => {
+
+    test('Should fail because invalid daysRetention', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
-            'INVALID',
+            true,
             estimateFee,
             options[0],
             options[1]
@@ -184,13 +197,14 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
     });
 
-    test('Should fail to post a Proposal because invalid estimateFee', async () => {
+
+    test('Should fail because invalid estimateFee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention,
-            'INVALID',
+            'true',
             options[0],
             options[1]
         ]);
@@ -199,11 +213,59 @@ describe('ProposalPostCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('estimateFee', 'boolean').getMessage());
     });
 
-    test('Should fail to post a Proposal because Profile not found', async () => {
 
-        const invalidProfileId = 9999999999999999;
+    test('Should fail because invalid option1Description', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            invalidProfileId,
+            market.id,
+            title,
+            description,
+            daysRetention,
+            estimateFee,
+            true,
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('option1Description', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid option2Description', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            market.id,
+            title,
+            description,
+            daysRetention,
+            estimateFee,
+            options[0],
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('option2Description', 'string').getMessage());
+    });
+
+
+    test('Should fail because daysRetention too large', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            market.id,
+            title,
+            description,
+            daysRetention + 1,
+            estimateFee,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS).getMessage());
+    });
+
+
+    test('Should fail because Market not found', async () => {
+
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            0,
             title,
             description,
             daysRetention,
@@ -213,12 +275,13 @@ describe('ProposalPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
+
 
     test('Should estimate Proposal posting fee', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention,
@@ -233,12 +296,14 @@ describe('ProposalPostCommand', () => {
 
         log.debug('estimate fee result:', JSON.stringify(result));
         expect(result.result).toEqual('Not Sent.');
+        expect(result.fee).toBeGreaterThan(0);
     });
+
 
     test('Should post a Proposal', async () => {
         estimateFee = false;
         const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
-            profile.id,
+            market.id,
             title,
             description,
             daysRetention,
@@ -255,15 +320,16 @@ describe('ProposalPostCommand', () => {
         if (!sent) {
             log.debug(JSON.stringify(result, null, 2));
         }
-
     });
+
 
     test('Should receive the posted Proposal', async () => {
 
         expect(sent).toEqual(true);
-
-        const res = await testUtil.rpcWaitFor(proposalCommand,
-            [proposalListCommand, '*', '*'],
+        const res = await testUtil.rpcWaitFor(proposalCommand, [proposalListCommand,
+                '*',
+                '*'
+            ],
             30 * 60, // maxSeconds
             200, // waitForStatusCode
             '[0].title', // property name
@@ -278,5 +344,5 @@ describe('ProposalPostCommand', () => {
         expect(result.ProposalOptions[0].description).toBe(options[0]);
         expect(result.ProposalOptions[1].description).toBe(options[1]);
     }, 600000); // timeout to 600s
-*/
+
 });
