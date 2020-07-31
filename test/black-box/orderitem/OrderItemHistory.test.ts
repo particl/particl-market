@@ -24,7 +24,7 @@ describe('OrderItemHistory', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
@@ -56,7 +56,7 @@ describe('OrderItemHistory', () => {
     const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
     const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
 
-    const DAYS_RETENTION = 2;
+    const DAYS_RETENTION = 1;
 
     let sent = false;
 
