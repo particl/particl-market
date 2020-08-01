@@ -13,8 +13,11 @@ import { Address } from './Address';
 import { Profile } from './Profile';
 import { OrderItem } from './OrderItem';
 import { BidSearchOrderField } from '../enums/SearchOrderField';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class Bid extends Bookshelf.Model<Bid> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'BidDatas',
@@ -64,53 +67,31 @@ export class Bid extends Bookshelf.Model<Bid> {
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await BidCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await BidCollection.fetchAll();
-        }
+        return BidCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
-        if (withRelated) {
-            return await Bid.where<Bid>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Bid.where<Bid>({ id: value }).fetch();
-        }
+        return Bid.where<Bid>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Bid> {
-        if (withRelated) {
-            return await Bid.where<Bid>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Bid.where<Bid>({ hash: value }).fetch();
-        }
+        return Bid.where<Bid>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Bid> {
-        if (withRelated) {
-            return await Bid.where<Bid>({ msgid: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Bid.where<Bid>({ msgid: value }).fetch();
-        }
+        return Bid.where<Bid>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async searchBy(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
+
+        // Bid.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || BidSearchOrderField.UPDATED_AT;
 
-        const bidCollection = Bid.forge<Model<Bid>>()
+        const collection = Bid.forge<Model<Bid>>()
             .query( qb => {
 
                 qb.join('listing_items', 'bids.listing_item_id', 'listing_items.id');
@@ -167,14 +148,7 @@ export class Bid extends Bookshelf.Model<Bid> {
                 // debug: true
             });
 
-        if (withRelated) {
-            return await bidCollection.fetchAll({
-                withRelated: this.RELATIONS
-                // debug: true
-            });
-        } else {
-            return await bidCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'bids'; }

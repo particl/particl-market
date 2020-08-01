@@ -140,7 +140,6 @@ describe('OrderItemHistory', () => {
         await testUtilSellerNode.waitFor(5);
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        // Post ListingItemTemplate to create ListingItem
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
             DAYS_RETENTION

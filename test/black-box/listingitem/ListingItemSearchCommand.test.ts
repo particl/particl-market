@@ -355,7 +355,8 @@ describe('ListingItemSearchCommand', () => {
     test('Should search by market and country', async () => {
         // log.debug('country1: ', listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country);
         // log.debug('country2: ', listingItem.ItemInformation.ItemLocation.country);
-        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country === listingItem.ItemInformation.ItemLocation.country);
+        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country
+            === listingItem.ItemInformation.ItemLocation.country);
 
         const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
@@ -440,7 +441,8 @@ describe('ListingItemSearchCommand', () => {
         // log.debug('country: ', country);
         // log.debug('shippingDestination: ', shippingDestination);
 
-        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country === listingItem.ItemInformation.ItemLocation.country);
+        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country
+            === listingItem.ItemInformation.ItemLocation.country);
         const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
 
         const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
@@ -485,10 +487,10 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.title.substr(0, 10)
         ]);
         res.expectJson();
@@ -505,10 +507,10 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.shortDescription.substr(0, 5)
         ]);
         res.expectJson();
@@ -525,10 +527,10 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.longDescription.substr(0, 10)
         ]);
         res.expectJson();
@@ -545,10 +547,10 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             listingItemTemplateOnSellerNode.ListingItems[0].hash
         ]);
         res.expectJson();
@@ -584,11 +586,11 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             false
         ]);
         res.expectJson();
@@ -610,8 +612,8 @@ describe('ListingItemSearchCommand', () => {
             undefined,
             undefined,
             undefined,
-            null,
-            null,
+            undefined,
+            undefined,
             false
         ]);
         res.expectJson();
@@ -625,12 +627,12 @@ describe('ListingItemSearchCommand', () => {
             sellerMarket.receiveAddress,
             [],
             '*',
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             listingItem.hash
         ]);
         res.expectJson();
@@ -705,12 +707,12 @@ describe('ListingItemSearchCommand', () => {
                 buyerMarket.receiveAddress,
                 [],
                 '*',
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 listingItemTemplateOnSellerNode.hash
             ],
             15 * 60,
@@ -722,10 +724,12 @@ describe('ListingItemSearchCommand', () => {
         response.expectStatusCode(200);
 
         const results: resources.ListingItem[] = response.getBody()['result'];
+
+        log.debug('results:', JSON.stringify(results, null, 2));
+
         expect(results.length).toBe(1);
         expect(results[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
 
-        expect(results[0].PaymentInformation.id).toBe(listingItemTemplateOnSellerNode.PaymentInformation.id);
         expect(results[0].PaymentInformation.type).toBe(listingItemTemplateOnSellerNode.PaymentInformation.type);
         expect(results[0].PaymentInformation.Escrow.type).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.type);
         expect(results[0].PaymentInformation.Escrow.Ratio.buyer).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.Ratio.buyer);
@@ -742,7 +746,6 @@ describe('ListingItemSearchCommand', () => {
         expect(results[0].PaymentInformation.ItemPrice.CryptocurrencyAddress.address)
             .toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
-
         await testUtilBuyerNode.waitFor(5);
 
         response = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
@@ -755,13 +758,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result).toBeDefined();
         expect(result.hash).toBe(listingItemTemplateOnSellerNode.hash);
 
-        // store ListingItem for later tests
-        listingItemReceivedOnBuyerNode = result;
-
         log.debug('==> BUYER received MPA_LISTING_ADD.');
     }, 600000); // timeout to 600s
-
-
-
 
 });

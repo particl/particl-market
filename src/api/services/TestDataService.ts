@@ -1500,6 +1500,7 @@ export class TestDataService {
     }
 
     private generateMessagingInformationData(): MessagingInformationCreateRequest[] {
+
         const messagingInformations: MessagingInformationCreateRequest[] = [{
             protocol: MessagingProtocol.SMSG,
             publicKey: 'pubkey'                     // todo: sellers pubkey should be added here

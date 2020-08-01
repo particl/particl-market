@@ -29,13 +29,7 @@ export class Order extends Bookshelf.Model<Order> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Order> {
-        if (withRelated) {
-            return await Order.where<Order>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Order.where<Order>({ id: value }).fetch();
-        }
+        return await Order.where<Order>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async searchBy(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {

@@ -66,43 +66,19 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             })
             .orderBy('expiry_time', 'ASC');
 
-        if (withRelated) {
-            return await ListingItemCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItemCollection.fetchAll();
-        }
+        return ListingItemCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ id: value }).fetch();
-        }
+        return ListingItem.where<ListingItem>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ msgid: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ msgid: value }).fetch();
-        }
+        return ListingItem.where<ListingItem>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch();
-        }
+        return ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 /*
     TODO: remove?
@@ -149,7 +125,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
-        const listingCollection = ListingItem.forge<Model<ListingItem>>()
+        const collection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 // ignore expired items
                 qb.where('expired_at', '>', Date.now());
@@ -268,14 +244,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 offset: options.page * options.pageLimit
             });
 
-        if (withRelated) {
-            return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS
-                // debug: true
-            });
-        } else {
-            return await listingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
 
