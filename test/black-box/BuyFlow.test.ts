@@ -15,7 +15,7 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 import { BidDataValue } from '../../src/api/enums/BidDataValue';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
-import {BidSearchOrderField, ListingItemSearchOrderField} from '../../src/api/enums/SearchOrderField';
+import {BidSearchOrderField, ListingItemSearchOrderField, OrderSearchOrderField} from '../../src/api/enums/SearchOrderField';
 
 describe('Happy Buy Flow', () => {
 
@@ -58,6 +58,9 @@ describe('Happy Buy Flow', () => {
 
     let mpaBidOnSellerNode: resources.Bid;
     let mpaBidOnBuyerNode: resources.Bid;
+    let mpaAcceptOnSellerNode: resources.Bid;
+    let mpaAcceptOnBuyerNode: resources.Bid;
+
     let orderOnSellerNode: resources.Order;
     let orderOnBuyerNode: resources.Order;
 
@@ -66,6 +69,7 @@ describe('Happy Buy Flow', () => {
     const SEARCHORDER = SearchOrder.ASC;
     const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
     const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
+    const ORDER_SEARCHORDERFIELD = OrderSearchOrderField.CREATED_AT;
     const DAYS_RETENTION = 2;
 
     const DELIVERY_CONTACT_PHONE = '+3584512345678';
@@ -274,8 +278,8 @@ describe('Happy Buy Flow', () => {
 
     test('Should post Bid (MPA_BID) from BUYER node', async () => {
 
-        // ListingItem should have been received on buyer node
         expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
         sent = false;
 
         log.debug('========================================================================================');
@@ -312,10 +316,12 @@ describe('Happy Buy Flow', () => {
 
     });
 
+
     test('Should have created Bid on BUYER node after posting the MPA_BID', async () => {
 
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Bid should have been created on buyer node after posting the MPA_BID');
@@ -367,11 +373,14 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
+
     test('Should have received Bid (MPA_BID) on SELLER node', async () => {
 
         expect(sent).toBeTruthy();
 
         // Bid should have been created on buyer node
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(mpaBidOnBuyerNode).toBeDefined();
 
         log.debug('========================================================================================');
@@ -427,6 +436,9 @@ describe('Happy Buy Flow', () => {
     test('Should post MPA_ACCEPT from SELLER node', async () => {
 
         // Bid should have been created on seller node
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
+        expect(mpaBidOnBuyerNode).toBeDefined();
         expect(mpaBidOnSellerNode).toBeDefined();
         sent = false;
 
@@ -464,6 +476,10 @@ describe('Happy Buy Flow', () => {
     test('Should find MPA_ACCEPT on SELLER node after posting the MPA_ACCEPT', async () => {
 
         expect(sent).toBeTruthy();
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
+        expect(mpaBidOnBuyerNode).toBeDefined();
+        expect(mpaBidOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Bid should have been updated on seller node after posting the MPA_ACCEPT');
@@ -476,9 +492,9 @@ describe('Happy Buy Flow', () => {
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPAction.MPA_ACCEPT,                        // type
-                // '*',                                     // search string
-                // '*',                                     // market
-                // mpaBidOnSellerNode.bidder                   // bidder
+                '*',                                        // search string
+                sellerMarket.receiveAddress,                // market
+                buyerMarket.Identity.address                // bidder
             ],
             15 * 60,
             200,
@@ -505,30 +521,35 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ParentBid.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].ParentBid.OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
 
-        mpaBidOnSellerNode = result[0];
+        mpaAcceptOnSellerNode = result[0];
 
         log.debug('==> Bid updated on SELLER node.');
     });
 
-/*
+
     test('Should have created Order on SELLER node after posting the MPA_ACCEPT', async () => {
 
         expect(sent).toBeTruthy();
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
+        expect(mpaBidOnBuyerNode).toBeDefined();
         expect(mpaBidOnSellerNode).toBeDefined();
+        expect(mpaAcceptOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Order should have been created on seller node after posting the MPA_ACCEPT');
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Order has been created
-        await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(2);
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
-            mpaBidOnSellerNode.ListingItem.hash,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            mpaBidOnSellerNode.ListingItem.id,
             OrderItemStatus.AWAITING_ESCROW,
-            buyerProfile.address,
-            sellerProfile.address,
-            SearchOrder.ASC
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            sellerMarket.address
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -536,8 +557,8 @@ describe('Happy Buy Flow', () => {
         const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: should match mpaBidOnSellerNode.BidDatas[orderHash]
-        expect(result[0].buyer).toBe(buyerProfile.address);
-        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
         expect(result[0].status).toBe(OrderStatus.PROCESSING);
         expect(result[0].OrderItems).toHaveLength(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
@@ -549,45 +570,45 @@ describe('Happy Buy Flow', () => {
 
     }, 600000); // timeout to 600s
 
+
     test('Should receive MPA_ACCEPT on BUYER node after posting the MPA_ACCEPT', async () => {
 
         expect(sent).toBeTruthy();
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
+        expect(mpaBidOnBuyerNode).toBeDefined();
         expect(mpaBidOnSellerNode).toBeDefined();
+        expect(mpaAcceptOnSellerNode).toBeDefined();
         expect(orderOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, MPAction.MPA_ACCEPT');
         log.debug('========================================================================================');
 
-        await testUtilBuyerNode.waitFor(5);
+        await testUtilBuyerNode.waitFor(2);
 
-        // TODO: when we first get the template hash, store it in originalTemplateHash
-        // and use that for searches and expects
-        // same for other similar cases...
-        const res: any = await testUtilBuyerNode.rpcWaitFor(
-            bidCommand,
-            [
-                bidSearchCommand,
-                PAGE, PAGE_LIMIT, SEARCHORDER,
-                mpaBidOnBuyerNode.ListingItem.hash,
-                MPAction.MPA_ACCEPT,
-                '*',
-                buyerProfile.address
+        const response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                listingItemReceivedOnBuyerNode.id,          // listingItemId
+                MPAction.MPA_ACCEPT,                        // type
+                '*',                                        // search string
+                buyerMarket.receiveAddress,                 // market
+                buyerMarket.Identity.address                // bidder
             ],
-            8 * 60,
+            15 * 60,
             200,
-            '[0].type',
-            MPAction.MPA_ACCEPT.toString()
+            '[0].ListingItem.id',
+            listingItemReceivedOnBuyerNode.id
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Bid = res.getBody()['result'];
+        const result: resources.Bid = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
-        expect(result[0].bidder).toBe(buyerProfile.address);
-        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
-        expect(result[0].ListingItem.hash).toBe(listingItemReceivedOnSellerNode.hash);
+        expect(result[0].bidder).toBe(buyerMarket.Identity.address);
+        expect(result[0].ListingItem.seller).toBe(sellerMarket.Identity.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedOnBuyerNode.hash);
 
         // there should be no relation to template on the buyer side
         expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
@@ -598,32 +619,37 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ParentBid.OrderItem.status).toBe(OrderItemStatus.AWAITING_ESCROW);
         expect(result[0].ParentBid.OrderItem.Order.status).toBe(OrderStatus.PROCESSING);
 
-        mpaBidOnBuyerNode = result[0];
+        mpaAcceptOnBuyerNode = result[0];
 
         log.debug('==> BUYER received MPA_ACCEPT.');
     }, 600000); // timeout to 600s
 
-    // todo: Order is created after MPA_BID, add a separate test for that
+
     test('Should have created Order on BUYER node after posting the MPA_ACCEPT', async () => {
 
         expect(sent).toBeTruthy();
-        expect(mpaBidOnSellerNode).toBeDefined();
-        expect(orderOnSellerNode).toBeDefined();
+        expect(listingItemReceivedOnBuyerNode).toBeDefined();
+        expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(mpaBidOnBuyerNode).toBeDefined();
+        expect(mpaBidOnSellerNode).toBeDefined();
+        expect(mpaAcceptOnSellerNode).toBeDefined();
+        expect(orderOnSellerNode).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderItemStatus.AWAITING_ESCROW');
         log.debug('========================================================================================');
+        // todo: iirc order is now created after bidding
 
         // wait for some time to make sure the Order has been created
-        await testUtilBuyerNode.waitFor(5);
+        await testUtilBuyerNode.waitFor(2);
 
         const res: any = await testUtilBuyerNode.rpc(orderCommand, [orderSearchCommand,
-            mpaBidOnBuyerNode.ListingItem.hash,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            mpaBidOnBuyerNode.ListingItem.id,
             OrderItemStatus.AWAITING_ESCROW,
-            buyerProfile.address,
-            sellerProfile.address,
-            SearchOrder.ASC
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            sellerMarket.address
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -631,8 +657,8 @@ describe('Happy Buy Flow', () => {
         const result: resources.Order = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
-        expect(result[0].buyer).toBe(buyerProfile.address);
-        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].buyer).toBe(buyerMarket.Identity.address);
+        expect(result[0].seller).toBe(sellerMarket.Identity.address);
         expect(result[0].status).toBe(OrderStatus.PROCESSING);
         expect(result[0].OrderItems).toHaveLength(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.AWAITING_ESCROW);
@@ -643,7 +669,7 @@ describe('Happy Buy Flow', () => {
         log.debug('==> Order created on BUYER node.');
 
     });
-
+/*
     test('Should find Bids on BUYER node using the OrderItemStatus.AWAITING_ESCROW', async () => {
 
         expect(sent).toBeTruthy();

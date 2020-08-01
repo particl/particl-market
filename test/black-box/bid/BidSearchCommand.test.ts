@@ -137,7 +137,7 @@ describe('BidSearchCommand', () => {
             false,                          // generateListingItemTemplate
             false,                          // generateListingItem
             true,                           // generateOrder
-            listingItemOnSellerNode.id,                 // listingItemOnSellerNode.id
+            listingItemOnSellerNode.id,     // listingItemOnSellerNode.id
             MPAction.MPA_BID,               // type
             buyerMarket.Identity.address,   // bidder
             sellerMarket.Identity.address,  // seller
