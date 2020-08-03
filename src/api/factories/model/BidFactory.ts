@@ -61,6 +61,16 @@ export class BidFactory implements ModelFactoryInterface {
             }
         }
 
+        if (params.parentBid && params.parentBid.ChildBids) {
+            for (const childBid of params.parentBid.ChildBids) {
+                if (childBid.BidDatas) {
+                    for (const bidData of childBid.BidDatas) {
+                        bidDataValues[bidData.key] = bidData.value;
+                    }
+                }
+            }
+        }
+
         // copy the new key-value pairs from bidMessage overriding the old if some exist
         if (bidMessage.objects) {
             for (const bidData of bidMessage.objects) {

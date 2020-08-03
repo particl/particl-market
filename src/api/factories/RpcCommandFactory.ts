@@ -15,6 +15,7 @@ import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
+import { BidGetCommand } from '../commands/bid/BidGetCommand';
 import { BidAcceptCommand } from '../commands/bid/BidAcceptCommand';
 import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
 import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
@@ -149,6 +150,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.daemon.DaemonRootCommand) private daemonRootCommand: DaemonRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidGetCommand) private bidGetCommand: BidGetCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidAcceptCommand) private bidAcceptCommand: BidAcceptCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
@@ -318,6 +320,7 @@ export class RpcCommandFactory {
 
         this.commands.push(bidRootCommand);
         this.commands.push(bidSearchCommand);
+        this.commands.push(bidGetCommand);
         this.commands.push(bidAcceptCommand);
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);

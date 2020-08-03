@@ -201,6 +201,7 @@ export const Targets = {
             BidRejectCommand: 'BidRejectCommand',
             BidRootCommand: 'BidRootCommand',
             BidSearchCommand: 'BidSearchCommand',
+            BidGetCommand: 'BidGetCommand',
             BidSendCommand: 'BidSendCommand'
         },
         blacklist: {

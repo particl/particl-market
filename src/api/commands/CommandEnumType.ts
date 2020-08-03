@@ -22,12 +22,13 @@ export class CommandEnumType extends Enum<Command> {
         [this.DATA_ROOT], EnvironmentType.DEVELOPMENT);
 
     public BID_SEARCH: Command      = new Command('bidsearch', 'search', false);
+    public BID_GET: Command         = new Command('bidget', 'get', false);
     public BID_ACCEPT: Command      = new Command('bidaccept', 'accept', false);
     public BID_CANCEL: Command      = new Command('bidcancel', 'cancel', false);
     public BID_REJECT: Command      = new Command('bidreject', 'reject', false);
     public BID_SEND: Command        = new Command('bidsend', 'send', false);
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
-        [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
+        [this.BID_SEARCH, this.BID_GET, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
 
     public COMMENT_POST: Command    = new Command('commentpost', 'post', false);
     public COMMENT_GET: Command     = new Command('commentget', 'get', false);
