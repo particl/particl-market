@@ -32,7 +32,6 @@ describe('Happy Buy Flow', () => {
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
-    const listingItemGetCommand = Commands.ITEM_GET.commandName;
     const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
@@ -220,12 +219,12 @@ describe('Happy Buy Flow', () => {
                 buyerMarket.receiveAddress,
                 [],
                 '*',
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 listingItemTemplateOnSellerNode.hash
             ],
             15 * 60,
@@ -263,12 +262,12 @@ describe('Happy Buy Flow', () => {
                 buyerMarket.receiveAddress,
                 [],
                 '*',
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
                 listingItemTemplateOnSellerNode.hash
             ],
             15 * 60,

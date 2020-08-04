@@ -45,6 +45,13 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
         return await this.proposalResultService.findLatestByProposalHash(proposalHash, true);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: proposalHash
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('proposalHash');
@@ -54,7 +61,6 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
             throw new InvalidParamException('proposalHash', 'string');
         }
 
-        // make sure proposal with the hash exists
         await this.proposalService.findOneByHash(data.params[0])
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);

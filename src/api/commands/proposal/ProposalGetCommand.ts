@@ -43,6 +43,14 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
         return await this.proposalService.findOneByHash(proposalHash, true);
     }
 
+    /**
+     * data.params[]:
+     * [0] proposalHash
+     *
+     * @param data, RpcRequest
+     * @param rpcCommandFactory, RpcCommandFactory
+     * @returns {Promise<any>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MissingParamException('proposalHash');
