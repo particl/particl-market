@@ -32,6 +32,7 @@ import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatus
 import pForever from 'pm-forever';
 import delay from 'pm-delay';
 import { ExpiredProposalService } from '../services/observer/ExpiredProposalService';
+import {RpcBlockchainInfo} from 'omp-lib/dist/interfaces/rpc';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -143,6 +144,8 @@ export class ServerStartedListener implements interfaces.Listener {
      */
     public async bootstrap(): Promise<boolean> {
         // all is now ready for bootstrapping the app
+        const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        process.env.CHAIN = blockchainInfo.chain;
 
         // are we updating from previous installation (a market wallet already exists+no profile identity)
         const isUpgradingFromSingleMarketWallet = await this.isUpgradingFromSingleMarketWallet();

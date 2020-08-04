@@ -302,7 +302,7 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('==> BUYER sent MPA_PROPOSAL_ADD.');
     });
 
-/*
+
     test('Should have created Proposal on BUYER node', async () => {
 
         expect(sent).toBeTruthy();
@@ -342,7 +342,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-
+/*
     test('Should have flagged ListingItem on BUYER node', async () => {
 
         expect(listingItemReceivedOnSellerNode).toBeDefined();

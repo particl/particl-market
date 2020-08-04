@@ -102,14 +102,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
-            sendParams: {
-                wallet: market.Identity.wallet,
-                fromAddress,
-                toAddress,
-                paidMessage: true,
-                daysRetention,
-                estimateFee
-            } as SmsgSendParams,
+            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate,
             // market, // TODO: remove this? it doesn't seem to be used
             sellerAddress: market.Identity.address

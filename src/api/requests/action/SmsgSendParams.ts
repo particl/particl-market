@@ -11,16 +11,13 @@ export class SmsgSendParams {
     public daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
     public estimateFee = false;
 
-    constructor(wallet: string,
-                from: string,
-                to: string,
-                paid: boolean = true,
+    constructor(wallet: string, from: string, to: string, paid: boolean = true,
                 daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: boolean = false) {
         this.wallet = wallet;
         this.fromAddress = from;
         this.toAddress = to;
-        this.paidMessage = paid;
+        this.paidMessage = process.env.CHAIN === 'test' ? false : paid;
         this.daysRetention = daysRetention;
         this.estimateFee = estimateFee;
     }

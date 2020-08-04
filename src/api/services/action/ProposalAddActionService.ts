@@ -165,10 +165,6 @@ export class ProposalAddActionService extends BaseActionService {
             await this.proposalService.updateTimes(proposal.id, smsgMessage.sent, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
                 .then(value => value.toJSON());
             this.log.debug('processProposal(), proposal updated');
-
-            // TODO: remove this? msgid update should be unnecessary already?
-            await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgMessage.msgid).then(value => value.toJSON());
-
         } else {
             // called from send(), we already created the Proposal so nothing else needs to be done
         }

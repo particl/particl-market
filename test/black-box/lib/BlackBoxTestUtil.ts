@@ -288,8 +288,12 @@ export class BlackBoxTestUtil {
                             errorCount++;
 
                             if (errorCount < 5 || errorCount % 15 === 0) {
-                                this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !' + waitForCondition
-                                    + ' ' + waitForObjectPropertyValue);
+                                if (_.isEmpty(result)) {
+                                    this.log.error('empty result.');
+                                } else {
+                                    this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !' + waitForCondition
+                                        + ' ' + waitForObjectPropertyValue);
+                                }
                             }
                             if (errorCount === 5) {
                                 this.log.error('... posting every 15th from now on...');

@@ -168,6 +168,8 @@ export class ProposalService {
         await this.proposalRepo.destroy(id);
     }
 
+/*
+    // there should be no need for this anymore
     public async updateMsgId(hash: string, msgid: string): Promise<Proposal> {
         let proposal = await this.findOneByHash(hash, false);
         proposal.Msgid = msgid;
@@ -176,6 +178,7 @@ export class ProposalService {
         // finally find and return the created proposal
         return await this.findOne(proposal.Id, true);
     }
+*/
 
     /**
      * creates empty ProposalResult for the Proposal
