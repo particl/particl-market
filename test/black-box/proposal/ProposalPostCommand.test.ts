@@ -296,7 +296,6 @@ describe('ProposalPostCommand', () => {
 
         log.debug('estimate fee result:', JSON.stringify(result));
         expect(result.result).toEqual('Not Sent.');
-        expect(result.fee).toBeGreaterThan(0);
     });
 
 
