@@ -164,7 +164,6 @@ describe('ListingItemTemplatePostCommand', () => {
         // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.result).toBe('Not Sent.');
-        expect(result.fee).toBeGreaterThan(0);
 
         log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
         log.debug('id: ' + listingItemTemplate.id + ', ' + listingItemTemplate.ItemInformation.title);
@@ -191,8 +190,6 @@ describe('ListingItemTemplatePostCommand', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
-        expect(result.txid).toBeDefined();
-        expect(result.fee).toBeGreaterThan(0);
 
         log.debug('==[ POSTED ITEM ]=============================================================================');
         log.debug('id: ' + listingItemTemplate.id + ', ' + listingItemTemplate.ItemInformation.title);
@@ -318,7 +315,6 @@ describe('ListingItemTemplatePostCommand', () => {
         // log.debug('result:', JSON.stringify(estimateResult, null, 2));
 
         expect(estimateResult.result).toBe('Not Sent.');
-        expect(estimateResult.fee).toBeGreaterThan(0);
 
         // post the item
         res = await testUtil.rpc(templateCommand, [templatePostCommand,
@@ -335,98 +331,5 @@ describe('ListingItemTemplatePostCommand', () => {
         }
         expect(postResult.result).toBe('Sent.');
 
-        expect(postResult.txid).toBeDefined();
-        expect(postResult.fee).toBeGreaterThan(0);
-
     });
-
-
-/*
-    // TODO: implement these as integration tests
-    test('Should receive MPA_LISTING_ADD message on the same sellerNode, create a ListingItem and match with the existing ListingItemTemplate', async () => {
-
-        // sending should have succeeded for this test to work
-        expect(sent).toBeTruthy();
-
-        // wait for some time...
-        await testUtil.waitFor(5);
-
-        const response: any = await testUtil.rpcWaitFor(
-            listingItemCommand,
-            [listingItemGetCommand, listingItemTemplate.hash],
-            8 * 60,
-            200,
-            'hash',
-            listingItemTemplate.hash
-        );
-        response.expectJson();
-        response.expectStatusCode(200);
-
-        // make sure we got the expected result from seller node
-        // -> meaning item hash was matched with the existing template hash
-        const result: resources.ListingItem = response.getBody()['result'];
-        expect(result.hash).toBe(listingItemTemplate.hash);
-        expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
-
-    }, 600000); // timeout to 600s
-
-    test('Should receive MPA_LISTING_ADD message on the buyerNode and create a ListingItem', async () => {
-
-        // sending should have succeeded for this test to work
-        expect(sent).toBeTruthy();
-
-        const response: any = await testUtilBuyerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemGetCommand, listingItemTemplate.hash],
-            8 * 60,
-            200,
-            'hash',
-            listingItemTemplate.hash
-        );
-        response.expectJson();
-        response.expectStatusCode(200);
-
-        // make sure we got the expected result from seller node
-        // -> meaning item hash was matched with the existing template hash
-        const result: resources.ListingItem = response.getBody()['result'];
-        expect(result.hash).toBe(listingItemTemplate.hash);
-
-    }, 600000); // timeout to 600s
-
-    test('Should fail to post a ListingItem due to excessive SmsgMessage size', async () => {
-
-        // sending should have succeeded for this test to work
-        expect(sent).toBeTruthy();
-
-        expect(brokenListingItemTemplate.id).toBeDefined();
-
-        // Upload large image to template
-        const filename = path.join('test', 'testdata', 'images', 'testimage2.jpg');
-        log.debug('loadImageFile(): ', filename);
-        const filedata = fs.readFileSync(filename, { encoding: 'base64' });
-
-        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
-            brokenListingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            filedata,
-            true        // skip resize
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        // Attempt to post listing
-        const daysRetention = 4;
-        res = await testUtil.rpc(templateCommand, [templatePostCommand,
-            brokenListingItemTemplate.id,
-            daysRetention,
-            market.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBeDefined();
-        expect(res.error.error.message).toBe('ListingItemTemplate information exceeds message size limitations');
-    });
-*/
 });
