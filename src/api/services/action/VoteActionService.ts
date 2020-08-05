@@ -63,6 +63,7 @@ export interface AddressInfo {
 
 export interface CombinedVote {
     voter: string;
+    count: number;
     weight: number;
     postedAt: number;
     receivedAt: number;
@@ -429,6 +430,7 @@ export class VoteActionService extends BaseActionService {
         const combinedVote = {
             voter: identity.address,
             weight: 0,
+            count: 0,
             postedAt: Date.now(),
             receivedAt: Date.now(),
             expiredAt: Date.now(),
@@ -441,6 +443,7 @@ export class VoteActionService extends BaseActionService {
         for (const vote of votes) {
             combinedVote.weight = combinedVote.weight + vote.weight;
             combinedVote.votedProposalOption = vote.ProposalOption;
+            combinedVote.count = combinedVote.count + 1;
         }
 
         return combinedVote;

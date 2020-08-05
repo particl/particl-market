@@ -133,10 +133,11 @@ describe('Happy Vote Flow', () => {
                 '*',
                 ProposalCategory.PUBLIC_VOTE
             ],
-            30 * 60,            // maxSeconds
+            30 * 60,                // maxSeconds
             200,                // waitForStatusCode
-            '[0].title',        // property name
-            proposalTitle       // value
+            '[0].title',     // property name
+            proposalTitle,                       // value
+            '='
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -151,7 +152,7 @@ describe('Happy Vote Flow', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should have created Proposal on SELLER node', async () => {
+    test('Should have received Proposal on SELLER node', async () => {
 
         expect(sent).toBeTruthy();
         expect(proposalReceivedOnBuyerNode).toBeDefined();
