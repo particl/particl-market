@@ -1478,10 +1478,10 @@ export class TestDataService {
             ? {
                 currency: Cryptocurrency.PART, // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 // todo:
-                basePrice: toSatoshis(+_.random(0.1, 0.50).toFixed(8)),
+                basePrice: toSatoshis(+_.random(0.001, 0.05).toFixed(8)),
                 shippingPrice: {
-                    domestic: toSatoshis(+_.random(0.01, 0.10).toFixed(8)),
-                    international: toSatoshis(+_.random(0.10, 0.20).toFixed(8))
+                    domestic: toSatoshis(+_.random(0.001, 0.05).toFixed(8)),
+                    international: toSatoshis(+_.random(0.001, 0.05).toFixed(8))
                 } as ShippingPriceCreateRequest,
                 cryptocurrencyAddress: {
                     type: CryptoAddressType.STEALTH,
