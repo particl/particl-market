@@ -57,26 +57,28 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
-        'ChildListingItemTemplate'
+        'ChildListingItemTemplates',
+        'ChildListingItemTemplates.ItemInformation',
+        'ChildListingItemTemplates.ChildListingItemTemplates'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
         if (withRelated) {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
+            return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch();
+            return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch();
         }
     }
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
         if (withRelated) {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch({
+            return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch();
+            return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch();
         }
     }
 
@@ -86,11 +88,16 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
      * @param market
      * @param allVersions
      */
-    public static async fetchByParentTemplateAndMarket(templateId: number, market: string, allVersions: boolean): Promise<Collection<ListingItemTemplate>> {
+    public static async fetchByParentTemplateAndMarket(templateId?: number, market?: string,
+                                                       allVersions: boolean = false): Promise<Collection<ListingItemTemplate>> {
         const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
-                qb.where('market', '=', market);
-                qb.where('parent_listing_item_template_id', '=', templateId);
+                if (market) {
+                    qb.where('market', '=', market);
+                }
+                if (templateId) {
+                    qb.where('parent_listing_item_template_id', '=', templateId);
+                }
 
                 if (!allVersions) {
                     qb.max('generated_at');
@@ -245,8 +252,8 @@ ORDER BY lit.generated_at DESC;
         return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
-    public ChildListingItemTemplate(): ListingItemTemplate {
-        return this.hasOne(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
+        return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
 }

@@ -99,13 +99,18 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             }
         }
 
-        // this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
+        this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
 
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
 
-        const ompValidated = FV_MPA_LISTING.validate(message as MPM);
-        if (!ompValidated) {
-            this.log.error('FV_MPA_LISTING.validate failed.');
+        let ompValidated = false;
+        try {
+            ompValidated = FV_MPA_LISTING.validate(message as MPM);
+            if (!ompValidated) {
+                this.log.error('FV_MPA_LISTING.validate failed.');
+            }
+        } catch (e) {
+            this.log.error('FV_MPA_LISTING.validate failed: ' + e);
         }
 
         this.log.debug('validateMessage(), ompValidated: ', ompValidated);

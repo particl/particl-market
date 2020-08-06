@@ -79,7 +79,7 @@ describe('Happy Buy Flow', () => {
     const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
     const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
     const ORDER_SEARCHORDERFIELD = OrderSearchOrderField.CREATED_AT;
-    const DAYS_RETENTION = 2;
+    const DAYS_RETENTION = 1;
 
     const DELIVERY_CONTACT_PHONE = '+3584512345678';
     const DELIVERY_CONTACT_EMAIL = 'test@test.com';

@@ -592,6 +592,8 @@ export class TestDataService {
     private async generateListingItemTemplates(amount: number, withRelated: boolean = true,
                                                generateParams: GenerateListingItemTemplateParams): Promise<resources.ListingItemTemplate[]> {
 
+        // this.log.debug('generateListingItemTemplates(), generateParams: ', JSON.stringify(generateParams, null, 2));
+
         const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest: ListingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
@@ -604,6 +606,8 @@ export class TestDataService {
 
             // create market template
             if (generateParams.soldOnMarketId) {
+                // this.log.debug('generateListingItemTemplates(), generateParams.soldOnMarketId: ', generateParams.soldOnMarketId);
+
                 const soldOnMarket: resources.Market = await this.marketService.findOne(generateParams.soldOnMarketId).then(value => value.toJSON());
                 listingItemTemplateCreateRequest.market = soldOnMarket.receiveAddress;
                 listingItemTemplateCreateRequest.parent_listing_item_template_id = listingItemTemplate.id;
@@ -1508,6 +1512,7 @@ export class TestDataService {
         return messagingInformations;
     }
 
+    // todo: fix, old and doesnt pass validation anymore
     private generateListingItemObjectsData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): ListingItemObjectCreateRequest[] {
         const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = generateParams.generateObjectDatas
             ? this.generateObjectDataData(_.random(1, 5))

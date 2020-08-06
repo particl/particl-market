@@ -2,18 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import { ListingItem } from '../../../src/api/models/ListingItem';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import * as resources from 'resources';
-import {GenerateListingItemTemplateParams} from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ShippingDestinationListCommand', () => {
 

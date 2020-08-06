@@ -152,12 +152,6 @@ export class ListingItemTemplateService {
         // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
 
-        // TODO
-        // if there is no parent template -> this is the base template -> there should be no market
-        // if there is no parent template, but market was given -> create the base template and then create a new market version
-
-        // for now, we dont require templates to have markets and only allow default categories
-
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
@@ -197,13 +191,12 @@ export class ListingItemTemplateService {
     /**
      * clone a ListingItemTemplate
      *
-     * @param id
-     * @param setOriginalAsParent
-     * @param newMarket
+     * @param listingItemTemplate: resources.ListingItemTemplate
+     * @param targetParentId
+     * @param market: resources.Market
      */
-    public async clone(id: number, setOriginalAsParent: boolean = false, newMarket?: string): Promise<ListingItemTemplate> {
-        let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
-        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setOriginalAsParent, newMarket);
+    public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
+        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
         // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
@@ -365,9 +358,9 @@ export class ListingItemTemplateService {
 
         // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
         // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
-        // this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
+        // this.log.debug('listingItemTemplate.ChildListingItemTemplates: ' + listingItemTemplate.ChildListingItemTemplates);
 
-        // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+        // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplates));
 
         // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash
         const isModifiable = _.isNil(listingItemTemplate.hash);
@@ -485,17 +478,17 @@ export class ListingItemTemplateService {
 
     /**
      *
-     * @param listingItemTemplate
-     * @param setOriginalAsParent
-     * @param newMarket
+     * @param templateToClone
+     * @param targetParentId
+     * @param targetMarket
      */
-    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setOriginalAsParent: boolean = false, newMarket?: string):
+    private async getCloneCreateRequest(templateToClone: resources.ListingItemTemplate, targetParentId?: number, targetMarket?: resources.Market):
         Promise<ListingItemTemplateCreateRequest> {
 
         let shippingDestinations: ShippingDestinationCreateRequest[] = [];
 
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ShippingDestinations)) {
-            shippingDestinations = _.map(listingItemTemplate.ItemInformation.ShippingDestinations, (destination) => {
+        if (!_.isEmpty(templateToClone.ItemInformation.ShippingDestinations)) {
+            shippingDestinations = _.map(templateToClone.ItemInformation.ShippingDestinations, (destination) => {
                 return _.assign({} as ShippingDestinationCreateRequest, {
                     country: destination.country,
                     shippingAvailability: destination.shippingAvailability
@@ -504,9 +497,9 @@ export class ListingItemTemplateService {
         }
 
         let itemImages: ItemImageCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+        if (!_.isEmpty(templateToClone.ItemInformation.ItemImages)) {
 
-            itemImages = await Promise.all(_.map(listingItemTemplate.ItemInformation.ItemImages, async (image) => {
+            itemImages = await Promise.all(_.map(templateToClone.ItemInformation.ItemImages, async (image) => {
 
                 // for each image, get the data from ORIGINAL and create a new ItemImageCreateRequest based on that data
                 const itemImageDataOriginal: resources.ItemImageData = _.find(image.ItemImageDatas, (imageData) => {
@@ -532,8 +525,8 @@ export class ListingItemTemplateService {
         }
 
         let messagingInformation: MessagingInformationCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
-            messagingInformation = _.map(listingItemTemplate.MessagingInformation, (msgInfo) => {
+        if (!_.isEmpty(templateToClone.MessagingInformation)) {
+            messagingInformation = _.map(templateToClone.MessagingInformation, (msgInfo) => {
                 return _.assign({} as MessagingInformationCreateRequest, {
                     protocol: msgInfo.protocol,
                     publicKey: msgInfo.publicKey
@@ -542,8 +535,8 @@ export class ListingItemTemplateService {
         }
 
         let listingItemObjects: ListingItemObjectCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
-            listingItemObjects = _.map(listingItemTemplate.ListingItemObjects, (liObject) => {
+        if (!_.isEmpty(templateToClone.MessagingInformation)) {
+            listingItemObjects = _.map(templateToClone.ListingItemObjects, (liObject) => {
                 // this.log.debug('liObject.ListingItemObjectDatas: ', JSON.stringify(liObject.ListingItemObjectDatas, null, 2));
                 const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = _.map(liObject.ListingItemObjectDatas, (liObjectData) => {
                     // this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
@@ -565,61 +558,48 @@ export class ListingItemTemplateService {
         }
 
         return {
-            parent_listing_item_template_id: setOriginalAsParent
-                ? (_.isEmpty(listingItemTemplate.ParentListingItemTemplate) // this is going to be a new version of an existing template
-                    ? listingItemTemplate.id                                    // we are cloning the base template
-                    : listingItemTemplate.ParentListingItemTemplate.id)         // we are cloning some other version x, so use the basetemplate.id
-                : undefined,                                                // this is supposed to be a new base template, no parent
-            profile_id: listingItemTemplate.Profile.id,
-            market: !setOriginalAsParent ? undefined : (newMarket ? newMarket : listingItemTemplate.market),
-            // if we are not setting original as parent:
-            //  - it means this is a new base template
-            //  - no market && no parent
-            // if we are setting original as parent:
-            //  - parent should always be relation to the original base template
-            //  - use the listingItemTemplate.parent_template_id if it exists, and if not then use listingItemTemplate.id
-            //  - use given market if it exists, or else the one in the original
-            // hash should be null, until the template is posted
+            parent_listing_item_template_id: targetParentId,
+            profile_id: templateToClone.Profile.id,
+            market: targetMarket ? targetMarket.receiveAddress : undefined,
             generatedAt: +Date.now(),
-
             itemInformation: {
-                title: listingItemTemplate.ItemInformation.title,
-                shortDescription: listingItemTemplate.ItemInformation.shortDescription,
-                longDescription: listingItemTemplate.ItemInformation.longDescription,
-                item_category_id: listingItemTemplate.ItemInformation.ItemCategory.id,
+                title: templateToClone.ItemInformation.title,
+                shortDescription: templateToClone.ItemInformation.shortDescription,
+                longDescription: templateToClone.ItemInformation.longDescription,
+                item_category_id: templateToClone.ItemInformation.ItemCategory.id,
                 shippingDestinations,
                 itemImages,
                 itemLocation: {
-                    country: listingItemTemplate.ItemInformation.ItemLocation.country,
-                    address: listingItemTemplate.ItemInformation.ItemLocation.address,
-                    description: listingItemTemplate.ItemInformation.ItemLocation.description,
+                    country: templateToClone.ItemInformation.ItemLocation.country,
+                    address: templateToClone.ItemInformation.ItemLocation.address,
+                    description: templateToClone.ItemInformation.ItemLocation.description,
                     locationMarker: {
-                        lat: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat,
-                        lng: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng,
-                        title: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title,
-                        description: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description
+                        lat: templateToClone.ItemInformation.ItemLocation.LocationMarker.lat,
+                        lng: templateToClone.ItemInformation.ItemLocation.LocationMarker.lng,
+                        title: templateToClone.ItemInformation.ItemLocation.LocationMarker.title,
+                        description: templateToClone.ItemInformation.ItemLocation.LocationMarker.description
                     } as LocationMarkerCreateRequest
                 } as ItemLocationCreateRequest
             } as ItemInformationCreateRequest,
             paymentInformation: {
-                type: listingItemTemplate.PaymentInformation.type,
+                type: templateToClone.PaymentInformation.type,
                 itemPrice: {
-                    currency: listingItemTemplate.PaymentInformation.ItemPrice.currency,
-                    basePrice: listingItemTemplate.PaymentInformation.ItemPrice.basePrice,
+                    currency: templateToClone.PaymentInformation.ItemPrice.currency,
+                    basePrice: templateToClone.PaymentInformation.ItemPrice.basePrice,
                     shippingPrice: {
-                        domestic: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic,
-                        international: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international
+                        domestic: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.domestic,
+                        international: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.international
                     } as ShippingPriceCreateRequest
                 } as ItemPriceCreateRequest,
                 escrow: {
-                    type: listingItemTemplate.PaymentInformation.Escrow.type,
-                    releaseType: listingItemTemplate.PaymentInformation.Escrow.releaseType,
-                    secondsToLock: listingItemTemplate.PaymentInformation.Escrow.secondsToLock
-                        ? listingItemTemplate.PaymentInformation.Escrow.secondsToLock
+                    type: templateToClone.PaymentInformation.Escrow.type,
+                    releaseType: templateToClone.PaymentInformation.Escrow.releaseType,
+                    secondsToLock: templateToClone.PaymentInformation.Escrow.secondsToLock
+                        ? templateToClone.PaymentInformation.Escrow.secondsToLock
                         : undefined,
                     ratio: {
-                        buyer: listingItemTemplate.PaymentInformation.Escrow.Ratio.buyer,
-                        seller: listingItemTemplate.PaymentInformation.Escrow.Ratio.seller
+                        buyer: templateToClone.PaymentInformation.Escrow.Ratio.buyer,
+                        seller: templateToClone.PaymentInformation.Escrow.Ratio.seller
                     } as EscrowRatioCreateRequest
                 } as EscrowCreateRequest
             } as PaymentInformationCreateRequest,

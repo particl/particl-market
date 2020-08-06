@@ -54,7 +54,7 @@ describe('DataGenerateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('model', 'CreatableModel').getMessage());
     });
 
-    test('Should generate fail to generate anything because invalid amount', async () => {
+    test('Should fail to generate anything because invalid amount', async () => {
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -78,7 +78,7 @@ describe('DataGenerateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('amount', 'number').getMessage());
     });
 
-    test('Should generate fail to generate anything because invalid amount', async () => {
+    test('Should fail to generate anything because invalid amount', async () => {
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation
@@ -102,7 +102,7 @@ describe('DataGenerateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('amount', 'number').getMessage());
     });
 
-    test('Should generate fail to generate anything because invalid withRelated', async () => {
+    test('Should fail to generate anything because invalid withRelated', async () => {
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateItemLocation

@@ -39,8 +39,8 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
      *
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: setOriginalAsParent, optional
-     *  [2]: newMarket, optional
+     *  [1]: market: resources.Market, optional
+     *  [2]: targetParentId: number, optional
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -49,38 +49,33 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ListingItemTemplate> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const setOriginalAsParent = data.params[1];
-        const newMarket = data.params[2];
-        return await this.listingItemTemplateService.clone(listingItemTemplate.id, setOriginalAsParent, newMarket);
+        const market = data.params[1];
+        const targetParentId = data.params[2];
+        return await this.listingItemTemplateService.clone(listingItemTemplate, targetParentId, market);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: setOriginalAsParent, optional, when creating new base template, set setOriginalAsParent to false
-     *  [2]: marketId, optional, when setOriginalAsParent=true and marketId is set, create a new market template based on given template
+     *  [1]: marketId, optional, when set, create a new market template else new base template
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // make sure the required params exist
+
         if (data.params.length < 1) {
             throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length === 1) {
-            data.params[1] = false;             // default to false
         }
 
         const listingItemTemplateId = data.params[0];
-        const setOriginalAsParent = data.params[1];
-        const marketId = data.params[2];
+        const marketId = data.params[1];
+        let targetParentId;
 
         // make sure the params are of correct type
         if (typeof listingItemTemplateId !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof setOriginalAsParent !== 'boolean') {
-            throw new InvalidParamException('setOriginalAsParent', 'boolean');
-        } else if (marketId && typeof marketId !== 'number') {
+        } else if (!_.isNil(marketId) && typeof marketId !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -91,10 +86,17 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
                 throw new ModelNotFoundException('ListingItemTemplate');
             });
 
-        if (setOriginalAsParent && _.isNumber(marketId)) {
-            // if marketId was given -> we are creating a new market template based on the given base template
+        // template clone 1         - creates new base template based on template id 1
+        // template clone 1 2       - creates new market template based on template id 1 for market id 2
+        //                              - if original is base template && market template exists:
+        //                                  - fail if latest version of market template is not published (you should be modifying that)
+        //                              - else if original is market template
+        //                                  - fail if latest version of market template is not published (you should be modifying that)
+        //                              - create a market template
 
-            //   - template.profile and market.profile should match
+        if (!_.isNil(marketId)) {
+            // creating new market template based on given templateId for marketId
+
             const market: resources.Market = await this.marketService.findOne(marketId)
                 .then(value => value.toJSON())
                 .catch(reason => {
@@ -105,40 +107,56 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
                 throw new MessageException('ListingItemTemplate and Market Profiles don\'t match.');
             }
 
-            //   - fail if template for the given market already exists
-            const marketTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findLatestByParentTemplateAndMarket(
-                listingItemTemplate.id, market.receiveAddress)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    // not found, which is fine...
-                });
+            const baseTemplate = await this.getBaseTemplateFor(listingItemTemplate);
+            const marketTemplate = _.find(baseTemplate.ChildListingItemTemplates, {market: market.receiveAddress});
 
-            if (!_.isEmpty(marketTemplate)) {
-                throw new MessageException(`ListingItemTemplate (${marketTemplate.id}) version for the Market (${marketTemplate.id}) already exists.`);
+            if (!_.isNil(marketTemplate)) {                                         // market template already exists
+                if (_.isNil(marketTemplate.hash)) {                                 // has not been posted/is editable
+                    throw new MessageException('New version cannot be created until the ListingItemTemplate has been posted.');
+                } else {                                                            // not editable, are there newer versions then?
+                    const newestVersion = _.maxBy(marketTemplate.ChildListingItemTemplates, 'generatedAt');
+                    if (!_.isNil(newestVersion) && _.isNil(marketTemplate.hash)) {  // newest version is also editable
+                        throw new MessageException('New version cannot be created until the ListingItemTemplate has been posted.');
+                    }
+                    // existing version not editable or no version, so one can be created
+
+                    // there is a market template, so that's the parent
+                    targetParentId = marketTemplate.id;
+                }
+            } else {
+                // there is no marketTemplate, so one can be created, base is the parent
+                targetParentId = baseTemplate.id;
             }
-            data.params[2] = market.receiveAddress;
 
-        } else if (setOriginalAsParent && listingItemTemplate.hash) {
-            // if setOriginalAsParent = true -> template must have been posted (has a hash) if a new version of it is being created
-            throw new MessageException('New version cannot be created until the ListingItemTemplate has been posted.');
-        }
+            data.params[1] = market;
+            data.params[2] = targetParentId;
+
+        } // creating new base template based on given templateId, anything goes
 
         data.params[0] = listingItemTemplate;
 
         return data;
     }
 
+    public async getBaseTemplateFor(template: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
+        const id = (template && template.ParentListingItemTemplate && template.ParentListingItemTemplate.ParentListingItemTemplate)
+            ? template.ParentListingItemTemplate.ParentListingItemTemplate.id
+            : (template && template.ParentListingItemTemplate)
+                ? template.ParentListingItemTemplate.id
+                : template.id;
+
+        return await this.listingItemTemplateService.findOne(id).then(value => value.toJSON());
+    }
+
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> [setOriginalAsParent] [marketId]';
+        return this.getName() + ' <listingItemTemplateId> [isMarketTemplate] [marketId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>          - number - The ID of the ListingItemTemplate to be cloned.\n'
-            + '    <setOriginalAsParent>            - boolean - Set the given ListingItemTemplate as parent for the clone, optional. default: false.\n'
-            + '    <marketId>                       - number - Market ID, optional. Can be set only if setOriginalAsParent=true.';
-
-
+            + '    <isMarketTemplate>               - boolean - Clone is a market ListingItemTemplate, optional. default: false.\n'
+            + '    <marketId>                       - number - Market ID, optional. Can be set only if isMarketTemplate=true.';
     }
 
     public description(): string {
