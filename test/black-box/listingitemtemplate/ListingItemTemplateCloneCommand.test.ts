@@ -452,6 +452,19 @@ describe('ListingItemTemplateCloneCommand', () => {
         const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(2);
         log.debug('templates: ', JSON.stringify(result, null, 2));
+
+        expect(result[0].hash).toBeNull();
+        expect(result[0].market).toBeNull();
+        expect(result[0].ChildListingItemTemplates).toHaveLength(1);
+        expect(result[0].ChildListingItemTemplates[0].id).toBe(marketTemplate.id);
+        expect(result[0].ChildListingItemTemplates[0].ChildListingItemTemplates).toHaveLength(2);
+        expect(result[0].ChildListingItemTemplates[0].ChildListingItemTemplates[0].id).toBe(marketV1Template.id);
+        expect(result[0].ChildListingItemTemplates[0].ChildListingItemTemplates[1].id).toBe(marketV2Template.id);
+
+        expect(result[1].hash).toBeNull();
+        expect(result[1].market).toBeNull();
+        expect(result[1].ChildListingItemTemplates).toHaveLength(0);
+
     });
 
 
