@@ -75,19 +75,19 @@ describe('ShippingPrice', () => {
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            false,       // generateEscrow
-            true,       // generateItemPrice
-            false,      // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            false,       // generateListingItem
-            market.id   // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            false,              // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            false              // generateListingItem
+            // market.id           // soldOnMarketId
         ]);
 
         const generateParams = templateGenerateParams.toParamsArray();
