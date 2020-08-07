@@ -133,7 +133,7 @@ describe('Profile', () => {
     });
 
     test('Should delete the Profile', async () => {
-        expect.assertions(5);
+        expect.assertions(4);
 
         const result: resources.Profile = await profileService.findOne(profile.id).then(value => value.toJSON());
         expect(result.ShippingAddresses).toHaveLength(2);
