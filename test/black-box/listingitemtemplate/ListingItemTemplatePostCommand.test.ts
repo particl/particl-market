@@ -48,7 +48,7 @@ describe('ListingItemTemplatePostCommand', () => {
     let rootCategory: resources.ItemCategory;
 
     let sent = false;
-    const daysRetention = 1;
+    const DAYS_RETENTION = 1;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -110,7 +110,7 @@ describe('ListingItemTemplatePostCommand', () => {
     test('Should fail to add because invalid listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
             'INVALID',
-            daysRetention
+            DAYS_RETENTION
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -130,7 +130,7 @@ describe('ListingItemTemplatePostCommand', () => {
     test('Should fail to add because invalid estimateFee', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
-            daysRetention,
+            DAYS_RETENTION,
             0
         ]);
         res.expectJson();
@@ -141,7 +141,7 @@ describe('ListingItemTemplatePostCommand', () => {
     test('Should fail to add because ListingItemTemplate not found', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
             0,
-            daysRetention,
+            DAYS_RETENTION,
             true
         ]);
         res.expectJson();
@@ -154,7 +154,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(listingItemTemplate.id).toBeDefined();
         const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
-            daysRetention,
+            DAYS_RETENTION,
             true
         ]);
         res.expectJson();
@@ -178,7 +178,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(listingItemTemplate.id).toBeDefined();
         const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
-            daysRetention
+            DAYS_RETENTION
         ]);
         res.expectJson();
 
@@ -213,7 +213,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-    test('Should post ListingItemTemplate created using the basic gui flow', async () => {
+    test('Should post ListingItemTemplate created using the basic gui flow (old?)', async () => {
 
         // pick a random category
         // log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
@@ -294,7 +294,6 @@ describe('ListingItemTemplatePostCommand', () => {
         // create market template from the base template
         res = await testUtil.rpc(templateCommand, [templateCloneCommand,
             listingItemTemplate.id,
-            true,                       // setOriginalAsParent
             market.id
         ]);
         res.expectJson();
@@ -306,7 +305,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(listingItemTemplate.id).toBeDefined();
         res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
-            daysRetention,
+            DAYS_RETENTION,
             true
         ]);
         res.expectJson();
@@ -319,7 +318,7 @@ describe('ListingItemTemplatePostCommand', () => {
         // post the item
         res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
-            daysRetention
+            DAYS_RETENTION
         ]);
         res.expectJson();
 

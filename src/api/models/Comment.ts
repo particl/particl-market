@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -66,11 +67,9 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.where('target', '=', options.target);
                 }
 
-                if (options.parentCommentId === undefined) {
+                if (_.isNil(options.parentCommentId)) {
                     qb.whereNull('parent_comment_id');
-                }
-
-                if (options.parentCommentId) {
+                } else {
                     qb.where('parent_comment_id', '=', options.parentCommentId);
                 }
             })
@@ -88,27 +87,25 @@ export class Comment extends Bookshelf.Model<Comment> {
             .query( qb => {
 
                 if (CommentType[options.type]) {
-                    qb.where('comments.type', '=', options.type);
+                    qb.andWhere('comments.type', '=', options.type);
                 }
 
                 if (options.sender) {
-                    qb.where('comments.sender', '=', options.sender);
+                    qb.andWhere('comments.sender', '=', options.sender);
                 }
 
                 if (options.receiver) {
-                    qb.where('comments.receiver', '=', options.receiver);
+                    qb.andWhere('comments.receiver', '=', options.receiver);
                 }
 
                 if (options.target) {
-                    qb.where('comments.target', '=', options.target);
+                    qb.andWhere('comments.target', '=', options.target);
                 }
 
-                if (options.parentCommentId === undefined) {
-                    qb.whereNull('comments.parent_comment_id');
-                }
-
-                if (options.parentCommentId) {
-                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
+                if (_.isNil(options.parentCommentId)) {
+                    qb.whereNull('parent_comment_id');
+                } else {
+                    qb.andWhere('parent_comment_id', '=', options.parentCommentId);
                 }
 
             })
