@@ -136,7 +136,7 @@ describe('BidData', () => {
     });
 
     test('Should delete the bid data', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         // delete created bid data
         await bidDataService.destroy(bidData.id);
         await bidDataService.findOne(bidData.id).catch(e =>
