@@ -123,6 +123,7 @@ describe('Comment', () => {
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
+            generatedAt: Date.now(),
             postedAt: Date.now(),
             receivedAt: Date.now(),
             expiredAt: Date.now() + 1000000
@@ -208,6 +209,7 @@ describe('Comment', () => {
             type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
+            generatedAt: Date.now(),
             postedAt: Date.now(),
             receivedAt: Date.now(),
             expiredAt: Date.now() + 1000000
