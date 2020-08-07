@@ -46,7 +46,7 @@ describe('ShoppingCart', () => {
 
     const testData = {
         name: 'test shopping cart',
-        profile_id: 0
+        identity_id: 0
     } as ShoppingCartCreateRequest;
 
     const testDataUpdated = {
@@ -77,12 +77,12 @@ describe('ShoppingCart', () => {
         //
     });
 
-    test('Should find the default Profiles (2) ShoppingCarts', async () => {
+    test('Should find the 2 ShoppingCarts for 2 Profiles Identities', async () => {
         const shoppingCarts: resources.ShoppingCart[] = await shoppingCartService.findAll().then(value => value.toJSON());
         expect(shoppingCarts.length).toBe(2);
         const result = shoppingCarts[0];
-        expect(result.name).toBe('DEFAULT');
-        expect(result.profileId).toBe(bidderProfile.id);
+        expect(result.name).toBe(bidderMarket.Identity.address);
+        expect(result.identityId).toBe(bidderMarket.Identity.id);
     });
 
     test('Should throw ValidationException because we want to create a empty ShoppingCart', async () => {
@@ -93,12 +93,12 @@ describe('ShoppingCart', () => {
     });
 
     test('Should create a new ShoppingCart', async () => {
-        testData.profile_id = bidderProfile.id;
+        testData.identity_id = bidderMarket.Identity.id;
         const result: resources.ShoppingCart = await shoppingCartService.create(testData).then(value => value.toJSON());
 
         // test the values
         expect(result.name).toBe(testData.name);
-        expect(result.profileId).toBe(testData.profile_id);
+        expect(result.identityId).toBe(testData.identity_id);
 
         shoppingCart = result;
     });
@@ -108,19 +108,19 @@ describe('ShoppingCart', () => {
         expect(shoppingCarts.length).toBe(3); // includes default ones
         const result = shoppingCarts[2];
         expect(result.name).toBe(testData.name);
-        expect(result.profileId).toBe(testData.profile_id);
+        expect(result.identityId).toBe(testData.identity_id);
     });
 
     test('Should return one ShoppingCart', async () => {
         const result: resources.ShoppingCart = await shoppingCartService.findOne(shoppingCart.id).then(value => value.toJSON());
         expect(result.name).toBe(testData.name);
-        expect(result.profileId).toBe(testData.profile_id);
+        expect(result.identityId).toBe(testData.identity_id);
     });
 
     test('Should update the ShoppingCart', async () => {
         const result: resources.ShoppingCart = await shoppingCartService.update(shoppingCart.id, testDataUpdated).then(value => value.toJSON());
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.profileId).toBe(testData.profile_id);
+        expect(result.identityId).toBe(testData.identity_id);
     });
 
     test('Should delete the ShoppingCart', async () => {

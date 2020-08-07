@@ -30,7 +30,7 @@ export class ShoppingCartService {
         return this.shoppingCartRepo.findAll();
     }
 
-    public async findAllByIdentityId(identityId: number, withRelated: boolean = false): Promise<Bookshelf.Collection<ShoppingCart>> {
+    public async findAllByIdentityId(identityId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ShoppingCart>> {
         return await this.shoppingCartRepo.findAllByIdentityId(identityId, withRelated);
     }
 
