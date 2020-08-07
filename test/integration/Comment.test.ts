@@ -83,16 +83,17 @@ describe('Comment', () => {
     test('Should create a new Comment', async () => {
 
         const testData = {
-            msgid: Faker.random.uuid(),
             // parent_comment_id: 1,
+            msgid: Faker.random.uuid(),
             sender: senderMarket.Identity.address,
             receiver: receiverMarket.receiveAddress,
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
+            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
+            generatedAt: Date.now(),
             postedAt: Date.now(),
-            receivedAt: Date.now(),
-            expiredAt: Date.now() + 1000000
+            expiredAt: Date.now() + 1000000,
+            receivedAt: Date.now()
         } as CommentCreateRequest;
 
         testData.hash = ConfigurableHasher.hash(testData, new HashableCommentCreateRequestConfig());
