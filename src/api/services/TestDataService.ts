@@ -1570,6 +1570,8 @@ export class TestDataService {
             profile_id: profileId
         } as ListingItemTemplateCreateRequest;
 
+        this.log.debug('generateListingItemTemplateData(), listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+
         return listingItemTemplateCreateRequest;
     }
 

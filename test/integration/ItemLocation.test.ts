@@ -90,19 +90,19 @@ describe('ItemLocation', () => {
 
         // create ListingItemTemplate without ItemLocation
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            false,      // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            false,      // generateEscrow
-            false,      // generateItemPrice
-            true,       // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            false,      // generateListingItem
-            market.id   // marketId
+            true,                   // generateItemInformation
+            false,                  // generateItemLocation
+            false,                  // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            false,                  // generateEscrow
+            false,                  // generateItemPrice
+            true,                   // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            profile.id,             // profileId
+            false,                  // generateListingItem
+            market.id               // soldOnMarketId
         ]).toParamsArray();
 
         // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
@@ -132,14 +132,17 @@ describe('ItemLocation', () => {
     });
 
     test('Should create a new ItemLocation', async () => {
+        expect(listingItemTemplate.ItemInformation.ItemLocation).toEqual({});
+
         testData.item_information_id = listingItemTemplate.ItemInformation.id;
-        const result: resources.itemLocation = await itemLocationService.create(testData).then(value => value.toJSON());
+        const result: resources.ItemLocation = await itemLocationService.create(testData).then(value => value.toJSON());
         expect(result.country).toBe(testData.country);
         expect(result.address).toBe(testData.address);
         expect(result.LocationMarker.title).toBe(testData.locationMarker.title);
         expect(result.LocationMarker.description).toBe(testData.locationMarker.description);
         expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
+        expect(result.ItemInformation.id).toBe(testData.item_information_id);
         itemLocation = result;
     });
 

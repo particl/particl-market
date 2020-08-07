@@ -96,9 +96,13 @@ export class ItemInformationService {
         const itemInformation: resources.ItemInformation = await this.itemInformationRepo.create(body).then(value => value.toJSON());
 
         // location will always be created, even if country wasn't given.
-        itemLocation.item_information_id = itemInformation.id;
-        // this.log.debug('itemLocation: ', JSON.stringify(itemLocation, null, 2));
-        await this.itemLocationService.create(itemLocation);
+        // ???
+
+        this.log.debug('itemLocation: ', JSON.stringify(itemLocation, null, 2));
+        if (!_.isEmpty(itemLocation)) {
+            itemLocation.item_information_id = itemInformation.id;
+            await this.itemLocationService.create(itemLocation);
+        }
 
         if (!_.isEmpty(shippingDestinations)) {
             for (const shippingDestination of shippingDestinations) {

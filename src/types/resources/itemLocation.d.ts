@@ -12,6 +12,7 @@ declare module 'resources' {
         createdAt: Date;
         updatedAt: Date;
         LocationMarker: LocationMarker;
+        ItemInformation: ItemInformation;
     }
 
 }
