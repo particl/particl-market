@@ -74,7 +74,7 @@ describe('SmsgMessageCollection', () => {
 
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
             listingItem: listingItemTemplate,
-            seller: sellerMarket.Identity.address,
+            sellerAddress: sellerMarket.Identity.address,
             signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams);
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
