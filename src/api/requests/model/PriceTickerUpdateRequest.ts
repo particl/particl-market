@@ -39,7 +39,7 @@ export class PriceTickerUpdateRequest extends RequestBody implements ModelReques
 
     public crypto_total_supply: string;
 
-    public crypto_max_supply: string;
+    public crypto_max_supply: string | null;
 
 
 
