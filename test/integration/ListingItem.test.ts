@@ -61,6 +61,8 @@ import { DefaultMarketService } from '../../src/api/services/DefaultMarketServic
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
+import {SellerMessage} from '../../src/api/services/action/ListingItemAddActionService';
+import {CoreRpcService} from '../../src/api/services/CoreRpcService';
 // tslint:enable:max-line-length
 
 describe('ListingItem', () => {
@@ -70,6 +72,7 @@ describe('ListingItem', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let coreRpcService: CoreRpcService;
     let defaultMarketService: DefaultMarketService;
     let listingItemService: ListingItemService;
     let listingItemTemplateService: ListingItemTemplateService;
@@ -102,6 +105,7 @@ describe('ListingItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        coreRpcService = app.IoC.getNamed<CoreRpcService>(Types.Service, Targets.Service.CoreRpcService);
         defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
@@ -613,6 +617,13 @@ describe('ListingItem', () => {
         } as ListingItemCreateRequest;
 
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
+
+        const message = {
+            address: market.Identity.address,
+            hash: createRequest.hash
+        } as SellerMessage;
+        const signature = await coreRpcService.signMessage(market.Identity.wallet, market.Identity.address, message);
+        createRequest.signature = signature;
 
         return createRequest;
     };
