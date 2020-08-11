@@ -150,23 +150,15 @@ describe('TestDataService', () => {
     test('Should generate Order', async () => {
 
         const bidderBid: resources.Bid = bids[0];
-        const sellerBid: resources.Bid = bids[1];
 
-        orders = await testDataService.generateOrder(bidderBid, sellerBid, bidderMarket, sellerMarket, true);
+        orders = await testDataService.generateOrder(bidderBid, true);
         const bidderOrder: resources.Order = orders[0];
-        const sellerOrder: resources.Order = orders[1];
 
         expect(bidderOrder.buyer).not.toBe(bidderOrder.seller);
         expect(bidderOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(bidderOrder.seller).toBe(sellerMarket.Identity.address);
         expect(bidderOrder.status).toBe(OrderStatus.PROCESSING);
         expect(bidderOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
-
-        expect(sellerOrder.buyer).not.toBe(sellerOrder.seller);
-        expect(sellerOrder.buyer).toBe(bidderMarket.Identity.address);
-        expect(sellerOrder.seller).toBe(sellerMarket.Identity.address);
-        expect(sellerOrder.status).toBe(OrderStatus.PROCESSING);
-        expect(sellerOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
 
     }, 600000); // timeout to 600s
 
@@ -175,21 +167,19 @@ describe('TestDataService', () => {
         // TODO: needs to be updated, should check that all tables are cleaned
 
         expect.assertions(4);
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+
+        // clean up the db, do not seed with default data
+        await testDataService.clean(false);
 
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(0);
 
-        // default profile should not contain addresses
         const addresses = await addressService.findAll();
         expect(addresses).toHaveLength(0);
 
-        // listingitemTemplates should have been be removed
         const listingItems = await listingItemTemplateService.findAll();
         expect(listingItems).toHaveLength(0);
 
-        // only default profile
         const profiles = await profileService.findAll();
         expect(profiles).toHaveLength(0);
     });
