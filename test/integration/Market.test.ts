@@ -117,13 +117,6 @@ describe('Market', () => {
         expect(result.receiveAddress).toBe(newMarket.receiveAddress);
     });
 
-    test('Should find one Market by Profile and name', async () => {
-        const result: resources.Market = await marketService.findOneByProfileIdAndName(defaultProfile.id, newMarket.name).then(value => value.toJSON());
-        expect(result.name).toBe(newMarket.name);
-        expect(result.receiveKey).toBe(newMarket.receiveKey);
-        expect(result.receiveAddress).toBe(newMarket.receiveAddress);
-    });
-
     test('Should find all Markets by Profile', async () => {
         const markets: resources.Market[] = await marketService.findAllByProfileId(defaultProfile.id).then(value => value.toJSON());
         expect(markets.length).toBe(2);
