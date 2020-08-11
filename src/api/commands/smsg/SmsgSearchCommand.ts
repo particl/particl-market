@@ -72,7 +72,7 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
             msgid: data.params[8]
         } as SmsgMessageSearchParams;
 
-        // this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
+        this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
 
         return await this.smsgMessageService.searchBy(searchParams);
     }
@@ -99,13 +99,15 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
         let types = data.params[4];                 // optional
         let status = data.params[5];                // optional
         let direction = data.params[6];             // optional
-        const age = data.params[7] | 2 * 60 * 1000; // optional
+        const age = data.params[7];                   // optional
         let msgid = data.params[8];                 // optional
 
         types = types === '*' ? undefined : types;
         status = status === '*' ? undefined : status;
         direction = direction === '*' ? undefined : direction;
         msgid = msgid === '*' ? undefined : msgid;
+
+        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
 
         if (!_.isNil(types) && (!Array.isArray(types)
             || data.params[4].every(type => {
@@ -115,16 +117,22 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
                         && !EnumHelper.containsValue(GovernanceAction, type)
                         && !EnumHelper.containsValue(CommentAction, type));
             }))) {
-            throw new InvalidParamException('types', 'ActionMessageTypes[]');
-        } else if (!_.isNil(status) && typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, data.params[5])) {
+            throw new InvalidParamException('type', 'ActionMessageTypes[]');
+        } else if (!_.isNil(status) && (typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, status!))) {
             throw new InvalidParamException('status', 'SmsgMessageStatus');
-        } else if (!_.isNil(direction) && typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, data.params[6])) {
+        } else if (!_.isNil(direction) && (typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, direction!))) {
             throw new InvalidParamException('direction', 'ActionDirection');
-        } else if (!_.isNil(age) && typeof age !== 'number' && !_.isFinite(age)) {
+        } else if (!_.isNil(age) && !_.isNumber(age)) {
             throw new InvalidParamException('age', 'number');
         } else if (!_.isNil(msgid) && typeof msgid !== 'string') {
             throw new InvalidParamException('msgid', 'string');
         }
+
+        data.params[4] = types;                 // optional
+        data.params[5] = status;                // optional
+        data.params[6] = direction;             // optional
+        data.params[7] = age === undefined ? 2 * 60 * 1000 : age;
+        data.params[8] = msgid;                 // optional
 
         return data;
     }
