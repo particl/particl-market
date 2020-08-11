@@ -9,6 +9,7 @@ declare module 'resources' {
     interface Market {
         id: number;
         name: string;
+        description: string;
         type: MarketType;
         receiveKey: string;
         receiveAddress: string;

@@ -79,6 +79,7 @@ export class MarketService {
 
         // set new values
         market.Name = body.name;
+        market.Description = body.description;
         market.Type = body.type;
         market.ReceiveKey = body.receiveKey;
         market.ReceiveAddress = body.receiveAddress;

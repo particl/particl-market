@@ -19,6 +19,8 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
     @IsNotEmpty()
     public name: string;
 
+    public description: string;
+
     @IsNotEmpty()
     public type: MarketType;
 
