@@ -37,45 +37,59 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             options.age = 0;
         }
 
+        const age = Date.now() - options.age;
+
+        SmsgMessage.log.debug('age: ', age);
+        SmsgMessage.log.debug('age.toString(): ', new Date(age).toString());
+        SmsgMessage.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
 
                 if (!_.isEmpty(options.msgid)) {
-                    qb.where('smsg_messages.msgid', '=', options.msgid);
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.msgid', '=', options.msgid);
+                    });
                 }
 
                 if (!_.isEmpty(options.status)) {
-                    qb.where('smsg_messages.status', '=', options.status.toString());
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.status', '=', options.status.toString());
+                    });
                 }
 
                 if (!_.isEmpty(options.direction)) {
-                    qb.where('smsg_messages.direction', '=', options.direction.toString());
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.direction', '=', options.direction.toString());
+                    });
                 }
 
                 if (!_.isEmpty(options.types)) {
                     qb.whereIn('smsg_messages.type', options.types);
                 }
 
-                qb.where('smsg_messages.created_at', '<', Date.now() - options.age);
-                // qb.debug(true);
+                /*
+                                if (options.listingItemId) {
+                                    qb.andWhere( qbInner => {
+                                        return qbInner.where('listing_items.id', '=', options.listingItemId);
+                                    });
+                                }
+                */
+
+                qb.where('smsg_messages.created_at', '<=', new Date(age).toString());
+
             })
             .orderBy('smsg_messages.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
-                offset: options.page * options.pageLimit
+                offset: options.page * options.pageLimit,
+                debug: true
             });
 
-        if (withRelated) {
-            return await messageCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await messageCollection.fetchAll();
-        }
+        return messageCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchLast(): Promise<SmsgMessage> {
-
         const options = {
             page: 0,
             pageLimit: 1,
@@ -101,25 +115,13 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<SmsgMessage> {
-        if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SmsgMessage.where<SmsgMessage>({ id: value }).fetch();
-        }
+        return SmsgMessage.where<SmsgMessage>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgIdAndDirection(value: string,
                                                  direction: ActionDirection = ActionDirection.INCOMING,
                                                  withRelated: boolean = true): Promise<SmsgMessage> {
-        if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch();
-        }
+        return SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'smsg_messages'; }

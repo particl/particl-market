@@ -50,7 +50,6 @@ export class SmsgMessageFactory implements ModelFactoryInterface {
                     from: params.message.from,
                     to: params.message.to,
                     text: params.message.text,
-                    // need to set these manually since knex doesn't set these in correct format
                     updated_at: Date.now(),
                     created_at: Date.now()
                 } as SmsgMessageCreateRequest;

@@ -13,11 +13,11 @@ export class SmsgMessageSearchParams extends BaseSearchParams {
 
     public orderField = SmsgMessageSearchOrderField.SENT;
 
-    public types: ActionMessageTypes[];
+    public types: ActionMessageTypes[] | string;
     public status: SmsgMessageStatus;
     public direction: ActionDirection;
 
-    public age = 1000 * 60 * 2; // minimum message age in ms, 2 min
+    public age: number = 1000 * 60 * 2; // minimum message age in ms, 2 min
 
     public msgid: string;
 }

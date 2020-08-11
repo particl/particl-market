@@ -123,7 +123,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || ListingItemSearchOrderField.UPDATED_AT;
 
-        ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+        // ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         const collection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {

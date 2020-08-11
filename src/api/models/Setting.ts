@@ -15,105 +15,63 @@ export class Setting extends Bookshelf.Model<Setting> {
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
-        const SettingCollection = Setting.forge<Model<Setting>>()
+        const collection = Setting.forge<Model<Setting>>()
             .query(qb => {
                 qb.where('profile_id', '=', profileId);
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await SettingCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SettingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByMarketId(marketId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
-        const SettingCollection = Setting.forge<Model<Setting>>()
+        const collection = Setting.forge<Model<Setting>>()
             .query(qb => {
                 qb.where('market_id', '=', marketId);
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await SettingCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SettingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByProfileIdAndMarketId(profileId: number, marketId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
-        const SettingCollection = Setting.forge<Model<Setting>>()
+        const collection = Setting.forge<Model<Setting>>()
             .query(qb => {
                 qb.where('market_id', '=', marketId);
                 qb.andWhere('profile_id', '=', profileId);
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await SettingCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SettingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByKeyAndProfileId(key: string, profileId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
-        const SettingCollection = Setting.forge<Model<Setting>>()
+        const collection = Setting.forge<Model<Setting>>()
             .query(qb => {
                 qb.where('key', '=', key);
                 qb.andWhere('profile_id', '=', profileId);
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await SettingCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SettingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByKey(key: string, withRelated: boolean = true): Promise<Collection<Setting>> {
-        const SettingCollection = Setting.forge<Model<Setting>>()
+        const collection = Setting.forge<Model<Setting>>()
             .query(qb => {
                 qb.where('key', '=', key);
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await SettingCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SettingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByKeyAndProfileIdAndMarketId(key: string, profileId: number, marketId: number, withRelated: boolean = true): Promise<Setting> {
-        if (withRelated) {
-            return await Setting.where<Setting>({ key, profile_id: profileId, market_id: marketId }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Setting.where<Setting>({ key, profile_id: profileId, market_id: marketId }).fetch();
-        }
+        return Setting.where<Setting>({ key, profile_id: profileId, market_id: marketId }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Setting> {
-        if (withRelated) {
-            return await Setting.where<Setting>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Setting.where<Setting>({ id: value }).fetch();
-        }
+        return Setting.where<Setting>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
 

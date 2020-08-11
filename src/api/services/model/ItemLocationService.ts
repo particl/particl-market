@@ -44,7 +44,7 @@ export class ItemLocationService {
     @validate()
     public async create(@request(ItemLocationCreateRequest) data: ItemLocationCreateRequest): Promise<ItemLocation> {
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
 
         const locationMarker = body.locationMarker;
         delete body.locationMarker;

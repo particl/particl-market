@@ -33,8 +33,8 @@ declare module 'resources' {
         processedCount: number;
         processedAt: number;
 
-        createdAt: Date;
-        updatedAt: Date;
+        createdAt: number;
+        updatedAt: number;
     }
 
 }

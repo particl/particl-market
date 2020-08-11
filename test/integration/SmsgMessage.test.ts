@@ -62,14 +62,17 @@ describe('SmsgMessage', () => {
     let voteMessageFactory: VoteMessageFactory;
 
     let smsgMessages: resources.SmsgMessage[];
-    let bidderMarket: resources.Market;
     let sellerMarket: resources.Market;
-    let bidderProfile: resources.Profile;
     let sellerProfile: resources.Profile;
     let listingItemTemplate: resources.ListingItemTemplate;
 
     let listingItemCoreMessage: CoreSmsgMessage;
     let proposalCoreMessage: CoreSmsgMessage;
+
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const ORDER = SearchOrder.DESC;
+    const ORDER_FIELD = SmsgMessageSearchOrderField.RECEIVED;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -87,10 +90,7 @@ describe('SmsgMessage', () => {
         voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.model.VoteService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
 
-        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
-        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
-
-        sellerProfile = await testDataService.generateProfile();
+        sellerProfile = await profileService.getDefault().then(value => value.toJSON());
         sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
     });
@@ -104,14 +104,14 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (listingItemMessage)', async () => {
 
-        listingItemTemplate = await testDataService.generateListingItemTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await testDataService.generateListingItemTemplate(sellerProfile, sellerMarket);
 
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
             listingItem: listingItemTemplate,
-            seller: sellerMarket.Identity.address,
+            sellerAddress: sellerMarket.Identity.address,
             signature: Faker.random.uuid()
         } as ListingItemAddMessageCreateParams);
-        listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
+        listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, sellerMarket.publishAddress, sellerMarket.receiveAddress);
 
         log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
 
@@ -135,9 +135,9 @@ describe('SmsgMessage', () => {
             options: ['OPTION1', 'OPTION2', 'OPTION3'],
             sender: sellerMarket.Identity,
             category: ProposalCategory.PUBLIC_VOTE,
-            market: bidderMarket.receiveAddress
+            market: sellerMarket.receiveAddress
         } as ProposalAddMessageCreateParams);
-        proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
+        proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, sellerMarket.publishAddress, sellerMarket.receiveAddress);
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
             direction: ActionDirection.INCOMING,
@@ -226,12 +226,15 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
-    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD], NEW/INCOMING', async () => {
         const searchParams = {
-            order: SearchOrder.DESC,
-            orderField: SmsgMessageSearchOrderField.RECEIVED,
-            status: SmsgMessageStatus.NEW,
+            page: PAGE,
+            pageLimit: PAGE_LIMIT,
+            order: ORDER,
+            orderField: ORDER_FIELD,
             types: [MPAction.MPA_LISTING_ADD],
+            status: SmsgMessageStatus.NEW,
+            direction: ActionDirection.INCOMING,
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -239,12 +242,15 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(1);
     });
 
-    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD]', async () => {
+    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD], NEW/INCOMING', async () => {
         const searchParams = {
-            order: SearchOrder.DESC,
-            orderField: SmsgMessageSearchOrderField.RECEIVED,
-            status: SmsgMessageStatus.NEW,
+            page: PAGE,
+            pageLimit: PAGE_LIMIT,
+            order: ORDER,
+            orderField: ORDER_FIELD,
             types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD],
+            status: SmsgMessageStatus.NEW,
+            direction: ActionDirection.INCOMING,
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -252,7 +258,7 @@ describe('SmsgMessage', () => {
 
         expect(smsgMessages.length).toBe(2);
     });
-
+/*
     test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
         const searchParams = {
             order: SearchOrder.DESC,
@@ -267,21 +273,21 @@ describe('SmsgMessage', () => {
         log.debug('smsgMessages:', JSON.stringify(smsgMessages, null, 2));
         expect(smsgMessages.length).toBe(2);
     });
-
+*/
     test('Should searchBy for SmsgMessages: empty types [] should find all', async () => {
-        const types: any[] = [];
         const searchParams = {
-            order: SearchOrder.ASC,
-            orderField: SmsgMessageSearchOrderField.RECEIVED,
+            page: PAGE,
+            pageLimit: PAGE_LIMIT,
+            order: ORDER,
+            orderField: ORDER_FIELD,
+            types: [] as ActionMessageTypes[],
             status: SmsgMessageStatus.NEW,
-            types,
+            direction: ActionDirection.INCOMING,
             age: 0
         } as SmsgMessageSearchParams;
 
         smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
-
         expect(smsgMessages.length).toBe(2);
-        expect(smsgMessages[0].received).toBeLessThan(smsgMessages[1].received);
 
     });
 
@@ -290,15 +296,11 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
 
         const message = _.find(smsgMessages, { type: MPAction.MPA_LISTING_ADD });
-        expect(message.type).toBe(MPAction.MPA_LISTING_ADD);
 
         const updatedData = message;
         updatedData.status = SmsgMessageStatus.PROCESSING;
 
         const result: resources.SmsgMessage = await smsgMessageService.update(message.id, updatedData).then(value => value.toJSON());
-
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
         expect(result.type).toBe(updatedData.type);
         expect(result.status).toBe(updatedData.status);
         expect(result.msgid).toBe(updatedData.msgid);
@@ -322,12 +324,10 @@ describe('SmsgMessage', () => {
         } as SmsgMessageSearchParams;
 
         smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
-
         expect(smsgMessages.length).toBe(1);
     });
 
     test('Should find the last inserted SmsgMessage', async () => {
-
         smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
         expect(smsgMessages.length).toBe(2);
         let latest: resources.SmsgMessage = smsgMessages[0];
@@ -339,11 +339,9 @@ describe('SmsgMessage', () => {
 
         const smsgMessage: resources.SmsgMessage = await smsgMessageService.findLast().then(value => value.toJSON());
         expect(smsgMessage.received).toBe(latest.received);
-
     });
 
     // todo: add searchby tests, missing msgid at least
-
     test('Should delete the SmsgMessage', async () => {
         expect.assertions(2);
         await smsgMessageService.destroy(smsgMessages[0].id);
@@ -395,11 +393,10 @@ describe('SmsgMessage', () => {
         expect(result.from).toBe(createRequest.from);
         expect(result.to).toBe(createRequest.to);
         expect(result.text).toBe(createRequest.text);
-
         expect(result.received).toBeGreaterThan(1530000000000);
         expect(result.sent).toBeGreaterThan(1530000000000);
         expect(result.expiration).toBeGreaterThan(1530000000000);
-        expect(result.createdAt).toBeGreaterThan(1530000000000);
-        expect(result.updatedAt).toBeGreaterThan(1530000000000);
+
     };
+
 });

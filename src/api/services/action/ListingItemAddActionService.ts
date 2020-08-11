@@ -133,6 +133,7 @@ export class ListingItemAddActionService extends BaseActionService {
         let signature;
         let pubkey;
 
+        // todo: move signature creation also to the factory
         if (_.isEmpty(actionRequest.listingItem['signature'])) {
             // listingItem already has the signature, so this is a listingItemTemplate being posted
             // sign it and add the seller pubkey to the MessagingInformation

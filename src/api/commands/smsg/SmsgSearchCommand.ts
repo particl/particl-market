@@ -68,11 +68,11 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
             types: data.params[4],
             status: data.params[5],
             direction: data.params[6],
-            age: data.params[7] ? data.params[7] : 0,
+            age: data.params[7],
             msgid: data.params[8]
         } as SmsgMessageSearchParams;
 
-        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
+        // this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
 
         return await this.smsgMessageService.searchBy(searchParams);
     }
@@ -96,54 +96,34 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // types, ActionMessageTypes[]
-        if (data.params.length >= 5) {
-            if (data.params[4] === '*') {
-                data.params[4] = undefined; // search for all
-            } else if (!Array.isArray(data.params[4]) || data.params[4].every(type => {
+        let types = data.params[4];                 // optional
+        let status = data.params[5];                // optional
+        let direction = data.params[6];             // optional
+        const age = data.params[7] | 2 * 60 * 1000; // optional
+        let msgid = data.params[8];                 // optional
+
+        types = types === '*' ? undefined : types;
+        status = status === '*' ? undefined : status;
+        direction = direction === '*' ? undefined : direction;
+        msgid = msgid === '*' ? undefined : msgid;
+
+        if (!_.isNil(types) && (!Array.isArray(types)
+            || data.params[4].every(type => {
                 return typeof type !== 'string'
                     || (!EnumHelper.containsValue(MPAction, type)
                         && !EnumHelper.containsValue(MPActionExtended, type)
                         && !EnumHelper.containsValue(GovernanceAction, type)
                         && !EnumHelper.containsValue(CommentAction, type));
-            })) {
-                throw new InvalidParamException('type', 'ActionMessageTypes[]');
-            }
-        }
-
-        if (data.params.length >= 6) {
-            if (data.params[5] === '*') {
-                data.params[5] = undefined; // search for all
-
-            } else if (typeof data.params[5] !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, data.params[5])) {
-                throw new InvalidParamException('status', 'SmsgMessageStatus');
-            }
-        }
-
-        if (data.params.length >= 7) {
-            if (data.params[6] === '*') {
-                data.params[6] = undefined; // search for all
-
-            } else if (typeof data.params[6] !== 'string' || !EnumHelper.containsValue(ActionDirection, data.params[6])) {
-                throw new InvalidParamException('direction', 'ActionDirection');
-            }
-        }
-
-        if (data.params.length >= 8) {
-            if (!_.isNil(data.params[7]) && !_.isFinite(data.params[7])) {
-                throw new InvalidParamException('age', 'number');
-            } else {
-                data.params[7] = data.params[7] ? data.params[7] : 0;
-            }
-        }
-
-        if (data.params.length >= 9) {
-            if (data.params[8] === '*') {
-                data.params[8] = undefined; // search for all
-
-            } else if (typeof data.params[8] !== 'string') {
-                throw new InvalidParamException('msgid', 'string');
-            }
+            }))) {
+            throw new InvalidParamException('types', 'ActionMessageTypes[]');
+        } else if (!_.isNil(status) && typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, data.params[5])) {
+            throw new InvalidParamException('status', 'SmsgMessageStatus');
+        } else if (!_.isNil(direction) && typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, data.params[6])) {
+            throw new InvalidParamException('direction', 'ActionDirection');
+        } else if (!_.isNil(age) && typeof age !== 'number' && !_.isFinite(age)) {
+            throw new InvalidParamException('age', 'number');
+        } else if (!_.isNil(msgid) && typeof msgid !== 'string') {
+            throw new InvalidParamException('msgid', 'string');
         }
 
         return data;
