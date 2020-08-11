@@ -75,6 +75,9 @@ import { MarketRemoveCommand } from '../commands/market/MarketRemoveCommand';
 import { MarketDefaultCommand } from '../commands/market/MarketDefaultCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { MarketFlagCommand } from '../commands/market/MarketFlagCommand';
+import { MarketJoinCommand } from '../commands/market/MarketJoinCommand';
+import { MarketPostCommand } from '../commands/market/MarketPostCommand';
+import { MarketSearchCommand } from '../commands/market/MarketSearchCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
@@ -223,6 +226,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRemoveCommand) private marketRemoveCommand: MarketRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketDefaultCommand) private marketDefaultCommand: MarketDefaultCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketJoinCommand) private marketJoinCommand: MarketJoinCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketPostCommand) private marketPostCommand: MarketPostCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketSearchCommand) private marketSearchCommand: MarketSearchCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
@@ -392,6 +398,9 @@ export class RpcCommandFactory {
         this.commands.push(marketListCommand);
         this.commands.push(marketRemoveCommand);
         this.commands.push(marketDefaultCommand);
+        this.commands.push(marketJoinCommand);
+        this.commands.push(marketPostCommand);
+        this.commands.push(marketSearchCommand);
         this.commands.push(marketRootCommand);
 
         this.commands.push(messagingInformationUpdateCommand);
