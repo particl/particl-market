@@ -111,8 +111,8 @@ describe('BidData', () => {
     test('Should list BidDatas with our new create one', async () => {
         const bidDatas = await bidDataService.findAll().then(value => value.toJSON());
 
-        expect(bidDatas.length).toBe(5); // 2 bids * 2 bid datas + 1
-        bidData = bidDatas[4];
+        expect(bidDatas.length).toBe(9); // 2 bids * 4 bid datas + 1
+        bidData = bidDatas[8];
         const result: resources.BidData = bidData;
 
         expect(result.key).toBe(testData.key);
@@ -136,7 +136,7 @@ describe('BidData', () => {
     });
 
     test('Should delete the bid data', async () => {
-        expect.assertions(3);
+        expect.assertions(2);
         // delete created bid data
         await bidDataService.destroy(bidData.id);
         await bidDataService.findOne(bidData.id).catch(e =>
@@ -146,11 +146,6 @@ describe('BidData', () => {
         await bidService.destroy(bid.id);
         await bidService.findOne(bid.id).catch(e =>
             expect(e).toEqual(new NotFoundException(bid.id))
-        );
-        // delete create listing item
-        await listingItemService.destroy(listingItem.id);
-        await listingItemService.findOne(listingItem.id).catch(e =>
-           expect(e).toEqual(new NotFoundException(listingItem.id))
         );
     });
 

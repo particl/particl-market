@@ -77,7 +77,7 @@ describe('OrderItem', () => {
         bidderBid = bids[0];
         sellerBid = bids[1];
 
-        const orders: resources.Order[]  = await testDataService.generateOrder(bidderBid, sellerBid, bidderMarket, sellerMarket, false);
+        const orders: resources.Order[]  = await testDataService.generateOrder(bidderBid, false);
         bidderOrder = orders[0];
         sellerOrder = orders[1];
 
@@ -114,7 +114,7 @@ describe('OrderItem', () => {
         );
     });
 
-    test('Should list OrderItems with our newly created one', async () => {
+    test('Should list all with our newly created one', async () => {
         const orderItems: resources.OrderItem[] = await orderItemService.findAll().then(value => value.toJSON());
         expect(orderItems.length).toBe(1);
 

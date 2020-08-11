@@ -11,6 +11,7 @@ import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateReq
 import { SearchOrder } from '../enums/SearchOrder';
 import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
 import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -39,9 +40,9 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
         const age = Date.now() - options.age;
 
-        SmsgMessage.log.debug('age: ', age);
-        SmsgMessage.log.debug('age.toString(): ', new Date(age).toString());
-        SmsgMessage.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+        // SmsgMessage.log.debug('age: ', age);
+        // SmsgMessage.log.debug('age.toString(): ', new Date(age).toString());
+        // SmsgMessage.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
@@ -65,7 +66,7 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
                 }
 
                 if (!_.isEmpty(options.types)) {
-                    qb.whereIn('smsg_messages.type', options.types);
+                    qb.whereIn('smsg_messages.type', options.types as ActionMessageTypes[]);
                 }
 
                 /*

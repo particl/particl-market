@@ -413,6 +413,8 @@ export class TestDataService {
         return bids;
     }
 
+    // TODO: generateOrder + generateBid needs to be redone..
+
     /**
      * Generates a new Order
      */
