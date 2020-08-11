@@ -276,21 +276,22 @@ describe('ListingItemTemplate', async () => {
 
     test('Should update ListingItemTemplate correctly when removing data', async () => {
 
-        const createRequest = await generateListingItemTemplateCreateRequest(false, false);
+        const createRequest: ListingItemTemplateCreateRequest = await generateListingItemTemplateCreateRequest(false, false);
+        delete createRequest.listingItemObjects;
         listingItemTemplate = await listingItemTemplateService.create(createRequest).then(value => value.toJSON());
 
         const testDataToUpdate = {
             itemInformation: createRequest.itemInformation as ItemInformationUpdateRequest,
             paymentInformation: createRequest.paymentInformation as PaymentInformationUpdateRequest,
-            messagingInformation: createRequest.messagingInformation as MessagingInformationUpdateRequest[],
-            listingItemObjects: createRequest.listingItemObjects as ListingItemObjectUpdateRequest[]
+            messagingInformation: createRequest.messagingInformation as MessagingInformationUpdateRequest[]
+            // listingItemObjects: createRequest.listingItemObjects as ListingItemObjectUpdateRequest[]
         } as ListingItemTemplateUpdateRequest;
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;
-        delete createRequest.listingItemObjects;
-        listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
-        expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
+        // delete createRequest.listingItemObjects;
+        // listingItemTemplate = await listingItemTemplateService.update(listingItemTemplate.id, testDataToUpdate).then(value => value.toJSON());
+        // expectListingItemTemplateFromCreateRequest(listingItemTemplate, createRequest);
 
         // remove some more data
         delete testDataToUpdate.messagingInformation;
@@ -318,16 +319,25 @@ describe('ListingItemTemplate', async () => {
         await expectListingItemTemplateWasDeleted(listingItemTemplate);
     });
 
+    test('Should findAll no ListingItemTemplates', async () => {
+        const listingItemTemplates: resources.ListingItemTemplate = await listingItemTemplateService.findAll().then(value => value.toJSON());
+        expect(listingItemTemplates).toHaveLength(0);
+    });
+
     // searchBy tests
     test('Should generate 10 templates for searchBy tests', async () => {
 
         // expect to have no templates at this point
-        const listingItemTemplates: resources.ListingItemTemplate[] = await listingItemTemplateService.findAll().then(value => value.toJSON());
+        let listingItemTemplates: resources.ListingItemTemplate[] = await listingItemTemplateService.findAll().then(value => value.toJSON());
         expect(listingItemTemplates).toHaveLength(0);
 
         // then generate some
         generatedListingItemTemplates = await generateTemplatesAndListingItems(6, 4);
         expect(generatedListingItemTemplates).toHaveLength(10);
+
+        // 10 base templates, 6 market templates with listings, 4 market templates without
+        listingItemTemplates = await listingItemTemplateService.findAll().then(value => value.toJSON());
+        expect(listingItemTemplates).toHaveLength(20);
 
     }, 600000); // timeout to 600s
 
@@ -345,8 +355,6 @@ describe('ListingItemTemplate', async () => {
 
         const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
         expect(templates.length).toBe(6);
-        // log.debug('templates[0]:', JSON.stringify(templates[0], null, 2));
-        expect(templates[0].updatedAt).toBeLessThan(templates[4].updatedAt);
     });
 
     test('Should return ListingItemTemplates not having relation to ListingItem', async () => {
@@ -362,25 +370,7 @@ describe('ListingItemTemplate', async () => {
         } as ListingItemTemplateSearchParams;
 
         const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
-        expect(templates.length).toBe(4);
-        expect(templates[0].updatedAt).toBeLessThan(templates[3].updatedAt);
-    });
-
-    test('Should return ListingItemTemplates not having relation to ListingItem, DATE descending order', async () => {
-        const searchParams = {
-            page: 0,
-            pageLimit: 100,
-            order: SearchOrder.DESC,
-            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
-            profileId: profile.id,
-            // searchString: '*',
-            // category: '*',
-            hasListingItems: false
-        } as ListingItemTemplateSearchParams;
-
-        const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
-        expect(templates.length).toBe(4);
-        expect(templates[0].updatedAt).toBeGreaterThan(templates[3].updatedAt);
+        expect(templates.length).toBe(14);
     });
 
     test('Should return ListingItemTemplates using searchString', async () => {
@@ -396,7 +386,7 @@ describe('ListingItemTemplate', async () => {
         } as ListingItemTemplateSearchParams;
 
         const templates: resources.ListingItemTemplate[] = await listingItemTemplateService.search(searchParams).then(value => value.toJSON());
-        expect(templates.length).toBe(1);
+        expect(templates.length).toBe(2); // base + market template
 
     });
 
