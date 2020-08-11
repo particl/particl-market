@@ -91,12 +91,14 @@ describe('ListingItemTemplatePostCommand', () => {
         rootCategory = res.getBody()['result'];
     });
 
+
     test('Should fail to post because missing listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
+
 
     test('Should fail to post because missing daysRetention', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
@@ -106,6 +108,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('daysRetention').getMessage());
     });
+
 
     test('Should fail to add because invalid listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
@@ -117,6 +120,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
+
     test('Should fail to add because invalid daysRetention', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
             listingItemTemplate.id,
@@ -126,6 +130,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('daysRetention', 'number').getMessage());
     });
+
 
     test('Should fail to add because invalid estimateFee', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
@@ -138,6 +143,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('estimateFee', 'boolean').getMessage());
     });
 
+
     test('Should fail to add because ListingItemTemplate not found', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand,
             0,
@@ -148,6 +154,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
     });
+
 
     test('Should estimate post cost without actually posting', async () => {
 
@@ -172,6 +179,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
+
 
     test('Should post a ListingItem in to the default market', async () => {
 
@@ -200,6 +208,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
+
     test('Should get the updated ListingItemTemplate with the hash', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateGetCommand,
             listingItemTemplate.id
@@ -212,6 +221,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
+
 
     test('Should post ListingItemTemplate created using the basic gui flow (old?)', async () => {
 
@@ -266,29 +276,7 @@ describe('ListingItemTemplatePostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        let shippingDestination: resources.ShippingDestination = res.getBody()['result'];
-        expect(shippingDestination.country).toBe(country);
-
-        country = 'ZA';
-        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
-            listingItemTemplate.id,
-            country,
-            ShippingAvailability.SHIPS
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        shippingDestination = res.getBody()['result'];
-        expect(shippingDestination.country).toBe(country);
-
-        country = 'US';
-        res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
-            listingItemTemplate.id,
-            country,
-            ShippingAvailability.DOES_NOT_SHIP
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        shippingDestination = res.getBody()['result'];
+        const shippingDestination: resources.ShippingDestination = res.getBody()['result'];
         expect(shippingDestination.country).toBe(country);
 
         // create market template from the base template
@@ -311,7 +299,7 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectJson();
 
         const estimateResult: any = res.getBody()['result'];
-        // log.debug('result:', JSON.stringify(estimateResult, null, 2));
+        log.debug('result:', JSON.stringify(estimateResult, null, 2));
 
         expect(estimateResult.result).toBe('Not Sent.');
 

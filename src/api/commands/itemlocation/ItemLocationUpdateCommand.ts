@@ -22,6 +22,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import {ItemLocationCreateRequest} from '../../requests/model/ItemLocationCreateRequest';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -71,7 +72,13 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             } as LocationMarkerUpdateRequest;
         }
 
-        return this.itemLocationService.update(listingItemTemplate.ItemInformation.ItemLocation.id, updateRequest);
+        if (_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) {
+            const createRequest = updateRequest as ItemLocationCreateRequest;
+            createRequest.item_information_id = listingItemTemplate.ItemInformation.id;
+            return this.itemLocationService.create(createRequest);
+        } else {
+            return this.itemLocationService.update(listingItemTemplate.ItemInformation.ItemLocation.id, updateRequest);
+        }
     }
 
     /**
@@ -142,10 +149,6 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             });
 
         if (_.isEmpty(listingItemTemplate.ItemInformation)) {
-            throw new ModelNotFoundException('ItemInformation');
-        }
-
-        if (_.isEmpty(listingItemTemplate.ItemInformation.ItemLocation)) {
             throw new ModelNotFoundException('ItemInformation');
         }
 
