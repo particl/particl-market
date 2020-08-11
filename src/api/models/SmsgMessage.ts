@@ -83,7 +83,7 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit,
-                debug: true
+                debug: false
             });
 
         return messageCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);

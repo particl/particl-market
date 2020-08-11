@@ -400,14 +400,15 @@ export class TestDataService {
             bidderMarket.Identity.address,      // bidder
             sellerMarket.Identity.address,      // seller
             parentBidId                         // parentBidId, should be set if type !== MPA_BID
-        ]).toParamsArray();
+        ]);
 
-        const bids = await this.generate({
-            model: CreatableModel.BID,
-            amount: 1,
-            withRelated: true,
-            generateParams: bidParams
-        } as TestDataGenerateRequest);
+        const bidCreateRequest = await this.generateBidData(bidParams);
+        const bids: resources.Bid[] = [];
+        bids[0] = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
+
+        bidCreateRequest.profile_id = sellerMarket.Profile.id;
+        bidCreateRequest.address.profile_id = sellerMarket.Profile.id;
+        bids[1] = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
 
         return bids;
     }

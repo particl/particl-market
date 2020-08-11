@@ -85,7 +85,6 @@ describe('Order', () => {
         bidderBid = bids[0];
         sellerBid = bids[1];
 
-
     });
 
     afterAll(async () => {
