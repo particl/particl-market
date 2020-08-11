@@ -147,7 +147,7 @@ describe('ProposalOptionResult', () => {
         // then recalculates and generates 2 more, +1 generated here === 5
         expect(proposalOptionResults.length).toBe(5);
 
-        log.debug('proposalOptionResults:', JSON.stringify(proposalOptionResults, null, 2));
+        // log.debug('proposalOptionResults:', JSON.stringify(proposalOptionResults, null, 2));
 
         const resultWeights = proposalOptionResults[0].weight + proposalOptionResults[1].weight + proposalOptionResults[2].weight
             + proposalOptionResults[3].weight + proposalOptionResults[4].weight;
@@ -185,11 +185,11 @@ describe('ProposalOptionResult', () => {
     });
 
     test('shouldRemoveListingItem should return correct result', async () => {
-        log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
 
         proposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash, true).then(value => value.toJSON());
 
-        log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        // log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
         const flaggedItem: resources.FlaggedItem = await flaggedItemService.findOne(proposal.FlaggedItem.id).then(value => value.toJSON());
 

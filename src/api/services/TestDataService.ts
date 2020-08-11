@@ -644,7 +644,7 @@ export class TestDataService {
                         }
                     });
 
-                this.log.debug('sellersMarketIdentityAddress: ', sellersMarketIdentity.address);
+                // this.log.debug('sellersMarketIdentityAddress: ', sellersMarketIdentity.address);
 
                 const listingItemCreateRequest = {
                     seller: sellersMarketIdentity.address,
@@ -662,7 +662,7 @@ export class TestDataService {
                     generatedAt: listingItemTemplateCreateRequest.generatedAt
                 } as ListingItemCreateRequest;
 
-                this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+                // this.log.debug('listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 listingItemCreateRequest.hash = ConfigurableHasher.hash(listingItemCreateRequest, new HashableListingItemTemplateCreateRequestConfig());
                 this.log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
@@ -1573,7 +1573,7 @@ export class TestDataService {
             profile_id: profileId
         } as ListingItemTemplateCreateRequest;
 
-        this.log.debug('generateListingItemTemplateData(), listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+        // this.log.debug('generateListingItemTemplateData(), listingItemTemplateCreateRequest: ', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
 
         return listingItemTemplateCreateRequest;
     }
@@ -1583,13 +1583,13 @@ export class TestDataService {
     private async generateSmsgMessages(amount: number, withRelated: boolean = true,
                                        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
 
-        this.log.debug('generateSmsgMessages, generateParams: ', JSON.stringify(generateParams, null, 2));
+        // this.log.debug('generateSmsgMessages, generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const items: resources.SmsgMessage[] = [];
 
         for (let i = amount; i > 0; i--) {
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
-            this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
+            // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
             const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
             items.push(smsgMessage);
         }

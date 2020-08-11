@@ -100,9 +100,9 @@ describe('ItemInformation', () => {
             false,              // generateMessagingInformation
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
-            profile.id,  // profileId
-            false,               // generateListingItem
-            market.id    // marketId
+            profile.id,         // profileId
+            false,              // generateListingItem
+            market.id           // marketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
@@ -255,7 +255,7 @@ describe('ItemInformation', () => {
 
     test('Should delete the ItemInformation', async () => {
 
-        log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
+        // log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
         expect.assertions(6);
         await itemInformationService.destroy(itemInformation.id);
 

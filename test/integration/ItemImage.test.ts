@@ -90,19 +90,19 @@ describe('ItemImage', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
         bidderProfile = await profileService.getDefault().then(value => value.toJSON());
-        log.debug('bidderProfile: ', JSON.stringify(bidderProfile, null, 2));
+        // log.debug('bidderProfile: ', JSON.stringify(bidderProfile, null, 2));
         bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
-        log.debug('bidderMarket: ', JSON.stringify(bidderMarket, null, 2));
+        // log.debug('bidderMarket: ', JSON.stringify(bidderMarket, null, 2));
 
         sellerProfile = await testDataService.generateProfile();
-        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
         sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket, false);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
-        log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+        // log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
 
     });
 

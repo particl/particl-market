@@ -113,17 +113,17 @@ describe('SmsgMessage', () => {
         } as ListingItemAddMessageCreateParams);
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, sellerMarket.publishAddress, sellerMarket.receiveAddress);
 
-        log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
+        // log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
             direction: ActionDirection.INCOMING,
             message: listingItemCoreMessage
         } as SmsgMessageCreateParams);
-        log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
+        // log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, listingItemCoreMessage);
 
         const result: resources.SmsgMessage = await smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
@@ -143,11 +143,11 @@ describe('SmsgMessage', () => {
             direction: ActionDirection.INCOMING,
             message: proposalCoreMessage
         } as SmsgMessageCreateParams);
-        log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
+        // log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
         expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, proposalCoreMessage);
 
         const result: resources.SmsgMessage = await smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 

@@ -79,7 +79,7 @@ describe('SmsgMessageCollection', () => {
         } as ListingItemAddMessageCreateParams);
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
 
-        log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
+        // log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
 
         const proposalAddMessage: ProposalAddMessage = await proposalAddMessageFactory.get({
             title: Faker.random.words(5),
@@ -107,7 +107,7 @@ describe('SmsgMessageCollection', () => {
         log.debug('result id: ', result);
 
         smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
-        log.debug('result: ', JSON.stringify(smsgMessages, null, 2));
+        // log.debug('result: ', JSON.stringify(smsgMessages, null, 2));
 
         expect(smsgMessages.length).toBe(2);
     });

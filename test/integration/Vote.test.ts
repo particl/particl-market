@@ -73,7 +73,7 @@ describe('Vote', () => {
 
         proposal = await testDataService.generateProposal(listingItem.id, bidderMarket, true, true);
 
-        log.debug('proposal:', JSON.stringify(proposal, null, 2));
+        // log.debug('proposal:', JSON.stringify(proposal, null, 2));
 
     });
 
@@ -100,7 +100,7 @@ describe('Vote', () => {
             expiredAt: Date.now() + 1000000
         } as VoteCreateRequest;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
+        // log.debug('testData:', JSON.stringify(testData, null, 2));
 
         const result: resources.Vote = await voteService.create(testData).then(value => value.toJSON());
 

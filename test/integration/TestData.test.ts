@@ -62,8 +62,8 @@ describe('TestDataService', () => {
 
         sellerProfile = await profileService.getDefault().then(value => value.toJSON());
         sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
-        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
     });
 
@@ -81,8 +81,8 @@ describe('TestDataService', () => {
         bidderProfile = result[1];
         bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
-        log.debug('bidderProfile: ', JSON.stringify(bidderProfile, null, 2));
-        log.debug('bidderMarket: ', JSON.stringify(bidderMarket, null, 2));
+        // log.debug('bidderProfile: ', JSON.stringify(bidderProfile, null, 2));
+        // log.debug('bidderMarket: ', JSON.stringify(bidderMarket, null, 2));
 
         expect(bidderMarket.Identity.address).not.toBe(sellerMarket.Identity.address);
         expect(bidderMarket.Profile.id).toBe(bidderProfile.id);
