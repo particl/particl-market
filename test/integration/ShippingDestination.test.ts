@@ -70,9 +70,9 @@ describe('ShippingDestination', () => {
         bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
         sellerProfile = await testDataService.generateProfile();
         sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+
         listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
         listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
-
     });
 
     afterAll(async () => {
@@ -106,7 +106,7 @@ describe('ShippingDestination', () => {
 
     test('Should list all ShippingDestinations', async () => {
         const shippingDestinations: resources.ShippingDestination[] = await shippingDestinationService.findAll().then(value => value.toJSON());
-        const length = listingItem.ItemInformation.ShippingDestinations.length + listingItemTemplate.ItemInformation.ShippingDestinations.length + 1;
+        const length = listingItem.ItemInformation.ShippingDestinations.length + (2 * listingItemTemplate.ItemInformation.ShippingDestinations.length) + 1;
         expect(shippingDestinations.length).toBe(length);
 
         const result = shippingDestinations[length - 1];
