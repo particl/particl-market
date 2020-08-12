@@ -153,4 +153,28 @@ describe('Market', () => {
         );
     });
 
+    test('Should be able to create a new Market without Profile relation', async () => {
+        const key = 'TEST-PRIVATE-KEY';
+        const address = Faker.random.uuid();
+
+        const testData = {
+            name: 'TEST-MARKET',
+            type: MarketType.MARKETPLACE,
+            receiveKey: key,
+            receiveAddress: address,
+            publishKey: key,
+            publishAddress: address
+        } as MarketCreateRequest;
+
+        const result: resources.Market = await marketService.create(testData).then(value => value.toJSON());
+        expect(result.name).toBe(testData.name);
+        expect(result.type).toBe(testData.type);
+        expect(result.receiveKey).toBe(testData.receiveKey);
+        expect(result.receiveAddress).toBe(testData.receiveAddress);
+        expect(result.publishKey).toBe(testData.publishKey);
+        expect(result.publishAddress).toBe(testData.publishAddress);
+
+        newMarket = result;
+    });
+
 });
