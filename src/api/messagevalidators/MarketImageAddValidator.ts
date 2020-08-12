@@ -18,11 +18,12 @@ import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageA
 import { ImageAddMessage } from '../services/action/ListingItemImageAddActionService';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
+import { MarketImageAddMessage } from '../messages/action/MarketImageAddMessage';
 
 /**
  *
  */
-export class ListingItemImageAddValidator implements ActionMessageValidatorInterface {
+export class MarketImageAddValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;
 
@@ -45,11 +46,11 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
      */
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
 
-        if (message.action.type !== MPActionExtended.MPA_LISTING_IMAGE_ADD) {
-            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_LISTING_IMAGE_ADD]);
+        if (message.action.type !== MPActionExtended.MPA_MARKET_IMAGE_ADD) {
+            throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_MARKET_IMAGE_ADD]);
         }
 
-        const actionMessage = message.action as ListingItemImageAddMessage;
+        const actionMessage = message.action as MarketImageAddMessage;
 
         const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(actionMessage.hash).then(value => value.toJSON());
 
@@ -58,12 +59,14 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
             const seller = itemImages[0].ItemInformation.ListingItem.seller;
 
             // now we can finally verify that the ListingItemAddMessage was actually sent by the seller
+/*
             const verified = await this.verifyImageMessage(actionMessage, seller);
             if (!verified) {
                 this.log.error('Received seller signature failed validation.');
                 return false;
                 // throw new MessageException('Received seller signature failed validation.');
             }
+*/
             return true;
 
         } else {
@@ -82,7 +85,7 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
             const actionMessage = message.action as ListingItemImageAddMessage;
             const listingItems: resources.ListingItem[] = await this.listingItemService.findAllByHash(actionMessage.target).then(value => value.toJSON());
             if (_.isEmpty(listingItems)) {
-                this.log.error('LISTINGITEM_ADD has not been received or processed yet.');
+                this.log.error('MARKET_ADD has not been received or processed yet.');
                 return false;
             }
         }

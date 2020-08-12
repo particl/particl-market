@@ -52,7 +52,7 @@ export interface SellerMessage extends VerifiableMessage {
     address: string;            // seller address
 }
 
-export class MarketmAddActionService extends BaseActionService {
+export class MarketAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,

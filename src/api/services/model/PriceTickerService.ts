@@ -71,7 +71,7 @@ export class PriceTickerService {
         priceTicker.CryptoAvailableSupply = body.crypto_available_supply;
 
         priceTicker.CryptoTotalSupply = body.crypto_total_supply;
-        priceTicker.CryptoMaxSupply = body.crypto_max_supply;
+        priceTicker.CryptoMaxSupply = body.crypto_max_supply!;
         priceTicker.CryptoPercentChange1H = body.crypto_percent_change_1h;
 
         priceTicker.CryptoPercentChange24H = body.crypto_percent_change_24h;

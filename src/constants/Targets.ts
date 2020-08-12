@@ -113,6 +113,8 @@ export const Targets = {
             EscrowReleaseActionService: 'EscrowReleaseActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
             ListingItemImageAddActionService: 'ListingItemImageAddActionService',
+            MarketAddActionService: 'MarketAddActionService',
+            MarketImageAddActionService: 'MarketImageAddActionService',
             OrderItemShipActionService: 'OrderItemShipActionService',
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
@@ -419,6 +421,8 @@ export const Targets = {
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
             ListingItemImageAddMessageFactory: 'ListingItemImageAddMessageFactory',
+            MarketAddMessageFactory: 'MarketAddMessageFactory',
+            MarketImageAddMessageFactory: 'MarketImageAddMessageFactory',
             MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
@@ -452,6 +456,8 @@ export const Targets = {
         EscrowReleaseValidator: 'EscrowReleaseValidator',
         ListingItemAddValidator: 'ListingItemAddValidator',
         ListingItemImageAddValidator: 'ListingItemImageAddValidator',
+        MarketAddValidator: 'MarketAddValidator',
+        MarketImageAddValidator: 'MarketImageAddValidator',
         OrderItemShipValidator: 'OrderItemShipValidator',
         ProposalAddValidator: 'ProposalAddValidator',
         VoteValidator: 'VoteValidator'
@@ -468,6 +474,9 @@ export const Targets = {
             EscrowRefundActionMessageProcessor: 'EscrowRefundActionMessageProcessor',
             EscrowReleaseActionMessageProcessor: 'EscrowReleaseActionMessageProcessor',
             ListingItemAddActionMessageProcessor: 'ListingItemAddActionMessageProcessor',
+            ListingItemImageAddActionMessageProcessor: 'ListingItemImageAddActionMessageProcessor',
+            MarketAddActionMessageProcessor: 'MarketAddActionMessageProcessor',
+            MarketImageAddActionMessageProcessor: 'MarketImageAddActionMessageProcessor',
             OrderItemShipActionMessageProcessor: 'OrderItemShipActionMessageProcessor',
             ProposalAddActionMessageProcessor: 'ProposalAddActionMessageProcessor',
             VoteActionMessageProcessor: 'VoteActionMessageProcessor'

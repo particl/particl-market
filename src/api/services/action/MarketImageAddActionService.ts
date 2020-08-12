@@ -42,7 +42,7 @@ import { ListingItemImageNotification } from '../../messages/notification/Listin
 import { VerifiableMessage } from './ListingItemAddActionService';
 
 // todo: move
-export interface MarketImageAddMessage extends VerifiableMessage {
+export interface ImageAddMessage extends VerifiableMessage {
     address: string;            // seller address
     hash: string;               // image hash being added
     target: string;             // listing hash the image is related to
@@ -228,7 +228,7 @@ export class MarketImageAddActionService extends BaseActionService {
             address,            // sellers address
             hash,               // image hash
             target              // item hash
-        } as MarketImageAddMessage;
+        } as ImageAddMessage;
 
         return await this.coreRpcService.signMessage(wallet, address, message);
     }
