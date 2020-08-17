@@ -58,16 +58,6 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // TODO: add smsgMessage to MessageValidator and move this there
-        // LISTINGITEM_ADD's should be allowed to sent only from the publish address to the market receive address
-        const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
-        if (market.publishAddress !== smsgMessage.from) {
-            // message was sent from an address which isn't allowed
-            this.log.error('MPA_LISTING_ADD failed validation: Invalid message sender.');
-            return SmsgMessageStatus.VALIDATION_FAILED;
-            // throw new MessageException('Invalid message sender.');
-        }
-
         // processMessage will create the ListingItem
         return await this.listingItemAddActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
@@ -79,7 +69,5 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
                 this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
-
     }
-
 }

@@ -15,7 +15,6 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { ListingItemAddMessage } from '../messages/action/ListingItemAddMessage';
 import { Core, Targets, Types } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
-import { SellerMessage } from '../services/action/ListingItemAddActionService';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
@@ -23,6 +22,7 @@ import { MarketType } from '../enums/MarketType';
 import { ItemCategoryService } from '../services/model/ItemCategoryService';
 import { hash } from 'omp-lib/dist/hasher/hash';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { SellerMessage } from '../factories/message/ListingItemAddMessageFactory';
 
 /**
  *
@@ -44,12 +44,12 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
 
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
 
-        if (message.action.type !== MPAction.MPA_LISTING_ADD) {
+        const actionMessage = message.action as ListingItemAddMessage;
+
+        if (actionMessage.type !== MPAction.MPA_LISTING_ADD) {
             this.log.error('Not MPAction.MPA_LISTING_ADD');
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPAction.MPA_LISTING_ADD]);
         }
-
-        const actionMessage = message.action as ListingItemAddMessage;
 
         // verify that the ListingItemAddMessage was actually sent by the seller
         const verified = await this.verifySellerMessage(actionMessage);

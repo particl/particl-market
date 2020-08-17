@@ -27,7 +27,7 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
     public static Event = Symbol(MPAction.MPA_LISTING_ADD);
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public actionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -37,7 +37,7 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_LISTING_ADD,
-            listingItemAddActionService,
+            actionService,
             smsgMessageService,
             bidService,
             proposalService,
@@ -58,18 +58,7 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        // TODO: add smsgMessage to MessageValidator and move this there
-        // LISTINGITEM_ADD's should be allowed to sent only from the publish address to the market receive address
-        const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
-        if (market.publishAddress !== smsgMessage.from) {
-            // message was sent from an address which isn't allowed
-            this.log.error('MPA_LISTING_ADD failed validation: Invalid message sender.');
-            return SmsgMessageStatus.VALIDATION_FAILED;
-            // throw new MessageException('Invalid message sender.');
-        }
-
-        // processMessage will create the ListingItem
-        return await this.listingItemAddActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+        return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 this.log.debug('PROCESSED: ' + smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSED;
@@ -81,5 +70,4 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
             });
 
     }
-
 }

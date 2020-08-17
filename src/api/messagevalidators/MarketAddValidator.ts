@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ValidationException } from '../exceptions/ValidationException';
 import { ActionMessageValidatorInterface } from './ActionMessageValidatorInterface';
-import { decorate, inject, injectable, named } from 'inversify';
+import { inject, named } from 'inversify';
 import { ActionDirection } from '../enums/ActionDirection';
 import { Core, Targets, Types } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';

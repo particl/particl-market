@@ -18,6 +18,8 @@ import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageA
 import { ImageAddMessage } from '../services/action/ListingItemImageAddActionService';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import {MessageException} from '../exceptions/MessageException';
 
 /**
  *
@@ -42,19 +44,36 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
      *
      * @param message
      * @param direction
+     * @param smsgMessage
      */
-    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
+    public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
 
-        if (message.action.type !== MPActionExtended.MPA_LISTING_IMAGE_ADD) {
+        const actionMessage = message.action as ListingItemImageAddMessage;
+
+        if (actionMessage.type !== MPActionExtended.MPA_LISTING_IMAGE_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_LISTING_IMAGE_ADD]);
         }
 
-        const actionMessage = message.action as ListingItemImageAddMessage;
+        // only incoming message has smsgMessage
+        if (ActionDirection.INCOMING === direction && smsgMessage) {
+
+            // MPA_LISTING_IMAGE_ADD's should be allowed to sent only from the publish address to the market receive address
+            const market: resources.Market = await this.marketService.findAllByReceiveAddress(smsgMessage.to).then(value => value.toJSON()[0]);
+
+            // make sure the message was sent from a valid publish address
+            if (market.publishAddress !== smsgMessage.from) {
+                // message was sent from an address which isn't allowed
+                this.log.error('MPA_LISTING_ADD failed validation: Invalid message sender.');
+                throw new MessageException('Invalid message sender.');
+            } else {
+                this.log.debug('validateMessage(), publishAddress is valid.');
+            }
+        }
 
         const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(actionMessage.hash).then(value => value.toJSON());
 
         if (!_.isEmpty(itemImages)) {
-            // get the seller from the ListingItem
+            // get the seller from the Images ListingItem
             const seller = itemImages[0].ItemInformation.ListingItem.seller;
 
             // now we can finally verify that the ListingItemAddMessage was actually sent by the seller
@@ -62,7 +81,6 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
             if (!verified) {
                 this.log.error('Received seller signature failed validation.');
                 return false;
-                // throw new MessageException('Received seller signature failed validation.');
             }
             return true;
 
@@ -86,7 +104,6 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
                 return false;
             }
         }
-
         return true;
     }
 
