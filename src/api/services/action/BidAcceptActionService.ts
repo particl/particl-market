@@ -47,7 +47,7 @@ export class BidAcceptActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public messageFactory: BidAcceptMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public actionMessageFactory: BidAcceptMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidAcceptValidator) public validator: BidAcceptValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -75,7 +75,7 @@ export class BidAcceptActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidAcceptRequest): Promise<MarketplaceMessage> {
-        return await this.messageFactory.get(actionRequest);
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

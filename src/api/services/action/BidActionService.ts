@@ -52,7 +52,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) public messageFactory: BidMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidMessageFactory) public actionMessageFactory: BidMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidValidator) public validator: BidValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -76,7 +76,7 @@ export class BidActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidRequest): Promise<MarketplaceMessage> {
-        return await this.messageFactory.get(actionRequest);
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

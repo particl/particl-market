@@ -41,7 +41,7 @@ export class CommentAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private commentAddMessageFactory: CommentAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private actionMessageFactory: CommentAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -61,13 +61,7 @@ export class CommentAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: CommentAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: CommentAddMessage = await this.commentAddMessageFactory.get(actionRequest);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

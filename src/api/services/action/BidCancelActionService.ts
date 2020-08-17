@@ -44,7 +44,7 @@ export class BidCancelActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public bidCancelMessageFactory: BidCancelMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public actionMessageFactory: BidCancelMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -70,13 +70,7 @@ export class BidCancelActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidCancelRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: BidCancelMessage = await this.bidCancelMessageFactory.get(actionRequest);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
