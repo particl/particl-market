@@ -16,9 +16,6 @@ import { MessageException } from '../exceptions/MessageException';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 
-/**
- *
- */
 decorate(injectable(), FV_MPA_BID);
 export class BidValidator extends FV_MPA_BID implements ActionMessageValidatorInterface {
 

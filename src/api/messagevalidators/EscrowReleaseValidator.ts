@@ -15,9 +15,6 @@ import { BidService } from '../services/model/BidService';
 import { EscrowReleaseMessage } from '../messages/action/EscrowReleaseMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 export class EscrowReleaseValidator implements ActionMessageValidatorInterface {
 
     constructor(

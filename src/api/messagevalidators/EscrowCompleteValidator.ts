@@ -16,9 +16,6 @@ import { EscrowCompleteMessage } from '../messages/action/EscrowCompleteMessage'
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 export class EscrowCompleteValidator implements ActionMessageValidatorInterface {
 
     constructor(

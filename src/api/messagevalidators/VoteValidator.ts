@@ -15,12 +15,9 @@ import { ProposalService } from '../services/model/ProposalService';
 import { ActionDirection } from '../enums/ActionDirection';
 import { Logger as LoggerType } from '../../core/Logger';
 import { CoreRpcService } from '../services/CoreRpcService';
-import { VoteTicket } from '../services/action/VoteActionService';
 import { VoteService } from '../services/model/VoteService';
+import { VoteTicket } from '../factories/message/VoteMessageFactory';
 
-/**
- *
- */
 export class VoteValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;

@@ -9,9 +9,6 @@ import { MessageException } from '../exceptions/MessageException';
 import { GovernanceAction } from '../enums/GovernanceAction';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 export class ProposalAddValidator implements ActionMessageValidatorInterface {
 
     constructor() {

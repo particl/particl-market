@@ -16,9 +16,6 @@ import { BidService } from '../services/model/BidService';
 import { EscrowLockMessage } from '../messages/action/EscrowLockMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 decorate(injectable(), FV_MPA_LOCK);
 export class EscrowLockValidator extends FV_MPA_LOCK implements ActionMessageValidatorInterface {
 

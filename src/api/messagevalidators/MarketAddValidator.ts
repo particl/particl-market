@@ -18,9 +18,6 @@ import { MPActionExtended } from '../enums/MPActionExtended';
 import { MarketAddMessage } from '../messages/action/MarketAddMessage';
 import { MissingParamException } from '../exceptions/MissingParamException';
 
-/**
- *
- */
 export class MarketAddValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;

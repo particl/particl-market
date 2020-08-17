@@ -16,9 +16,6 @@ import { OrderItemShipMessage } from '../messages/action/OrderItemShipMessage';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 export class OrderItemShipValidator implements ActionMessageValidatorInterface {
 
     constructor(

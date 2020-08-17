@@ -20,9 +20,6 @@ import { MarketImageAddMessage } from '../messages/action/MarketImageAddMessage'
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 
-/**
- *
- */
 export class MarketImageAddValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;

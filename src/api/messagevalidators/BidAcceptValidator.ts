@@ -14,9 +14,6 @@ import { Targets, Types  } from '../../constants';
 import { BidService } from '../services/model/BidService';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 decorate(injectable(), FV_MPA_ACCEPT);
 export class BidAcceptValidator extends FV_MPA_ACCEPT implements ActionMessageValidatorInterface {
 

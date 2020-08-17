@@ -16,9 +16,6 @@ import { EscrowRefundMessage } from '../messages/action/EscrowRefundMessage';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 export class EscrowRefundValidator implements ActionMessageValidatorInterface {
 
     constructor(

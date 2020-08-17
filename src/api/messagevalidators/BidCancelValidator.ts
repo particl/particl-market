@@ -14,9 +14,6 @@ import { BidService } from '../services/model/BidService';
 import { BidCancelMessage } from '../messages/action/BidCancelMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 decorate(injectable(), FV_MPA_CANCEL);
 export class BidCancelValidator extends FV_MPA_CANCEL implements ActionMessageValidatorInterface {
 

@@ -15,9 +15,6 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 import { CommentTicket } from '../services/action/CommentAddActionService';
 
-/**
- *
- */
 export class CommentAddValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;

@@ -14,9 +14,6 @@ import { BidService } from '../services/model/BidService';
 import { BidRejectMessage } from '../messages/action/BidRejectMessage';
 import { ActionDirection } from '../enums/ActionDirection';
 
-/**
- *
- */
 decorate(injectable(), FV_MPA_REJECT);
 export class BidRejectValidator extends FV_MPA_REJECT implements ActionMessageValidatorInterface {
 

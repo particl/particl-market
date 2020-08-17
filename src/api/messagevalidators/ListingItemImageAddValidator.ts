@@ -18,12 +18,8 @@ import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageA
 import { ImageAddMessage } from '../services/action/ListingItemImageAddActionService';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {MessageException} from '../exceptions/MessageException';
+import { MessageException } from '../exceptions/MessageException';
 
-/**
- *
- */
 export class ListingItemImageAddValidator implements ActionMessageValidatorInterface {
 
     public log: LoggerType;
