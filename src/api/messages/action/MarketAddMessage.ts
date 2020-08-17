@@ -4,26 +4,30 @@
 
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { MessageBody } from '../../../core/api/MessageBody';
-import { Item } from 'omp-lib/dist/interfaces/omp';
 import { ActionMessageInterface } from './ActionMessageInterface';
-import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPActionExtended } from '../../enums/MPActionExtended';
+import { MarketType } from '../../enums/MarketType';
+import { KVS } from 'omp-lib/dist/interfaces/common';
+import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
 
-export class ListingItemAddMessage extends MessageBody implements ActionMessageInterface {
+export class MarketAddMessage extends MessageBody implements ActionMessageInterface {
 
     @IsEnum(MPActionExtended)
     @IsNotEmpty()
     public type: MPActionExtended.MPA_MARKET_ADD;
 
     @IsNotEmpty()
-    public item: Item;
+    public name: string;
+    public description: string;
+    public marketType: MarketType;
+    public receiveKey: string;
+    public publishKey: string;
 
-    @IsNotEmpty()
-    public hash: string;
-
-    public objects?: KVS[];
+    public image: ContentReference;
 
     @IsNotEmpty()
     public generated: number;
-
+    public objects?: KVS[];
+    @IsNotEmpty()
+    public hash: string;
 }

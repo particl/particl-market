@@ -2,6 +2,24 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+export enum HashableMarketCRField {
+    MARKET_IMAGE_HASH = 'Image.hash'
+}
+
+export enum HashableMarketAddField {
+    MARKET_TYPE = 'marketType',
+    MARKET_IMAGE_HASH = 'image.hash'
+}
+
+export enum HashableMarketField {
+    MARKET_NAME = 'name',
+    MARKET_DESCRIPTION = 'description',
+    MARKET_TYPE = 'type',
+    MARKET_RECEIVE_KEY = 'receiveKey',
+    MARKET_PUBLISH_KEY = 'publishKey',
+    MARKET_IMAGE_HASH = 'imageHash'
+}
+
 export enum HashableProposalAddField {
     PROPOSAL_SUBMITTER = 'proposalSubmitter',
     PROPOSAL_CATEGORY = 'proposalCategory',

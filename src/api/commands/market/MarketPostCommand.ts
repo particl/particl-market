@@ -10,47 +10,69 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import { CryptoAddress, CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
-import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
-import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ProfileService } from '../../services/model/ProfileService';
+import { DefaultMarketService } from '../../services/DefaultMarketService';
+import { IdentityService } from '../../services/model/IdentityService';
+import { MarketAddActionService } from '../../services/action/MarketAddActionService';
+import { MarketImageAddActionService } from '../../services/action/MarketImageAddActionService';
+import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
+import {MarketImageAddRequest} from '../../requests/action/MarketImageAddRequest';
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
+    public paramValidationRules = {
+        parameters: [{
+            name: 'promotedMarketId',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'daysRetention',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'estimateFee',
+            required: false,
+            type: 'boolean'
+        }, {
+            name: 'toMarketIdOrAddress',
+            required: false,
+            type: undefined
+        }, {
+            name: 'fromIdentityId',
+            required: false,
+            type: 'number'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
+
     constructor(
         // tslint:disable:max-line-length
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
-        @inject(Types.Service) @named(Targets.Service.action.ListingItemImageAddActionService) public listingItemImageAddActionService: ListingItemImageAddActionService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.action.MarketAddActionService) public marketAddActionService: MarketAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.MarketImageAddActionService) public marketImageAddActionService: MarketImageAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ItemPriceService) public itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
         // tslint:enable:max-line-length
     ) {
@@ -62,10 +84,13 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
      * posts a ListingItem to the network based on ListingItemTemplate
      *
      * data.params[]:
-     *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [0]: promotedMarket: resources.Market
      *  [1]: daysRetention
      *  [2]: estimateFee
-     *  [3]: market: resources.Market
+     *  [3]: fromMarket: resources.Market
+     *  [4]: toMarket: resources.Market
+     *  [5]: fromIdentity: resources.Identity
+     *  [6]: toAddress: string
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -73,49 +98,38 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+        const promotedMarket: resources.Market = data.params[0];
+        const daysRetention: number = data.params[1];
         const estimateFee: boolean = data.params[2];
-        const market: resources.Market = data.params[3];
+        const fromMarket: resources.Market = data.params[3];            // from, optional
+        const toMarket: resources.Market = data.params[4];              // to, optional
+        const fromIdentity: resources.Identity = data.params[5];        // from, optional
+        let toAddress: string = data.params[6];                       // to, optional
 
-        this.log.debug('execute(), estimateFee:', estimateFee);
+        const wallet = _.isNil(fromIdentity) ? fromMarket.Identity.wallet : fromIdentity.wallet;
+        const fromAddress = _.isNil(fromIdentity) ? fromMarket.publishAddress : fromIdentity.address;
+        toAddress = _.isNil(toAddress) ? toMarket.receiveAddress : toAddress;
 
-        // type === MARKETPLACE -> receive + publish keys are the same / private key in wif format
-        // type === STOREFRONT -> receive key is private key, publish key is public key / DER hex encoded string
-        // type === STOREFRONT_ADMIN -> receive + publish keys are different / private key in wif format
-
-        // ListingItems always posted from market publishAddress to receiveAddress
-        const fromAddress = market.publishAddress;
-        const toAddress = market.receiveAddress;
-
-        // if ListingItem contains a category, create the market categories
-        const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
-        await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
-
-        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
-        if (!estimateFee) {
-            // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
-            // since ListingItemTemplates with hash should not (CANT) be modified anymore.
-            const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
-        }
-        // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
-
-        const postRequest = {
-            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
-            listingItem: listingItemTemplate,
-            // market, // TODO: remove this? it doesn't seem to be used
-            sellerAddress: market.Identity.address
-        } as ListingItemAddRequest;
+        const marketAddRequest = {
+            sendParams: {
+                wallet,
+                fromAddress,
+                toAddress,
+                paidMessage: true,
+                daysRetention,
+                estimateFee
+            } as SmsgSendParams,
+            market: promotedMarket
+        } as MarketAddRequest;
 
         this.log.debug('execute(), posting...');
 
         // first post the ListingItem
-        const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
+        const smsgSendResponse: SmsgSendResponse = await this.marketAddActionService.post(marketAddRequest);
 
-        if (!estimateFee && !_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+        if (!estimateFee && !_.isEmpty(promotedMarket.Image)) {
             // then post the Images related to the ListingItem one by one
-            const imageSmsgSendResponse: SmsgSendResponse = await this.postListingItemImages(listingItemTemplate, postRequest);
+            const imageSmsgSendResponse: SmsgSendResponse = await this.postMarketImage(marketAddRequest);
             smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
         }
 
@@ -124,205 +138,191 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: promotedMarketId
      *  [1]: daysRetention
-     *  [2]: estimateFee (optional, default: false)
+     *  [2]: estimateFee, optional, default: false
+     *  [3]: toMarketIdOrAddress, optional, to which Markets address or to which address the message is sent to.
+     *       if number: toMarketId, if string: toAddress, default: default Profiles default Market receiveAddress
+     *  [4]: fromIdentityId, optional, overrides the toMarkets publishAddress,
+     *       default: default Profiles default Market publishAddress,
+     *
+     * Promotes a Market.
+     *
+     * - toMarketIdOrAddress === undefined && fromIdentityId === undefined:
+     *      -> send from default Market publishAddress to default Market receiveAddress.
+     * - toMarketIdOrAddress === number && fromIdentityId === undefined:
+     *      -> send from Market publishAddress to receiveAddress.
+     * - toMarketIdOrAddress === number && fromIdentityId === number:
+     *      -> send from fromIdentity.address to Market receiveAddress.
+     * - toMarketIdOrAddress === string && fromIdentityId === number:
+     *      -> send from fromIdentity.address to receiveAddress.
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('daysRetention');
-        }
+        const promotedMarketId = data.params[0];
+        const daysRetention = data.params[1];
+        let estimateFee = data.params[2];
+        const toMarketIdOrAddress: number | string = data.params[3];
+        const fromIdentityId: number = data.params[4];
+
+        let toMarket: resources.Market;
+        let toAddress: string;
+
+        let fromMarket: resources.Market;
+        let fromIdentity: resources.Identity;
 
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('daysRetention', 'number');
-        }
+        // if (typeof marketId !== 'number') {
+        //     throw new InvalidParamException('marketId', 'number');
+        // } else if (typeof daysRetention !== 'number') {
+        //     throw new InvalidParamException('daysRetention', 'number');
+        // } else if (!_.isNil(identityId) && typeof identityId !== 'number') {
+        //     throw new InvalidParamException('identityId', 'number');
+        // } else if (!_.isNil(smsgAddress) && typeof identityId !== 'string') {
+        //     throw new InvalidParamException('smsgAddress', 'string');
+        // }
 
-        if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+        if (daysRetention > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
-        if (data.params[2] !== undefined) {
-            if (typeof data.params[2] !== 'boolean') {
-                throw new InvalidParamException('estimateFee', 'boolean');
-            }
-        } else {
-            data.params[2] = false;
+        if (_.isNil(estimateFee)) {
+            estimateFee = false;
         }
-
-        // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         // make sure required data exists and fetch it
-        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
-
-        // ListingItemTemplate should be a market template
-        if (_.isEmpty(listingItemTemplate.market)) {
-            throw new MessageException('ListingItemTemplate has no market.');
-        }
-
-        // make sure the ListingItemTemplate has a paymentAddress and generate and update it, if it doesn't
-        // paymentAddress is part of the hash, so it needs to be created before the hash (unless it already exists)
-
-        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
-            throw new ModelNotFoundException('PaymentInformation');
-        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
-            throw new ModelNotFoundException('ItemPrice');
-        } else if (_.isEmpty(listingItemTemplate.ItemInformation.ItemCategory)) {
-            // we cannot post without a category
-            throw new ModelNotFoundException('ItemCategory');
-        }
-
-        // make sure the Market exists for the Profile
-        const profileId = listingItemTemplate.Profile.id;
-        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, listingItemTemplate.market)
+        const promotedMarket: resources.Market = await this.marketService.findOne(promotedMarketId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
             });
 
-        // this.log.debug('market:', JSON.stringify(market, null, 2));
+        if (_.isNil(toMarketIdOrAddress) && _.isNil(fromIdentityId)) {
+            // toMarketIdOrAddress === undefined && fromIdentityId === undefined:
+            //  -> send from default Market publishAddress to default Market receiveAddress.
+            const defaultProfile: resources.Profile = await this.profileService.getDefault()
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
+            toMarket = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+            fromMarket = toMarket;
 
-        // update the paymentAddress in case it's not generated yet
-        if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
-            || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-            listingItemTemplate = await this.updatePaymentAddress(market.Identity, listingItemTemplate);
+        } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'number' && _.isNil(fromIdentityId)) {
+            // toMarketIdOrAddress === number && fromIdentityId === undefined:
+            //  -> send from Market publishAddress to receiveAddress.
+            toMarket = await this.marketService.findOne(toMarketIdOrAddress)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+            fromMarket = toMarket;
+
+        } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'number'
+            && !_.isNil(fromIdentityId) && typeof fromIdentityId === 'number') {
+            // toMarketIdOrAddress === number && fromIdentityId === number:
+            //  -> send from fromIdentity.address to Market receiveAddress.
+            toMarket = await this.marketService.findOne(toMarketIdOrAddress)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+            fromIdentity = await this.identityService.findOne(fromIdentityId)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Identity');
+                });
+
+        } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'string'
+            && !_.isNil(fromIdentityId) && typeof fromIdentityId === 'number') {
+            // toMarketIdOrAddress === string && fromIdentityId === number:
+            //  -> send from fromIdentity.address to receiveAddress.
+            toAddress = toMarketIdOrAddress;
+            fromIdentity = await this.identityService.findOne(fromIdentityId)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Identity');
+                });
+        } else {
+            throw new MessageException('Invalid parameters.');
         }
 
-        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+        const marketAddRequest = {
+            sendParams: {
+                wallet: _.isNil(fromIdentity!) ? fromMarket!.Identity.wallet : fromIdentity!.wallet
+            } as SmsgSendParams,
+            market: promotedMarket
+        } as MarketAddRequest;
 
-        // check size limit
-        // we need listingItemTemplate.hash, otherwise this fails
-        // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
-        // since ListingItemTemplates with hash should not (CANT) be modified anymore.
-        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-        listingItemTemplate.hash = hash;
-
-        const templateMessageDataSize = await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
-        if (!templateMessageDataSize.fits) {
-            this.log.debug('templateMessageDataSize:', JSON.stringify(templateMessageDataSize, null, 2));
-            throw new MessageException('ListingItemTemplate information exceeds message size limitations');
+        const messageDataSize = await this.marketAddActionService.calculateMarketplaceMessageSize(marketAddRequest);
+        if (!messageDataSize.fits) {
+            this.log.debug('messageDataSize:', JSON.stringify(messageDataSize, null, 2));
+            throw new MessageException('Message is too large.');
         }
 
-        data.params[0] = listingItemTemplate;
-        data.params[3] = market;
+        data.params[0] = promotedMarket;
+        data.params[1] = daysRetention;
+        data.params[2] = estimateFee;
+        data.params[3] = fromMarket!;
+        data.params[4] = toMarket!;
+        data.params[5] = fromIdentity!;
+        data.params[6] = toAddress!;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] ';
+        return this.getName() + ' <promotedMarketId> [daysRetention] [estimateFee] [toMarketIdOrAddress] [fromIdentityId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number - The ID of the listing item template that we want to post. \n'
-            + '    <daysRetention>               - number - Days the listing will be retained by network.\n'
-            + '    <estimateFee>                 - [optional] boolean, Just estimate the Fee, dont post the Proposal. \n';
+            + '    <marketId>               - number, The ID of the Market that we want to post. \n'
+            + '    <daysRetention>          - [optional] number, Days the market will be retained by network.\n'
+            + '    <estimateFee>            - [optional] boolean, estimate the fee, don\'t post. \n'
+            + '    <identityId>             - [optional] number, The ID of the Identity that we want to use for posting. default: default market Identity.\n'
+            + '    <smsgAddress>            - [optional] string, address to post the message to. default: default market publishAddress.\n';
     }
 
     public description(): string {
-        return 'Post the ListingItemTemplate to the Marketplace.';
+        return 'Post the Market to the Marketplace browser.';
     }
 
     public example(): string {
-        return 'market ' + this.getName() + ' 100 7 false';
-    }
-
-    private async generateCryptoAddressForEscrowType(identity: resources.Identity, type: EscrowType): Promise<CryptoAddress> {
-
-        // generate paymentAddress for the item
-        let cryptoAddress: CryptoAddress;
-        switch (type) {
-            case EscrowType.MULTISIG:
-                const address = await this.coreRpcService.getNewAddress(identity.wallet);
-                cryptoAddress = {
-                    address,
-                    type: CryptoAddressType.NORMAL
-                };
-                break;
-            case EscrowType.MAD_CT:
-                cryptoAddress = await this.coreRpcService.getNewStealthAddress(identity.wallet);
-                break;
-            case EscrowType.MAD:
-            case EscrowType.FE:
-            default:
-                throw new NotImplementedException();
-        }
-
-        return cryptoAddress;
+        return 'market ' + this.getName() + ' 1 7';
     }
 
     /**
-     * update the paymentaddress for the template to one from the given identity
-     */
-    private async updatePaymentAddress(identity: resources.Identity, listingItemTemplate: resources.ListingItemTemplate):
-        Promise<resources.ListingItemTemplate> {
-
-        return await this.generateCryptoAddressForEscrowType(identity, listingItemTemplate.PaymentInformation.Escrow.type)
-            .then( async paymentAddress => {
-                // create new CryptocurrencyAddress related to the ListingItemTemplate
-                return await this.cryptocurrencyAddressService.create({
-                    profile_id: listingItemTemplate.Profile.id,
-                    type: paymentAddress.type,
-                    address: paymentAddress.address
-                } as CryptocurrencyAddressCreateRequest)
-                    .then(async cryptocurrencyAddressModel => {
-                        // update relation to the created CryptocurrencyAddress
-                        const cryptocurrencyAddress: resources.CryptocurrencyAddress = cryptocurrencyAddressModel.toJSON();
-                        await this.itemPriceService.updatePaymentAddress(listingItemTemplate.PaymentInformation.ItemPrice.id, cryptocurrencyAddress.id);
-
-                        // finally, fetch updated ListingItemTemplate
-                        return await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(updatedTemplate => updatedTemplate.toJSON());
-                    });
-            });
-    }
-
-    /**
-     * Post ItemImages
+     * Post MarketImages
      *
-     * @param listingItemTemplate
-     * @param listingItemAddRequest
+     * @param marketAddRequest
      */
-    private async postListingItemImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest):
-        Promise<SmsgSendResponse> {
+    private async postMarketImage(marketAddRequest: MarketAddRequest): Promise<SmsgSendResponse> {
 
         // then prepare the ListingItemImageAddRequest for sending the images
         const imageAddRequest = {
-            sendParams: listingItemAddRequest.sendParams,
-            listingItem: listingItemTemplate,
-            // market: listingItemAddRequest.market, // TODO: remove this? it doesn't seem to be used
-            sellerAddress: listingItemAddRequest.sellerAddress
-        } as ListingItemImageAddRequest;
+            sendParams: marketAddRequest.sendParams,
+            market: marketAddRequest.market
+        } as MarketImageAddRequest;
 
         imageAddRequest.sendParams.paidMessage = false; // sending images is free for now
 
-        const msgids: string[] = [];
-
-        // send each image related to the ListingItem
-        for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
-            imageAddRequest.image = itemImage;
-            const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
-            msgids.push(smsgSendResponse.msgid || '');
-        }
+        const smsgSendResponse: SmsgSendResponse = await this.marketImageAddActionService.post(imageAddRequest);
 
         const result = {
             result: 'Sent.',
-            msgids
+            msgids: [smsgSendResponse.msgid]
         } as SmsgSendResponse;
 
-        this.log.debug('postListingItemImages(), result: ', JSON.stringify(result, null, 2));
+        this.log.debug('postMarketImage(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
 

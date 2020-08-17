@@ -14,7 +14,8 @@ export class Comment extends Bookshelf.Model<Comment> {
 
     public static RELATIONS = [
         'ParentComment',
-        'ChildComments'
+        'ChildComments',
+        'ChildComments.ChildComments'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Comment> {

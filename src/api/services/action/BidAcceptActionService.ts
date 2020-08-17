@@ -78,6 +78,8 @@ export class BidAcceptActionService extends BaseBidActionService {
      */
     public async createMarketplaceMessage(actionRequest: BidAcceptRequest): Promise<MarketplaceMessage> {
 
+        // todo: create a factory
+
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent

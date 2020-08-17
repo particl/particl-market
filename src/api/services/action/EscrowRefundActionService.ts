@@ -35,7 +35,6 @@ import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
 import { EscrowRefundMessageFactory } from '../../factories/message/EscrowRefundMessageFactory';
 import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { EscrowRefundMessageCreateParams } from '../../requests/message/EscrowRefundMessageCreateParams';
 import { EscrowRefundValidator } from '../../messagevalidators/EscrowRefundValidator';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { NotificationService } from '../NotificationService';
@@ -123,10 +122,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
                                             escrowLockMPM.action as EscrowLockMessage
                                         );
 
-                                        const actionMessage: EscrowRefundMessage = await this.escrowRefundMessageFactory.get({
-                                            bidHash: actionRequest.bid.hash,
-                                            memo: actionRequest.memo
-                                        } as EscrowRefundMessageCreateParams);
+                                        const actionMessage: EscrowRefundMessage = await this.escrowRefundMessageFactory.get(actionRequest);
 
                                         // store the refundtx temporarily in the actionMessage
                                         actionMessage['_refundtx'] = refundtx;

@@ -24,7 +24,6 @@ import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidRejectMessageFactory } from '../../factories/message/BidRejectMessageFactory';
-import { BidRejectMessageCreateParams } from '../../requests/message/BidRejectMessageCreateParams';
 import { BidRejectValidator } from '../../messagevalidators/BidRejectValidator';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -73,10 +72,7 @@ export class BidRejectActionService extends BaseBidActionService {
      */
     public async createMarketplaceMessage(actionRequest: BidRejectRequest): Promise<MarketplaceMessage> {
 
-        const actionMessage: BidRejectMessage = await this.bidRejectMessageFactory.get({
-            bidHash: actionRequest.bid.hash,
-            reason: actionRequest.reason
-        } as BidRejectMessageCreateParams);
+        const actionMessage: BidRejectMessage = await this.bidRejectMessageFactory.get(actionRequest);
 
         return {
             version: ompVersion(),

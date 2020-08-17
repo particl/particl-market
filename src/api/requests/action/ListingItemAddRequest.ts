@@ -7,6 +7,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
+import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 
 export class ListingItemAddRequest extends RequestBody implements ActionRequestInterface {
 
@@ -16,10 +17,9 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     @IsNotEmpty()
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 
-    // @IsNotEmpty()
-    // public market: resources.Market;
-
     @IsNotEmpty()
-    public sellerAddress: string;
-    // public seller: resources.Identity;
+    public sellerAddress: string;           // needed, because ListingItemTemplate doesn't have sellers address
+
+    public cryptoAddress: CryptoAddress;    // optional, cryptoAddress can be used to override the one set on the template
+
 }

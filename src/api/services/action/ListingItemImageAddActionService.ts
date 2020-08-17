@@ -31,7 +31,6 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
 import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
-import { ListingItemImageAddMessageCreateParams } from '../../requests/message/ListingItemImageAddMessageCreateParams';
 import { ListingItemImageAddValidator } from '../../messagevalidators/ListingItemImageAddValidator';
 import { ItemImageService } from '../model/ItemImageService';
 import { ItemImageDataService } from '../model/ItemImageDataService';
@@ -89,15 +88,12 @@ export class ListingItemImageAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
 
-        const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.image.hash,
-            actionRequest.listingItem.hash);
-
         const actionMessage: ListingItemImageAddMessage = await this.listingItemImageAddMessageFactory.get({
+            sendParams: actionRequest.sendParams,
             listingItem: actionRequest.listingItem,
             image: actionRequest.image,
-            withData: true,
-            signature
-        } as ListingItemImageAddMessageCreateParams);
+            withData: true
+        } as ListingItemImageAddRequest);
 
         return {
             version: ompVersion(),
@@ -213,24 +209,6 @@ export class ListingItemImageAddActionService extends BaseActionService {
             await this.listingItemService.updateListingItemAndTemplateRelation(listingItem, listingItemTemplate);
         }
         return;
-    }
-
-    /**
-     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
-     *
-     * @param wallet
-     * @param address
-     * @param hash
-     * @param target
-     */
-    private async signImageMessage(wallet: string, address: string, hash: string, target: string): Promise<string> {
-        const message = {
-            address,            // sellers address
-            hash,               // image hash
-            target              // item hash
-        } as ImageAddMessage;
-
-        return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
 }

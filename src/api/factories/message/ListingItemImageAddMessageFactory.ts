@@ -9,12 +9,14 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
-import { ListingItemImageAddMessageCreateParams } from '../../requests/message/ListingItemImageAddMessageCreateParams';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
+import { ImageAddMessage } from '../../services/action/ListingItemImageAddActionService';
+import { CoreRpcService } from '../../services/CoreRpcService';
 
 export class ListingItemImageAddMessageFactory implements MessageFactoryInterface {
 
@@ -22,6 +24,7 @@ export class ListingItemImageAddMessageFactory implements MessageFactoryInterfac
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -30,21 +33,24 @@ export class ListingItemImageAddMessageFactory implements MessageFactoryInterfac
     /**
      *
      * @returns {Promise<ListingItemImageAddMessage>}
-     * @param params
+     * @param actionRequest
      */
-    public async get(params: ListingItemImageAddMessageCreateParams): Promise<ListingItemImageAddMessage> {
+    public async get(actionRequest: ListingItemImageAddRequest): Promise<ListingItemImageAddMessage> {
 
         // hash should have been calculated when image was created
         // and signature have already been calculated, we just need the dsns
 
-        const data: DSN[] = await this.getDSNs(params.image.ItemImageDatas, params.withData);
+        const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.image.hash,
+            actionRequest.listingItem.hash);
+
+        const data: DSN[] = await this.getDSNs(actionRequest.image.ItemImageDatas, actionRequest.withData);
 
         const message = {
             type: MPActionExtended.MPA_LISTING_IMAGE_ADD,
-            signature: params.signature,
-            hash: params.image.hash,
+            signature,
+            hash: actionRequest.image.hash,
             data,
-            target: params.listingItem.hash // TODO: we could remove this later on...
+            target: actionRequest.listingItem.hash // TODO: we could remove this later on...
         } as ListingItemImageAddMessage;
 
         return message;
@@ -116,4 +122,21 @@ export class ListingItemImageAddMessageFactory implements MessageFactoryInterfac
         return imageData;
     }
 
+    /**
+     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
+     *
+     * @param wallet
+     * @param address
+     * @param hash
+     * @param target
+     */
+    private async signImageMessage(wallet: string, address: string, hash: string, target: string): Promise<string> {
+        const message = {
+            address,            // sellers address
+            hash,               // image hash
+            target              // item hash
+        } as ImageAddMessage;
+
+        return await this.coreRpcService.signMessage(wallet, address, message);
+    }
 }

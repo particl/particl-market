@@ -23,7 +23,6 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessageFactory';
-import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
@@ -72,9 +71,7 @@ export class BidCancelActionService extends BaseBidActionService {
      */
     public async createMarketplaceMessage(actionRequest: BidCancelRequest): Promise<MarketplaceMessage> {
 
-        const actionMessage: BidCancelMessage = await this.bidCancelMessageFactory.get({
-            bidHash: actionRequest.bid.hash
-        } as BidCancelMessageCreateParams);
+        const actionMessage: BidCancelMessage = await this.bidCancelMessageFactory.get(actionRequest);
 
         return {
             version: ompVersion(),

@@ -47,7 +47,6 @@ import { BidNotification } from '../../messages/notification/BidNotification';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
 import { ProfileService } from '../model/ProfileService';
-import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
 
 export class BidActionService extends BaseActionService {
 
@@ -87,6 +86,8 @@ export class BidActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidRequest): Promise<MarketplaceMessage> {
+
+        // TODO: create a factory
 
         // note: factory checks that the hashes match
         const listingItemAddMPM: MarketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage({

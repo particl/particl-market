@@ -11,7 +11,8 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
-import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
+import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class EscrowCompleteMessageFactory implements MessageFactoryInterface {
 
@@ -25,18 +26,23 @@ export class EscrowCompleteMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params
-     *      bidHash: string
+     * @param actionRequest
      * @returns {Promise<EscrowCompleteMessage>}
      */
-    public async get(params: EscrowCompleteMessageCreateParams): Promise<EscrowCompleteMessage> {
+    public async get(actionRequest: EscrowCompleteRequest): Promise<EscrowCompleteMessage> {
         const message = {
             type: MPActionExtended.MPA_COMPLETE,
             generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
-            objects: [] as KVS[]
+            bid: actionRequest.bid.hash,                // hash of MPA_BID
+            objects: actionRequest.memo ? [{
+                key: ActionMessageObjects.COMPLETE_MEMO,
+                value: actionRequest.memo
+            }] as KVS[] : [] as KVS[]
         } as EscrowCompleteMessage;
+
+        // todo: ActionMessageObjects.TXID_COMPLETE is added on beforePost
+        // todo: move the tx creation here and add to the message.objects here.
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
         return message;

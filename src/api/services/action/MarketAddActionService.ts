@@ -12,19 +12,13 @@ import { EventEmitter } from 'events';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ItemCategoryService } from '../model/ItemCategoryService';
-import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { ListingItemService } from '../model/ListingItemService';
 import { ProposalService } from '../model/ProposalService';
@@ -32,25 +26,19 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
-import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import { MessageException } from '../../exceptions/MessageException';
 import { MPActionExtended } from '../../enums/MPActionExtended';
+import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
+import { MarketAddMessageFactory } from '../../factories/message/MarketAddMessageFactory';
+import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
+import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
+import { MarketFactory } from '../../factories/model/MarketFactory';
+import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
+import { MarketNotification } from '../../messages/notification/MarketNotification';
 
-export interface VerifiableMessage {
-    // not empty
-}
-
-export interface SellerMessage extends VerifiableMessage {
-    hash: string;               // item hash being added
-    address: string;            // seller address
-}
 
 export class MarketAddActionService extends BaseActionService {
 
@@ -66,8 +54,8 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private marketAddMessageFactory: MarketAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -83,40 +71,24 @@ export class MarketAddActionService extends BaseActionService {
     }
 
     /**
-     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
+     * calculates the size of the MarketplaceMessage.
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
-     * @param listingItemTemplate
-     * @param seller
-     * @param market
+     * @param actionRequest
      */
-    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
+    public async calculateMarketplaceMessageSize(actionRequest: MarketAddRequest): Promise<MessageSize> {
+        // todo: move to base class
 
-        const marketplaceMessage = await this.createMarketplaceMessage({
-            sendParams: {
-                wallet: market.Identity.wallet
-            } as SmsgSendParams,
-            listingItem: listingItemTemplate,
-            // market,
-            sellerAddress: market.Identity.address
-        } as ListingItemAddRequest);
+        const marketplaceMessage = await this.createMarketplaceMessage(actionRequest);
 
         // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-
-        // let imageDataSize = 0;
-        // if (action.item.information.images) {
-        //     for (const image of action.item.information.images) {
-        //         imageDataSize = imageDataSize + image.data[0].data.length;
-        //         this.log.debug('imageDataSize: ', image.data[0].data.length);
-        //     }
-        // }
-        const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize; // - imageDataSize;
+        const messageDataSize = JSON.stringify(marketplaceMessage).length;
+        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize;
         const fits = spaceLeft > 0;
 
         return {
             messageData: messageDataSize,
-            imageData: 0, // imageDataSize,
+            imageData: 0,
             spaceLeft,
             fits
         } as MessageSize;
@@ -127,46 +99,11 @@ export class MarketAddActionService extends BaseActionService {
      *
      * @param actionRequest
      */
-    public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: MarketAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
+        const actionMessage: MarketAddMessage = await this.marketAddMessageFactory.get(actionRequest);
 
-        let signature;
-        let pubkey;
-
-        // todo: move signature creation also to the factory
-        if (_.isEmpty(actionRequest.listingItem['signature'])) {
-            // listingItem already has the signature, so this is a listingItemTemplate being posted
-            // sign it and add the seller pubkey to the MessagingInformation
-            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.listingItem.hash);
-            pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
-                .then(value => {
-                    if (value.ismine) {
-                        return value.pubkey;
-                    } else {
-                        throw new MessageException('Seller address is not yours.');
-                    }
-                });
-            // not saving the pubkey as part of the ListingItemTemplate because we can use multiple identities to post those,
-            // it will be stored as part of the ListingItem once its received.
-            actionRequest.listingItem.MessagingInformation.push({
-                protocol: MessagingProtocol.SMSG,
-                publicKey: pubkey
-            } as resources.MessagingInformation);
-
-        } else {
-            signature = (actionRequest.listingItem as resources.ListingItem).signature;
-        }
-
-        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            // in this case this is actually the listingItemTemplate, as we use to create the message from both
-            listingItem: actionRequest.listingItem,
-            sellerAddress: actionRequest.sellerAddress,
-            // cryptoAddress: ...we could override the payment address here
-            signature
-        } as ListingItemAddMessageCreateParams);
-
-        // this.log.debug('createMarketplaceMessage(), actionMessage.item: ', JSON.stringify(actionMessage.item, null, 2));
+        // this.log.debug('createMarketplaceMessage(), actionMessage: ', JSON.stringify(actionMessage, null, 2));
 
         return {
             version: ompVersion(),
@@ -181,7 +118,7 @@ export class MarketAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-        this.log.debug('beforePost()');
+        // this.log.debug('beforePost()');
         return marketplaceMessage;
     }
 
@@ -195,14 +132,11 @@ export class MarketAddActionService extends BaseActionService {
      */
     public async afterPost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
-        this.log.debug('afterPost()');
+        // this.log.debug('afterPost()');
         return smsgSendResponse;
     }
 
     /**
-     * processListingItem "processes" the ListingItem, creating it.
-     *
-     * called from MessageListener.onEvent(), after the ListingItemAddMessage is received.
      *
      * @param marketplaceMessage
      * @param actionDirection
@@ -217,49 +151,23 @@ export class MarketAddActionService extends BaseActionService {
         this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
         if (actionDirection === ActionDirection.INCOMING) {
-            // we're creating the listingitem only when it arrives
-            const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-            // if ListingItem contains a custom category, create them
-            await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
+            // we're creating the market only when it arrives
+            const marketAddMessage: MarketAddMessage = marketplaceMessage.action as MarketAddMessage;
 
-            // fetch the root category used to create the listingItemCreateRequest
-            const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
+            const createRequest: MarketCreateRequest = await this.marketFactory.get({
+                actionMessage: marketAddMessage,
+                smsgMessage
+            } as MarketCreateParams);
 
-            const listingItemCreateParams = {
-                msgid: smsgMessage.msgid,
-                market: smsgMessage.to,
-                rootCategory
-            } as ListingItemCreateParams; // TODO: get rid of these xxxCreateParams
-
-            // this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
-            // this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
-            // this.log.debug('processMessage(), smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
-
-            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get(listingItemCreateParams,
-                listingItemAddMessage, smsgMessage);
-
-            // this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
-
-            // - create the ListingItem locally with the listingItemCreateRequest
-            await this.listingItemService.create(listingItemCreateRequest)
-                .then(async value => {
-                    const listingItem: resources.ListingItem = value.toJSON();
-
-                    // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
-                    await this.createFlaggedItemIfNeeded(listingItem);
-
-                    // - if there's a matching ListingItemTemplate, create a relation
-                    await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
-
-                    this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                    return SmsgMessageStatus.PROCESSED;
-
-                })
-                .catch(reason => {
-                    this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                    return SmsgMessageStatus.PROCESSING_FAILED;
+            const market: resources.Market = await this.marketService.findOneByHash(createRequest.hash)
+                .then(async value => value.toJSON())
+                .catch(async reason => {
+                    return await this.marketService.create(createRequest).then(async value => value.toJSON());
                 });
+
+            await this.createFlaggedItemIfNeeded(market);
+
         }
 
         return smsgMessage;
@@ -272,19 +180,18 @@ export class MarketAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid)
+            const market: resources.Market = await this.marketService.findOneByMsgId(smsgMessage.msgid)
                 .then(value => value.toJSON())
                 .catch(err => undefined);
 
-            if (listingItem) {
+            if (market) {
                 const notification: MarketplaceNotification = {
                     event: marketplaceMessage.action.type,
                     payload: {
-                        id: listingItem.id,
-                        hash: listingItem.hash,
-                        seller: listingItem.seller,
-                        market: listingItem.market
-                    } as ListingItemNotification
+                        id: market.id,
+                        hash: market.hash,
+                        name: market.name
+                    } as MarketNotification
                 };
                 return notification;
             }
@@ -292,33 +199,17 @@ export class MarketAddActionService extends BaseActionService {
         return undefined;
     }
 
-    /**
-     * If a ListingItemTemplate matching with ListingItem is found, add a relation
-     *
-     * @param listingItem
-     */
-    public async updateListingItemAndTemplateRelationIfNeeded(listingItem: resources.ListingItem): Promise<void> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOneByHash(listingItem.hash)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                return undefined;
-            });
-        if (listingItemTemplate) {
-            await this.listingItemService.updateListingItemAndTemplateRelation(listingItem, listingItemTemplate);
-        }
-        return;
-    }
 
     /**
-     * If a Proposal to remove the ListingItem is found, create FlaggedItem
+     * If a Proposal to remove the Market is found, create FlaggedItem
      *
-     * @param listingItem
+     * @param market
      */
-    private async createFlaggedItemIfNeeded(listingItem: resources.ListingItem): Promise<resources.FlaggedItem | void> {
-        await this.proposalService.findOneByItemHash(listingItem.hash)
+    private async createFlaggedItemIfNeeded(market: resources.Market): Promise<resources.FlaggedItem | void> {
+        await this.proposalService.findOneByTarget(market.hash)
             .then(async value => {
                 const proposal: resources.Proposal = value.toJSON();
-                return await this.createFlaggedItemForListingItem(listingItem, proposal);
+                return await this.createFlaggedItemForMarket(market, proposal);
             })
             .catch(reason => {
                 return null;
@@ -326,51 +217,20 @@ export class MarketAddActionService extends BaseActionService {
     }
 
     /**
-     * Create FlaggedItem for ListingItem having a Proposal to remove it
+     * Create FlaggedItem for Market having a Proposal to remove it
      *
-     * @param listingItem
+     * @param market
      * @param {module:resources.Proposal} proposal
      * @returns {Promise<module:resources.FlaggedItem>}
      */
-    private async createFlaggedItemForListingItem(listingItem: resources.ListingItem,
-                                                  proposal: resources.Proposal): Promise<resources.FlaggedItem> {
+    private async createFlaggedItemForMarket(market: resources.Market, proposal: resources.Proposal): Promise<resources.FlaggedItem> {
         const flaggedItemCreateRequest = {
-            listing_item_id: listingItem.id,
+            market_id: market.id,
             proposal_id: proposal.id,
             reason: proposal.description
         } as FlaggedItemCreateRequest;
 
         return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-    }
-
-    /**
-     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
-     *
-     * @param wallet
-     * @param address
-     * @param hash
-     */
-    private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
-        if (_.isEmpty(wallet)) {
-            throw new MissingParamException('wallet');
-        }
-        if (_.isEmpty(address)) {
-            throw new MissingParamException('address');
-        }
-        if (_.isEmpty(hash)) {
-            throw new MissingParamException('hash');
-        }
-        const message = {
-            address,        // seller address
-            hash            // item hash
-        } as SellerMessage;
-
-        this.log.debug('signSellerMessage(), message: ', JSON.stringify(message, null, 2));
-
-        this.log.debug('signSellerMessage(), address: ', address);
-        this.log.debug('signSellerMessage(), hash: ', hash);
-
-        return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
 }

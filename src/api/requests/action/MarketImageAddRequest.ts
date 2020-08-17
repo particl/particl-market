@@ -8,16 +8,18 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 
-export class EscrowReleaseRequest extends RequestBody implements ActionRequestInterface {
+export class MarketImageAddRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
-    public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
-    @IsNotEmpty()
-    public bid: resources.Bid;                  // the original bid
-    @IsNotEmpty()
-    public bidAccept: resources.Bid;            // the accepted bid
-    public memo: string;
+    public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
 
-    public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
+    @IsNotEmpty()
+    public image: resources.ItemImage;
+
+    @IsNotEmpty()
+    public market: resources.Market;
+
+    public withData: boolean;   // whether the data is included in the message or not
+                                // (... ProtocolDSN LOCAL or SMSG)
 
 }

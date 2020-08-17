@@ -79,8 +79,8 @@ export class ProposalService {
         return proposal;
     }
 
-    public async findOneByItemHash(listingItemHash: string, withRelated: boolean = true): Promise<Proposal> {
-        const proposal = await this.proposalRepo.findOneByItemHash(listingItemHash, withRelated);
+    public async findOneByTarget(listingItemHash: string, withRelated: boolean = true): Promise<Proposal> {
+        const proposal = await this.proposalRepo.findOneByTarget(listingItemHash, withRelated);
         if (proposal === null) {
             this.log.warn(`Proposal with the listingItemHash=${listingItemHash} was not found!`);
             throw new NotFoundException(listingItemHash);

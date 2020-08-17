@@ -33,7 +33,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
      */
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
 
-        const proposalCollection = Proposal.forge<Model<Proposal>>()
+        const collection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
                 if (options.category) {
@@ -62,53 +62,23 @@ export class Proposal extends Bookshelf.Model<Proposal> {
             })
             .orderBy('time_start', options.order);
 
-        if (withRelated) {
-            return await proposalCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await proposalCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ id: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ hash: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ msgid: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ msgid: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ target: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ target: value }).fetch();
-        }
+    public static async fetchByTarget(value: string, withRelated: boolean = true): Promise<Proposal> {
+        return Proposal.where<Proposal>({ target: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchExpired(): Promise<Collection<Proposal>> {

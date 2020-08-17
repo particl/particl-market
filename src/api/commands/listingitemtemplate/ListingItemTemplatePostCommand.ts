@@ -227,9 +227,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number - The ID of the listing item template that we want to post. \n'
-            + '    <daysRetention>               - number - Days the listing will be retained by network.\n'
-            + '    <estimateFee>                 - [optional] boolean, Just estimate the Fee, dont post the Proposal. \n';
+            + '    <listingTemplateId>           - number, The ID of the ListingItemTemplate that we want to post. \n'
+            + '    <daysRetention>               - [optional] number, Days the listing will be retained by network.\n'
+            + '    <estimateFee>                 - [optional] boolean, estimate the fee, don\'t post. \n';
     }
 
     public description(): string {

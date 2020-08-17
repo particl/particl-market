@@ -6,6 +6,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { MarketType } from '../../enums/MarketType';
+import {ItemImageCreateRequest} from './ItemImageCreateRequest';
 
 // tslint:disable:variable-name
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -16,9 +17,11 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
     @IsNotEmpty()
     public profile_id: number;
 
+    public msgid: string;
+    public hash: string;
+
     @IsNotEmpty()
     public name: string;
-
     public description: string;
 
     @IsNotEmpty()
@@ -32,6 +35,16 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
 
     public publishKey: string;
     public publishAddress: string;
+
+    public removed: boolean;
+    public expiryTime: number;
+    public generatedAt: number;
+    public receivedAt: number;
+    public postedAt: number;
+    public expiredAt: number;
+
+    public image_id: number;
+    public image: ItemImageCreateRequest;
 
 }
 // tslint:enable:variable-name

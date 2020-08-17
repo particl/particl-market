@@ -25,7 +25,7 @@ import {
     SellerInfo,
     ShippingPrice
 } from 'omp-lib/dist/interfaces/omp';
-import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {MessagingProtocol, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
@@ -36,9 +36,22 @@ import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessa
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
+import { CoreRpcService } from '../../services/CoreRpcService';
+
+
+// todo: move
+export interface VerifiableMessage {
+    // not empty
+}
+
+// todo: move
+export interface SellerMessage extends VerifiableMessage {
+    hash: string;               // item hash being added
+    address: string;            // seller address
+}
 
 export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
@@ -46,6 +59,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
     constructor(
         // tslint:disable:max-line-length
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -57,30 +71,56 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
     /**
      * Creates a ListingItemAddMessage from given parameters
      *
-     * @param params
+     * @param actionRequest
      * @returns {Promise<MPA>}
      */
 
-    public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
+    public async get(actionRequest: ListingItemAddRequest): Promise<ListingItemAddMessage> {
 
-        if (!params.listingItem) {
+        if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
         }
 
-        const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
-        const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
-        const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
-        const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
+        let signature;
+        let pubkey;
 
-        if (_.isEmpty(params.sellerAddress)) {
+        if (_.isEmpty(actionRequest.listingItem['signature'])) {
+            // listingItem already has the signature, so this is a listingItemTemplate being posted
+            // sign it and add the seller pubkey to the MessagingInformation
+            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.listingItem.hash);
+            pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
+                .then(value => {
+                    if (value.ismine) {
+                        return value.pubkey;
+                    } else {
+                        throw new MessageException('Seller address is not yours.');
+                    }
+                });
+            // not saving the pubkey as part of the ListingItemTemplate because we can use multiple identities to post those,
+            // it will be stored as part of the ListingItem once its received.
+            actionRequest.listingItem.MessagingInformation.push({
+                protocol: MessagingProtocol.SMSG,
+                publicKey: pubkey
+            } as resources.MessagingInformation);
+
+        } else {
+            signature = (actionRequest.listingItem as resources.ListingItem).signature;
+        }
+
+        const information = await this.getMessageItemInfo(actionRequest.listingItem.ItemInformation);
+        const payment = await this.getMessagePayment(actionRequest.listingItem.PaymentInformation, actionRequest.cryptoAddress);
+        const messaging = await this.getMessageMessaging(actionRequest.listingItem.MessagingInformation);
+        const objects = await this.getMessageObjects(actionRequest.listingItem.ListingItemObjects);
+
+        if (_.isEmpty(actionRequest.sellerAddress)) {
             throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
         }
 
         const item = {
             information,
             seller: {
-                address: params.sellerAddress,
-                signature: params.signature
+                address: actionRequest.sellerAddress,
+                signature
             } as SellerInfo,
             payment,
             messaging,
@@ -89,21 +129,50 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
         const message = {
             type: MPAction.MPA_LISTING_ADD,
-            generated: params.listingItem.generatedAt, // generated needs to come from the template as its used in hash generation, so that we can match them
+            generated: actionRequest.listingItem.generatedAt, // generated should come from the template as its used in hash generation
             item,
             hash: 'recalculateandvalidate'
         } as ListingItemAddMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
-        this.log.debug('params.listingItem.hash:', JSON.stringify(params.listingItem.hash, null, 2));
+        this.log.debug('params.listingItem.hash:', JSON.stringify(actionRequest.listingItem.hash, null, 2));
         this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
 
         // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
-        if (params.listingItem.hash && params.listingItem.hash !== message.hash) {
-            throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
+        if (actionRequest.listingItem.hash && actionRequest.listingItem.hash !== message.hash) {
+            throw new HashMismatchException('ListingItemAddMessage', actionRequest.listingItem.hash, message.hash);
         }
         return message;
+    }
+
+    /**
+     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
+     *
+     * @param wallet
+     * @param address
+     * @param hash
+     */
+    private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
+        if (_.isEmpty(wallet)) {
+            throw new MissingParamException('wallet');
+        }
+        if (_.isEmpty(address)) {
+            throw new MissingParamException('address');
+        }
+        if (_.isEmpty(hash)) {
+            throw new MissingParamException('hash');
+        }
+        const message = {
+            address,        // seller address
+            hash            // item hash
+        } as SellerMessage;
+
+        this.log.debug('signSellerMessage(), message: ', JSON.stringify(message, null, 2));
+        this.log.debug('signSellerMessage(), address: ', address);
+        this.log.debug('signSellerMessage(), hash: ', hash);
+
+        return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
     private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {

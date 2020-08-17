@@ -28,6 +28,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
     public abstract getAllowedSearchOrderFields(): string[];
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic params, see: BaseCommand.validate()
         return await this.validateSearchParams(data);
     }
 

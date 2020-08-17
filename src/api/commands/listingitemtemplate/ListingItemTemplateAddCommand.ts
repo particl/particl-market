@@ -140,7 +140,9 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        this.validateRequiredParamsExist(data.params);
+        // TODO: use super.validate(data);
+
+        this.validateParamsExist(data.params);
         data.params = this.setDefaultsForMissingParams(data.params);
         this.validateParamTypes(data.params);
 
@@ -260,7 +262,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     }
 
-    private validateRequiredParamsExist(params: any[]): void {
+    private validateParamsExist(params: any[]): void {
         // make sure the required params exist
         if (params.length < 1) {
             throw new MissingParamException('profileId');

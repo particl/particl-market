@@ -8,10 +8,11 @@ import { Core, Types } from '../../../constants';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
+import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
 
@@ -25,17 +26,20 @@ export class EscrowReleaseMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params
+     * @param actionRequest
      *      bidHash: string
      * @returns {Promise<EscrowReleaseMessage>}
      */
-    public async get(params: EscrowReleaseMessageCreateParams): Promise<EscrowReleaseMessage> {
+    public async get(actionRequest: EscrowReleaseRequest): Promise<EscrowReleaseMessage> {
         const message = {
             type: MPActionExtended.MPA_RELEASE,
             generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
-            objects: [] as KVS[]
+            bid: actionRequest.bid.hash,                // hash of MPA_BID
+            objects: actionRequest.memo ? [{
+                key: ActionMessageObjects.RELEASE_MEMO,
+                value: actionRequest.memo
+            }] as KVS[] : [] as KVS[]
         } as EscrowReleaseMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());

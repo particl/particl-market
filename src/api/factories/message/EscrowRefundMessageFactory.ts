@@ -11,7 +11,8 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { EscrowRefundMessage } from '../../messages/action/EscrowRefundMessage';
-import { EscrowRefundMessageCreateParams } from '../../requests/message/EscrowRefundMessageCreateParams';
+import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 
 export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 
@@ -25,17 +26,20 @@ export class EscrowRefundMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params
+     * @param actionRequest
      *      bidHash: string
      * @returns {Promise<EscrowRefundMessage>}
      */
-    public async get(params: EscrowRefundMessageCreateParams): Promise<EscrowRefundMessage> {
+    public async get(actionRequest: EscrowRefundRequest): Promise<EscrowRefundMessage> {
         const message = {
             type: MPActionExtended.MPA_REFUND,
             generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
-            objects: [] as KVS[]
+            bid: actionRequest.bid.hash,                // hash of MPA_BID
+            objects: actionRequest.memo ? [{
+                key: ActionMessageObjects.REFUND_MEMO,
+                value: actionRequest.memo
+            }] as KVS[] : [] as KVS[]
         } as EscrowRefundMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());

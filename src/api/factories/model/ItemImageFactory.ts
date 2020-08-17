@@ -7,49 +7,13 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
-import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
 import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
-import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
-import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
-import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
-import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
-import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
-import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
-import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
-import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import {
-    EscrowConfig,
-    EscrowRatio,
-    ItemInfo,
-    ItemObject,
-    Location,
-    LocationMarker, MessagingInfo, PaymentInfo,
-    PaymentInfoEscrow,
-    PaymentOption, ShippingPrice
-} from 'omp-lib/dist/interfaces/omp';
-import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import { DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import {ItemImageCreateParams, ListingItemCreateParams} from './ModelCreateParams';
-import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { MessageException } from '../../exceptions/MessageException';
-import { KVS } from 'omp-lib/dist/interfaces/common';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import {ListingItemImageAddMessage} from '../../messages/action/ListingItemImageAddMessage';
-import {HashableItemImageCreateRequestConfig} from '../hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { ItemImageCreateParams } from './ModelCreateParams';
 
 export class ItemImageFactory implements ModelFactoryInterface {
 
@@ -63,7 +27,7 @@ export class ItemImageFactory implements ModelFactoryInterface {
     }
 
     /**
-     * create a ListingItemCreateRequest
+     * create a ItemImageCreateRequest
      *
      * @param params
      */

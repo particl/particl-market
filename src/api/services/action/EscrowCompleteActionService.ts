@@ -36,7 +36,6 @@ import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
 import { EscrowCompleteMessageFactory } from '../../factories/message/EscrowCompleteMessageFactory';
 import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessage';
-import { EscrowCompleteMessageCreateParams } from '../../requests/message/EscrowCompleteMessageCreateParams';
 import { EscrowCompleteValidator } from '../../messagevalidators/EscrowCompleteValidator';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
@@ -99,6 +98,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
         } as ListingItemAddRequest)
             .then(async listingItemAddMPM => {
 
+                // todo: move to escrowCompleteMessageFactory?
                 // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
                 return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
                     .then(async bid => {
@@ -125,10 +125,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
                                         );
 
                                         // this.log.debug('completetx: ', completetx);
-                                        const actionMessage: EscrowCompleteMessage = await this.escrowCompleteMessageFactory.get({
-                                            bidHash: actionRequest.bid.hash,
-                                            memo: actionRequest.memo
-                                        } as EscrowCompleteMessageCreateParams);
+                                        const actionMessage: EscrowCompleteMessage = await this.escrowCompleteMessageFactory.get(actionRequest);
 
                                         // store the completetx temporarily in the actionMessage
                                         actionMessage['_completetx'] = completetx;

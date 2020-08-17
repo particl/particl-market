@@ -16,16 +16,13 @@ export class MarketImageAddMessage extends MessageBody implements ActionMessageI
     public type: MPActionExtended.MPA_MARKET_IMAGE_ADD;
 
     @IsNotEmpty()
-    public signature: string;
-
-    @IsNotEmpty()
-    public hash: string;            // ItemImage hash
+    public hash: string;            // Image hash
 
     @IsNotEmpty()
     public data: DSN[];
 
     @IsNotEmpty()
-    public target: string;          // ListingItem hash
+    public target: string;          // Market hash
 
     public objects?: KVS[];
 

@@ -11,7 +11,7 @@ import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidM
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
-import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
+import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
 
 export class BidCancelMessageFactory implements MessageFactoryInterface {
 
@@ -25,20 +25,20 @@ export class BidCancelMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params
-     *      bidHash: string
+     * @param actionRequest
      * @returns {Promise<BidCancelMessage>}
      */
-    public async get(params: BidCancelMessageCreateParams): Promise<BidCancelMessage> {
+    public async get(actionRequest: BidCancelRequest): Promise<BidCancelMessage> {
         const message = {
             type: MPAction.MPA_CANCEL,
             generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
+            bid: actionRequest.bid.hash,                // hash of MPA_BID
             objects: [] as KVS[]
         } as BidCancelMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
+
         return message;
     }
 

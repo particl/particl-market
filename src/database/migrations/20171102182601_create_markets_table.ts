@@ -9,6 +9,8 @@ exports.up = (db: Knex): Promise<any> => {
 
         db.schema.createTable('markets', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
+            table.string('msgid').nullable();
+
             table.string('name').notNullable();
             table.string('description').nullable();
             table.string('type').notNullable();
@@ -18,11 +20,19 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('publish_address').nullable();
             table.boolean('removed').notNullable().defaultTo(false);
 
+            table.integer('image_id').unsigned().nullable();
+
+            table.integer('expiry_time').unsigned();
+            table.integer('generated_at').unsigned().nullable();
+            table.integer('received_at').unsigned().nullable();
+            table.integer('posted_at').unsigned().nullable();
+            table.integer('expired_at').unsigned().nullable();
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
 
             // can be nullable now, when profile_id/identity_id is not set,
-            // the market isn't joined but is just been promoted
+            // the market isn't joined, but is just been promoted
             table.integer('profile_id').unsigned().nullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('CASCADE');

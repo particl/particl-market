@@ -10,9 +10,11 @@ import { MarketType } from '../../enums/MarketType';
 // tslint:disable:variable-name
 export class MarketUpdateRequest extends RequestBody implements ModelRequestInterface {
 
+    public msgid: string;
+    public hash: string;
+
     @IsNotEmpty()
     public name: string;
-
     public description: string;
 
     @IsNotEmpty()
@@ -27,6 +29,15 @@ export class MarketUpdateRequest extends RequestBody implements ModelRequestInte
     public publishKey: string;
     public publishAddress: string;
 
+    public removed: boolean;
+    public expiryTime: number;
+    public generatedAt: number;
+    public receivedAt: number;
+    public postedAt: number;
+    public expiredAt: number;
+
     public identity_id: number;
+    public image_id: number;
+
 }
 // tslint:enable:variable-name

@@ -9,8 +9,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { BidMessage } from '../../messages/action/BidMessage';
-import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
@@ -18,6 +16,7 @@ import { HashableProposalAddField, HashableProposalOptionField } from '../hashab
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 
 export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
@@ -29,31 +28,25 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params: ProposalAddMessageCreateParams
-     *      title: string;
-     *      description: string;
-     *      options: string[];
-     *      sender: resources.Profile;
-     *      itemHash?: string;
-     * @returns {Promise<BidMessage>}
+     * @param actionRequest
+     * @returns {Promise<ProposalAddMessage>}
      */
-    public async get(params: ProposalAddMessageCreateParams): Promise<ProposalAddMessage> {
+    public async get(actionRequest: ProposalAddRequest): Promise<ProposalAddMessage> {
 
-        const optionsList: resources.ProposalOption[] = this.createOptionsList(params.options);
+        const optionsList: resources.ProposalOption[] = this.createOptionsList(actionRequest.options);
 
-        // make sure category is set
-        if (_.isEmpty(params.category)) {
+        if (_.isEmpty(actionRequest.category)) {
             throw new MissingParamException('category');
         }
 
         const message: ProposalAddMessage = {
             type: GovernanceAction.MPA_PROPOSAL_ADD,
-            submitter: params.sender.address,
-            title: params.title,
-            description: params.description,
+            submitter: actionRequest.sender.address,
+            title: actionRequest.title,
+            description: actionRequest.description,
             options: optionsList,
-            category: params.category,
-            target: params.target
+            category: actionRequest.category,
+            target: actionRequest.target
         } as ProposalAddMessage;
 
         // hash the proposal
@@ -62,11 +55,12 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
 
+        // todo:
         message.hash = ConfigurableHasher.hash(message, new HashableProposalAddMessageConfig([{
                 value: hashableOptions,
                 to: HashableProposalAddField.PROPOSAL_OPTIONS
             }, {
-                value: params.market,
+                value: actionRequest.market.receiveAddress,
                 to: HashableProposalAddField.PROPOSAL_MARKET
             }] as HashableFieldValueConfig[]));
 

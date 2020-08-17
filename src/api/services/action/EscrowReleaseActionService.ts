@@ -33,7 +33,6 @@ import { CoreRpcService } from '../CoreRpcService';
 import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
 import { EscrowReleaseMessage } from '../../messages/action/EscrowReleaseMessage';
 import { EscrowReleaseMessageFactory } from '../../factories/message/EscrowReleaseMessageFactory';
-import { EscrowReleaseMessageCreateParams } from '../../requests/message/EscrowReleaseMessageCreateParams';
 import { EscrowReleaseValidator } from '../../messagevalidators/EscrowReleaseValidator';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
@@ -117,10 +116,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
                                     bidAcceptMPM.action as BidAcceptMessage
                                 );
 
-                                const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get({
-                                    bidHash: actionRequest.bid.hash,
-                                    memo: actionRequest.memo
-                                } as EscrowReleaseMessageCreateParams);
+                                const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get(actionRequest);
 
                                 // store the releasetx temporarily in the actionMessage
                                 actionMessage['_releasetx'] = releasetx;

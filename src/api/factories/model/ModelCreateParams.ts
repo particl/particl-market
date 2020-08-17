@@ -7,13 +7,15 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { CoreSmsgMessage } from '../../messages/CoreSmsgMessage';
 import { OrderStatus } from '../../enums/OrderStatus';
-import {EscrowReleaseType, EscrowType, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import {ContentReference} from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
+import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 
 export interface ModelCreateParams {
-    //
+    actionMessage?: ActionMessageInterface;
+    smsgMessage?: resources.SmsgMessage;
 }
 
 export interface ListingItemTemplateCreateParams extends ModelCreateParams {
@@ -34,6 +36,9 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
     parentListingItemTemplateId: number;
     paymentAddress: string;
     paymentAddressType: CryptoAddressType;
+}
+
+export interface MarketCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {

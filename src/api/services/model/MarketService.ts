@@ -54,6 +54,24 @@ export class MarketService {
         return market;
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByHash(hash, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return market;
+    }
+
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.findOneByMsgId(msgid, withRelated);
+        if (market === null) {
+            this.log.warn(`Market with the msgid=${msgid} was not found!`);
+            throw new NotFoundException(msgid);
+        }
+        return market;
+    }
+
     public async findOneByProfileIdAndReceiveAddress(profileId: number, address: string, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOneByProfileIdAndReceiveAddress(profileId, address, withRelated);
         if (market === null) {
@@ -74,20 +92,29 @@ export class MarketService {
     @validate()
     public async update(id: number, @request(MarketUpdateRequest) body: MarketUpdateRequest): Promise<Market> {
 
-        // find the existing one without related
         const market = await this.findOne(id, false);
 
-        // set new values
-        market.Name = body.name;
-        market.Description = body.description;
-        market.Type = body.type;
-        market.ReceiveKey = body.receiveKey;
-        market.ReceiveAddress = body.receiveAddress;
-        market.PublishKey = body.publishKey;
-        market.PublishAddress = body.publishAddress;
+        market.Msgid = !_.isNil(body.msgid) ? body.msgid : market.Msgid;
+        market.Hash = !_.isNil(body.msgid) ? body.hash : market.Hash;
+        market.Name = !_.isNil(body.name) ? body.name : market.Name;
+        market.Description = !_.isNil(body.description) ? body.description : market.Description;
+        market.Type = !_.isNil(body.type) ? body.type : market.Type;
+        // market.ReceiveKey = body.receiveKey;
+        // market.ReceiveAddress = body.receiveAddress;
+        // market.PublishKey = body.publishKey;
+        // market.PublishAddress = body.publishAddress;
+        market.Removed = !_.isNil(body.removed) ? body.removed : market.Removed;
+        market.ExpiryTime = !_.isNil(body.expiryTime) ? body.expiryTime : market.ExpiryTime;
+        market.GeneratedAt = !_.isNil(body.generatedAt) ? body.generatedAt : market.GeneratedAt;
+        market.ReceivedAt = !_.isNil(body.receivedAt) ? body.receivedAt : market.ReceivedAt;
+        market.PostedAt = !_.isNil(body.postedAt) ? body.postedAt : market.PostedAt;
+        market.ExpiredAt = !_.isNil(body.expiredAt) ? body.expiredAt : market.ExpiredAt;
 
         if (body.identity_id) {
             market.set('identityId', body.identity_id);
+        }
+        if (body.image_id) {
+            market.set('imageId', body.image_id);
         }
 
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());

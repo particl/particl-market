@@ -19,10 +19,8 @@ import { ListingItemAddRequest } from '../../requests/action/ListingItemAddReque
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { CoreRpcService } from '../CoreRpcService';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
-import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
@@ -32,24 +30,14 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import {MessagingProtocol, MPAction} from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import {MessageException} from '../../exceptions/MessageException';
 
-export interface VerifiableMessage {
-    // not empty
-}
-
-export interface SellerMessage extends VerifiableMessage {
-    hash: string;               // item hash being added
-    address: string;            // seller address
-}
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -86,7 +74,6 @@ export class ListingItemAddActionService extends BaseActionService {
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
      * @param listingItemTemplate
-     * @param seller
      * @param market
      */
     public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
@@ -128,35 +115,10 @@ export class ListingItemAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
+        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get(actionRequest);
+
         // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
-
-        let signature;
-        let pubkey;
-
-        // todo: move signature creation also to the factory
-        if (_.isEmpty(actionRequest.listingItem['signature'])) {
-            // listingItem already has the signature, so this is a listingItemTemplate being posted
-            // sign it and add the seller pubkey to the MessagingInformation
-            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.listingItem.hash);
-            pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
-                .then(value => {
-                    if (value.ismine) {
-                        return value.pubkey;
-                    } else {
-                        throw new MessageException('Seller address is not yours.');
-                    }
-                });
-            // not saving the pubkey as part of the ListingItemTemplate because we can use multiple identities to post those,
-            // it will be stored as part of the ListingItem once its received.
-            actionRequest.listingItem.MessagingInformation.push({
-                protocol: MessagingProtocol.SMSG,
-                publicKey: pubkey
-            } as resources.MessagingInformation);
-
-        } else {
-            signature = (actionRequest.listingItem as resources.ListingItem).signature;
-        }
-
+/*
         const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
             // in this case this is actually the listingItemTemplate, as we use to create the message from both
             listingItem: actionRequest.listingItem,
@@ -164,7 +126,7 @@ export class ListingItemAddActionService extends BaseActionService {
             // cryptoAddress: ...we could override the payment address here
             signature
         } as ListingItemAddMessageCreateParams);
-
+*/
         // this.log.debug('createMarketplaceMessage(), actionMessage.item: ', JSON.stringify(actionMessage.item, null, 2));
 
         return {
@@ -199,7 +161,7 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * processListingItem "processes" the ListingItem, creating it.
+     * processMessage "processes" the ListingItem, creating it.
      *
      * called from MessageListener.onEvent(), after the ListingItemAddMessage is received.
      *
@@ -252,12 +214,10 @@ export class ListingItemAddActionService extends BaseActionService {
                     await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
 
                     this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
-                    return SmsgMessageStatus.PROCESSED;
 
                 })
                 .catch(reason => {
                     this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
-                    return SmsgMessageStatus.PROCESSING_FAILED;
                 });
         }
 
@@ -314,7 +274,7 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param listingItem
      */
     private async createFlaggedItemIfNeeded(listingItem: resources.ListingItem): Promise<resources.FlaggedItem | void> {
-        await this.proposalService.findOneByItemHash(listingItem.hash)
+        await this.proposalService.findOneByTarget(listingItem.hash)
             .then(async value => {
                 const proposal: resources.Proposal = value.toJSON();
                 return await this.createFlaggedItemForListingItem(listingItem, proposal);
@@ -340,36 +300,6 @@ export class ListingItemAddActionService extends BaseActionService {
         } as FlaggedItemCreateRequest;
 
         return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-    }
-
-    /**
-     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
-     *
-     * @param wallet
-     * @param address
-     * @param hash
-     */
-    private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
-        if (_.isEmpty(wallet)) {
-            throw new MissingParamException('wallet');
-        }
-        if (_.isEmpty(address)) {
-            throw new MissingParamException('address');
-        }
-        if (_.isEmpty(hash)) {
-            throw new MissingParamException('hash');
-        }
-        const message = {
-            address,        // seller address
-            hash            // item hash
-        } as SellerMessage;
-
-        this.log.debug('signSellerMessage(), message: ', JSON.stringify(message, null, 2));
-
-        this.log.debug('signSellerMessage(), address: ', address);
-        this.log.debug('signSellerMessage(), hash: ', hash);
-
-        return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
 }

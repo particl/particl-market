@@ -18,7 +18,6 @@ import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { CommentAddMessageFactory } from '../../factories/message/CommentAddMessageFactory';
 import { CommentService } from '../model/CommentService';
-import { CommentAddMessageCreateParams } from '../../requests/message/CommentAddMessageCreateParams';
 import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest';
 import { CommentCreateParams } from '../../factories/model/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
@@ -29,17 +28,7 @@ import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
 import { CommentAction } from '../../enums/CommentAction';
-import { VerifiableMessage } from './ListingItemAddActionService';
 
-
-// todo: move
-export interface CommentTicket extends VerifiableMessage {
-    address: string;
-    type: string;
-    target: string;
-    message: string;
-    parentCommentHash: string;
-}
 
 export class CommentAddActionService extends BaseActionService {
 
@@ -73,17 +62,7 @@ export class CommentAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: CommentAddRequest): Promise<MarketplaceMessage> {
 
-        const signature = await this.signComment(actionRequest);
-
-        const actionMessage: CommentAddMessage = await this.commentAddMessageFactory.get({
-            sender: actionRequest.sender,
-            receiver: actionRequest.receiver,
-            type: actionRequest.type,
-            target: actionRequest.target,
-            message: actionRequest.message,
-            parentComment: actionRequest.parentComment,
-            signature
-        } as CommentAddMessageCreateParams);
+        const actionMessage: CommentAddMessage = await this.commentAddMessageFactory.get(actionRequest);
 
         return {
             version: ompVersion(),
@@ -245,23 +224,5 @@ export class CommentAddActionService extends BaseActionService {
         }
         return undefined;
     }
-
-    /**
-     * signs the comment, returns signature
-     *
-     * @param {CommentAddRequest} data
-     */
-    private async signComment(data: CommentAddRequest): Promise<string> {
-        const commentTicket = {
-            type: data.type,
-            address: data.sender.address,
-            target: data.target,
-            parentCommentHash: data.parentComment ? data.parentComment.hash : '',
-            message: data.message
-        } as CommentTicket;
-
-        return await this.coreRpcService.signMessage(data.sender.wallet, data.sender.address, commentTicket);
-    }
-
 
 }

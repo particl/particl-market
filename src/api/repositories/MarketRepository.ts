@@ -38,6 +38,14 @@ export class MarketRepository {
         return await this.MarketModel.fetchById(id, withRelated);
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByHash(hash, withRelated);
+    }
+
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByMsgId(msgid, withRelated);
+    }
+
     public async findOneByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
     }

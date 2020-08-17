@@ -12,6 +12,7 @@ export class BidAcceptRequest extends RequestBody implements ActionRequestInterf
 
     @IsNotEmpty()
     public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
+
     @IsNotEmpty()
     public bid: resources.Bid;                  // bid which we're accepting
 

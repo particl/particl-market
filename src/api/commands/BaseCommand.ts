@@ -8,11 +8,24 @@ import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import {MissingParamException} from '../exceptions/MissingParamException';
+import {InvalidParamException} from '../exceptions/InvalidParamException';
+
+export interface ParamValidationRule {
+    name: string;
+    required: boolean;
+    type: string;
+}
+
+export interface CommandParamValidationRules {
+    parameters: ParamValidationRule[];
+}
 
 export abstract class BaseCommand {
 
     public commands: CommandEnumType;
     public command: Command;
+    protected paramValidationRules: CommandParamValidationRules;
 
     constructor(command: Command) {
         this.command = command;
@@ -50,7 +63,11 @@ export abstract class BaseCommand {
         return this.command.childCommands;
     }
 
-    public abstract async validate(data: RpcRequest): Promise<RpcRequest>;
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await this.validateRequiredParamsExist(data);
+        await this.validateRequiredTypes(data);
+        return data;
+    }
 
     public abstract help(): string;
 
@@ -66,6 +83,43 @@ export abstract class BaseCommand {
 
     public getCommand(): Command {
         return this.command;
+    }
+
+    public async validateRequiredParamsExist(data: RpcRequest): Promise<RpcRequest> {
+        if (this.paramValidationRules
+            && this.paramValidationRules.parameters
+            && this.paramValidationRules.parameters.length > 0) {
+
+            for (let i = 0; i < data.params.length; i++) {
+                if (this.paramValidationRules.parameters[i]) {
+                    const paramValidationRule = this.paramValidationRules.parameters[i];
+
+                    if (paramValidationRule.required && data.params.length < i) {
+                        throw new MissingParamException(this.paramValidationRules.parameters[i].name);
+                    }
+                }
+            }
+        }
+        return data;
+    }
+
+    public async validateRequiredTypes(data: RpcRequest): Promise<RpcRequest> {
+        if (this.paramValidationRules
+            && this.paramValidationRules.parameters
+            && this.paramValidationRules.parameters.length > 0) {
+
+            for (let i = 0; i < data.params.length; i++) {
+                const currentParamValue = data.params[i];
+                const requiredType = this.paramValidationRules.parameters[i].type;
+                const parameterName = this.paramValidationRules.parameters[i].name;
+
+                if (!_.isNil(currentParamValue) && !_.isNil(requiredType) && typeof currentParamValue !== requiredType) {
+                    throw new InvalidParamException(parameterName, requiredType);
+                }
+            }
+        }
+
+        return data;
     }
 
 }

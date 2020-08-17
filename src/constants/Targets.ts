@@ -435,6 +435,7 @@ export const Targets = {
             ItemImageFactory: 'ItemImageFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
+            MarketFactory: 'MarketFactory',
             ModelCreateParams: 'ModelCreateParams',
             ModelFactoryInterface: 'ModelFactoryInterface',
             OrderFactory: 'OrderFactory',

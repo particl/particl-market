@@ -83,6 +83,8 @@ export class EscrowLockActionService extends BaseBidActionService {
      */
     public async createMarketplaceMessage(actionRequest: EscrowLockRequest): Promise<MarketplaceMessage> {
 
+        // todo: EscrowLockMessageFactory
+
         // note: factory checks that the hashes match
         return await this.listingItemAddActionService.createMarketplaceMessage({
             sendParams: {} as SmsgSendParams, // not needed, this message is not sent

@@ -14,11 +14,11 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
 import { MPActionExtended } from '../enums/MPActionExtended';
-import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageAddMessage';
-import { ImageAddMessage } from '../services/action/ListingItemImageAddActionService';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
 import { MarketImageAddMessage } from '../messages/action/MarketImageAddMessage';
+import { MissingParamException } from '../exceptions/MissingParamException';
+import { InvalidParamException } from '../exceptions/InvalidParamException';
 
 /**
  *
@@ -46,68 +46,37 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
      */
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
 
-        if (message.action.type !== MPActionExtended.MPA_MARKET_IMAGE_ADD) {
+        const actionMessage = message.action as MarketImageAddMessage;
+
+        if (actionMessage.type !== MPActionExtended.MPA_MARKET_IMAGE_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_MARKET_IMAGE_ADD]);
         }
 
-        const actionMessage = message.action as MarketImageAddMessage;
-
-        const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(actionMessage.hash).then(value => value.toJSON());
-
-        if (!_.isEmpty(itemImages)) {
-            // get the seller from the ListingItem
-            const seller = itemImages[0].ItemInformation.ListingItem.seller;
-
-            // now we can finally verify that the ListingItemAddMessage was actually sent by the seller
-/*
-            const verified = await this.verifyImageMessage(actionMessage, seller);
-            if (!verified) {
-                this.log.error('Received seller signature failed validation.');
-                return false;
-                // throw new MessageException('Received seller signature failed validation.');
-            }
-*/
-            return true;
-
-        } else {
-            // there were no images related to any listing, even though we are either sending or receiving one
-            // we should only end up here, if the ListingItemAddMessage wasn't processed yet
-            // ...actually validateSequence should fail, so we never end up here.
-            this.log.error('This should never happen.');
-            return false;
+        if (_.isEmpty(actionMessage.hash)) {
+            throw new MissingParamException('hash');
         }
-    }
 
-    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
+        if (_.isEmpty(actionMessage.data)) {
+            throw new MissingParamException('data');
+        }
 
-        if (ActionDirection.INCOMING === direction) {
-            // in case of incoming message, LISTINGITEM_ADD should have been received already, so ListingItem with the hash should exist
-            const actionMessage = message.action as ListingItemImageAddMessage;
-            const listingItems: resources.ListingItem[] = await this.listingItemService.findAllByHash(actionMessage.target).then(value => value.toJSON());
-            if (_.isEmpty(listingItems)) {
-                this.log.error('MARKET_ADD has not been received or processed yet.');
-                return false;
-            }
+        if (!_.isArray(actionMessage.data)) {
+            throw new InvalidParamException('data', 'DSN[]');
+        }
+
+        if (_.isEmpty(actionMessage.target)) {
+            throw new MissingParamException('target');
+        }
+
+        if (_.isEmpty(actionMessage.generated)) {
+            throw new MissingParamException('generated');
         }
 
         return true;
     }
 
-    /**
-     * verifies SellerMessage, returns boolean
-     *
-     * @param listingItemImageAddMessage
-     * @param sellerAddress
-     */
-    private async verifyImageMessage(listingItemImageAddMessage: ListingItemImageAddMessage, sellerAddress: string): Promise<boolean> {
-        // we need to get the associated ListingItem to get the seller address and ListingItem hash
-        const message = {
-            address: sellerAddress,                         // sellers address
-            hash: listingItemImageAddMessage.hash,          // image hash
-            target: listingItemImageAddMessage.target       // item hash
-        } as ImageAddMessage;
-
-        return await this.coreRpcService.verifyMessage(sellerAddress, listingItemImageAddMessage.signature, message);
+    public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
+        return true;
     }
 
 }

@@ -4,19 +4,31 @@
 
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Core, Types } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { CommentAction } from '../../enums/CommentAction';
-import { CommentAddMessageCreateParams } from '../../requests/message/CommentAddMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentAddMessageConfig } from '../hashableconfig/message/HashableCommentAddMessageConfig';
+import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { VerifiableMessage } from './ListingItemAddMessageFactory';
+
+// todo: move
+export interface CommentTicket extends VerifiableMessage {
+    address: string;
+    type: string;
+    target: string;
+    message: string;
+    parentCommentHash: string;
+}
 
 export class CommentAddMessageFactory implements MessageFactoryInterface {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -24,25 +36,45 @@ export class CommentAddMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param {CommentAddMessageCreateParams} params
+     * @param {CommentAddRequest} actionRequest
      * @returns {Promise<CommentAddMessage>}
      */
-    public async get(params: CommentAddMessageCreateParams): Promise<CommentAddMessage> {
+    public async get(actionRequest: CommentAddRequest): Promise<CommentAddMessage> {
+
+        const signature = await this.signComment(actionRequest);
 
         const commentMessage = {
             type: CommentAction.MPA_COMMENT_ADD,
-            sender: params.sender.address,
-            receiver: params.receiver,
-            commentType: params.type,
-            target: params.target,
-            message: params.message,
-            parentCommentHash: params.parentComment ? params.parentComment.hash : '',
-            signature: params.signature,
-            generated: Date.now()
+            sender: actionRequest.sender.address,
+            receiver: actionRequest.receiver,
+            commentType: actionRequest.type,
+            target: actionRequest.target,
+            message: actionRequest.message,
+            parentCommentHash: actionRequest.parentComment ? actionRequest.parentComment.hash : '',
+            signature,
+            generated: +Date.now()
         } as CommentAddMessage;
 
         commentMessage.hash = ConfigurableHasher.hash(commentMessage, new HashableCommentAddMessageConfig());
 
         return commentMessage;
     }
+
+    /**
+     * signs the comment, returns signature
+     *
+     * @param {CommentAddRequest} data
+     */
+    private async signComment(data: CommentAddRequest): Promise<string> {
+        const commentTicket = {
+            type: data.type,
+            address: data.sender.address,
+            target: data.target,
+            parentCommentHash: data.parentComment ? data.parentComment.hash : '',
+            message: data.message
+        } as CommentTicket;
+
+        return await this.coreRpcService.signMessage(data.sender.wallet, data.sender.address, commentTicket);
+    }
+
 }

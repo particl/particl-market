@@ -63,8 +63,8 @@ export class ProposalRepository {
         return this.ProposalModel.fetchByHash(hash, withRelated);
     }
 
-    public async findOneByItemHash(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
-        return this.ProposalModel.fetchByItemHash(itemHash, withRelated);
+    public async findOneByTarget(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByTarget(itemHash, withRelated);
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Proposal> {
@@ -79,7 +79,7 @@ export class ProposalRepository {
         const proposal = this.ProposalModel.forge<Proposal>(data);
         try {
             const proposalCreated = await proposal.save();
-            return this.ProposalModel.fetchById(proposalCreated.id);
+            return await this.ProposalModel.fetchById(proposalCreated.id);
         } catch (error) {
             this.log.error('error:', error);
             throw new DatabaseException('Could not create the proposal!' + error, error);

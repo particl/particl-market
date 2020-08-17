@@ -72,15 +72,7 @@ export class ProposalAddActionService extends BaseActionService {
      */
     public async createMarketplaceMessage(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
 
-        const actionMessage: ProposalAddMessage = await this.proposalAddMessageFactory.get({
-            title: actionRequest.title,
-            description: actionRequest.description,
-            options: actionRequest.options,
-            sender: actionRequest.sender,
-            category: actionRequest.category,
-            target: actionRequest.target,
-            market: actionRequest.market.receiveAddress
-        } as ProposalAddMessageCreateParams);
+        const actionMessage: ProposalAddMessage = await this.proposalAddMessageFactory.get(actionRequest);
 
         return {
             version: ompVersion(),

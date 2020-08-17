@@ -25,7 +25,6 @@ import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest
 import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { OrderItemShipMessageFactory } from '../../factories/message/OrderItemShipMessageFactory';
-import { OrderItemShipMessageCreateParams } from '../../requests/message/OrderItemShipMessageCreateParams';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { NotificationService } from '../NotificationService';
 import { ListingItemService } from '../model/ListingItemService';
@@ -66,18 +65,15 @@ export class OrderItemShipActionService extends BaseBidActionService {
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMarketplaceMessage(params: OrderItemShipRequest): Promise<MarketplaceMessage> {
+    public async createMarketplaceMessage(actionRequest: OrderItemShipRequest): Promise<MarketplaceMessage> {
 
         // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-        return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
+        return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
             .then(async bid => {
 
-                const actionMessage: OrderItemShipMessage = await this.orderItemShipMessageFactory.get({
-                    bidHash: params.bid.hash,
-                    memo: params.memo
-                } as OrderItemShipMessageCreateParams);
+                const actionMessage: OrderItemShipMessage = await this.orderItemShipMessageFactory.get(actionRequest);
 
                 this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
 

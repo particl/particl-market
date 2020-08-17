@@ -11,8 +11,8 @@ import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidM
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
-import { BidRejectMessageCreateParams } from '../../requests/message/BidRejectMessageCreateParams';
-import {ActionMessageObjects} from '../../enums/ActionMessageObjects';
+import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
+import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 
 export class BidRejectMessageFactory implements MessageFactoryInterface {
 
@@ -26,23 +26,22 @@ export class BidRejectMessageFactory implements MessageFactoryInterface {
 
     /**
      *
-     * @param params
-     *      bidHash: string
+     * @param actionRequest
      * @returns {Promise<BidRejectMessage>}
      */
-    public async get(params: BidRejectMessageCreateParams): Promise<BidRejectMessage> {
+    public async get(actionRequest: BidRejectRequest): Promise<BidRejectMessage> {
         const message = {
             type: MPAction.MPA_REJECT,
             generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash                 // hash of MPA_BID
+            bid: actionRequest.bid.hash                 // hash of MPA_BID
         } as BidRejectMessage;
 
-        if (params.reason) {
+        if (actionRequest.reason) {
             message.objects = [] as KVS[];
             message.objects.push({
                 key: ActionMessageObjects.BID_REJECT_REASON,
-                value: params.reason
+                value: actionRequest.reason
             } as KVS);
         }
 

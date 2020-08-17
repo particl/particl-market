@@ -8,21 +8,11 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
 
-export class ListingItemImageAddRequest extends RequestBody implements ActionRequestInterface {
+export class MarketAddRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
     public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public image: resources.ItemImage;
-
-    @IsNotEmpty()
-    public listingItem: resources.ListingItem | resources.ListingItemTemplate;
-
-    public withData: boolean;   // whether the data is included in the message or not
-                                // (... ProtocolDSN LOCAL or SMSG)
-
-    @IsNotEmpty()
-    // public seller: resources.Identity;
-    public sellerAddress: string;      // <- Identity.address
+    public market: resources.Market;
 }
