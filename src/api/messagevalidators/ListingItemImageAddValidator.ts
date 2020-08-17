@@ -15,10 +15,10 @@ import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
 import { MPActionExtended } from '../enums/MPActionExtended';
 import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageAddMessage';
-import { ImageAddMessage } from '../services/action/ListingItemImageAddActionService';
 import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
 import { MessageException } from '../exceptions/MessageException';
+import { ImageAddMessage } from '../factories/message/ListingItemImageAddMessageFactory';
 
 export class ListingItemImageAddValidator implements ActionMessageValidatorInterface {
 

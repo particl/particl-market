@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { BaseCommand } from './BaseCommand';
-import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -28,8 +27,8 @@ export abstract class BaseSearchCommand extends BaseCommand {
     public abstract getAllowedSearchOrderFields(): string[];
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        await super.validate(data); // validates the basic params, see: BaseCommand.validate()
-        return await this.validateSearchParams(data);
+        await this.validateSearchParams(data);
+        return await super.validate(data); // validates the basic params, see: BaseCommand.validate()
     }
 
     /**
@@ -45,11 +44,29 @@ export abstract class BaseSearchCommand extends BaseCommand {
      */
     public async validateSearchParams(data: RpcRequest): Promise<RpcRequest> {
 
+        this.paramValidationRules.parameters.unshift({
+            name: 'page',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'pageLimit',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'order',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'orderField',
+            required: true,
+            type: 'string'
+        });
+
         const page = data.params[0];
         const pageLimit = data.params[1];
         const order = data.params[2];
         const orderField = data.params[3];
-
+/*
         // make sure all required parameters exist
         if (data.params.length < 1) {
             throw new MissingParamException('page');
@@ -71,7 +88,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
         } else if (typeof orderField !== 'string') {
             throw new InvalidParamException('orderField', 'string');
         }
-
+*/
         // valid SearchOrder?
         if (!EnumHelper.containsName(SearchOrder, order)) {
             throw new InvalidParamException('order', 'SearchOrder.' + EnumHelper.getNames(SearchOrder));

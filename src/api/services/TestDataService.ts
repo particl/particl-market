@@ -101,8 +101,7 @@ import { SettingValue } from '../enums/SettingValue';
 import { GenerateSmsgMessageParams } from '../requests/testdata/GenerateSmsgMessageParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
 import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
-import { ListingItemAddMessageFactory } from '../factories/message/ListingItemAddMessageFactory';
-import { ListingItemAddMessageCreateParams } from '../requests/message/ListingItemAddMessageCreateParams';
+import { ListingItemAddMessageFactory, SellerMessage } from '../factories/message/ListingItemAddMessageFactory';
 import { ompVersion } from 'omp-lib/dist/omp';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
@@ -121,8 +120,9 @@ import { IdentityService } from './model/IdentityService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { HashableListingItemTemplateConfig } from '../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 import { ServerStartedListener } from '../listeners/ServerStartedListener';
-import { SellerMessage } from './action/ListingItemAddActionService';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
+import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
+import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 
 
 export class TestDataService {
@@ -733,10 +733,12 @@ export class TestDataService {
             });
 
         const listingItemAddMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
+            sendParams: {
+                wallet: sellerIdentity.wallet
+            } as SmsgSendParams,
             listingItem,
-            sellerAddress: sellerIdentity.address,
-            signature: Faker.random.uuid()
-        } as ListingItemAddMessageCreateParams);
+            sellerAddress: sellerIdentity.address
+        } as ListingItemAddRequest).then(value => value.action as ListingItemAddMessage);
 
         const marketplaceMessage: MarketplaceMessage = {
             version: ompVersion(),
@@ -1614,7 +1616,8 @@ export class TestDataService {
         } else {
             switch (generateParams.type) {
                 case MPAction.MPA_LISTING_ADD: {
-                    action = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddMessageCreateParams);
+                    const marketplaceMessage = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddRequest);
+                    action = marketplaceMessage.action;
                     break;
                 }
                 case MPAction.MPA_BID: {

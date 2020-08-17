@@ -86,8 +86,8 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [5]: searchString, string, optional, * for all
-     *  [6]: type, MarketType, optional
+     *  [4]: searchString, string, optional, * for all
+     *  [5]: type, MarketType, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -101,12 +101,8 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
 
         data.params[8] = (data.params[8] !== '*') ? data.params[8] : undefined;
 
-        const profileId = data.params[4];               // required
-        const searchString = data.params[5];            // optional
-        const categories = data.params[6];              // optional
-        const isBaseTemplate = data.params[7];          // optional
-        const marketReceiveAddress = data.params[8];    // optional
-        const hasItems = data.params[9];                // optional
+        const searchString = data.params[4];            // optional
+        const type = data.params[5];                    // optional
 
 
         if (profileId && typeof profileId !== 'number') {
