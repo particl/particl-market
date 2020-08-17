@@ -11,7 +11,6 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { CoreRpcService } from '../CoreRpcService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { CommentAddRequest } from '../../requests/action/CommentAddRequest';

@@ -86,12 +86,9 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profileId, number, required
-     *  [5]: searchString, string, * for all, optional
-     *  [6]: categories, optional, number[]|string>[], if string -> find using key
-     *  [7]: isBaseTemplate, boolean, optional, default true
-     *  [8]: marketReceiveAddress, string, * for all, optional
-     *  [9]: hasItems, boolean, optional
+     *  [5]: searchString, string, optional, * for all
+     *  [6]: type, MarketType, optional
+     *
      * @param data
      * @returns {Promise<RpcRequest>}
      */

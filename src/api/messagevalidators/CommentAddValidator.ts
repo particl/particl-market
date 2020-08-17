@@ -13,7 +13,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { CommentAction } from '../enums/CommentAction';
 import { ActionDirection } from '../enums/ActionDirection';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
-import { CommentTicket } from '../services/action/CommentAddActionService';
+import { CommentTicket } from '../factories/message/CommentAddMessageFactory';
 
 export class CommentAddValidator implements ActionMessageValidatorInterface {
 
