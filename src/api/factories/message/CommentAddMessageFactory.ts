@@ -6,13 +6,14 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { CommentAction } from '../../enums/CommentAction';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableCommentAddMessageConfig } from '../hashableconfig/message/HashableCommentAddMessageConfig';
 import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 // todo: move
 export interface CommentTicket extends VerifiableMessage {
@@ -23,7 +24,7 @@ export interface CommentTicket extends VerifiableMessage {
     parentCommentHash: string;
 }
 
-export class CommentAddMessageFactory implements MessageFactoryInterface {
+export class CommentAddMessageFactory  extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -31,19 +32,20 @@ export class CommentAddMessageFactory implements MessageFactoryInterface {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
      * @param {CommentAddRequest} actionRequest
-     * @returns {Promise<CommentAddMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: CommentAddRequest): Promise<CommentAddMessage> {
+    public async get(actionRequest: CommentAddRequest): Promise<MarketplaceMessage> {
 
         const signature = await this.signComment(actionRequest);
 
-        const commentMessage = {
+        const message = {
             type: CommentAction.MPA_COMMENT_ADD,
             sender: actionRequest.sender.address,
             receiver: actionRequest.receiver,
@@ -55,9 +57,9 @@ export class CommentAddMessageFactory implements MessageFactoryInterface {
             generated: +Date.now()
         } as CommentAddMessage;
 
-        commentMessage.hash = ConfigurableHasher.hash(commentMessage, new HashableCommentAddMessageConfig());
+        message.hash = ConfigurableHasher.hash(message, new HashableCommentAddMessageConfig());
 
-        return commentMessage;
+        return await this.getMarketplaceMessage(message);
     }
 
     /**

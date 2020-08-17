@@ -5,7 +5,6 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from 'events';
@@ -44,7 +43,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public orderItemShipMessageFactory: OrderItemShipMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public actionMessageFactory: OrderItemShipMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -68,22 +67,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: OrderItemShipRequest): Promise<MarketplaceMessage> {
-
-        // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-        return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
-            .then(async bid => {
-
-                const actionMessage: OrderItemShipMessage = await this.orderItemShipMessageFactory.get(actionRequest);
-
-                this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
-                return {
-                    version: ompVersion(),
-                    action: actionMessage
-                } as MarketplaceMessage;
-
-            });
-
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

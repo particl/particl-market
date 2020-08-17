@@ -15,7 +15,6 @@ import { SmsgMessageService } from '../model/SmsgMessageService';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreRpcService } from '../CoreRpcService';
 import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
@@ -49,7 +48,7 @@ export class MarketImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketImageAddMessageFactory) private marketImageAddMessageFactory: MarketImageAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketImageAddMessageFactory) private actionMessageFactory: MarketImageAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketImageAddValidator) public validator: MarketImageAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -71,15 +70,8 @@ export class MarketImageAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: MarketImageAddRequest): Promise<MarketplaceMessage> {
-
         actionRequest.withData = true;
-        const actionMessage: MarketImageAddMessage = await this.marketImageAddMessageFactory.get(actionRequest);
-        // this.log.debug('createMarketplaceMessage(), actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

@@ -20,7 +20,7 @@ import {
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 import { CtRpc } from 'omp-lib/dist/abstract/rpc';
-import { VerifiableMessage } from './action/ListingItemAddActionService';
+import {VerifiableMessage} from '../factories/message/ListingItemAddMessageFactory';
 
 
 decorate(injectable(), Rpc);

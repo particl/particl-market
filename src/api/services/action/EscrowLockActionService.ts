@@ -17,11 +17,8 @@ import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { EscrowType, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
@@ -29,7 +26,6 @@ import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
 import { EscrowLockValidator } from '../../messagevalidators/EscrowLockValidator';
 import { EscrowLockMessage } from '../../messages/action/EscrowLockMessage';
-import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
@@ -38,6 +34,7 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { EscrowLockMessageFactory } from '../../factories/message/EscrowLockMessageFactory';
 
 export class EscrowLockActionService extends BaseBidActionService {
 
@@ -54,6 +51,7 @@ export class EscrowLockActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowLockMessageFactory) public actionMessageFactory: EscrowLockMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -82,43 +80,7 @@ export class EscrowLockActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: EscrowLockRequest): Promise<MarketplaceMessage> {
-
-        // todo: EscrowLockMessageFactory
-
-        // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMarketplaceMessage({
-            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem,
-            sellerAddress: actionRequest.bid.ListingItem.seller
-        } as ListingItemAddRequest)
-            .then(async listingItemAddMPM => {
-
-                // this.log.debug('params: ', JSON.stringify(params, null, 2));
-                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid, ActionDirection.OUTGOING)
-                    .then(async bid => {
-
-                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
-                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-                        // this.log.debug('createMessage(), bidMPM:', JSON.stringify(bidMPM, null, 2));
-
-                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid, ActionDirection.INCOMING)
-                            .then(async bidAccept => {
-
-                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
-                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
-                                // this.log.debug('createMessage(), bidAcceptMPM:', JSON.stringify(bidMPM, null, 2));
-
-                                // finally use omp to generate EscrowLockMessage
-                                return await this.ompService.lock(
-                                    actionRequest.sendParams.wallet,
-                                    listingItemAddMPM.action as ListingItemAddMessage,
-                                    bidMPM.action as BidMessage,
-                                    bidAcceptMPM.action as BidAcceptMessage
-                                );
-                            });
-                    });
-            });
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
@@ -133,6 +95,7 @@ export class EscrowLockActionService extends BaseBidActionService {
             // send the lock rawtx
             const bidtx = marketplaceMessage.action['_rawbidtx'];
             const txid = await this.coreRpcService.sendRawTransaction(bidtx);
+            delete marketplaceMessage.action['_rawbidtx'];
 
             // add txid to the EscrowLockMessage to be sent to the seller
             const bidMessage = marketplaceMessage.action as BidMessage;

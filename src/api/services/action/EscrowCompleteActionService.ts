@@ -49,7 +49,6 @@ export class EscrowCompleteActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -57,7 +56,8 @@ export class EscrowCompleteActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.EscrowCompleteMessageFactory) public escrowCompleteMessageFactory: EscrowCompleteMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowCompleteMessageFactory) public actionMessageFactory: EscrowCompleteMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowCompleteValidator) public validator: EscrowCompleteValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -89,57 +89,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: EscrowCompleteRequest): Promise<MarketplaceMessage> {
-
-        // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMarketplaceMessage({
-            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem,
-            sellerAddress: actionRequest.bid.ListingItem.seller
-        } as ListingItemAddRequest)
-            .then(async listingItemAddMPM => {
-
-                // todo: move to escrowCompleteMessageFactory?
-                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
-                    .then(async bid => {
-                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
-                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-
-                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid)
-                            .then(async bidAccept => {
-                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
-                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
-
-                                return this.smsgMessageService.findOneByMsgId(actionRequest.escrowLock.msgid)
-                                    .then(async escrowLock => {
-                                        const escrowLockSmsgMessage: resources.SmsgMessage = escrowLock.toJSON();
-                                        const escrowLockMPM: MarketplaceMessage = JSON.parse(escrowLockSmsgMessage.text);
-
-                                        // finally use omp to generate completetx
-                                        const completetx = await this.ompService.complete(
-                                            actionRequest.sendParams.wallet,
-                                            listingItemAddMPM.action as ListingItemAddMessage,
-                                            bidMPM.action as BidMessage,
-                                            bidAcceptMPM.action as BidAcceptMessage,
-                                            escrowLockMPM.action as EscrowLockMessage
-                                        );
-
-                                        // this.log.debug('completetx: ', completetx);
-                                        const actionMessage: EscrowCompleteMessage = await this.escrowCompleteMessageFactory.get(actionRequest);
-
-                                        // store the completetx temporarily in the actionMessage
-                                        actionMessage['_completetx'] = completetx;
-
-                                        this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
-                                        return {
-                                            version: ompVersion(),
-                                            action: actionMessage
-                                        } as MarketplaceMessage;
-                                    });
-                            });
-                    });
-            });
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
@@ -157,6 +107,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
         // send the complete rawtx
         const completetx = marketplaceMessage.action['_completetx'];
         const txid = await this.coreRpcService.sendRawTransaction(completetx);
+        delete marketplaceMessage.action['_completetx'];
 
         // add txid to the EscrowCompleteMessage to be sent to the seller
         marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [] as KVS[];

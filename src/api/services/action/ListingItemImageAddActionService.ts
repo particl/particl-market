@@ -38,14 +38,7 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
 import { ItemImageUpdateRequest } from '../../requests/model/ItemImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
-import { VerifiableMessage } from './ListingItemAddActionService';
 
-// todo: move
-export interface ImageAddMessage extends VerifiableMessage {
-    address: string;            // seller address
-    hash: string;               // image hash being added
-    target: string;             // listing hash the image is related to
-}
 
 export class ListingItemImageAddActionService extends BaseActionService {
 
@@ -64,7 +57,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private actionMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemImageAddValidator) public validator: ListingItemImageAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -87,18 +80,8 @@ export class ListingItemImageAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: ListingItemImageAddMessage = await this.listingItemImageAddMessageFactory.get({
-            sendParams: actionRequest.sendParams,
-            listingItem: actionRequest.listingItem,
-            image: actionRequest.image,
-            withData: true
-        } as ListingItemImageAddRequest);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        actionRequest.withData = true;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

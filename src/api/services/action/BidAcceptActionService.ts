@@ -35,6 +35,7 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ListingItemService } from '../model/ListingItemService';
+import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
 
 export class BidAcceptActionService extends BaseBidActionService {
 
@@ -50,6 +51,7 @@ export class BidAcceptActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public messageFactory: BidAcceptMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidAcceptValidator) public validator: BidAcceptValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -77,34 +79,7 @@ export class BidAcceptActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidAcceptRequest): Promise<MarketplaceMessage> {
-
-        // todo: create a factory
-
-        // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMarketplaceMessage({
-            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem,
-            sellerAddress: actionRequest.bid.ListingItem.seller
-        } as ListingItemAddRequest)
-            .then(async listingItemAddMPM => {
-
-                // this.log.debug('createMessage(), listingItemAddMPM:', JSON.stringify(listingItemAddMPM, null, 2));
-
-                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
-                    .then(async value => {
-
-                        const bidSmsgMessage: resources.SmsgMessage = value.toJSON();
-                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-
-                        // finally use omp to generate BidAcceptMessage
-                        return await this.ompService.accept(
-                            actionRequest.sendParams.wallet,
-                            listingItemAddMPM.action as ListingItemAddMessage,
-                            bidMPM.action as BidMessage
-                        );
-                    });
-            });
+        return await this.messageFactory.get(actionRequest);
     }
 
     /**

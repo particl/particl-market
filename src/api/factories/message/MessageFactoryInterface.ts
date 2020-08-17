@@ -2,12 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-/**
- * MessageFactoryInterface defines how the Factory classes for the Messages should be implemented
- */
 export interface MessageFactoryInterface {
-    get(params: ActionRequestInterface): Promise<ActionMessageInterface>;
+    get(params: ActionRequestInterface): Promise<MarketplaceMessage>;
 }

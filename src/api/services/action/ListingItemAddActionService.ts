@@ -17,7 +17,6 @@ import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { CoreRpcService } from '../CoreRpcService';
 import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
@@ -53,7 +52,7 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private actionMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -83,7 +82,6 @@ export class ListingItemAddActionService extends BaseActionService {
                 wallet: market.Identity.wallet
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
-            // market,
             sellerAddress: market.Identity.address
         } as ListingItemAddRequest);
 
@@ -114,25 +112,7 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get(actionRequest);
-
-        // this.log.debug('createMarketplaceMessage(), actionRequest: ', JSON.stringify(actionRequest, null, 2));
-/*
-        const actionMessage: ListingItemAddMessage = await this.listingItemAddMessageFactory.get({
-            // in this case this is actually the listingItemTemplate, as we use to create the message from both
-            listingItem: actionRequest.listingItem,
-            sellerAddress: actionRequest.sellerAddress,
-            // cryptoAddress: ...we could override the payment address here
-            signature
-        } as ListingItemAddMessageCreateParams);
-*/
-        // this.log.debug('createMarketplaceMessage(), actionMessage.item: ', JSON.stringify(actionMessage.item, null, 2));
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

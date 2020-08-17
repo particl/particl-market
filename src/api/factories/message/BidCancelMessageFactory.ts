@@ -5,30 +5,32 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-export class BidCancelMessageFactory implements MessageFactoryInterface {
+export class BidCancelMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
      * @param actionRequest
-     * @returns {Promise<BidCancelMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: BidCancelRequest): Promise<BidCancelMessage> {
+    public async get(actionRequest: BidCancelRequest): Promise<MarketplaceMessage> {
         const message = {
             type: MPAction.MPA_CANCEL,
             generated: +Date.now(),
@@ -39,7 +41,6 @@ export class BidCancelMessageFactory implements MessageFactoryInterface {
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
-
 }

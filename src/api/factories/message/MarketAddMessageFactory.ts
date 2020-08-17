@@ -7,7 +7,6 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MarketImageAddMessageFactory } from './MarketImageAddMessageFactory';
@@ -17,9 +16,10 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableMarketAddMessageConfig } from '../hashableconfig/message/HashableMarketAddMessageConfig';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-
-export class MarketAddMessageFactory implements MessageFactoryInterface {
+export class MarketAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -30,6 +30,7 @@ export class MarketAddMessageFactory implements MessageFactoryInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
@@ -37,10 +38,10 @@ export class MarketAddMessageFactory implements MessageFactoryInterface {
      * Creates a MarketAddMessage from given parameters
      *
      * @param actionRequest
-     * @returns {Promise<MarketAddMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
 
-    public async get(actionRequest: MarketAddRequest): Promise<MarketAddMessage> {
+    public async get(actionRequest: MarketAddRequest): Promise<MarketplaceMessage> {
 
         if (!actionRequest.market) {
             throw new MissingParamException('market');
@@ -69,7 +70,6 @@ export class MarketAddMessageFactory implements MessageFactoryInterface {
 
         message.hash = ConfigurableHasher.hash(message, new HashableMarketAddMessageConfig());
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
-
 }

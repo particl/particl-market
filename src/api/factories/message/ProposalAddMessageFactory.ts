@@ -8,7 +8,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
@@ -17,21 +16,24 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { BaseMessageFactory } from './BaseMessageFactory';
 
-export class ProposalAddMessageFactory implements MessageFactoryInterface {
+export class ProposalAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
      * @param actionRequest
-     * @returns {Promise<ProposalAddMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: ProposalAddRequest): Promise<ProposalAddMessage> {
+    public async get(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
 
         const optionsList: resources.ProposalOption[] = this.createOptionsList(actionRequest.options);
 
@@ -72,7 +74,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             }]));
         }
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
 
     private createOptionsList(options: string[]): resources.ProposalOption[] {

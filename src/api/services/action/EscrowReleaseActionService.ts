@@ -5,7 +5,6 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from 'events';
@@ -18,16 +17,11 @@ import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddActionService } from './ListingItemAddActionService';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { OmpService } from '../OmpService';
-import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { OrderStatus } from '../../enums/OrderStatus';
-import { BidMessage } from '../../messages/action/BidMessage';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { CoreRpcService } from '../CoreRpcService';
 import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
@@ -56,7 +50,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public escrowReleaseMessageFactory: EscrowReleaseMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public actionMessageFactory: EscrowReleaseMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowReleaseValidator) public validator: EscrowReleaseValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -88,46 +82,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: EscrowReleaseRequest): Promise<MarketplaceMessage> {
-
-        // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMarketplaceMessage({
-            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem,
-            sellerAddress: actionRequest.bid.ListingItem.seller
-        } as ListingItemAddRequest)
-            .then(async listingItemAddMPM => {
-
-                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
-                    .then(async bid => {
-                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
-                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-
-                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid)
-                            .then(async bidAccept => {
-                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
-                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
-
-                                // finally use omp to generate releasetx
-                                const releasetx = await this.ompService.release(
-                                    actionRequest.sendParams.wallet,
-                                    listingItemAddMPM.action as ListingItemAddMessage,
-                                    bidMPM.action as BidMessage,
-                                    bidAcceptMPM.action as BidAcceptMessage
-                                );
-
-                                const actionMessage: EscrowReleaseMessage = await this.escrowReleaseMessageFactory.get(actionRequest);
-
-                                // store the releasetx temporarily in the actionMessage
-                                actionMessage['_releasetx'] = releasetx;
-
-                                return {
-                                    version: ompVersion(),
-                                    action: actionMessage
-                                } as MarketplaceMessage;
-                            });
-                    });
-            });
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
@@ -145,6 +100,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
         // send the release rawtx
         const releasetx = marketplaceMessage.action['_releasetx'];
         const txid = await this.coreRpcService.sendRawTransaction(releasetx);
+        delete marketplaceMessage.action['_releasetx'];
 
         // add txid to the EscrowReleaseMessage to be sent to the seller
         marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [] as KVS[];

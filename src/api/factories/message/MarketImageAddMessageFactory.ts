@@ -7,7 +7,6 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
@@ -15,8 +14,10 @@ import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageF
 import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessage';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-export class MarketImageAddMessageFactory implements MessageFactoryInterface {
+export class MarketImageAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -27,15 +28,16 @@ export class MarketImageAddMessageFactory implements MessageFactoryInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
-     * @returns {Promise<MarketImageAddMessage>}
      * @param actionRequest
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: MarketImageAddRequest): Promise<MarketImageAddMessage> {
+    public async get(actionRequest: MarketImageAddRequest): Promise<MarketplaceMessage> {
 
         if (!actionRequest.image) {
             throw new MissingParamException('image');
@@ -56,7 +58,6 @@ export class MarketImageAddMessageFactory implements MessageFactoryInterface {
             generated: Date.now()
         } as MarketImageAddMessage;
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
-
 }

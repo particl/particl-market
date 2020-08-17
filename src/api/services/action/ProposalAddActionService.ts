@@ -23,9 +23,7 @@ import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreate
 import { VoteActionService } from './VoteActionService';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
-import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
@@ -50,8 +48,7 @@ export class ProposalAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private actionMessageFactory: ProposalAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -71,13 +68,7 @@ export class ProposalAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: ProposalAddMessage = await this.proposalAddMessageFactory.get(actionRequest);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

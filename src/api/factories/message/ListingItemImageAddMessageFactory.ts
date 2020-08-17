@@ -7,7 +7,6 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
@@ -15,10 +14,19 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
-import { ImageAddMessage } from '../../services/action/ListingItemImageAddActionService';
 import { CoreRpcService } from '../../services/CoreRpcService';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { VerifiableMessage } from './ListingItemAddMessageFactory';
 
-export class ListingItemImageAddMessageFactory implements MessageFactoryInterface {
+// todo: move
+export interface ImageAddMessage extends VerifiableMessage {
+    address: string;            // seller address
+    hash: string;               // image hash being added
+    target: string;             // listing hash the image is related to
+}
+
+export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -27,15 +35,16 @@ export class ListingItemImageAddMessageFactory implements MessageFactoryInterfac
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
-     * @returns {Promise<ListingItemImageAddMessage>}
      * @param actionRequest
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: ListingItemImageAddRequest): Promise<ListingItemImageAddMessage> {
+    public async get(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
 
         // hash should have been calculated when image was created
         // and signature have already been calculated, we just need the dsns
@@ -53,7 +62,7 @@ export class ListingItemImageAddMessageFactory implements MessageFactoryInterfac
             target: actionRequest.listingItem.hash // TODO: we could remove this later on...
         } as ListingItemImageAddMessage;
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
 
     /**

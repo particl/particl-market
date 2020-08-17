@@ -5,7 +5,6 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -13,14 +12,17 @@ import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { BaseMessageFactory } from './BaseMessageFactory';
 
-export class BidRejectMessageFactory implements MessageFactoryInterface {
+export class BidRejectMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
@@ -29,7 +31,7 @@ export class BidRejectMessageFactory implements MessageFactoryInterface {
      * @param actionRequest
      * @returns {Promise<BidRejectMessage>}
      */
-    public async get(actionRequest: BidRejectRequest): Promise<BidRejectMessage> {
+    public async get(actionRequest: BidRejectRequest): Promise<MarketplaceMessage> {
         const message = {
             type: MPAction.MPA_REJECT,
             generated: +Date.now(),
@@ -46,7 +48,7 @@ export class BidRejectMessageFactory implements MessageFactoryInterface {
         }
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
-        return message;
-    }
 
+        return await this.getMarketplaceMessage(message);
+    }
 }

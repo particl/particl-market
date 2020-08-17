@@ -413,10 +413,13 @@ export const Targets = {
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         message: {
+            BidMessageFactory: 'BidMessageFactory',
+            BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             CommentAddMessageFactory: 'CommentAddMessageFactory',
             EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
+            EscrowLockMessageFactory: 'EscrowLockMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',

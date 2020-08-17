@@ -31,7 +31,6 @@ import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
@@ -40,6 +39,8 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 
 // todo: move
@@ -53,7 +54,7 @@ export interface SellerMessage extends VerifiableMessage {
     address: string;            // seller address
 }
 
-export class ListingItemAddMessageFactory implements MessageFactoryInterface {
+export class ListingItemAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -65,6 +66,7 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
@@ -72,10 +74,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
      * Creates a ListingItemAddMessage from given parameters
      *
      * @param actionRequest
-     * @returns {Promise<MPA>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-
-    public async get(actionRequest: ListingItemAddRequest): Promise<ListingItemAddMessage> {
+    public async get(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
         if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
@@ -143,7 +144,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         if (actionRequest.listingItem.hash && actionRequest.listingItem.hash !== message.hash) {
             throw new HashMismatchException('ListingItemAddMessage', actionRequest.listingItem.hash, message.hash);
         }
-        return message;
+
+        return await this.getMarketplaceMessage(message);
     }
 
     /**

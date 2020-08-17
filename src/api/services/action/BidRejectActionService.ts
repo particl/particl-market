@@ -45,7 +45,7 @@ export class BidRejectActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public bidRejectMessageFactory: BidRejectMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public actionMessageFactory: BidRejectMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidRejectValidator) public validator: BidRejectValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -66,19 +66,10 @@ export class BidRejectActionService extends BaseBidActionService {
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * - generate BidRejectMessage
-     *
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: BidRejectRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: BidRejectMessage = await this.bidRejectMessageFactory.get(actionRequest);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
-
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

@@ -56,7 +56,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.EscrowRefundMessageFactory) public escrowRefundMessageFactory: EscrowRefundMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.EscrowRefundMessageFactory) public actionMessageFactory: EscrowRefundMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowRefundValidator) public validator: EscrowRefundValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -88,53 +88,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: EscrowRefundRequest): Promise<MarketplaceMessage> {
-
-        // note: factory checks that the hashes match
-        return await this.listingItemAddActionService.createMarketplaceMessage({
-            sendParams: {} as SmsgSendParams, // not needed, this message is not sent
-            listingItem: actionRequest.bid.ListingItem,
-            sellerAddress: actionRequest.bid.ListingItem.seller
-        } as ListingItemAddRequest)
-            .then(async listingItemAddMPM => {
-
-                // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-                return this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid)
-                    .then(async bid => {
-                        const bidSmsgMessage: resources.SmsgMessage = bid.toJSON();
-                        const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
-
-                        return this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid)
-                            .then(async bidAccept => {
-                                const bidAcceptSmsgMessage: resources.SmsgMessage = bidAccept.toJSON();
-                                const bidAcceptMPM: MarketplaceMessage = JSON.parse(bidAcceptSmsgMessage.text);
-
-                                return this.smsgMessageService.findOneByMsgId(actionRequest.escrowLock.msgid)
-                                    .then(async escrowLock => {
-                                        const escrowLockSmsgMessage: resources.SmsgMessage = escrowLock.toJSON();
-                                        const escrowLockMPM: MarketplaceMessage = JSON.parse(escrowLockSmsgMessage.text);
-
-                                        // finally use omp to generate refundtx
-                                        const refundtx = await this.ompService.refund(
-                                            actionRequest.sendParams.wallet,
-                                            listingItemAddMPM.action as ListingItemAddMessage,
-                                            bidMPM.action as BidMessage,
-                                            bidAcceptMPM.action as BidAcceptMessage,
-                                            escrowLockMPM.action as EscrowLockMessage
-                                        );
-
-                                        const actionMessage: EscrowRefundMessage = await this.escrowRefundMessageFactory.get(actionRequest);
-
-                                        // store the refundtx temporarily in the actionMessage
-                                        actionMessage['_refundtx'] = refundtx;
-
-                                        return {
-                                            version: ompVersion(),
-                                            action: actionMessage
-                                        } as MarketplaceMessage;
-                                    });
-                            });
-                    });
-            });
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
@@ -152,6 +106,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
         // send the refund rawtx
         const refundtx = marketplaceMessage.action['_refundtx'];
         const txid = await this.coreRpcService.sendRawTransaction(refundtx);
+        delete marketplaceMessage.action['_refundtx'];
 
         // add txid to the EscrowRefundMessage to be sent to the seller
         marketplaceMessage.action.objects = marketplaceMessage.action.objects ? marketplaceMessage.action.objects : [] as KVS[];
@@ -159,6 +114,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
             key: ActionMessageObjects.TXID_REFUND,
             value: txid
         } as KVS);
+
 
         return marketplaceMessage;
     }

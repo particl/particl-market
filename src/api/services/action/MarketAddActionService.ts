@@ -16,7 +16,6 @@ import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreRpcService } from '../CoreRpcService';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
@@ -29,7 +28,6 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MessageSize } from '../../responses/MessageSize';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketAddMessageFactory } from '../../factories/message/MarketAddMessageFactory';
@@ -55,7 +53,7 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private marketAddMessageFactory: MarketAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private actionMessageFactory: MarketAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -100,15 +98,7 @@ export class MarketAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: MarketAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: MarketAddMessage = await this.marketAddMessageFactory.get(actionRequest);
-
-        // this.log.debug('createMarketplaceMessage(), actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**

@@ -5,7 +5,6 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
@@ -13,23 +12,26 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-export class OrderItemShipMessageFactory implements MessageFactoryInterface {
+export class OrderItemShipMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
      * @param actionRequest
-     * @returns {Promise<OrderItemShipMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: OrderItemShipRequest): Promise<OrderItemShipMessage> {
+    public async get(actionRequest: OrderItemShipRequest): Promise<MarketplaceMessage> {
 
         const message = {
             type: MPActionExtended.MPA_SHIP,
@@ -43,7 +45,7 @@ export class OrderItemShipMessageFactory implements MessageFactoryInterface {
         } as OrderItemShipMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
-        return message;
-    }
 
+        return await this.getMarketplaceMessage(message);
+    }
 }

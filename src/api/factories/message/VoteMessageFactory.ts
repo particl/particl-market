@@ -8,10 +8,11 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { VoteMessage } from '../../messages/action/VoteMessage';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 // todo: move
 export interface VoteTicket extends VerifiableMessage {
@@ -20,7 +21,7 @@ export interface VoteTicket extends VerifiableMessage {
     address: string;            // voting address having balance
 }
 
-export class VoteMessageFactory implements MessageFactoryInterface {
+export class VoteMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
@@ -28,20 +29,21 @@ export class VoteMessageFactory implements MessageFactoryInterface {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
      * @param actionRequest
-     * @returns {Promise<VoteMessage>}
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(actionRequest: VoteRequest): Promise<VoteMessage> {
+    public async get(actionRequest: VoteRequest): Promise<MarketplaceMessage> {
 
         const signature = await this.signVote(actionRequest.sendParams.wallet, actionRequest.proposal, actionRequest.proposalOption,
             actionRequest.addressInfo.address);
 
-        const voteMessage = {
+        const message = {
             type: GovernanceAction.MPA_VOTE,
             proposalHash: actionRequest.proposal.hash,
             proposalOptionHash: actionRequest.proposalOption.hash,
@@ -49,7 +51,7 @@ export class VoteMessageFactory implements MessageFactoryInterface {
             voter: actionRequest.addressInfo.address
         } as VoteMessage;
 
-        return voteMessage;
+        return await this.getMarketplaceMessage(message);
     }
 
 
