@@ -15,7 +15,6 @@ import { SmsgMessageService } from '../model/SmsgMessageService';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { CoreRpcService } from '../CoreRpcService';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';

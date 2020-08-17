@@ -26,7 +26,6 @@ import { ProposalResultService } from '../model/ProposalResultService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
 import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
-import { ompVersion } from 'omp-lib/dist/omp';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';

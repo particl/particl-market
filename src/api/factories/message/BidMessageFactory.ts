@@ -4,7 +4,7 @@
 
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
