@@ -9,6 +9,7 @@ import { Market } from '../models/Market';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { MarketSearchParams } from '../requests/search/MarketSearchParams';
 
 export class MarketRepository {
 
@@ -48,6 +49,10 @@ export class MarketRepository {
 
     public async findOneByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
+    }
+
+    public async search(options: MarketSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Market>> {
+        return this.MarketModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Market> {

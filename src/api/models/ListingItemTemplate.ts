@@ -63,23 +63,11 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
-        if (withRelated) {
-            return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch();
-        }
+        return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
-        if (withRelated) {
-            return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch();
-        }
+        return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     /**
@@ -89,7 +77,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
      * @param allVersions
      */
     public static async fetchByParentTemplateAndMarket(templateId?: number, market?: string,
-                                                       allVersions: boolean = false): Promise<Collection<ListingItemTemplate>> {
+                                                       allVersions: boolean = false, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
         const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 if (market) {
@@ -106,9 +94,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             })
             .orderBy('generated_at', SearchOrder.DESC);
 
-        return collection.fetchAll({
-            withRelated: this.RELATIONS
-        });
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
 
@@ -194,13 +180,7 @@ ORDER BY lit.generated_at DESC;
                 offset: options.page * options.pageLimit
             });
 
-        if (withRelated) {
-            return await collection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await collection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'listing_item_templates'; }

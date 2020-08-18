@@ -2,12 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
 import { Identity } from './Identity';
 import { FlaggedItem } from './FlaggedItem';
 import { ItemImage } from './ItemImage';
+import { SearchOrder } from '../enums/SearchOrder';
+import { MarketSearchOrderField } from '../enums/SearchOrderField';
+import { MarketSearchParams } from '../requests/search/MarketSearchParams';
 
 export class Market extends Bookshelf.Model<Market> {
 
@@ -53,6 +57,43 @@ export class Market extends Bookshelf.Model<Market> {
 
     public static async fetchByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
         return Market.where<Market>({ profile_id: profileId, receive_address: receiveAddress }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async searchBy(options: MarketSearchParams, withRelated: boolean = true): Promise<Collection<Market>> {
+
+        // Bid.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || MarketSearchOrderField.UPDATED_AT;
+
+        const collection = Market.forge<Model<Market>>()
+            .query( qb => {
+
+                // qb.whereNull('bids.profile_id');
+
+                if (options.type) {
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('markets.type', '=', options.type);
+                    });
+                }
+
+                if (options.searchString) {
+                    qb.where('markets.title', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('markets.description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('markets.hash', '=', options.searchString);
+                }
+
+            })
+            .orderBy('markets.' + options.orderField, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
+                // debug: true
+            });
+
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'markets'; }

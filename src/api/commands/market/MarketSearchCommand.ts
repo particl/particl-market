@@ -9,31 +9,42 @@ import { inject, named } from 'inversify';
 import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemTemplateSearchParams } from '../../requests/search/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
+import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { MarketType } from '../../enums/MarketType';
+import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
+import { Market } from '../../models/Market';
 
-export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
+export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
     public log: LoggerType;
+
+    public paramValidationRules = {
+        parameters: [{
+            name: 'searchString',
+            required: false,
+            type: 'string'
+        }, {
+            name: 'type',
+            required: false,
+            type: 'string'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.MARKET_SEARCH);
         this.log = new Logger(__filename);
@@ -49,35 +60,28 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profile, resources.Profile, optional
-     *  [5]: searchString, string, optional
-     *  [6]: categories, optional, number[]|string>[], if string -> find using key
-     *  [7]: isBaseTemplate, boolean, optional, default true
-     *  [8]: market, resources.Market, optional
-     *  [9]: hasItems, boolean, optional
+     *  [4]: searchString, string, optional, * for all
+     *  [5]: type, MarketType, optional
+     *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
 
-        const profile: resources.Profile = data.params[4];
-        const market: resources.Market = data.params[8];
+        const searchString: string = data.params[4];
+        const type: MarketType = data.params[5];
 
         const searchParams = {
             page: data.params[0] || 0,
             pageLimit: data.params[1] || 10,
             order: data.params[2] || SearchOrder.ASC,
             orderField: data.params[3] || ListingItemTemplateSearchOrderField.UPDATED_AT,
-            profileId: profile ? profile.id : undefined,
-            searchString: data.params[5],
-            categories: data.params[6],
-            isBaseTemplate: data.params[7],
-            marketReceiveAddress: market ? market.receiveAddress : undefined,
-            hasListingItems: data.params[9]
-        } as ListingItemTemplateSearchParams;
+            searchString,
+            type
+        } as MarketSearchParams;
 
-        return await this.listingItemTemplateService.search(searchParams);
+        return await this.marketService.search(searchParams);
     }
 
     /**
@@ -95,68 +99,20 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 5) {
-            throw new MissingParamException('profileId');
-        }
-
-        data.params[8] = (data.params[8] !== '*') ? data.params[8] : undefined;
-
         const searchString = data.params[4];            // optional
         const type = data.params[5];                    // optional
 
-
-        if (profileId && typeof profileId !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (searchString && typeof searchString !== 'string') {
-            throw new InvalidParamException('searchString', 'string');
-        } else if (isBaseTemplate !== undefined && typeof isBaseTemplate !== 'boolean') {
-            throw new InvalidParamException('isBaseTemplate', 'boolean');
-        } else if (hasItems !== undefined && typeof hasItems !== 'boolean') {
-            throw new InvalidParamException('hasItems', 'boolean');
+        if (!EnumHelper.containsName(MarketType, type)) {
+            throw new InvalidParamException('type', 'MarketType');
         }
 
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-        data.params[4] = profile;
-
-        data.params[5] = searchString !== '*' ? data.params[5] : undefined;
-
-        if (categories) {
-            // categories needs to be an array
-            if (!_.isArray(categories)) {
-                throw new InvalidParamException('categories', 'number[] | string[]');
-            } else {
-                // validate types, since we could have any[]...
-                const foundDiffenent = _.find(categories, value => {
-                    return typeof value !== typeof categories[0];
-                });
-                if (foundDiffenent) {
-                    throw new InvalidParamException('categories', 'number[] | string[]');
-                }
-            }
-            // don't need an empty category array
-            data.params[6] = categories.length > 0 ? categories : undefined;
-        }
-
-
-        if (marketReceiveAddress) {
-            const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, marketReceiveAddress)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Market');
-                });
-            data.params[8] = market;
-        }
+        data.params[4] = searchString !== '*' ? data.params[4] : undefined;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <profileId> [searchString] [categories] [isBaseTemplate] [market] [hasItems] ';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> [searchString] [type] ';
     }
 
     public help(): string {
@@ -165,21 +121,15 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
             + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
             + '    <orderField>             - ENUM{ListingItemTemplateSearchOrderField} - The field to use to sort results.\n'
-            + '    <profileId>              - Numeric - The ID of the profile linked to the ListingItemTemplates we want to searchBy for. \n'
-            + '    <searchString>           - [optional] String - A string that is used to searchBy for \n'
-            + '                                ListingItemTemplates via title. \n'
-            + '    <categories>             - [optional] Array - ItemCategory Ids or keys. \n'
-            + '    <isBaseTemplate>         - [optional] Boolean - if true then return only base ListingItemTemplates. \n'
-            + '    <market>                 - [optional] String - filter market ListingItemTemplates by the market\n'
-            + '    <hasItems>               - [optional] Boolean - if true then filter ListingItemTemplates \n'
-            + '                                by having or not having ListingItems. \n';
+            + '    <searchString>           - [optional] String - A string that is used to search. \n'
+            + '    <type>                   - [optional] MarketType, optional - MARKETPLACE \n';
     }
 
     public description(): string {
-        return 'Search ListingItemTemplates.';
+        return 'Search Markets.';
     }
 
     public example(): string {
-        return 'market ' + this.getName() + ' 0 10 \'ASC\' \'STATE\' 1 \'pet exorcism\' 74 true';
+        return 'market ' + this.getName() + ' 0 10 \'ASC\'';
     }
 }

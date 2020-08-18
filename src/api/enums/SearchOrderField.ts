@@ -17,6 +17,11 @@ export enum SearchOrderField_REMOVE_THIS {
     DATE = 'DATE'
 }
 
+export enum MarketSearchOrderField {
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
 export enum BidSearchOrderField {
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'

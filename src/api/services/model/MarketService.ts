@@ -17,6 +17,7 @@ import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
 import { ProfileService } from './ProfileService';
 import { SettingService } from './SettingService';
 import { IdentityService } from './IdentityService';
+import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
 
 export class MarketService {
 
@@ -31,7 +32,6 @@ export class MarketService {
     ) {
         this.log = new Logger(__filename);
     }
-
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
         return await this.marketRepo.findAll();
@@ -79,6 +79,12 @@ export class MarketService {
             throw new NotFoundException(address);
         }
         return market;
+    }
+
+    @validate()
+    public async search(@request(MarketSearchParams) options: MarketSearchParams,
+                        withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.search(options, withRelated);
     }
 
     @validate()

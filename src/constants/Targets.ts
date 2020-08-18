@@ -413,6 +413,7 @@ export const Targets = {
         ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         message: {
+            BaseMessageFactory: 'BaseMessageFactory',
             BidMessageFactory: 'BidMessageFactory',
             BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',
