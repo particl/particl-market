@@ -139,7 +139,7 @@ describe('ItemImageListCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ItemImage[] = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.length).toBeGreaterThan(0);
     });
 

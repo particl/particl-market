@@ -696,13 +696,13 @@ describe('ListingItemSearchCommand', () => {
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
+        await testUtilSellerNode.waitFor(2);
+
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilBuyerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        let response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],

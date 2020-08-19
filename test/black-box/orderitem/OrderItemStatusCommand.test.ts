@@ -86,15 +86,15 @@ describe('OrderItemStatus', () => {
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
-        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
-        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
 
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -130,8 +130,8 @@ describe('OrderItemStatus', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
-        log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
-        log.debug('result.id:', result.id);
+        // log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
+        // log.debug('result.id:', result.id);
         expect(result.id).toBe(listingItemTemplatesSellerNode[0].id);
 
         log.debug('==> Setup DONE.');

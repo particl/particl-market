@@ -9,7 +9,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ListingItemTemplateGetCommand', () => {
 
@@ -33,7 +33,7 @@ describe('ListingItemTemplateGetCommand', () => {
 
         // get default profile and market
         profile = await testUtil.getDefaultProfile();
-        market = await testUtil.getDefaultMarket(profile.id)
+        market = await testUtil.getDefaultMarket(profile.id);
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -130,7 +130,7 @@ describe('ListingItemTemplateGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
 
-        log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
         // todo: check that the data is actually an image
         expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
     });

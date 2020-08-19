@@ -71,16 +71,16 @@ describe('OrderItemHistory', () => {
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
-        log.debug('sellerProfile: ', sellerProfile.address);
-        log.debug('buyerProfile: ', buyerProfile.address);
+        // log.debug('sellerProfile: ', sellerProfile.address);
+        // log.debug('buyerProfile: ', buyerProfile.address);
 
         // get seller and buyer markets
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -116,8 +116,8 @@ describe('OrderItemHistory', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
-        log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
-        log.debug('result.id:', result.id);
+        // log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
+        // log.debug('result.id:', result.id);
         expect(result.id).toBe(listingItemTemplatesSellerNode[0].id);
 
         log.debug('==> Setup DONE.');
@@ -171,7 +171,7 @@ describe('OrderItemHistory', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(listingItemTemplateOnSellerNode.hash).toBeDefined();
-        log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
+        // log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
     });
 
 
@@ -254,7 +254,7 @@ describe('OrderItemHistory', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         log.debug('==> Bid posted.');
     });
 
@@ -345,7 +345,7 @@ describe('OrderItemHistory', () => {
         expect(result[1].type).toBe(MPAction.MPA_BID);
         expect(result[1].direction).toBe(ActionDirection.OUTGOING);
 
-        log.debug('OrderItem history: ', JSON.stringify(result, null, 2));
+        // log.debug('OrderItem history: ', JSON.stringify(result, null, 2));
         log.debug('==> Correct OrderItem history received.');
 
     }, 600000); // timeout to 600s

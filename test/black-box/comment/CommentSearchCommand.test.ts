@@ -97,7 +97,7 @@ describe('CommentSearchCommand', () => {
             true,            // return model
             generateCommentParams       // what kind of data to generate
         );
-        log.debug('comments: ', JSON.stringify(comments, null, 2));
+        // log.debug('comments: ', JSON.stringify(comments, null, 2));
     });
 
 

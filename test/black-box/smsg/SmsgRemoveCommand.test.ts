@@ -108,7 +108,7 @@ describe('SmsgRemoveCommand', () => {
             generateSmsgMessageParams               // what kind of data to generate
         ) as resources.SmsgMessage[];
 
-        log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
+        // log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
     });
 
 

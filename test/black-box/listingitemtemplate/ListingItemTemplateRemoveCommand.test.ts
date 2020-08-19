@@ -137,7 +137,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
 
-        log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
 
         // expect template is related to correct profile and ListingItem posted to correct Market
         expect(listingItemTemplate.Profile.id).toBe(profile.id);

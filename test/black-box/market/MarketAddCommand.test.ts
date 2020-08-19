@@ -74,7 +74,7 @@ describe('MarketAddCommand', () => {
         privateKey = PrivateKey.fromRandom(network);
         storeFrontAdminData.publishKey = privateKey.toWIF();    // but different
         storeFrontAdminData.name = storeFrontAdminData.receiveKey;
-        log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
+        // log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
 
         // storefront user
         privateKey = PrivateKey.fromRandom(network);
@@ -83,7 +83,7 @@ describe('MarketAddCommand', () => {
         storeFrontUserData.publishKey = privateKey.toPublicKey().toString();    // -> DER hex encoded string
         storeFrontUserData.name = storeFrontUserData.receiveKey;
 
-        log.debug('storeFrontUserData: ', JSON.stringify(storeFrontUserData, null, 2));
+        // log.debug('storeFrontUserData: ', JSON.stringify(storeFrontUserData, null, 2));
 
     });
 

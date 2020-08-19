@@ -125,7 +125,7 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
     });
 
     test('Should set the featured flag on ItemImage', async () => {
-        log.debug('listingItemTemplate', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('listingItemTemplate', JSON.stringify(listingItemTemplate, null, 2));
         const res = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id,
             listingItemTemplate.ItemInformation.ItemImages[0].id

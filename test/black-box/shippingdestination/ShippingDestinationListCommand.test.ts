@@ -145,7 +145,7 @@ describe('ShippingDestinationListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ShippingDestination[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(listingItemTemplate.ItemInformation.ShippingDestinations.length);
     });
@@ -158,7 +158,7 @@ describe('ShippingDestinationListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.ShippingDestination[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(listingItemTemplate.ItemInformation.ShippingDestinations.length);
     });
@@ -171,7 +171,7 @@ describe('ShippingDestinationListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(listingItem.ItemInformation.ShippingDestinations.length);
     });

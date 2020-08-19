@@ -97,8 +97,8 @@ describe('ListingItemObjectSearchCommand', () => {
         const type: ListingItemObjectType = listingItemObjects[0].type;
         const typeCount = _.sumBy(listingItemObjects, lio => (lio.type === type ? 1 : 0));
 
-        log.debug('listingItemObjects: ', JSON.stringify(listingItemObjects, null, 2));
-        log.debug('type: ', JSON.stringify(type, null, 2));
+        // log.debug('listingItemObjects: ', JSON.stringify(listingItemObjects, null, 2));
+        // log.debug('type: ', JSON.stringify(type, null, 2));
         const res: any = await testUtil.rpc(itemObjectCommand, [itemObjectsearchCommand,
             type
         ]);

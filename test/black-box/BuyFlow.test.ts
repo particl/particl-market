@@ -100,15 +100,15 @@ describe('Happy Buy Flow', () => {
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
-        log.debug('sellerProfile: ', sellerProfile.address);
-        log.debug('buyerProfile: ', buyerProfile.address);
+        // log.debug('sellerProfile: ', sellerProfile.address);
+        // log.debug('buyerProfile: ', buyerProfile.address);
 
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -2023,7 +2023,7 @@ describe('Happy Buy Flow', () => {
         const releaseBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
             return value.type === MPActionExtended.MPA_RELEASE;
         });
-        expect(releaseBid.BidDatas).toHaveLength(7);
+        expect(releaseBid.BidDatas).toHaveLength(8);
 
         orderOnBuyerNode = result[0];
 
@@ -2165,7 +2165,7 @@ describe('Happy Buy Flow', () => {
         const releaseBid: resources.Bid = _.find(result[0].OrderItems[0].Bid.ChildBids, (value: resources.Bid) => {
             return value.type === MPActionExtended.MPA_RELEASE;
         });
-        expect(releaseBid.BidDatas).toHaveLength(7);
+        expect(releaseBid.BidDatas).toHaveLength(8);
 
         orderOnSellerNode = result[0];
 

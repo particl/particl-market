@@ -177,7 +177,7 @@ describe('SettingGetCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Setting = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(profile.id);
         expect(result[0].Market).toBeDefined();

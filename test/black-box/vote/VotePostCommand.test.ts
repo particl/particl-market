@@ -66,7 +66,7 @@ describe('VotePostCommand', () => {
         ) as resources.Proposal[];
 
         proposal = proposals[0];
-        log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
     });
 
 
@@ -181,7 +181,7 @@ describe('VotePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Vote = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.result).toEqual('Sent.');
         sent = result.result === 'Sent.';
     });
@@ -202,7 +202,7 @@ describe('VotePostCommand', () => {
         const result: CombinedVote = res.getBody()['result'];
         vote = result;
 
-        log.debug('vote: ', JSON.stringify(result, null, 2));
+        // log.debug('vote: ', JSON.stringify(result, null, 2));
         expect(result.voter).toBe(market.Identity.address);
         expect(result.votedProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
     }, 600000); // timeout to 600s
@@ -217,7 +217,7 @@ describe('VotePostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Vote = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.result).toEqual('Sent.');
         sent = result.result === 'Sent.';
     });
@@ -236,8 +236,8 @@ describe('VotePostCommand', () => {
         res.expectStatusCode(200);
         const result: resources.Vote = res.getBody()['result'];
 
-        log.debug('vote updated: ', JSON.stringify(result, null, 2));
-        log.debug('vote: ', JSON.stringify(result, null, 2));
+        // log.debug('vote updated: ', JSON.stringify(result, null, 2));
+        // log.debug('vote: ', JSON.stringify(result, null, 2));
         expect(result.voter).toBe(market.Identity.address);
         expect(result.weight).toBe(vote.weight);
         expect(result.votedProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);

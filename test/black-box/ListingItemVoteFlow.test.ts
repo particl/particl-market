@@ -79,15 +79,15 @@ describe('Happy ListingItem Vote Flow', () => {
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
         expect(buyerProfile.id).toBeDefined();
-        log.debug('sellerProfile.id: ', sellerProfile.id);
-        log.debug('buyerProfile.id: ', buyerProfile.id);
+        // log.debug('sellerProfile.id: ', sellerProfile.id);
+        // log.debug('buyerProfile.id: ', buyerProfile.id);
 
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
-        log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
-        log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // generate listingitemtemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -655,7 +655,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         sellerCombinedVote = result;
 
-        log.debug('sellerCombinedVote: ', JSON.stringify(sellerCombinedVote,  null, 2));
+        // log.debug('sellerCombinedVote: ', JSON.stringify(sellerCombinedVote,  null, 2));
     });
 
 

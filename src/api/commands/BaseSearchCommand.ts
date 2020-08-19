@@ -9,6 +9,7 @@ import { BaseCommand } from './BaseCommand';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
+import {MissingParamException} from '../exceptions/MissingParamException';
 
 export abstract class BaseSearchCommand extends BaseCommand {
 
@@ -44,51 +45,54 @@ export abstract class BaseSearchCommand extends BaseCommand {
      */
     public async validateSearchParams(data: RpcRequest): Promise<RpcRequest> {
 
-        this.paramValidationRules.parameters.unshift({
-            name: 'page',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'pageLimit',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'order',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'orderField',
-            required: true,
-            type: 'string'
-        });
-
         const page = data.params[0];
         const pageLimit = data.params[1];
         const order = data.params[2];
         const orderField = data.params[3];
-/*
-        // make sure all required parameters exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('page');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('pageLimit');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('order');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('orderField');
+
+        if (this.paramValidationRules && this.paramValidationRules.parameters) {
+            this.paramValidationRules.parameters.unshift({
+                name: 'page',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'pageLimit',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'order',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'orderField',
+                required: true,
+                type: 'string'
+            });
+
+        } else {
+            // make sure all required parameters exist
+            if (data.params.length < 1) {
+                throw new MissingParamException('page');
+            } else if (data.params.length < 2) {
+                throw new MissingParamException('pageLimit');
+            } else if (data.params.length < 3) {
+                throw new MissingParamException('order');
+            } else if (data.params.length < 4) {
+                throw new MissingParamException('orderField');
+            }
+
+            // make sure the params are of correct type
+            if (typeof page !== 'number' || page < 0) {
+                throw new InvalidParamException('page', 'number');
+            } else if (typeof pageLimit !== 'number' || pageLimit <= 0) {
+                throw new InvalidParamException('pageLimit', 'number');
+            } else if (typeof order !== 'string') {
+                throw new InvalidParamException('order', 'string');
+            } else if (typeof orderField !== 'string') {
+                throw new InvalidParamException('orderField', 'string');
+            }
         }
 
-        // make sure the params are of correct type
-        if (typeof page !== 'number' || page < 0) {
-            throw new InvalidParamException('page', 'number');
-        } else if (typeof pageLimit !== 'number' || pageLimit <= 0) {
-            throw new InvalidParamException('pageLimit', 'number');
-        } else if (typeof order !== 'string') {
-            throw new InvalidParamException('order', 'string');
-        } else if (typeof orderField !== 'string') {
-            throw new InvalidParamException('orderField', 'string');
-        }
-*/
         // valid SearchOrder?
         if (!EnumHelper.containsName(SearchOrder, order)) {
             throw new InvalidParamException('order', 'SearchOrder.' + EnumHelper.getNames(SearchOrder));

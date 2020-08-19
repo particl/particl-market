@@ -89,7 +89,7 @@ describe('CommentGetCommand', () => {
             generateCommentParams       // what kind of data to generate
         );
         comment = comments[0];
-        log.debug('comment: ', JSON.stringify(comment, null, 2));
+        // log.debug('comment: ', JSON.stringify(comment, null, 2));
     });
 
 

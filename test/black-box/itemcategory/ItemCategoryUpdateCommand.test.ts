@@ -61,7 +61,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(storefront.receiveAddress).toBe('pggehqLZXQs4QDP1g4wwRS9ou8fJK4Wteq');
         expect(storefront.publishAddress).toBe('pbN4jtNhbh5TEHBgbcHwWBBsABQfvi1gsx');
 
-        log.debug('storefront:', JSON.stringify(storefront, null, 2));
+        // log.debug('storefront:', JSON.stringify(storefront, null, 2));
 
         // first get the rootCategory
         res = await testUtil.rpc(categoryCommand, [categoryListCommand,
@@ -110,7 +110,8 @@ describe('ItemCategoryUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         rootCategory = res.getBody()['result'];
-        log.debug('root: ', JSON.stringify(rootCategory, null, 2));
+
+        // log.debug('root: ', JSON.stringify(rootCategory, null, 2));
     });
 
     test('Should fail to update, because missing categoryId', async () => {
@@ -197,8 +198,8 @@ describe('ItemCategoryUpdateCommand', () => {
         const result: any = res.getBody()['result'];
 
         const path = [rootCategory.name, childCategory2.name, 'newname'];
-        log.debug('path: ', path);
-        log.debug('path.hash: ', hash(path.toString()));
+        // log.debug('path: ', path);
+        // log.debug('path.hash: ', hash(path.toString()));
 
 
         expect(result.name).toBe('newname');
@@ -216,7 +217,5 @@ describe('ItemCategoryUpdateCommand', () => {
         // log.debug('root: ', JSON.stringify(rootCategory, null, 2));
 
     });
-
-
 
 });

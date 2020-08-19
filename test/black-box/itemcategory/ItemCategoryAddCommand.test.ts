@@ -70,7 +70,7 @@ describe('ItemCategoryAddCommand', () => {
         privateKey = PrivateKey.fromRandom(network);
         storeFrontAdminData.publishKey = privateKey.toWIF();    // but different
         storeFrontAdminData.name = storeFrontAdminData.receiveKey;
-        log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
+        // log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
 
     });
 

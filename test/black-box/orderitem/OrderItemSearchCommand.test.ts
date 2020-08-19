@@ -218,7 +218,7 @@ describe('OrderItemSearchCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.OrderItem[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].status).toBe(OrderItemStatus.BIDDED);
         expect(result[0].itemHash).toBe(listingItem.hash);
@@ -256,7 +256,7 @@ describe('OrderItemSearchCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.OrderItem[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].status).toBe(OrderItemStatus.BIDDED);
         expect(result[0].itemHash).toBe(listingItem.hash);
@@ -296,7 +296,7 @@ describe('OrderItemSearchCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.OrderItem[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].status).toBe(OrderItemStatus.BIDDED);
         expect(result[0].itemHash).toBe(listingItem.hash);
@@ -353,7 +353,7 @@ describe('OrderItemSearchCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.OrderItem[] = res.getBody()['result'];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].status).toBe(OrderItemStatus.BIDDED);
         expect(result[0].itemHash).toBe(listingItem.hash);

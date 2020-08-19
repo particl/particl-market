@@ -132,7 +132,7 @@ describe('ProposalAddActionListener', () => {
                 log.debug('ERROR: ', reason);
                 throw reason;
             });
-        log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
+        // log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
         expect(smsgSendResponse.result).toBe('Sent.');
         expect(smsgSendResponse.msgid).toBeDefined();
         expect(smsgSendResponse.txid).toBeDefined();
@@ -305,7 +305,7 @@ describe('ProposalAddActionListener', () => {
         } as ProposalAddRequest;
 
         const smsgSendResponse: SmsgSendResponse = await proposalAddActionService.post(postRequest);
-        log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
+        // log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
         expect(smsgSendResponse.result).toBe('Sent.');
         expect(smsgSendResponse.msgid).toBeDefined();
         // expect(smsgSendResponse.msgids).toBeDefined();
@@ -326,7 +326,7 @@ describe('ProposalAddActionListener', () => {
         //   - no...
 
         smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
-        log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
+        // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
         expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
         expect(smsgMessage.direction).toBe(ActionDirection.OUTGOING);
         expect(smsgMessage.type).toBe(GovernanceAction.MPA_PROPOSAL_ADD);
