@@ -104,7 +104,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const postRequest = {
             sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate,
-            // market, // TODO: remove this? it doesn't seem to be used
             sellerAddress: market.Identity.address
         } as ListingItemAddRequest;
 

@@ -42,9 +42,9 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
     } as CommandParamValidationRules;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.MARKET_SEARCH);
         this.log = new Logger(__filename);

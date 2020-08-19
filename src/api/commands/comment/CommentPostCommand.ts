@@ -87,7 +87,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             parentComment
         } as CommentAddRequest;
 
-        return await this.commentActionService.send(commentRequest);
+        return await this.commentActionService.post(commentRequest);
     }
 
     /**

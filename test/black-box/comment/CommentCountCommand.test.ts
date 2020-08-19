@@ -15,7 +15,6 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
-
 describe('CommentGetCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

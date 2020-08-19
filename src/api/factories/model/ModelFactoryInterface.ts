@@ -11,6 +11,6 @@ import { ModelRequestInterface } from '../../requests/model/ModelRequestInterfac
  * ModelFactoryInterface defines how the Factory classes for the CreateRequests should be implemented
  */
 export interface ModelFactoryInterface {
-    // TODO: get(params: ModelCreateParams): Promise<ModelRequestInterface>;
+    // TODO: models are propably most often created from messages, so ModelCreateParams could most likely be dropped...
     get(params: ModelCreateParams, actionMessage?: ActionMessageInterface, smsgMessage?: resources.SmsgMessage): Promise<ModelRequestInterface>;
 }

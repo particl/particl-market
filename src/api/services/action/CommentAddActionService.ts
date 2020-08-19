@@ -70,6 +70,7 @@ export class CommentAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(actionRequest: CommentAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
         return marketplaceMessage;
     }
 
@@ -95,6 +96,7 @@ export class CommentAddActionService extends BaseActionService {
      *
      * @param commentAddRequest
      */
+/*
     public async send(commentAddRequest: CommentAddRequest): Promise<SmsgSendResponse> {
 
         // TODO: why not call post directly?
@@ -108,7 +110,7 @@ export class CommentAddActionService extends BaseActionService {
         this.log.debug('comment(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
-
+*/
     /**
      * called after posting a message and after receiving it
      *
@@ -138,6 +140,8 @@ export class CommentAddActionService extends BaseActionService {
             .then(value => value.toJSON())
             .catch(async () => {
                 // if Comment doesnt exist yet, we need to create it.
+
+                this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
 
                 const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
                         msgid: smsgMessage.msgid,
