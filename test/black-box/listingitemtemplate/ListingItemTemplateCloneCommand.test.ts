@@ -4,6 +4,7 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -33,6 +34,10 @@ describe('ListingItemTemplateCloneCommand', () => {
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
+    const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -41,6 +46,8 @@ describe('ListingItemTemplateCloneCommand', () => {
     let marketV1Template: resources.ListingItemTemplate;
     let marketV2Template: resources.ListingItemTemplate;
     let secondBaseTemplate: resources.ListingItemTemplate;
+    let thirdBaseTemplate: resources.ListingItemTemplate;
+    let itemCategory: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -83,6 +90,22 @@ describe('ListingItemTemplateCloneCommand', () => {
         ) as resources.ListingItemTemplate[];
 
         baseTemplate = listingItemTemplates[0];
+
+        const res = await testUtilSellerNode.rpc(categoryCommand, [categoryListCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.key).toBeDefined();
+        expect(result.name).toBe('ROOT');
+        expect(result.market).toBeNull();
+        expect(result.ParentItemCategory).not.toBeDefined();
+
+        const childItemCategories = result.ChildItemCategories;
+        expect(childItemCategories.length).toBeGreaterThan(0);
+
+        const childCat: resources.ItemCategory = Faker.random.arrayElement(result.ChildItemCategories);
+        itemCategory = Faker.random.arrayElement(childCat.ChildItemCategories);
 
     });
 
@@ -138,7 +161,7 @@ describe('ListingItemTemplateCloneCommand', () => {
     });
 
 
-    test('Should clone a new Market ListingItemTemplate from the Base ListingItemTemplate', async () => {
+    test('Should clone a new Market ListingItemTemplate from the Base ListingItemTemplate (no category)', async () => {
 
         expect(baseTemplate.id).toBeDefined();
 
@@ -164,7 +187,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.title).toBe(baseTemplate.ItemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(baseTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(baseTemplate.ItemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.key).toBe(baseTemplate.ItemInformation.ItemCategory.key);
+        expect(result.ItemInformation.ItemCategory).toBeUndefined();
         expect(result.PaymentInformation.type).toBe(baseTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(baseTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(baseTemplate.PaymentInformation.ItemPrice.basePrice);
@@ -192,6 +215,25 @@ describe('ListingItemTemplateCloneCommand', () => {
         const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(2);
         // log.debug('templates: ', JSON.stringify(result, null, 2));
+    });
+
+
+    test('Should update Market ListingItemTemplates ItemCategory', async () => {
+        const res: any = await testUtilSellerNode.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            marketTemplate.id,
+            marketTemplate.ItemInformation.title,
+            marketTemplate.ItemInformation.shortDescription,
+            marketTemplate.ItemInformation.longDescription,
+            itemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ItemInformation = res.getBody()['result'];
+        expect(result.title).toBe(marketTemplate.ItemInformation.title);
+        expect(result.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
+        expect(result.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
+        expect(result.ItemCategory.id).toBe(itemCategory.id);
     });
 
 
@@ -241,46 +283,6 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(marketTemplate.hash).toBeDefined();
     });
 
-/*
-    test('Should have received MPA_LISTING_ADD on SELLER node', async () => {
-        expect(sent).toBeTruthy();
-        expect(marketTemplate.id).toBeDefined();
-
-        log.debug('========================================================================================');
-        log.debug('SELLER RECEIVES MPA_LISTING_ADD');
-        log.debug('========================================================================================');
-
-        const response: any = await testUtilSellerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
-                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
-                market.receiveAddress,
-                [],
-                '*',
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                marketTemplate.hash
-            ],
-            15 * 60,
-            200,
-            '[0].hash',
-            marketTemplate.hash
-        );
-
-        const results: resources.ListingItem[] = response.getBody()['result'];
-        expect(results.length).toBe(1);
-        expect(results[0].hash).toBe(marketTemplate.hash);
-
-        // store ListingItem for later tests
-        marketTemplate = results[0];
-
-        log.debug('==> SELLER received MPA_LISTING_ADD.');
-    }, 600000); // timeout to 600s
-*/
 
     test('Should clone a new version of Market ListingItemTemplate from the Market ListingItemTemplate', async () => {
 
@@ -433,6 +435,42 @@ describe('ListingItemTemplateCloneCommand', () => {
     });
 
 
+    test('Should clone a new Base ListingItemTemplate from the Base ListingItemTemplate (no category)', async () => {
+
+        expect(baseTemplate.id).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand,
+            baseTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        // log.debug('clonedListingItemTemplate: ', JSON.stringify(result, null, 2));
+
+        expect(result).hasOwnProperty('Profile');
+        expect(result).hasOwnProperty('ItemInformation');
+        expect(result).hasOwnProperty('PaymentInformation');
+        expect(result).hasOwnProperty('MessagingInformation');
+        expect(result).hasOwnProperty('ListingItemObjects');
+
+        expect(result.ParentListingItemTemplate).not.toBeDefined(); // base template
+
+        expect(result.Profile.id).toBe(baseTemplate.Profile.id);
+        expect(result.ItemInformation.title).toBe(baseTemplate.ItemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(baseTemplate.ItemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(baseTemplate.ItemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory).toBeUndefined();
+        expect(result.PaymentInformation.type).toBe(baseTemplate.PaymentInformation.type);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(baseTemplate.PaymentInformation.ItemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(baseTemplate.PaymentInformation.ItemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(baseTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international)
+            .toBe(baseTemplate.PaymentInformation.ItemPrice.ShippingPrice.international);
+
+        thirdBaseTemplate = result;
+    });
+
+
     test('Should get all base ListingItemTemplates for Profile', async () => {
         expect(marketTemplate).toBeDefined();
 
@@ -450,8 +488,8 @@ describe('ListingItemTemplateCloneCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ListingItemTemplate[] = res.getBody()['result'];
-        expect(result).toHaveLength(2);
-        log.debug('templates: ', JSON.stringify(result, null, 2));
+        expect(result).toHaveLength(3);
+        // log.debug('templates: ', JSON.stringify(result, null, 2));
 
         expect(result[0].hash).toBeNull();
         expect(result[0].market).toBeNull();
@@ -466,6 +504,5 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result[1].ChildListingItemTemplates).toHaveLength(0);
 
     });
-
 
 });

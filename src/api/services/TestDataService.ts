@@ -1436,10 +1436,10 @@ export class TestDataService {
             ? this.generateItemLocationData()
             : undefined;
 
-        if (!generateParams.categoryId) {
-            const randomCategory: resources.ItemCategory = await this.getRandomCategory();
-            generateParams.categoryId = randomCategory.id;
-        }
+        // if (!generateParams.categoryId) {
+        //    const randomCategory: resources.ItemCategory = await this.getRandomCategory();
+        //    generateParams.categoryId = randomCategory.id;
+        // }
 
         const itemInformationCreateRequest = {
             title: Faker.commerce.productAdjective() + Faker.commerce.productName(),

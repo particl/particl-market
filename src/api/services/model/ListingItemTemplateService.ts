@@ -197,7 +197,7 @@ export class ListingItemTemplateService {
      */
     public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
         const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
-        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
         // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
@@ -562,47 +562,63 @@ export class ListingItemTemplateService {
             profile_id: templateToClone.Profile.id,
             market: targetMarket ? targetMarket.receiveAddress : undefined,
             generatedAt: +Date.now(),
-            itemInformation: {
-                title: templateToClone.ItemInformation.title,
-                shortDescription: templateToClone.ItemInformation.shortDescription,
-                longDescription: templateToClone.ItemInformation.longDescription,
-                item_category_id: templateToClone.ItemInformation.ItemCategory.id,
-                shippingDestinations,
-                itemImages,
-                itemLocation: {
-                    country: templateToClone.ItemInformation.ItemLocation.country,
-                    address: templateToClone.ItemInformation.ItemLocation.address,
-                    description: templateToClone.ItemInformation.ItemLocation.description,
-                    locationMarker: {
-                        lat: templateToClone.ItemInformation.ItemLocation.LocationMarker.lat,
-                        lng: templateToClone.ItemInformation.ItemLocation.LocationMarker.lng,
-                        title: templateToClone.ItemInformation.ItemLocation.LocationMarker.title,
-                        description: templateToClone.ItemInformation.ItemLocation.LocationMarker.description
-                    } as LocationMarkerCreateRequest
-                } as ItemLocationCreateRequest
-            } as ItemInformationCreateRequest,
-            paymentInformation: {
-                type: templateToClone.PaymentInformation.type,
-                itemPrice: {
-                    currency: templateToClone.PaymentInformation.ItemPrice.currency,
-                    basePrice: templateToClone.PaymentInformation.ItemPrice.basePrice,
-                    shippingPrice: {
-                        domestic: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.domestic,
-                        international: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.international
-                    } as ShippingPriceCreateRequest
-                } as ItemPriceCreateRequest,
-                escrow: {
-                    type: templateToClone.PaymentInformation.Escrow.type,
-                    releaseType: templateToClone.PaymentInformation.Escrow.releaseType,
-                    secondsToLock: templateToClone.PaymentInformation.Escrow.secondsToLock
-                        ? templateToClone.PaymentInformation.Escrow.secondsToLock
+            itemInformation: templateToClone.ItemInformation
+                ? {
+                    title: templateToClone.ItemInformation.title,
+                    shortDescription: templateToClone.ItemInformation.shortDescription,
+                    longDescription: templateToClone.ItemInformation.longDescription,
+                    item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
+                    shippingDestinations,
+                    itemImages,
+                    itemLocation: templateToClone.ItemInformation.ItemLocation
+                        ? {
+                            country: templateToClone.ItemInformation.ItemLocation.country,
+                            address: templateToClone.ItemInformation.ItemLocation.address,
+                            description: templateToClone.ItemInformation.ItemLocation.description,
+                            locationMarker: templateToClone.ItemInformation.ItemLocation.LocationMarker
+                                ? {
+                                    lat: templateToClone.ItemInformation.ItemLocation.LocationMarker.lat,
+                                    lng: templateToClone.ItemInformation.ItemLocation.LocationMarker.lng,
+                                    title: templateToClone.ItemInformation.ItemLocation.LocationMarker.title,
+                                    description: templateToClone.ItemInformation.ItemLocation.LocationMarker.description
+                                } as LocationMarkerCreateRequest
+                                : undefined
+                        } as ItemLocationCreateRequest
+                        : undefined
+                } as ItemInformationCreateRequest
+                : undefined,
+            paymentInformation: templateToClone.PaymentInformation
+                ? {
+                    type: templateToClone.PaymentInformation.type,
+                    itemPrice: templateToClone.PaymentInformation.ItemPrice
+                        ? {
+                            currency: templateToClone.PaymentInformation.ItemPrice.currency,
+                            basePrice: templateToClone.PaymentInformation.ItemPrice.basePrice,
+                            shippingPrice: templateToClone.PaymentInformation.ItemPrice.ShippingPrice
+                                ? {
+                                    domestic: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.domestic,
+                                    international: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.international
+                                } as ShippingPriceCreateRequest
+                                : undefined
+                        } as ItemPriceCreateRequest
                         : undefined,
-                    ratio: {
-                        buyer: templateToClone.PaymentInformation.Escrow.Ratio.buyer,
-                        seller: templateToClone.PaymentInformation.Escrow.Ratio.seller
-                    } as EscrowRatioCreateRequest
-                } as EscrowCreateRequest
-            } as PaymentInformationCreateRequest,
+                    escrow: templateToClone.PaymentInformation.Escrow
+                        ? {
+                            type: templateToClone.PaymentInformation.Escrow.type,
+                            releaseType: templateToClone.PaymentInformation.Escrow.releaseType,
+                            secondsToLock: templateToClone.PaymentInformation.Escrow.secondsToLock
+                                ? templateToClone.PaymentInformation.Escrow.secondsToLock
+                                : undefined,
+                            ratio: templateToClone.PaymentInformation.Escrow.Ratio
+                                ? {
+                                    buyer: templateToClone.PaymentInformation.Escrow.Ratio.buyer,
+                                    seller: templateToClone.PaymentInformation.Escrow.Ratio.seller
+                                } as EscrowRatioCreateRequest
+                                : undefined
+                        } as EscrowCreateRequest
+                        : undefined
+                } as PaymentInformationCreateRequest
+                : undefined,
             messagingInformation,
             listingItemObjects
         } as ListingItemTemplateCreateRequest;
