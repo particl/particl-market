@@ -77,6 +77,7 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      * @returns {Promise<MarketplaceMessage>}
      */
     public async get(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
+        this.log.debug('actionRequest:', JSON.stringify(actionRequest, null, 2));
 
         if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
