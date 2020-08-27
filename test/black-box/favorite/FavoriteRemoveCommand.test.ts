@@ -33,6 +33,7 @@ describe('FavoriteRemoveCommand', () => {
     let listingItem1: resources.ListingItem;
     let listingItem2: resources.ListingItem;
     let listingItem3: resources.ListingItem;
+    let randomCategory: resources.ItemCategory;
 
     let favoriteItem1: resources.FavoriteItem;
     let favoriteItem2: resources.FavoriteItem;
@@ -47,17 +48,23 @@ describe('FavoriteRemoveCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemParams = new GenerateListingItemParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            true,           // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            false,          // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false           // generateObjectDatas
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         // create two items

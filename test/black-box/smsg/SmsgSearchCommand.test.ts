@@ -4,21 +4,19 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { ListingItemAddMessageCreateParams } from '../../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { GenerateSmsgMessageParams } from '../../../src/api/requests/testdata/GenerateSmsgMessageParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import {ListingItemAddRequest} from '../../../src/api/requests/action/ListingItemAddRequest';
+import { ListingItemAddRequest } from '../../../src/api/requests/action/ListingItemAddRequest';
 
 describe('SmsgSearchCommand', () => {
 
