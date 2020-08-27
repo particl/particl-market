@@ -13,27 +13,14 @@ import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearch
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { GovernanceAction } from '../../enums/GovernanceAction';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseObserverService } from './BaseObserverService';
 import { ObserverStatus } from '../../enums/ObserverStatus';
 import { MarketplaceMessageProcessor } from '../../messageprocessors/MarketplaceMessageProcessor';
 
 export class WaitingMessageService extends BaseObserverService {
-
-    // TODO: not needed anymore, these are here because we used to poll for all the messages
-    private LISTINGITEM_MESSAGES = [MPAction.MPA_LISTING_ADD];
-    private BID_MESSAGES = [MPAction.MPA_BID, MPAction.MPA_ACCEPT, MPAction.MPA_REJECT, MPAction.MPA_CANCEL];
-    private ESCROW_MESSAGES = [MPAction.MPA_LOCK, MPActionExtended.MPA_RELEASE, MPActionExtended.MPA_REFUND, MPActionExtended.MPA_COMPLETE,
-        MPActionExtended.MPA_SHIP];
-    private PROPOSAL_MESSAGES = [GovernanceAction.MPA_PROPOSAL_ADD];
-    private VOTE_MESSAGES = [GovernanceAction.MPA_VOTE];
-    private COMMENT_MESSAGES = [CommentAction.MPA_COMMENT_ADD];
 
     constructor(
         // tslint:disable:max-line-length
@@ -121,15 +108,5 @@ export class WaitingMessageService extends BaseObserverService {
         }
 
         return smsgMessages;
-    }
-
-    private async updateSmsgMessagesStatuses(smsgMessages: resources.SmsgMessage[], status: SmsgMessageStatus): Promise<resources.SmsgMessage[]> {
-        const updatedMessages: resources.SmsgMessage[] = [];
-        for (const smsgMessage of smsgMessages) {
-            const updatedMessage: resources.SmsgMessage = await this.smsgMessageService.updateStatus(smsgMessage.id, status)
-                .then(value => value.toJSON());
-            updatedMessages.push(updatedMessage);
-        }
-        return updatedMessages;
     }
 }
