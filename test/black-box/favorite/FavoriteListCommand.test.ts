@@ -42,6 +42,7 @@ describe('FavoriteListCommand', () => {
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
+
         randomCategory = await testUtil.getRandomCategory();
 
         const generateListingItemParams = new GenerateListingItemParams([

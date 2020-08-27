@@ -10,6 +10,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ListingItemGetCommand', () => {
 
@@ -27,6 +28,7 @@ describe('ListingItemGetCommand', () => {
     let market: resources.Market;
 
     let listingItem: resources.ListingItem;
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -36,35 +38,51 @@ describe('ListingItemGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemParams = new GenerateListingItemParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            true,       // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            true,       // generateListingItemObjects
-            true        // generateObjectDatas
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            true,               // generateListingItemObjects
+            true,               // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
-        // create listing item for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                      // how many to generate
             true,                // return model
-        generateListingItemParams           // what kind of data to generate
+            generateListingItemParams       // what kind of data to generate
         ) as resources.ListingItem[];
         listingItem = listingItems[0];
 
     });
 
-    test('Should fail because missing listingItemTemplateId', async () => {
+
+    test('Should fail because missing listingItemId', async () => {
         const res: any = await testUtil.rpc(itemCommand, [itemGetCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
+    });
+
+
+    test('Should fail because invalid listingItemId', async () => {
+        const res: any = await testUtil.rpc(itemCommand, [itemGetCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
 
@@ -119,7 +137,8 @@ describe('ListingItemGetCommand', () => {
         expect(result.MessagingInformation[0].publicKey).toBe(listingItem.MessagingInformation[0].publicKey);
     });
 
-    test('Should return base64 of image if return image data is true', async () => {
+
+    test('Should also return base64 of image if return image data is true', async () => {
 
         const res = await testUtil.rpc(itemCommand, [itemGetCommand,
             listingItem.id,
