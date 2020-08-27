@@ -30,7 +30,7 @@ describe('ItemInformationUpdateCommand', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let itemCategory: resources.ItemCategory;
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -40,21 +40,23 @@ describe('ItemInformationUpdateCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // create ListingItemTemplate
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            true,           // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            true,           // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false,          // generateObjectDatas
-            profile.id,     // profileId
-            false,          // generateListingItem
-            market.id       // soldOnMarketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            false,                          // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -64,7 +66,6 @@ describe('ItemInformationUpdateCommand', () => {
             generateListingItemTemplateParams
         );
         listingItemTemplate = listingItemTemplates[0];
-        itemCategory = listingItemTemplate.ItemInformation.ItemCategory;
 
     });
 
@@ -111,7 +112,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             'new short description',
             'new long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -125,7 +126,7 @@ describe('ItemInformationUpdateCommand', () => {
             false,
             'new short description',
             'new long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -138,7 +139,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             false,
             'new long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -151,7 +152,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             'new short description',
             false,
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -177,7 +178,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             'new short description',
             'new long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -216,7 +217,7 @@ describe('ItemInformationUpdateCommand', () => {
             'new title',
             'new short description',
             'new long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -247,7 +248,7 @@ describe('ItemInformationUpdateCommand', () => {
             title,
             shortDescription,
             longDescription,
-            itemCategory.id
+            randomCategory.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -256,7 +257,7 @@ describe('ItemInformationUpdateCommand', () => {
         expect(result.title).toBe(title);
         expect(result.shortDescription).toBe(shortDescription);
         expect(result.longDescription).toBe(longDescription);
-        expect(result.ItemCategory.id).toBe(itemCategory.id);
+        expect(result.ItemCategory.id).toBe(randomCategory.id);
     });
 
     test('Should fail because the ListingItemTemplate has been published', async () => {
@@ -292,7 +293,7 @@ describe('ItemInformationUpdateCommand', () => {
             'ASDF title',
             'ASDF short description',
             'ASDF long description',
-            itemCategory.id
+            randomCategory.id
         ]);
         result.expectJson();
         result.expectStatusCode(400);
