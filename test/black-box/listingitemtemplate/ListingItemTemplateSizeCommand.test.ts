@@ -4,8 +4,6 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as path from 'path';
-import * as fs from 'fs';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -30,6 +28,7 @@ describe('ListingItemTemplateSizeCommand', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -37,21 +36,23 @@ describe('ListingItemTemplateSizeCommand', () => {
         profile = await testUtil.getDefaultProfile();
         market = await testUtil.getDefaultMarket(profile.id);
 
-        // generate ListingItemTemplate
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            profile.id, // profileId
-            false,   // generateListingItem
-            market.id  // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            true,                           // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -77,6 +78,7 @@ describe('ListingItemTemplateSizeCommand', () => {
         expect(result.fits).toBe(true);
     });
 /*
+    TODO: fix
     test('Should return MessageSize for ListingItemTemplate, doesnt fit', async () => {
 
         const filename = path.join('test', 'testdata', 'images', 'testimage2.jpg');

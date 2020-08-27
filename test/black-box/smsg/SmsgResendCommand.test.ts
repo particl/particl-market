@@ -41,6 +41,7 @@ describe('SmsgResendCommand', () => {
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
     let smsgMessageReceivedOnBuyerNode: resources.SmsgMessage;
+    let randomCategoryOnSellerNode: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -56,7 +57,8 @@ describe('SmsgResendCommand', () => {
         await testUtilSellerNode.cleanDb();
         await testUtilBuyerNode.cleanDb();
 
-        // get seller and buyer profiles
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
+
         sellerProfile = await testUtilSellerNode.getDefaultProfile();
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
@@ -64,7 +66,6 @@ describe('SmsgResendCommand', () => {
         // log.debug('sellerProfile: ', sellerProfile.address);
         // log.debug('buyerProfile: ', buyerProfile.address);
 
-        // get seller and buyer markets
         sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
         buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
         expect(sellerMarket.id).toBeDefined();
@@ -72,21 +73,21 @@ describe('SmsgResendCommand', () => {
         // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
         // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
-        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            sellerProfile.id,   // profileId
-            false,              // generateListingItem
-            sellerMarket.id     // soldOnMarketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            sellerProfile.id,               // profileId
+            false,                          // generateListingItem
+            sellerMarket.id,                // soldOnMarketId
+            randomCategoryOnSellerNode.id   // categoryId
         ]).toParamsArray();
 
         const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtilSellerNode.generateData(
@@ -139,7 +140,6 @@ describe('SmsgResendCommand', () => {
     });
 
     test('Should get the updated ListingItemTemplate to get the hash', async () => {
-        // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
@@ -153,8 +153,6 @@ describe('SmsgResendCommand', () => {
     });
 
     test('Should receive ListingItem (MPA_LISTING_ADD) on BUYER node', async () => {
-
-        // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
 
         log.debug('========================================================================================');
