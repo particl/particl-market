@@ -10,6 +10,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ListingItemTemplateGetCommand', () => {
 
@@ -26,6 +27,7 @@ describe('ListingItemTemplateGetCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
+    let randomCategory: resources.ItemCategory;
 
 
     beforeAll(async () => {
@@ -35,20 +37,23 @@ describe('ListingItemTemplateGetCommand', () => {
         profile = await testUtil.getDefaultProfile();
         market = await testUtil.getDefaultMarket(profile.id);
 
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            true,               // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            false,              // generateListingItem
-            market.id           // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            true,                           // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -68,7 +73,18 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should return ListingItemTemplate by Id', async () => {
+
+    test('Should fail because invalid listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateGetCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+
+    test('Should return by listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templateGetCommand,
             listingItemTemplate.id
         ]);
@@ -77,7 +93,7 @@ describe('ListingItemTemplateGetCommand', () => {
 
         const result: resources.ListingItemTemplate = res.getBody()['result'];
 
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.Profile.id).toBe(profile.id);
         expect(result.Profile.name).toBe(profile.name);
         expect(result).hasOwnProperty('Profile');
@@ -120,7 +136,7 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.MessagingInformation.publicKey).toBe(listingItemTemplate.MessagingInformation.publicKey);
     });
 
-    test('Should return base64 of image if return image data is true', async () => {
+    test('Should return base64 of image if returnImageData is true', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateGetCommand,
             listingItemTemplate.id,
@@ -131,9 +147,7 @@ describe('ListingItemTemplateGetCommand', () => {
         const result: resources.ListingItemTemplate = res.getBody()['result'];
 
         // log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
-        // todo: check that the data is actually an image
         expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
     });
-
 
 });
