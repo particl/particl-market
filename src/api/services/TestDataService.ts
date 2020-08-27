@@ -123,6 +123,7 @@ import { ServerStartedListener } from '../listeners/ServerStartedListener';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
+import {ListingItemAddMessageCreateParams} from '../requests/message/ListingItemAddMessageCreateParams';
 
 
 export class TestDataService {
@@ -1585,13 +1586,13 @@ export class TestDataService {
     private async generateSmsgMessages(amount: number, withRelated: boolean = true,
                                        generateParams: GenerateSmsgMessageParams): Promise<resources.SmsgMessage[]> {
 
-        // this.log.debug('generateSmsgMessages, generateParams: ', JSON.stringify(generateParams, null, 2));
+        this.log.debug('generateSmsgMessages, generateParams: ', JSON.stringify(generateParams, null, 2));
 
         const items: resources.SmsgMessage[] = [];
 
         for (let i = amount; i > 0; i--) {
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.generateSmsgMessageData(generateParams);
-            // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
+            this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
             const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
             items.push(smsgMessage);
         }

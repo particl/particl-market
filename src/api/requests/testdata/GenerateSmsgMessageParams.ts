@@ -7,7 +7,7 @@ import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MessageCreateParamsInterface } from '../message/MessageCreateParamsInterface';
+import { ListingItemAddRequest } from '../action/ListingItemAddRequest';
 
 // todo: extends GenerateCommonParamsInterface
 export interface GenerateSmsgMessageParamsInterface {
@@ -29,7 +29,7 @@ export class GenerateSmsgMessageParams implements GenerateSmsgMessageParamsInter
     public from: string;
     public to: string;
 
-    public messageParams: MessageCreateParamsInterface;
+    public messageParams: ListingItemAddRequest;
     public text: string;
 
     /**

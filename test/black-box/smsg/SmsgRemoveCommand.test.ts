@@ -18,6 +18,9 @@ import { ListingItemAddMessageCreateParams } from '../../../src/api/requests/mes
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ListingItemAddRequest } from '../../../src/api/requests/action/ListingItemAddRequest';
+import { SmsgSendParams } from '../../../src/api/requests/action/SmsgSendParams';
+
 
 describe('SmsgRemoveCommand', () => {
 
@@ -36,6 +39,7 @@ describe('SmsgRemoveCommand', () => {
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let smsgMessages: resources.SmsgMessage[];
+    let randomCategory: resources.ItemCategory;
 
     const DAYS_RETENTION = 7;
 
@@ -46,6 +50,8 @@ describe('SmsgRemoveCommand', () => {
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
+
+        randomCategory = await testUtil.getRandomCategory();
 
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -62,7 +68,7 @@ describe('SmsgRemoveCommand', () => {
             profile.id,                     // profileId
             true,                           // generateListingItem
             market.id,                      // soldOnMarketId
-            undefined                       // categoryId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -72,7 +78,6 @@ describe('SmsgRemoveCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
         listingItemTemplate = listingItemTemplates[0];
-
     });
 
 
@@ -80,10 +85,14 @@ describe('SmsgRemoveCommand', () => {
 
         // generate SmsgMessage (MPA_LISTING_ADD) based on the ListingItemTemplate
         const messageParams = {
+            sendParams: {
+                wallet: market.Identity.wallet
+            } as SmsgSendParams,
             listingItem: listingItemTemplate,
-            sellerAddress: market.Identity.address,
-            signature: Faker.random.uuid()
-        } as ListingItemAddMessageCreateParams;
+            signature: Faker.random.uuid(),
+            imagesWithData: false,
+            sellerAddress: market.Identity.address
+        };
 
         const generateSmsgMessageParams = new GenerateSmsgMessageParams([
             MPAction.MPA_LISTING_ADD,               // type
