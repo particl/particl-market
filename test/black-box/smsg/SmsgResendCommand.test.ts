@@ -57,8 +57,6 @@ describe('SmsgResendCommand', () => {
         await testUtilSellerNode.cleanDb();
         await testUtilBuyerNode.cleanDb();
 
-        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
-
         sellerProfile = await testUtilSellerNode.getDefaultProfile();
         buyerProfile = await testUtilBuyerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
@@ -72,6 +70,8 @@ describe('SmsgResendCommand', () => {
         expect(buyerMarket.id).toBeDefined();
         // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
         // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,                           // generateItemInformation

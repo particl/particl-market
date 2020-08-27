@@ -41,6 +41,7 @@ describe('ListingItemSearchCommand', () => {
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
+    let randomCategoryOnSellerNode: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -62,21 +63,23 @@ describe('ListingItemSearchCommand', () => {
         expect(buyerProfile.id).toBeDefined();
         expect(buyerMarket.id).toBeDefined();
 
-        // generate ListingItemTemplate with ListingItem
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            sellerProfile.id, // profileId
-            true,       // generateListingItem
-            sellerMarket.id   // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            sellerProfile.id,               // profileId
+            true,                           // generateListingItem
+            sellerMarket.id,                // soldOnMarketId
+            randomCategoryOnSellerNode.id   // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtilSellerNode.generateData(
@@ -95,20 +98,20 @@ describe('ListingItemSearchCommand', () => {
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            true,       // generateListingItemObjects
-            true        // generateObjectDatas
-                        // listingItemTemplateHash
-                        // seller
-                        // categoryId
-                        // soldOnMarketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            undefined,                      // listingItemTemplateHash
+            undefined,                      // seller
+            randomCategoryOnSellerNode.id,  // categoryId
+            undefined                       // soldOnMarketId
         ]).toParamsArray();
 
         const listingItems = await testUtilSellerNode.generateData(
@@ -130,6 +133,17 @@ describe('ListingItemSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('market').getMessage());
+    });
+
+    test('Should fail because invalid market', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
     });
 
     test('Should search by market', async () => {
