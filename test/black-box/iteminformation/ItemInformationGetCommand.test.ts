@@ -30,6 +30,7 @@ describe('ItemInformationGetCommand', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -39,21 +40,24 @@ describe('ItemInformationGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        randomCategory = await testUtil.getRandomCategory();
+
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            profile.id, // profileId
-            false,  // generateListingItem
-            market.id   // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            false,                          // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
