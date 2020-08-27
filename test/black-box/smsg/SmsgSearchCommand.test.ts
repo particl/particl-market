@@ -39,6 +39,7 @@ describe('SmsgSearchCommand', () => {
 
     let listingItemTemplate: resources.ListingItemTemplate;
     let smsgMessages: resources.SmsgMessage[];
+    let randomCategory: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -55,6 +56,8 @@ describe('SmsgSearchCommand', () => {
         expect(market.id).toBeDefined();
         // log.debug('market: ', JSON.stringify(market, null, 2));
 
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,                           // generateItemInformation
             true,                           // generateItemLocation
@@ -69,7 +72,7 @@ describe('SmsgSearchCommand', () => {
             profile.id,                     // profileId
             true,                           // generateListingItem
             market.id,                      // soldOnMarketId
-            undefined                       // categoryId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplatesOnSellerNode: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -121,7 +124,7 @@ describe('SmsgSearchCommand', () => {
         // log.debug('smsgMessages: ', JSON.stringify(smsgMessages, null, 2));
     });
 
-/*
+
     test('Should search SmsgMessages without any params', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
@@ -342,5 +345,5 @@ describe('SmsgSearchCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
     });
-**/
+
 });
