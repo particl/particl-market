@@ -47,8 +47,8 @@ describe('OrderItemHistory', () => {
 
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
-
     let mpaBidOnBuyerNode: resources.Bid;
+    let randomCategoryOnSellerNode: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -82,21 +82,24 @@ describe('OrderItemHistory', () => {
         // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
         // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
+
         // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            false,              // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            sellerProfile.id,   // profileId
-            false,              // generateListingItem
-            sellerMarket.id     // soldOnMarketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            false,                          // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            sellerProfile.id,               // profileId
+            false,                          // generateListingItem
+            sellerMarket.id,                // soldOnMarketId
+            randomCategoryOnSellerNode.id   // categoryId
         ]).toParamsArray();
 
         const listingItemTemplatesSellerNode = await testUtilSellerNode.generateData(
