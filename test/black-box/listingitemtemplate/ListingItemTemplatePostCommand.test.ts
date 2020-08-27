@@ -4,7 +4,6 @@
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -32,8 +31,6 @@ describe('ListingItemTemplatePostCommand', () => {
     const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
     const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
 
-    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
-    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
@@ -43,9 +40,7 @@ describe('ListingItemTemplatePostCommand', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    // let brokenListingItemTemplate: resources.ListingItemTemplate;
-
-    let rootCategory: resources.ItemCategory;
+    let randomCategory: resources.ItemCategory;
 
     let sent = false;
     const DAYS_RETENTION = 1;
@@ -53,25 +48,26 @@ describe('ListingItemTemplatePostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
         profile = await testUtil.getDefaultProfile();
         market = await testUtil.getDefaultMarket(profile.id);
 
-        // generate ListingItemTemplate
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            true,       // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            true,       // generateEscrow
-            true,       // generateItemPrice
-            true,       // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            false,      // generateListingItem
-            market.id   // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -82,13 +78,7 @@ describe('ListingItemTemplatePostCommand', () => {
         ) as resources.ListingItemTemplate[];
 
         listingItemTemplate = listingItemTemplates[0];
-        // brokenListingItemTemplate = listingItemTemplates[1];
 
-        // get the default root category
-        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        rootCategory = res.getBody()['result'];
     });
 
 
@@ -225,18 +215,13 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should post ListingItemTemplate created using the basic gui flow (old?)', async () => {
 
-        // pick a random category
-        // log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
-        const childCat: resources.ItemCategory = Faker.random.arrayElement(rootCategory.ChildItemCategories);
-        const category: resources.ItemCategory = Faker.random.arrayElement(childCat.ChildItemCategories);
-
         // create new base template
         let res: any = await testUtil.rpc(templateCommand, [templateAddCommand,
             profile.id,                     // profile_id
             'Test02',                       // title
             'Test02 Summary',               // shortDescription
             'Test02 Long Description',      // longDescription
-            category.id,                    // categoryId
+            randomCategory.id,              // categoryId
             SaleType.SALE,                  // SaleType
             Cryptocurrency.PART,            // Cryptocurrency
             1000,                           // basePrice
