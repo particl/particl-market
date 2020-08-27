@@ -5,11 +5,11 @@
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { GenerateProfileParams } from '../../../src/api/requests/testdata/GenerateProfileParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import * as resources from "resources";
 
 describe('DataGenerateCommand', () => {
 
@@ -25,23 +25,33 @@ describe('DataGenerateCommand', () => {
 
     const WITH_RELATED = true;
 
+    let randomCategory: resources.ItemCategory;
+    let generateListingItemParams: any[];
+
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        randomCategory = await testUtil.getRandomCategory();
+
+        generateListingItemParams = new GenerateListingItemParams([
+            true,                       // generateItemInformation
+            true,                       // generateItemLocation
+            true,                       // generateShippingDestinations
+            true,                       // generateItemImages
+            true,                       // generatePaymentInformation
+            true,                       // generateEscrow
+            true,                       // generateItemPrice
+            true,                       // generateMessagingInformation
+            true,                       // generateListingItemObjects
+            true,                       // generateObjectDatas
+            undefined,                  // listingItemTemplateHash
+            undefined,                  // seller
+            randomCategory.id,          // categoryId
+            undefined                   // soldOnMarketId
+        ]).toParamsArray();
     });
 
-    test('Should generate fail to generate anything because invalid model', async () => {
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
+    test('Should fail to generate anything because invalid model', async () => {
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
             'INVALID',
@@ -55,17 +65,6 @@ describe('DataGenerateCommand', () => {
     });
 
     test('Should fail to generate anything because invalid amount', async () => {
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
             CreatableModel.LISTINGITEM,
@@ -79,17 +78,6 @@ describe('DataGenerateCommand', () => {
     });
 
     test('Should fail to generate anything because invalid amount', async () => {
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
             CreatableModel.LISTINGITEM,
@@ -103,17 +91,6 @@ describe('DataGenerateCommand', () => {
     });
 
     test('Should fail to generate anything because invalid withRelated', async () => {
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
             CreatableModel.LISTINGITEM,
@@ -129,16 +106,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with no related data', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            false,              // generateItemInformation
+            false,              // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -160,16 +142,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateItemImages
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -194,16 +181,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations and ItemImages', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            false,              // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -228,16 +220,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages and PaymentInformation', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            false,              // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -262,16 +259,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation and Escrow', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            false,              // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -297,16 +299,21 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow and ItemPrice', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -334,16 +341,21 @@ describe('DataGenerateCommand', () => {
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice and MessagingInformation', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
@@ -371,16 +383,21 @@ describe('DataGenerateCommand', () => {
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice, MessagingInformation and ListingItemObjects', async () => {
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+        generateListingItemParams = new GenerateListingItemParams([
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            true,               // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            true,               // generateMessagingInformation
+            true,               // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         const res = await testUtil.rpc(dataCommand, [dataGenerateCommand,
