@@ -34,8 +34,6 @@ describe('ListingItemTemplateCloneCommand', () => {
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
-    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
-    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -85,21 +83,7 @@ describe('ListingItemTemplateCloneCommand', () => {
 
         baseTemplate = listingItemTemplates[0];
 
-        const res = await testUtilSellerNode.rpc(categoryCommand, [categoryListCommand]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        const result: any = res.getBody()['result'];
-        expect(result.key).toBeDefined();
-        expect(result.name).toBe('ROOT');
-        expect(result.market).toBeNull();
-        expect(result.ParentItemCategory).not.toBeDefined();
-
-        const childItemCategories = result.ChildItemCategories;
-        expect(childItemCategories.length).toBeGreaterThan(0);
-
-        const childCat: resources.ItemCategory = Faker.random.arrayElement(result.ChildItemCategories);
-        itemCategory = Faker.random.arrayElement(childCat.ChildItemCategories);
+        itemCategory = await testUtilSellerNode.getRandomCategory();
 
     });
 

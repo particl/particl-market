@@ -31,6 +31,7 @@ describe('FavoriteListCommand', () => {
 
     let listingItem1: resources.ListingItem;
     let listingItem2: resources.ListingItem;
+    let itemCategory: resources.ItemCategory;
 
     beforeAll(async () => {
 
@@ -41,18 +42,23 @@ describe('FavoriteListCommand', () => {
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
+        itemCategory = await testUtil.getRandomCategory();
 
         const generateListingItemParams = new GenerateListingItemParams([
-            true,           // generateItemInformation
-            true,           // generateItemLocation
-            true,           // generateShippingDestinations
-            false,          // generateItemImages
-            true,           // generatePaymentInformation
-            true,           // generateEscrow
-            true,           // generateItemPrice
-            false,          // generateMessagingInformation
-            false,          // generateListingItemObjects
-            false           // generateObjectDatas
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            itemCategory.id,    // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         // create two items

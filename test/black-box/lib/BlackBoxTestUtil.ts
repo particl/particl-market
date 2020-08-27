@@ -166,6 +166,27 @@ export class BlackBoxTestUtil {
     }
 
     /**
+     * get default market
+     *
+     * @returns {Promise<any>}
+     */
+    public async getRandomCategory(): Promise<resources.ItemCategory> {
+        const res: any = await this.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.key).toBeDefined();
+        expect(result.name).toBe('ROOT');
+        expect(result.market).toBeNull();
+        expect(result.ParentItemCategory).not.toBeDefined();
+        const childItemCategories = result.ChildItemCategories;
+        expect(childItemCategories.length).toBeGreaterThan(0);
+        const childCat: resources.ItemCategory = Faker.random.arrayElement(result.ChildItemCategories);
+        return Faker.random.arrayElement(childCat.ChildItemCategories);
+    }
+
+    /**
      *
      * @param wallet
      */
