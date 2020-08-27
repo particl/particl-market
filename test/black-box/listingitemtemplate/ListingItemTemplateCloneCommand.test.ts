@@ -69,7 +69,7 @@ describe('ListingItemTemplateCloneCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            true,               // generateItemImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice

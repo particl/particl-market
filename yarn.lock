@@ -5367,7 +5367,12 @@ lodash@^4.13.1, lodash@^4.17.4, lodash@^4.3.0, lodash@^4.6.0:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
   integrity sha1-eCA6TRwyiuHYbcpkYONptX9AVa4=
 
-lodash@^4.17.11, lodash@^4.17.14:
+lodash@^4.17.11:
+  version "4.17.20"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
+  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
+
+lodash@^4.17.14:
   version "4.17.19"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
   integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
@@ -6157,10 +6162,10 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-omp-lib@^0.1.139:
-  version "0.1.139"
-  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.139.tgz#6d8bea0f9647362f82dc6e3e7367caa77b7c1a29"
-  integrity sha512-qRbUsZVIzqUgKsauj+Dzdb9FYz9CQv9PNLMQbkvVcRWeeGr2RZCptKxB0YrUZv4Z3M6hsJoEYdog4kOQ1kOzog==
+omp-lib@^0.1.140:
+  version "0.1.140"
+  resolved "https://registry.yarnpkg.com/omp-lib/-/omp-lib-0.1.140.tgz#62e4ded2179521c0c44880f4308a87cdcb4024d8"
+  integrity sha512-SMG1iWkIrgCmGk+gHdsaS05rYUUH9PmyGqDbEPxKLLJAPk77Tok9dVNIeeIuOY/+mIZcG/tcUQd0QsTlbC3iyw==
   dependencies:
     inversify "^4.13.0"
     js-sha256 "^0.9.0"

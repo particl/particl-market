@@ -13,6 +13,11 @@ export enum MessageQueuePriority {
 
     // listing events
     MPA_LISTING_ADD = 90,
+    MPA_LISTING_IMAGE_ADD = 40,
+
+    // market events
+    MPA_MARKET_ADD = 90,
+    MPA_MARKET_IMAGE_ADD = 40,
 
     // buy flow events
     MPA_BID = 80,

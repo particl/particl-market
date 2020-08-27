@@ -1512,7 +1512,7 @@ export class TestDataService {
 
         const messagingInformations: MessagingInformationCreateRequest[] = [{
             protocol: MessagingProtocol.SMSG,
-            publicKey: 'pubkey'                     // todo: sellers pubkey should be added here
+            publicKey: 'pubkey-testdata'                     // todo: sellers pubkey should be added here
         }] as MessagingInformationCreateRequest[];
         return messagingInformations;
     }

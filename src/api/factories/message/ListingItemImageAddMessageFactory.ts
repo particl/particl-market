@@ -56,11 +56,14 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
 
         const message = {
             type: MPActionExtended.MPA_LISTING_IMAGE_ADD,
+            seller: actionRequest.sellerAddress,
             signature,
             hash: actionRequest.image.hash,
             data,
             target: actionRequest.listingItem.hash // TODO: we could remove this later on...
         } as ListingItemImageAddMessage;
+
+        // this.log.debug('message:', JSON.stringify(message, null, 2));
 
         return await this.getMarketplaceMessage(message);
     }
@@ -89,19 +92,20 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
         const imageData: resources.ItemImageData = await this.getPostableImageData(itemImageDatas);
 
         let data;
-        let protocol = ProtocolDSN.LOCAL;
+        const protocol = ProtocolDSN.SMSG;
+
+        // this.log.debug('withData:', withData);
 
         if (withData) {
             // load the actual image data
             // we're not sending the image data anymore when posting the ListingItem
             data = await this.itemImageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
-            protocol = ProtocolDSN.SMSG;
         }
 
         dsns.push({
             protocol,
-            encoding: imageData.encoding,
-            dataId: imageData.dataId,
+            encoding: withData ? imageData.encoding : undefined,
+            dataId: withData ? imageData.dataId : undefined,
             data
         } as DSN);
 

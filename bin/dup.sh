@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker-compose -f docker-compose-dev.yml up --remove-orphans
+COMPOSE_HTTP_TIMEOUT=180 docker-compose -f docker-compose.yml up --remove-orphans

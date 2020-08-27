@@ -55,7 +55,7 @@ export class MarketImageAddActionMessageProcessor extends BaseActionMessageProce
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {
 
-        this.log.debug('ListingItemImageAddActionListener.onEvent()');
+        this.log.debug('MarketImageAddActionMessageProcessor.onEvent()');
         const smsgMessage: resources.SmsgMessage = event.smsgMessage;
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;

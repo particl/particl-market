@@ -63,15 +63,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
     /**
      * create a ListingItemCreateRequest
      *
-     * @param listingItemAddMessage
-     * @param smsgMessage
      * @param params
      */
-    public async get(params: ListingItemCreateParams,
-                     listingItemAddMessage: ListingItemAddMessage,
-                     smsgMessage: resources.SmsgMessage): Promise<ListingItemCreateRequest> {
+    public async get(params: ListingItemCreateParams): Promise<ListingItemCreateRequest> {
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
 
-        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(listingItemAddMessage.item.information, params.rootCategory);
+        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(listingItemAddMessage.item.information, params.itemCategory);
         const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
         const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
 
@@ -81,10 +79,10 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         const createRequest = {
-            msgid: params.msgid,
+            msgid: smsgMessage.msgid,
             seller: listingItemAddMessage.item.seller.address,
             signature: listingItemAddMessage.item.seller.signature,
-            market: params.market,
+            market: smsgMessage.to,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,
             expiredAt: smsgMessage.expiration,
@@ -217,14 +215,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as EscrowRatioCreateRequest;
     }
 
-    private async getModelItemInformation(information: ItemInfo, rootCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
-        const itemCategory = await this.itemCategoryFactory.getCreateRequest(information.category, rootCategory);
+    private async getModelItemInformation(information: ItemInfo, itemCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
+        // const itemCategory = await this.itemCategoryFactory.getCreateRequest(information.category, itemCategory);
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
         let itemImages: ItemImageCreateRequest[] | undefined;
 
-        // TODO: make ItemLocation non-optional
         if (information.location) {
             itemLocation = await this.getModelLocation(information.location);
         }
@@ -241,7 +238,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
             title: information.title,
             shortDescription: information.shortDescription,
             longDescription: information.longDescription,
-            itemCategory,
+            // itemCategory,
+            item_category_id: itemCategory.id,
             itemLocation,
             shippingDestinations,
             itemImages

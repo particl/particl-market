@@ -39,47 +39,51 @@ export class ImageFactory {
         originalImageData: ItemImageDataCreateRequest,
         toVersions: ImageVersion[]
     ): Promise<ItemImageDataCreateRequest[]> {
-        let startTime = new Date().getTime();
 
-        if ( !originalImageData.data ) {
-            throw new MessageException('image data was empty.');
-        }
-
-        const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
-        this.log.debug('ImageFactory.getImageDatas: ' + (new Date().getTime() - startTime) + 'ms');
-
-
-        startTime = new Date().getTime();
-        const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
-        this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
-
-        // this.log.debug('resizedDatas: ', resizedDatas);
+        let startTime = Date.now();
 
         const imageDatas: ItemImageDataCreateRequest[] = [];
 
-        // first create the original
-        const imageDataForOriginal = await this.getImageDataCreateRequest(itemImageId, ImageVersions.ORIGINAL, imageHash,
-            originalImageData.protocol, originalData, originalImageData.encoding, originalImageData.originalMime,
-            originalImageData.originalName);
+        if (originalImageData.data) {
+            const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
+            this.log.debug('ImageFactory.getImageDatas: ' + (new Date().getTime() - startTime) + 'ms');
 
-        imageDatas.push(imageDataForOriginal);
+            startTime = Date.now();
+            const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
+            this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
+            // this.log.debug('resizedDatas: ', resizedDatas);
 
-        for (const version of toVersions) {
-            const imageData = await this.getImageDataCreateRequest(itemImageId, version, imageHash, originalImageData.protocol,
-                resizedDatas.get(version.propName) || '', originalImageData.encoding, originalImageData.originalMime,
+            // first create the original
+            const imageDataForOriginal = await this.getImageDataCreateRequest(itemImageId, ImageVersions.ORIGINAL, imageHash,
+                originalImageData.protocol, originalData, originalImageData.encoding, originalImageData.originalMime,
                 originalImageData.originalName);
-            imageDatas.push(imageData);
+
+            imageDatas.push(imageDataForOriginal);
+
+            for (const version of toVersions) {
+                const imageData = await this.getImageDataCreateRequest(itemImageId, version, imageHash, originalImageData.protocol,
+                    resizedDatas.get(version.propName) || '', originalImageData.encoding, originalImageData.originalMime,
+                    originalImageData.originalName);
+                imageDatas.push(imageData);
+            }
+        } else {
+            const imageDataForOriginal = await this.getImageDataCreateRequest(itemImageId, ImageVersions.ORIGINAL, imageHash,
+                originalImageData.protocol, originalImageData.data, originalImageData.encoding, originalImageData.originalMime,
+                originalImageData.originalName);
+
+            imageDatas.push(imageDataForOriginal);
         }
+
         return imageDatas;
     }
 
-    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: string,
-                                           data: string, encoding: string | null, originalMime: string | null, originalName: string | null
+    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: string, data: string | undefined,
+                                           encoding: string | undefined, originalMime: string | undefined, originalName: string | undefined
     ): Promise<ItemImageDataCreateRequest> {
 
         const imageData = {
             item_image_id: itemImageId,
-            dataId: this.getImageUrl(itemImageId, imageVersion.propName),
+            dataId: this.getImageUrl(itemImageId, imageVersion.propName), // todo: fix
             protocol,
             imageVersion: imageVersion.propName,
             imageHash,

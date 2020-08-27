@@ -45,6 +45,7 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
 
         const actionMessage = message.action as ListingItemImageAddMessage;
+        this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         if (actionMessage.type !== MPActionExtended.MPA_LISTING_IMAGE_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_LISTING_IMAGE_ADD]);
@@ -66,27 +67,13 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
             }
         }
 
-        const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(actionMessage.hash).then(value => value.toJSON());
-
-        if (!_.isEmpty(itemImages)) {
-            // get the seller from the Images ListingItem
-            const seller = itemImages[0].ItemInformation.ListingItem.seller;
-
-            // now we can finally verify that the ListingItemAddMessage was actually sent by the seller
-            const verified = await this.verifyImageMessage(actionMessage, seller);
-            if (!verified) {
-                this.log.error('Received seller signature failed validation.');
-                return false;
-            }
-            return true;
-
-        } else {
-            // there were no images related to any listing, even though we are either sending or receiving one
-            // we should only end up here, if the ListingItemAddMessage wasn't processed yet
-            // ...actually validateSequence should fail, so we never end up here.
-            this.log.error('This should never happen.');
+        // verify that the ListingItemAddMessage was actually sent by the seller
+        const verified = await this.verifyImageMessage(actionMessage);
+        if (!verified) {
+            this.log.error('Received seller signature failed validation.');
             return false;
         }
+        return true;
     }
 
     public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
@@ -107,17 +94,17 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
      * verifies SellerMessage, returns boolean
      *
      * @param listingItemImageAddMessage
-     * @param sellerAddress
      */
-    private async verifyImageMessage(listingItemImageAddMessage: ListingItemImageAddMessage, sellerAddress: string): Promise<boolean> {
+    private async verifyImageMessage(listingItemImageAddMessage: ListingItemImageAddMessage): Promise<boolean> {
         // we need to get the associated ListingItem to get the seller address and ListingItem hash
         const message = {
-            address: sellerAddress,                         // sellers address
+            address: listingItemImageAddMessage.seller,     // sellers address
             hash: listingItemImageAddMessage.hash,          // image hash
             target: listingItemImageAddMessage.target       // item hash
         } as ImageAddMessage;
 
-        return await this.coreRpcService.verifyMessage(sellerAddress, listingItemImageAddMessage.signature, message);
+        this.log.debug('message:', JSON.stringify(message, null, 2));
+        return await this.coreRpcService.verifyMessage(listingItemImageAddMessage.seller, listingItemImageAddMessage.signature, message);
     }
 
 }

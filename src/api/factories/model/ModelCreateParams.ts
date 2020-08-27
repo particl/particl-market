@@ -42,9 +42,10 @@ export interface MarketCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {
-    market: string;
-    rootCategory: resources.ItemCategory;
-    msgid: string;
+    itemCategory: resources.ItemCategory;
+    actionMessage: ActionMessageInterface;
+    smsgMessage: resources.SmsgMessage;
+
 }
 
 export interface ItemImageCreateParams extends ModelCreateParams {

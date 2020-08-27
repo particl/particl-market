@@ -172,8 +172,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         let toMarket: resources.Market;
         let toAddress: string;
 
-        let fromMarket: resources.Market;
-        let fromIdentity: resources.Identity;
+        let fromMarket: resources.Market | undefined;
+        let fromIdentity: resources.Identity | undefined;
 
         // make sure the params are of correct type
         // if (typeof marketId !== 'number') {
@@ -251,13 +251,14 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 .catch(reason => {
                     throw new ModelNotFoundException('Identity');
                 });
+
         } else {
             throw new MessageException('Invalid parameters.');
         }
 
         const marketAddRequest = {
             sendParams: {
-                wallet: _.isNil(fromIdentity!) ? fromMarket!.Identity.wallet : fromIdentity!.wallet
+                wallet: _.isNil(fromIdentity) ? fromMarket!.Identity.wallet : fromIdentity!.wallet
             } as SmsgSendParams,
             market: promotedMarket
         } as MarketAddRequest;
@@ -271,9 +272,9 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         data.params[0] = promotedMarket;
         data.params[1] = daysRetention;
         data.params[2] = estimateFee;
-        data.params[3] = fromMarket!;
+        data.params[3] = fromMarket;
         data.params[4] = toMarket!;
-        data.params[5] = fromIdentity!;
+        data.params[5] = fromIdentity;
         data.params[6] = toAddress!;
 
         return data;

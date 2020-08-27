@@ -79,7 +79,6 @@ export class ListingItemImageAddActionService extends BaseActionService {
      * @param actionRequest
      */
     public async createMarketplaceMessage(actionRequest: ListingItemImageAddRequest): Promise<MarketplaceMessage> {
-        actionRequest.withData = true;
         return await this.actionMessageFactory.get(actionRequest);
     }
 

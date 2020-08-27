@@ -56,15 +56,16 @@ export class ItemImageDataService {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
 
-        if (body.encoding !== 'BASE64') {
-            this.log.warn('Unsupported image encoding. Only supports BASE64.');
+        // if (body.encoding !== 'BASE64') {
+        //     this.log.warn('Unsupported image encoding. Only supports BASE64.');
+        // }
+
+        if (body.data) {
+            const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
+            body.data = fileName;
         }
 
-        const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
-        body.data = fileName;
-
-        const itemImageData: resources.ItemImageData = await this.itemImageDataRepo.create(body)
-            .then(value => value.toJSON());
+        const itemImageData: resources.ItemImageData = await this.itemImageDataRepo.create(body).then(value => value.toJSON());
 
         // finally find and return the created itemImageData
         const newItemImageData = await this.findOne(itemImageData.id);
@@ -127,7 +128,8 @@ export class ItemImageDataService {
 
     public async destroy(id: number): Promise<void> {
         const itemImageData: resources.ItemImageData = await this.findOne(id, false).then(value => value.toJSON());
-        this.log.debug('destroy(), remove itemImageData, image: ' + itemImageData.data);
+        this.log.debug('destroy(), remove itemImageData.id: ' + itemImageData.id);
+        this.log.debug('destroy(), remove itemImageData.data: ' + itemImageData.data);
         await this.removeImageFile(itemImageData.imageHash, itemImageData.imageVersion);
         await this.itemImageDataRepo.destroy(id);
     }
@@ -173,13 +175,16 @@ export class ItemImageDataService {
             const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
             this.log.debug('removeImageFile(), removed: ', filename);
             try {
-                fs.unlinkSync(filename);
+                // file might not yet exist on a remote node receiving the image
+                if (fs.existsSync(filename)) {
+                    fs.unlinkSync(filename);
+                }
             } catch (err) {
                 this.log.error('removeImageFile(), image file remove failed: ' + err);
                 throw new MessageException('Image remove failed: ' + err);
             }
         } else {
-            this.log.debug('removeImageFile(): multiple images using the same file, skipping...');
+            this.log.debug('removeImageFile(): multiple images using the same data file, skipping...');
         }
 
     }

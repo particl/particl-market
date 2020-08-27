@@ -16,10 +16,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('item_information_id').references('id')
                 .inTable('item_informations').onDelete('cascade');
 
+            table.boolean('featured').defaultTo(false);
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
-
-            table.boolean('featured').defaultTo(false);
         })
     ]);
 };

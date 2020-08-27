@@ -77,7 +77,7 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      * @returns {Promise<MarketplaceMessage>}
      */
     public async get(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
-        this.log.debug('actionRequest:', JSON.stringify(actionRequest, null, 2));
+        // this.log.debug('actionRequest:', JSON.stringify(actionRequest, null, 2));
 
         if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
@@ -109,10 +109,10 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
             signature = (actionRequest.listingItem as resources.ListingItem).signature;
         }
 
-        const information = await this.getMessageItemInfo(actionRequest.listingItem.ItemInformation);
-        const payment = await this.getMessagePayment(actionRequest.listingItem.PaymentInformation, actionRequest.cryptoAddress);
-        const messaging = await this.getMessageMessaging(actionRequest.listingItem.MessagingInformation);
-        const objects = await this.getMessageObjects(actionRequest.listingItem.ListingItemObjects);
+        const information = await this.getMessageItemInfo(actionRequest);
+        const payment = await this.getMessagePayment(actionRequest);
+        const messaging = await this.getMessageMessaging(actionRequest);
+        const objects = await this.getMessageObjects(actionRequest);
 
         if (_.isEmpty(actionRequest.sellerAddress)) {
             throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
@@ -178,11 +178,13 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         return await this.coreRpcService.signMessage(wallet, address, message);
     }
 
-    private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {
+    private async getMessageItemInfo(actionRequest: ListingItemAddRequest): Promise<ItemInfo> {
+        const itemInformation = actionRequest.listingItem.ItemInformation;
+
         const category: string[] = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
-        const location: Location = await this.getMessageItemInfoLocation(itemInformation.ItemLocation);
-        const shippingDestinations: string[] | undefined = await this.getMessageItemInfoShippingDestinations(itemInformation.ShippingDestinations);
-        const images: ContentReference[] = await this.getMessageInformationImages(itemInformation.ItemImages);
+        const location: Location = await this.getMessageItemInfoLocation(actionRequest);
+        const shippingDestinations: string[] | undefined = await this.getMessageItemInfoShippingDestinations(actionRequest);
+        const images: ContentReference[] = await this.getMessageInformationImages(actionRequest);
 
         return {
             title: itemInformation.title,
@@ -195,7 +197,9 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         } as ItemInfo;
     }
 
-    private async getMessageItemInfoLocation(itemLocation: resources.ItemLocation): Promise<Location> {
+    private async getMessageItemInfoLocation(actionRequest: ListingItemAddRequest): Promise<Location> {
+        const itemLocation: resources.ItemLocation = actionRequest.listingItem.ItemInformation.ItemLocation;
+
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
         const informationLocation = {
             country: itemLocation.country,
@@ -218,7 +222,9 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         return informationLocation;
     }
 
-    private async getMessageItemInfoShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[] | undefined> {
+    private async getMessageItemInfoShippingDestinations(actionRequest: ListingItemAddRequest): Promise<string[] | undefined> {
+        const shippingDestinations: resources.ShippingDestination[] = actionRequest.listingItem.ItemInformation.ShippingDestinations;
+
         const shippingDesArray: string[] = [];
         for (const destination of shippingDestinations) {
             switch (destination.shippingAvailability) {
@@ -255,13 +261,15 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      *   - data: DSN[], image data sources, currently we support just one per image
      *   - featured: boolean, whether the image is the featured one or not
      *
-     * @param images
+     * @param actionRequest
      */
-    private async getMessageInformationImages(images: resources.ItemImage[]): Promise<ContentReference[]> {
+    private async getMessageInformationImages(actionRequest: ListingItemAddRequest): Promise<ContentReference[]> {
+        const images: resources.ItemImage[] = actionRequest.listingItem.ItemInformation.ItemImages;
+        const withData: boolean = actionRequest.imagesWithData;
         const contentReferences: ContentReference[] = [];
 
         for (const image of images) {
-            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ItemImageDatas, false);
+            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ItemImageDatas, withData);
             contentReferences.push({
                 hash: image.hash,
                 data: imageData,
@@ -271,7 +279,10 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         return contentReferences;
     }
 
-    private async getMessagePayment(paymentInformation: resources.PaymentInformation, cryptoAddress: CryptoAddress): Promise<PaymentInfo> {
+    private async getMessagePayment(actionRequest: ListingItemAddRequest): Promise<PaymentInfo> {
+        const paymentInformation: resources.PaymentInformation = actionRequest.listingItem.PaymentInformation;
+        const cryptoAddress: CryptoAddress = actionRequest.cryptoAddress;
+
         if (_.isEmpty(paymentInformation)) {
             throw new MessageException('Missing PaymentInformation.');
         }
@@ -345,7 +356,8 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         }] as PaymentOption[];
     }
 
-    private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<MessagingInfo | undefined> {
+    private async getMessageMessaging(actionRequest: ListingItemAddRequest): Promise<MessagingInfo | undefined> {
+        const messagingInformations: resources.MessagingInformation[] = actionRequest.listingItem.MessagingInformation;
 
         const options: MessagingOption[] = [];
         for (const info of messagingInformations) {
@@ -367,7 +379,9 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         return messagingInfo;
     }
 
-    private async getMessageObjects(listingItemObjects: resources.ListingItemObject[]): Promise<ItemObject[]> {
+    private async getMessageObjects(actionRequest: ListingItemAddRequest): Promise<ItemObject[]> {
+        const listingItemObjects: resources.ListingItemObject[] = actionRequest.listingItem.ListingItemObjects;
+
         const objectArray: ItemObject[] = [];
         for (const lio of listingItemObjects) {
             const objectValue = await this.getItemObject(lio);

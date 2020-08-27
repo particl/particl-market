@@ -104,7 +104,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const postRequest = {
             sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
             listingItem: listingItemTemplate,
-            sellerAddress: market.Identity.address
+            sellerAddress: market.Identity.address,
+            imagesWithData: false
         } as ListingItemAddRequest;
 
         this.log.debug('execute(), posting...');
@@ -301,8 +302,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const imageAddRequest = {
             sendParams: listingItemAddRequest.sendParams,
             listingItem: listingItemTemplate,
-            // market: listingItemAddRequest.market, // TODO: remove this? it doesn't seem to be used
-            sellerAddress: listingItemAddRequest.sellerAddress
+            sellerAddress: listingItemAddRequest.sellerAddress,
+            withData: true
         } as ListingItemImageAddRequest;
 
         imageAddRequest.sendParams.paidMessage = false; // sending images is free for now

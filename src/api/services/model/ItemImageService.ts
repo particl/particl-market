@@ -129,24 +129,14 @@ export class ItemImageService {
 
         if (itemImageDataOriginal) {
 
-            // the original image version data is used to create a hash for the ItemImage
-            // hash should be calculated in the factory, if needed (by the seller only)
-            // body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
-
-            // get all protocols
-            // const protocols = Object.keys(ProtocolDSN).map(key => (ProtocolDSN[key]));
-            // if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
-            //    throw new MessageException('Invalid image protocol.');
-            // }
-
             if (!EnumHelper.containsValue(ProtocolDSN, itemImageDataOriginal.protocol)) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new InvalidParamException('data.protocol', 'ProtocolDSN');
             }
 
-            if (_.isEmpty(itemImageDataOriginal.data)) {
-                throw new MessageException('Image data not found.');
-            }
+            // if (_.isEmpty(itemImageDataOriginal.data)) {
+            //     throw new MessageException('Image data not found.');
+            // }
 
             // create the ItemImage
             const itemImage: resources.ItemImage = await this.itemImageRepo.create(body).then(value => value.toJSON());
@@ -191,11 +181,6 @@ export class ItemImageService {
 
         if (itemImageDataOriginal) {
 
-            const itemImage = await this.findOne(id, false);
-
-            // use the original image version to create a hash for the ItemImage
-            // body.hash = ConfigurableHasher.hash(itemImageDataOriginal, new HashableItemImageCreateRequestConfig());
-
             if (!EnumHelper.containsValue(ProtocolDSN, itemImageDataOriginal.protocol)) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new InvalidParamException('data.protocol', 'ProtocolDSN');
@@ -205,19 +190,18 @@ export class ItemImageService {
                 throw new MessageException('Image data not found.');
             }
 
-            // set new values
+            // first update the ItemImage
+            const itemImage = await this.findOne(id, false);
             itemImage.Hash = body.hash;
             itemImage.Featured = body.featured;
-
-            // update itemImage record
             const updatedItemImage: resources.ItemImage = await this.itemImageRepo.update(id, itemImage.toJSON()).then(value => value.toJSON());
 
-            // find and remove old related ItemImageDatas and files
+            // then remove old related ItemImageDatas and files
             for (const imageData of updatedItemImage.ItemImageDatas) {
                 await this.itemImageDataService.destroy(imageData.id);
             }
 
-            // then recreate the other imageDatas from the given original data
+            // then recreate the other ItemImageDatas from the original data
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
 
             // todo: imageDataFactory

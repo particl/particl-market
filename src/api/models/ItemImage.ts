@@ -17,13 +17,7 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImage> {
-        if (withRelated) {
-            return await ItemImage.where<ItemImage>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ItemImage.where<ItemImage>({ id: value }).fetch();
-        }
+        return ItemImage.where<ItemImage>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     // fetchAll because multiple listings could be using the same image
@@ -33,13 +27,7 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
                 qb.where('hash', '=', hash);
             });
 
-        if (withRelated) {
-            return await collection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await collection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'item_images'; }
@@ -51,15 +39,14 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Featured(): boolean { return this.get('featured'); }
+    public set Featured(value: boolean) { this.set('featured', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
-
-    public get Featured(): boolean { return this.get('featured'); }
-    public set Featured(value: boolean) { this.set('featured', value); }
-
 
     public ItemImageDatas(): Collection<ItemImageData> {
         return this.hasMany(ItemImageData, 'item_image_id', 'id');

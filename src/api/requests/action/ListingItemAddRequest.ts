@@ -18,6 +18,9 @@ export class ListingItemAddRequest extends RequestBody implements ActionRequestI
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;
 
     @IsNotEmpty()
+    public imagesWithData: boolean;
+
+    @IsNotEmpty()
     public sellerAddress: string;           // needed, because ListingItemTemplate doesn't have sellers address
 
     public cryptoAddress: CryptoAddress;    // optional, cryptoAddress can be used to override the one set on the template

@@ -47,6 +47,8 @@ import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCrea
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
 
 export class ListingItemTemplateService {
 
@@ -509,18 +511,24 @@ export class ListingItemTemplateService {
                 // load the image data
                 itemImageDataOriginal.data = await this.itemImageDataService.loadImageFile(image.hash, itemImageDataOriginal.imageVersion);
 
-                return _.assign({} as ItemImageCreateRequest, {
+                const itemImageCreateRequest: ItemImageCreateRequest = _.assign({} as ItemImageCreateRequest, {
                     data: [{
                         dataId: itemImageDataOriginal.dataId,
                         protocol: itemImageDataOriginal.protocol,
+                        imageVersion: ImageVersions.ORIGINAL.propName,
+                        imageHash: itemImageDataOriginal.imageHash,
                         encoding: itemImageDataOriginal.encoding,
                         data: itemImageDataOriginal.data,
-                        imageVersion: ImageVersions.ORIGINAL.propName,
                         originalMime: itemImageDataOriginal.originalMime,
                         originalName: itemImageDataOriginal.originalName
                     }] as ItemImageDataCreateRequest[],
-                    featured: itemImageDataOriginal.featured
+                    featured: itemImageDataOriginal.featured,
+                    hash: image.hash
                 } as ItemImageCreateRequest);
+
+                itemImageCreateRequest.hash = ConfigurableHasher.hash(itemImageCreateRequest, new HashableItemImageCreateRequestConfig());
+
+                return itemImageCreateRequest;
             }));
         }
 

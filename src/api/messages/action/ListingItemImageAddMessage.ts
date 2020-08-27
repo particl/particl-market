@@ -16,6 +16,9 @@ export class ListingItemImageAddMessage extends MessageBody implements ActionMes
     public type: MPActionExtended.MPA_LISTING_IMAGE_ADD;
 
     @IsNotEmpty()
+    public seller: string;
+
+    @IsNotEmpty()
     public signature: string;
 
     @IsNotEmpty()

@@ -36,7 +36,7 @@ import { ListingItemNotification } from '../../messages/notification/ListingItem
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-
+import {ActionMessageInterface} from '../../messages/action/ActionMessageInterface';
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -162,25 +162,18 @@ export class ListingItemAddActionService extends BaseActionService {
             const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
             // if ListingItem contains a custom category, create them
-            await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to, listingItemAddMessage.item.information.category);
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to,
+                listingItemAddMessage.item.information.category);
 
-            // fetch the root category used to create the listingItemCreateRequest
-            const rootCategory: resources.ItemCategory = await this.itemCategoryService.findRoot(smsgMessage.to).then(value => value.toJSON());
+            this.log.debug('processMessage(), itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-            const listingItemCreateParams = {
-                msgid: smsgMessage.msgid,
-                market: smsgMessage.to,
-                rootCategory
-            } as ListingItemCreateParams; // TODO: get rid of these xxxCreateParams
+            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
+                itemCategory,
+                actionMessage: listingItemAddMessage,
+                smsgMessage
+            } as ListingItemCreateParams);
 
-            // this.log.debug('processMessage(), listingItemCreateParams: ', JSON.stringify(listingItemCreateParams, null, 2));
-            // this.log.debug('processMessage(), listingItemAddMessage: ', JSON.stringify(listingItemAddMessage, null, 2));
-            // this.log.debug('processMessage(), smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
-
-            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get(listingItemCreateParams,
-                listingItemAddMessage, smsgMessage);
-
-            // this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+            this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
             // - create the ListingItem locally with the listingItemCreateRequest
             await this.listingItemService.create(listingItemCreateRequest)
@@ -193,11 +186,12 @@ export class ListingItemAddActionService extends BaseActionService {
                     // - if there's a matching ListingItemTemplate, create a relation
                     await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
 
-                    this.log.debug('PROCESSED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
+                    this.log.debug('CREATED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);
 
                 })
                 .catch(reason => {
-                    this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
+                    this.log.error('FAILED: ' + smsgMessage.msgid + ' : ' + reason);
+                    throw reason;
                 });
         }
 

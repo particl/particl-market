@@ -118,9 +118,9 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
                         && !EnumHelper.containsValue(CommentAction, type));
             }))) {
             throw new InvalidParamException('type', 'ActionMessageTypes[]');
-        } else if (!_.isNil(status) && (typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, status!))) {
+        } else if (!_.isNil(status) && (typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, status))) {
             throw new InvalidParamException('status', 'SmsgMessageStatus');
-        } else if (!_.isNil(direction) && (typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, direction!))) {
+        } else if (!_.isNil(direction) && (typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, direction))) {
             throw new InvalidParamException('direction', 'ActionDirection');
         } else if (!_.isNil(age) && !_.isNumber(age)) {
             throw new InvalidParamException('age', 'number');

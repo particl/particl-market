@@ -4,6 +4,8 @@
 
 import * as resources from 'resources';
 import * as _ from 'lodash';
+import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
+import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Core, Targets, Types } from '../../constants';
@@ -13,8 +15,6 @@ import { SmsgMessageService } from '../services/model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { ActionDirection } from '../enums/ActionDirection';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import PQueue, { DefaultAddOptions, Options } from 'pm-queue';
-import PriorityQueue, { PriorityQueueOptions } from 'pm-queue/dist/priority-queue';
 import { MessageQueuePriority } from '../enums/MessageQueuePriority';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketplaceMessageEvent } from '../messages/MarketplaceMessageEvent';
@@ -36,6 +36,9 @@ import { VoteActionMessageProcessor } from './action/VoteActionMessageProcessor'
 import { CommentAction } from '../enums/CommentAction';
 import { CommentAddActionMessageProcessor } from './action/CommentAddActionMessageProcessor';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { ListingItemImageAddActionMessageProcessor } from './action/ListingItemImageAddActionMessageProcessor';
+import { MarketAddActionMessageProcessor } from './action/MarketAddActionMessageProcessor';
+import { MarketImageAddActionMessageProcessor } from './action/MarketImageAddActionMessageProcessor';
 
 export class MarketplaceMessageProcessor implements MessageProcessorInterface {
 
@@ -48,6 +51,9 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.ListingItemAddActionMessageProcessor) private listingItemAddActionMessageProcessor: ListingItemAddActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.ListingItemImageAddActionMessageProcessor) private listingItemImageAddActionMessageProcessor: ListingItemImageAddActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.MarketAddActionMessageProcessor) private marketAddActionMessageProcessor: MarketAddActionMessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.MarketImageAddActionMessageProcessor) private marketImageAddActionMessageProcessor: MarketImageAddActionMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidActionMessageProcessor) private bidActionMessageProcessor: BidActionMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidAcceptActionMessageProcessor) private bidAcceptActionMessageProcessor: BidAcceptActionMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.action.BidCancelActionMessageProcessor) private bidCancelActionMessageProcessor: BidCancelActionMessageProcessor,
@@ -122,6 +128,21 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
             case MPAction.MPA_LISTING_ADD:
                 await this.actionQueue.add(async () => await this.listingItemAddActionMessageProcessor.process(marketplaceEvent), {
                     priority: MessageQueuePriority.MPA_LISTING_ADD
+                } as DefaultAddOptions);
+                break;
+            case MPActionExtended.MPA_LISTING_IMAGE_ADD:
+                await this.actionQueue.add(async () => await this.listingItemImageAddActionMessageProcessor.process(marketplaceEvent), {
+                    priority: MessageQueuePriority.MPA_LISTING_IMAGE_ADD
+                } as DefaultAddOptions);
+                break;
+            case MPActionExtended.MPA_MARKET_ADD:
+                await this.actionQueue.add(async () => await this.marketAddActionMessageProcessor.process(marketplaceEvent), {
+                    priority: MessageQueuePriority.MPA_MARKET_ADD
+                } as DefaultAddOptions);
+                break;
+            case MPActionExtended.MPA_MARKET_IMAGE_ADD:
+                await this.actionQueue.add(async () => await this.marketImageAddActionMessageProcessor.process(marketplaceEvent), {
+                    priority: MessageQueuePriority.MPA_MARKET_IMAGE_ADD
                 } as DefaultAddOptions);
                 break;
             case MPAction.MPA_BID:
