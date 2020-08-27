@@ -20,7 +20,6 @@ describe('ListingItemFlagCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
@@ -31,32 +30,34 @@ describe('ListingItemFlagCommand', () => {
     let market: resources.Market;
 
     let listingItem: resources.ListingItem;
+    let randomCategory: resources.ItemCategory;
 
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        await testUtilSellerNode.cleanDb();
 
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemParams = new GenerateListingItemParams([
-            true,                           // generateItemInformation
-            true,                           // generateItemLocation
-            true,                           // generateShippingDestinations
-            false,                          // generateItemImages
-            true,                           // generatePaymentInformation
-            true,                           // generateEscrow
-            true,                           // generateItemPrice
-            true,                           // generateMessagingInformation
-            true,                           // generateListingItemObjects
-            false,                          // generateObjectDatas
-            undefined,                      // listingItemTemplateHash
-            market.Identity.address,        // seller
-            undefined,                      // categoryId
-            market.id                       // soldOnMarketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateItemImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            undefined,          // listingItemTemplateHash
+            undefined,          // seller
+            randomCategory.id,  // categoryId
+            undefined           // soldOnMarketId
         ]).toParamsArray();
 
         // create ListingItem for testing
@@ -70,14 +71,14 @@ describe('ListingItemFlagCommand', () => {
 
     });
 
-    test('Should fail to flag ListingItem because of missing listingItemId', async () => {
+    test('Should fail to flag because missing listingItemId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should fail to flag ListingItem because of missing identityId', async () => {
+    test('Should fail to flag because missing identityId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id
         ]);
@@ -86,7 +87,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
     });
 
-    test('Should fail to flag ListingItem because of invalid listingItemId', async () => {
+    test('Should fail to flag because invalid listingItemId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             'INVALID',
             profile.id
@@ -96,7 +97,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
-    test('Should fail to flag ListingItem because of invalid identityId (string)', async () => {
+    test('Should fail to flag because invalid identityId (string)', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
             'INVALID-PROFILE-ID'
@@ -106,7 +107,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
     });
 
-    test('Should fail to flag the ListingItem because Identity not found', async () => {
+    test('Should fail to flag because Identity not found', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
             0
@@ -116,7 +117,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
     });
 
-    test('Should fail to flag the ListingItem because ListingItem not found', async () => {
+    test('Should fail to flag because ListingItem not found', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             0,
             profile.id
