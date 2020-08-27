@@ -12,6 +12,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -30,6 +31,7 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     let templatesWithoutItems: resources.ListingItemTemplate[];
     let templatesWithItems: resources.ListingItemTemplate[];
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -39,21 +41,24 @@ describe('ListingItemTemplateSearchCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+        randomCategory = await testUtil.getRandomCategory();
+
         // create templates without listingitems
         let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            false,              // generateListingItem
-            market.id           // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            false,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         templatesWithoutItems = await testUtil.generateData(
@@ -66,19 +71,20 @@ describe('ListingItemTemplateSearchCommand', () => {
 
         // create templates with listingitems
         generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,         // profileId
-            true,               // generateListingItem
-            market.id           // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         templatesWithItems = await testUtil.generateData(
@@ -94,7 +100,8 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     });
 
-    test('Should fail because we searchBy without order', async () => {
+
+    test('Should fail because missing order', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2
@@ -104,7 +111,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('order').getMessage());
     });
 
-    test('Should fail because we searchBy without orderField', async () => {
+
+    test('Should fail because missing orderField', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
@@ -115,7 +123,48 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('orderField').getMessage());
     });
 
-    test('Should get all ListingItemTemplates for Profile', async () => {
+
+    test('Should fail because invalid order', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
+            0,
+            2,
+            'INVALID',
+            ListingItemTemplateSearchOrderField.UPDATED_AT
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('order', 'SearchOrder').getMessage());
+    });
+
+
+    test('Should fail because missing profileId', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            ListingItemTemplateSearchOrderField.UPDATED_AT
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
+    });
+
+
+    test('Should fail because invalid profileId', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            ListingItemTemplateSearchOrderField.UPDATED_AT,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
+    });
+
+
+    test('Should return all by profileId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             10,
@@ -130,7 +179,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(8);
     });
 
-    test('Should return empty ListingItemTemplates array if invalid pagination', async () => {
+
+    test('Should return empty array if invalid pagination', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             2,  // page 2
             4,  // 4 results per page
@@ -145,7 +195,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(0);
     });
 
-    test('Should get only first ListingItemTemplate using pagination (page 0) for Profile', async () => {
+
+    test('Should return only first using pagination (page 0)', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             1,
@@ -161,7 +212,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].Profile.id).toBe(profile.id);
     });
 
-    test('Should get second ListingItemTemplate using pagination (page 1) for Profile', async () => {
+
+    test('Should return second using pagination (page 1)', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             1,
             1,
@@ -177,7 +229,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].Profile.id).toBe(profile.id);
     });
 
-    test('Should searchBy base ListingItemTemplates by ItemCategory key', async () => {
+
+    test('Should return base ListingItemTemplates by ItemCategory key', async () => {
         const sameCategory = (templatesWithoutItems[0].ItemInformation.ItemCategory.key === templatesWithoutItems[1].ItemInformation.ItemCategory.key);
 
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
@@ -200,7 +253,8 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     });
 
-    test('Should searchBy base ListingItemTemplates by ItemCategory id', async () => {
+
+    test('Should return base ListingItemTemplates by ItemCategory id', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
@@ -220,7 +274,8 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ParentListingItemTemplate).toBeUndefined();
     });
 
-    test('Should searchBy base ListingItemTemplates by ItemInformation title', async () => {
+
+    test('Should return base ListingItemTemplates by ItemInformation title', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
             2,
@@ -239,6 +294,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ItemInformation.title).toBe(templatesWithoutItems[0].ItemInformation.title);
         expect(result[0].ParentListingItemTemplate).toBeUndefined();
     });
+
 
     test('Should return market ListingItemTemplates NOT having published ListingItems', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
@@ -262,6 +318,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ListingItems.length).toBe(0);
     });
 
+
     test('Should return market ListingItemTemplates for specified market NOT having published ListingItems', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
@@ -284,6 +341,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ListingItems.length).toBe(0);
     });
 
+
     test('Should return market ListingItemTemplates having published ListingItems', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
@@ -305,8 +363,6 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(2);
         expect(result[0].ListingItems.length).toBe(1);
     });
-
-
 
 });
 

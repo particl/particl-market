@@ -95,7 +95,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
 
         // valid SearchOrder?
         if (!EnumHelper.containsName(SearchOrder, order)) {
-            throw new InvalidParamException('order', 'SearchOrder.' + EnumHelper.getNames(SearchOrder));
+            throw new InvalidParamException('order', 'SearchOrder'/*+ EnumHelper.getNames(SearchOrder)*/);
         }
 
         // valid orderField?
