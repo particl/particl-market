@@ -30,6 +30,7 @@ describe('ItemImageRemoveCommand', () => {
     let market: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
+    let randomCategory: resources.ItemCategory;
 
 
     beforeAll(async () => {
@@ -40,21 +41,23 @@ describe('ItemImageRemoveCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        // generate ListingItemTemplate
+        randomCategory = await testUtil.getRandomCategory();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            true,               // generateShippingDestinations
-            true,               // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            true,               // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            profile.id,  // profileId
-            false,              // generateListingItem
-            market.id    // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            true,                           // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            false,                          // generateListingItem
+            market.id,                      // soldOnMarketId
+            randomCategory.id               // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtil.generateData(
@@ -67,16 +70,16 @@ describe('ItemImageRemoveCommand', () => {
 
     });
 
-    test('Should fail to remove ItemImage because missing itemImageId', async () => {
+    test('Should fail to remove because missing itemImageId', async () => {
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe(new MissingParamException('itemImageId').getMessage());
     });
 
-    test('Should fail to remove ItemImage because invalid itemImageId', async () => {
+    test('Should fail to remove because invalid itemImageId', async () => {
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
-            'INVALIDID'
+            true
         ]);
         result.expectJson();
         result.expectStatusCode(400);
@@ -84,7 +87,6 @@ describe('ItemImageRemoveCommand', () => {
     });
 
     test('Should remove ItemImage', async () => {
-        // remove item image
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
             listingItemTemplate.ItemInformation.ItemImages[0].id
         ]);
@@ -92,7 +94,7 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(200);
     });
 
-    test('Should fail to remove ItemImage because ItemImage has already been removed', async () => {
+    test('Should fail to remove because ItemImage has already been removed', async () => {
         const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
             listingItemTemplate.ItemInformation.ItemImages[0].id
         ]);
@@ -100,25 +102,25 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(404);
     });
 
-    test('Should fail to remove ItemImage because the ListingItemTemplate has been published', async () => {
+    test('Should fail to remove because the ListingItemTemplate has been published', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
-            true,                       // generateItemInformation
-            true,                       // generateItemLocation
-            true,                       // generateShippingDestinations
-            true,                       // generateItemImages
-            true,                       // generatePaymentInformation
-            true,                       // generateEscrow
-            true,                       // generateItemPrice
-            true,                       // generateMessagingInformation
-            false,                      // generateListingItemObjects
-            false,                      // generateObjectDatas
-            listingItemTemplate.hash,   // listingItemTemplateHash
-            profile.address,     // seller
-            null                        // categoryId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            true,                           // generateItemImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            false,                          // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            listingItemTemplate.hash,       // listingItemTemplateHash
+            market.Identity.address,        // seller
+            randomCategory.id,              // categoryId
+            market.id                       // soldOnMarketId
         ]).toParamsArray();
 
-        // create ListingItem for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,     // what to generate
             1,                      // how many to generate
@@ -134,6 +136,5 @@ describe('ItemImageRemoveCommand', () => {
         result.expectStatusCode(400);
         expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
-
 
 });
