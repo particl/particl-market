@@ -124,6 +124,7 @@ import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import {ListingItemAddMessageCreateParams} from '../requests/message/ListingItemAddMessageCreateParams';
+import {HashableItemImageCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
 
 
 export class TestDataService {
@@ -1405,10 +1406,12 @@ export class TestDataService {
     private async generateItemImagesData(amount: number): Promise<ItemImageCreateRequest[]> {
         const items: ItemImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
-            const fakeHash = Faker.random.uuid();
             const data = await this.generateRandomImage(20, 20);
+
+            const imageHash = ConfigurableHasher.hash({data}, new HashableItemImageCreateRequestConfig());
+
             const item = {
-                hash: fakeHash,
+                hash: imageHash,
                 data: [{
                     dataId: Faker.internet.url(),
                     protocol: ProtocolDSN.LOCAL,

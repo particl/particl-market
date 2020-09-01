@@ -405,14 +405,13 @@ export class ListingItemTemplateService {
 
         for (const originalImageData of originalImageDatas) {
             const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
-            // save the resized image
             const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
                 originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
                 originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
             await this.itemImageDataService.create(imageDataCreateRequest);
         }
 
-        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
+        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (Date.now() - startTime) + 'ms');
 
         return await this.findOne(listingItemTemplate.id);
     }

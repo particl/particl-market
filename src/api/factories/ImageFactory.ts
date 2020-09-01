@@ -11,7 +11,7 @@ import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageVersion } from '../../core/helpers/ImageVersion';
 import { ItemImageDataCreateRequest } from '../requests/model/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
-import { MessageException } from '../exceptions/MessageException';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
 export class ImageFactory {
 
@@ -77,7 +77,7 @@ export class ImageFactory {
         return imageDatas;
     }
 
-    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: string, data: string | undefined,
+    public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: ProtocolDSN, data: string | undefined,
                                            encoding: string | undefined, originalMime: string | undefined, originalName: string | undefined
     ): Promise<ItemImageDataCreateRequest> {
 

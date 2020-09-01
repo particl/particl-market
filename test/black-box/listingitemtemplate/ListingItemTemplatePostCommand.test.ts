@@ -57,7 +57,7 @@ describe('ListingItemTemplatePostCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            false,                          // generateItemImages
+            true,                           // generateItemImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -169,6 +169,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
+
 
     test('Should post a ListingItem in to the default market', async () => {
 
