@@ -13,7 +13,6 @@ import { Core, Targets, Types } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
-import { ItemCategoryService } from '../services/model/ItemCategoryService';
 import { MPActionExtended } from '../enums/MPActionExtended';
 import { MarketAddMessage } from '../messages/action/MarketAddMessage';
 import { MissingParamException } from '../exceptions/MissingParamException';
@@ -25,7 +24,6 @@ export class MarketAddValidator implements ActionMessageValidatorInterface {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -34,29 +32,30 @@ export class MarketAddValidator implements ActionMessageValidatorInterface {
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
 
         const actionMessage = message.action as MarketAddMessage;
+        this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         if (actionMessage.type !== MPActionExtended.MPA_MARKET_ADD) {
             this.log.error('Not MPActionExtended.MPA_MARKET_ADD');
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_MARKET_ADD]);
         }
 
-        if (_.isEmpty(actionMessage.name)) {
+        if (_.isNil(actionMessage.name)) {
             throw new MissingParamException('name');
         }
 
-        if (_.isEmpty(actionMessage.receiveKey)) {
+        if (_.isNil(actionMessage.receiveKey)) {
             throw new MissingParamException('receiveKey');
         }
 
-        if (_.isEmpty(actionMessage.publishKey)) {
+        if (_.isNil(actionMessage.publishKey)) {
             throw new MissingParamException('publishKey');
         }
 
-        if (_.isEmpty(actionMessage.hash)) {
+        if (_.isNil(actionMessage.hash)) {
             throw new MissingParamException('hash');
         }
 
-        if (_.isEmpty(actionMessage.generated)) {
+        if (_.isNil(actionMessage.generated)) {
             throw new MissingParamException('generated');
         }
 

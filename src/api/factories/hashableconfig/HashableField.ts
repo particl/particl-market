@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 export enum HashableMarketCRField {
+    GENERATED_AT = 'generatedAt',
     MARKET_IMAGE_HASH = 'Image.hash'
 }
 

@@ -39,6 +39,7 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
 }
 
 export interface MarketCreateParams extends ModelCreateParams {
+    identity?: resources.Identity;
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {

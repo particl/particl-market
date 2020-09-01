@@ -42,7 +42,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
         const profile: resources.Profile = data.params[0];
-        return await this.marketService.findAllByProfileId(profile.id, false);
+        return await this.marketService.findAllByProfileId(profile ? profile.id : undefined, false);
     }
 
     /**
@@ -54,18 +54,11 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
-        // make sure the params are of correct type
         if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         }
 
-        if (data.params.length === 0) {
-            data.params[0] = await this.profileService.getDefault()
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        } else {
+        if (data.params.length > 0) {
             data.params[0] = await this.profileService.findOne(data.params[0])
                 .then(value => value.toJSON())
                 .catch(reason => {

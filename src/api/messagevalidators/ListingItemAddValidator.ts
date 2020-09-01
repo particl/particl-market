@@ -127,22 +127,22 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
      */
     private async verifySellerMessage(listingItemAddMessage: ListingItemAddMessage): Promise<boolean> {
 
-        if (_.isEmpty(listingItemAddMessage.item.seller)) {
+        if (_.isNil(listingItemAddMessage.item.seller)) {
             this.log.error('Missing seller data, likely a message from an old client.');
             return false;
         }
 
-        if (_.isEmpty(listingItemAddMessage.item.seller.address)) {
+        if (_.isNil(listingItemAddMessage.item.seller.address)) {
             this.log.error('Missing seller address.');
             return false;
         }
 
-        if (_.isEmpty(listingItemAddMessage.item.seller.signature)) {
+        if (_.isNil(listingItemAddMessage.item.seller.signature)) {
             this.log.error('Missing seller signature.');
             return false;
         }
 
-        if (_.isEmpty(listingItemAddMessage.hash)) {
+        if (_.isNil(listingItemAddMessage.hash)) {
             this.log.error('Missing hash.');
             return false;
         }
@@ -156,8 +156,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             hash: itemHash
         } as SellerMessage;
 
-        this.log.debug('verifySellerMessage(), message: ', JSON.stringify(message, null, 2));
-
+        // this.log.debug('verifySellerMessage(), message: ', JSON.stringify(message, null, 2));
         this.log.debug('verifySellerMessage(), address: ', address);
         this.log.debug('verifySellerMessage(), hash: ', itemHash);
         this.log.debug('verifySellerMessage(), signature: ', signature);

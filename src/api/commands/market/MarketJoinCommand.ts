@@ -74,6 +74,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
         // create root category for market
         await this.itemCategoryService.insertRootItemCategoryForMarket(data.params[4]);
 
+        // todo: factory + hash
         return await this.marketService.create({
             profile_id: profile.id,
             identity_id: identity.id,

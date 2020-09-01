@@ -128,7 +128,7 @@ describe('Happy Vote Flow', () => {
 
         await testUtilBuyerNode.waitFor(2);
 
-        const response = await testUtilBuyerNode.rpcWaitFor(proposalCommand, [proposalListCommand,
+        const response: any  = await testUtilBuyerNode.rpcWaitFor(proposalCommand, [proposalListCommand,
                 '*',
                 '*',
                 ProposalCategory.PUBLIC_VOTE
@@ -163,13 +163,14 @@ describe('Happy Vote Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const response = await testUtilSellerNode.rpcWaitFor(proposalCommand, [proposalGetCommand,
+        const response: any  = await testUtilSellerNode.rpcWaitFor(proposalCommand, [proposalGetCommand,
                 proposalReceivedOnBuyerNode.hash
             ],
             30 * 60,                // maxSeconds
             200,                // waitForStatusCode
             'hash',          // property name
-            proposalReceivedOnBuyerNode.hash    // value
+            proposalReceivedOnBuyerNode.hash,
+            '='
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -664,7 +665,7 @@ describe('Happy Vote Flow', () => {
             8 * 60,
             200,
             'ProposalOptionResults[0].voters',
-             buyerVoteAddressCount,
+            buyerVoteAddressCount,
             '='
         );
         response.expectJson();

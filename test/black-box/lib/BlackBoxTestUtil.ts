@@ -278,7 +278,12 @@ export class BlackBoxTestUtil {
 
                         // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                        const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
+                        let objectPropertyValue;
+                        if (waitForObjectProperty === '.length') {
+                            objectPropertyValue = !_.isEmpty(result) ? result.length : 0;
+                        } else {
+                            objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
+                        }
 
                         // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
                         // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
@@ -287,6 +292,30 @@ export class BlackBoxTestUtil {
                         // this.log.debug('waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
 
                         let waitForResult = false;
+
+                        if (objectPropertyValue !== null) {
+                            switch (waitForCondition) {
+                                case '=':
+                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    break;
+                                case '<':
+                                    waitForResult = (objectPropertyValue < waitForObjectPropertyValue);
+                                    break;
+                                case '>':
+                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    break;
+                                case '<=':
+                                    waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);
+                                    break;
+                                case '>=':
+                                    waitForResult = (objectPropertyValue >= waitForObjectPropertyValue);
+                                    break;
+                                default:
+                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    break;
+                            }
+                        }
+                        /*
                         if (objectPropertyValue != null && waitForCondition === '=') {
                             waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
                         } else if (objectPropertyValue != null  && waitForCondition === '<') {
@@ -297,7 +326,11 @@ export class BlackBoxTestUtil {
                             waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);
                         } else if (objectPropertyValue != null  && waitForCondition === '>=') {
                             waitForResult = (objectPropertyValue >= waitForObjectPropertyValue);
+                        } else if (objectPropertyValue === waitForObjectPropertyValue && waitForCondition === '=') {
+                            waitForResult = true;
                         }
+                        */
+
                         // this.log.debug('waitForResult: ' + waitForResult);
 
                         if (waitForResult) {

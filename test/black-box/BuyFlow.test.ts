@@ -216,9 +216,7 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
-        const response: any = await testUtilSellerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -1126,7 +1124,7 @@ describe('Happy Buy Flow', () => {
         log.debug('Order should have been updated on SELLER node after posting the MPA_LOCK, OrderItemStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnSellerNode.ListingItem.id,
                 OrderItemStatus.ESCROW_LOCKED,
@@ -1139,10 +1137,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.ESCROW_LOCKED.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order[] = res.getBody()['result'];
+        const result: resources.Order[] = response.getBody()['result'];
         // log.debug('order on SELLER node after MPA_LOCK: ', JSON.stringify(result, null, 2));
         expect(result.length).toBe(1);
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);
@@ -1323,7 +1321,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnSellerNode.ListingItem.id,
                 OrderItemStatus.ESCROW_COMPLETED,
@@ -1336,10 +1334,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.ESCROW_COMPLETED.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);
@@ -1459,7 +1457,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilBuyerNode.waitFor(2);
 
-        const res: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnBuyerNode.ListingItem.id,
                 OrderItemStatus.ESCROW_COMPLETED,
@@ -1472,10 +1470,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.ESCROW_COMPLETED.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.ESCROW_COMPLETED);
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);
@@ -1659,7 +1657,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnSellerNode.ListingItem.id,
                 OrderItemStatus.SHIPPING,
@@ -1672,10 +1670,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.SHIPPING.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);
@@ -1798,7 +1796,7 @@ describe('Happy Buy Flow', () => {
 
         await testUtilBuyerNode.waitFor(2);
 
-        const res: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnBuyerNode.ListingItem.id,
                 OrderItemStatus.SHIPPING,
@@ -1811,10 +1809,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.SHIPPING.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.SHIPPING);
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);
@@ -2144,7 +2142,7 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderItemStatus.COMPLETE');
         log.debug('========================================================================================');
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(orderCommand, [orderSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
                 mpaBidOnSellerNode.ListingItem.id,
                 OrderItemStatus.COMPLETE,
@@ -2157,10 +2155,10 @@ describe('Happy Buy Flow', () => {
             '[0].OrderItems[0].status',
             OrderItemStatus.COMPLETE.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Order = res.getBody()['result'];
+        const result: resources.Order = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderItemStatus.COMPLETE);
         expect(result[0].buyer).toBe(buyerMarket.Identity.address);

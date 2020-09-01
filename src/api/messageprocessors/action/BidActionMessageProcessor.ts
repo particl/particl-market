@@ -29,7 +29,7 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.action.BidActionService) public bidActionService: BidActionService,
+        @inject(Types.Service) @named(Targets.Service.action.BidActionService) public actionService: BidActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -38,7 +38,7 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(MPAction.MPA_BID,
-            bidActionService,
+            actionService,
             smsgMessageService,
             bidService,
             proposalService,
@@ -58,7 +58,7 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: BidMessage = marketplaceMessage.action as BidMessage;
 
-        return await this.bidActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+        return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 this.log.debug('bid created: ', value.id);
                 return SmsgMessageStatus.PROCESSED;
@@ -67,53 +67,6 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
                 this.log.error('PROCESSING_FAILED, reason: ', reason);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
-
-/*
-        const marketAddress = this.getKVSValueByKey(actionMessage.objects || [], ActionMessageObjects.BID_ON_MARKET);
-        if (!marketAddress) {
-            this.log.error('BidMessage is missing ActionMessageObjects.BID_ON_MARKET.');
-            return SmsgMessageStatus.PROCESSING_FAILED;
-        }
-
-        return await this.listingItemService.findOneByHashAndMarketReceiveAddress(actionMessage.item, marketAddress as string)
-            .then(async listingItemModel => {
-                const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
-                // make sure the ListingItemTemplate exists
-                if (_.isEmpty(listingItem.ListingItemTemplate)) {
-                    const exception = new MessageException('Received a Bid for a ListingItem which ListingItemTemplate doesnt exists.');
-                    this.log.error('ERROR, reason: ', exception.getMessage());
-                    return SmsgMessageStatus.PROCESSING_FAILED;
-                }
-
-                // need to add profile_id and type to the ShippingAddress to make it an AddressCreateRequest
-                const address = actionMessage.buyer.shippingAddress as AddressCreateRequest;
-                address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-                address.type = AddressType.SHIPPING_BID;
-
-                const bidCreateParams = {
-                    msgid: smsgMessage.msgid,
-                    listingItem,
-                    address,
-                    bidder: smsgMessage.from
-                    // parentBid: undefined
-                } as BidCreateParams;
-
-                const postRequest = {
-                    sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
-                    listingItem,
-                    market,
-                    address
-                } as BidRequest;
-            })
-            .catch(reason => {
-                // TODO: user is receiving a Bid for his own ListingItem, so if it not found, something is seriously wrong.
-                // maybe he deleted the db, or for some reason never received his own message?
-                this.log.error('ERROR, reason: ', reason);
-                return SmsgMessageStatus.WAITING;
-            });
-    */
-
     }
 
 }

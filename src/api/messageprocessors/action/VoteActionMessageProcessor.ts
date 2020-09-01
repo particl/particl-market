@@ -28,12 +28,12 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
-        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public actionService: VoteActionService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(GovernanceAction.MPA_VOTE,
-            voteActionService,
+            actionService,
             smsgMessageService,
             bidService,
             proposalService,
@@ -56,7 +56,7 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
         // processVote will create or update the Vote
-        return await this.voteActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+        return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 if (value) {
                     this.log.debug('==> PROCESSED VOTE: ', smsgMessage ? smsgMessage.msgid : '');

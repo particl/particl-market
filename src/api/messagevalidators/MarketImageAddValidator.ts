@@ -14,7 +14,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
 import { MPActionExtended } from '../enums/MPActionExtended';
-import { ListingItemService } from '../services/model/ListingItemService';
 import { ItemImageService } from '../services/model/ItemImageService';
 import { MarketImageAddMessage } from '../messages/action/MarketImageAddMessage';
 import { MissingParamException } from '../exceptions/MissingParamException';
@@ -27,7 +26,6 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -44,16 +42,17 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
 
         const actionMessage = message.action as MarketImageAddMessage;
+        this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         if (actionMessage.type !== MPActionExtended.MPA_MARKET_IMAGE_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_MARKET_IMAGE_ADD]);
         }
 
-        if (_.isEmpty(actionMessage.hash)) {
+        if (_.isNil(actionMessage.hash)) {
             throw new MissingParamException('hash');
         }
 
-        if (_.isEmpty(actionMessage.data)) {
+        if (_.isNil(actionMessage.data)) {
             throw new MissingParamException('data');
         }
 
@@ -61,11 +60,11 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
             throw new InvalidParamException('data', 'DSN[]');
         }
 
-        if (_.isEmpty(actionMessage.target)) {
+        if (_.isNil(actionMessage.target)) {
             throw new MissingParamException('target');
         }
 
-        if (_.isEmpty(actionMessage.generated)) {
+        if (_.isNil(actionMessage.generated)) {
             throw new MissingParamException('generated');
         }
 

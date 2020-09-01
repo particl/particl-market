@@ -187,9 +187,7 @@ describe('OrderItemHistory', () => {
         log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilBuyerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        let response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],

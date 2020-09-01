@@ -17,7 +17,7 @@ export enum MPActionExtended {
 
     MPA_LISTING_IMAGE_ADD = 'MPA_LISTING_IMAGE_ADD',    // add image to listing
 
-    MPA_MARKET_ADD = 'MPA_LISTING_IMAGE_ADD',           // broadcast market
-    MPA_MARKET_IMAGE_ADD = 'MPA_LISTING_IMAGE_ADD'      // broadcast market image
+    MPA_MARKET_ADD = 'MPA_MARKET_ADD',                  // broadcast market
+    MPA_MARKET_IMAGE_ADD = 'MPA_MARKET_IMAGE_ADD'       // broadcast market image
 
 }

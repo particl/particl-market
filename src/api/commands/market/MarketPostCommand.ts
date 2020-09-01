@@ -29,11 +29,9 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { MarketAddActionService } from '../../services/action/MarketAddActionService';
 import { MarketImageAddActionService } from '../../services/action/MarketImageAddActionService';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
-import {MarketImageAddRequest} from '../../requests/action/MarketImageAddRequest';
+import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     public paramValidationRules = {
         parameters: [{
@@ -122,7 +120,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
             market: promotedMarket
         } as MarketAddRequest;
 
-        this.log.debug('execute(), posting...');
+        this.log.debug('execute(), posting market: ', JSON.stringify(promotedMarket, null, 2));
 
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.marketAddActionService.post(marketAddRequest);

@@ -58,7 +58,7 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
 
         const message = {
             name: actionRequest.market.name,
-            description: actionRequest.market.name,
+            description: actionRequest.market.description,
             type: MPActionExtended.MPA_MARKET_ADD,
             marketType: actionRequest.market.type,
             receiveKey: actionRequest.market.receiveKey,

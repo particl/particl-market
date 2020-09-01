@@ -6,15 +6,15 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { MarketType } from '../../enums/MarketType';
-import {ItemImageCreateRequest} from './ItemImageCreateRequest';
+import { ItemImageCreateRequest } from './ItemImageCreateRequest';
 
 // tslint:disable:variable-name
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public identity_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public profile_id: number;
 
     public msgid: string;

@@ -14,15 +14,12 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { CoreRpcService } from '../CoreRpcService';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { ListingItemService } from '../model/ListingItemService';
 import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
-import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
@@ -36,6 +33,8 @@ import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketNotification } from '../../messages/notification/MarketNotification';
+import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
+import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 
 
 export class MarketAddActionService extends BaseActionService {
@@ -50,11 +49,10 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private actionMessageFactory: MarketAddMessageFactory,
-        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemAddValidator) public validator: ListingItemAddValidator,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketAddValidator) public validator: MarketAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -107,7 +105,7 @@ export class MarketAddActionService extends BaseActionService {
      * @param actionRequest
      * @param marketplaceMessage
      */
-    public async beforePost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: MarketAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
         // this.log.debug('beforePost()');
         return marketplaceMessage;
     }
@@ -120,7 +118,7 @@ export class MarketAddActionService extends BaseActionService {
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(actionRequest: ListingItemAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: MarketAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
         // this.log.debug('afterPost()');
         return smsgSendResponse;
@@ -136,7 +134,7 @@ export class MarketAddActionService extends BaseActionService {
     public async processMessage(marketplaceMessage: MarketplaceMessage,
                                 actionDirection: ActionDirection,
                                 smsgMessage: resources.SmsgMessage,
-                                actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
+                                actionRequest?: MarketAddRequest): Promise<resources.SmsgMessage> {
 
         this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
@@ -150,14 +148,12 @@ export class MarketAddActionService extends BaseActionService {
                 smsgMessage
             } as MarketCreateParams);
 
-            const market: resources.Market = await this.marketService.findOneByHash(createRequest.hash)
-                .then(async value => value.toJSON())
-                .catch(async reason => {
-                    return await this.marketService.create(createRequest).then(async value => value.toJSON());
-                });
+            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
+            const market: resources.Market = await this.marketService.create(createRequest).then(async value => value.toJSON());
+            this.log.debug('processMessage(), market: ', JSON.stringify(market, null, 2));
 
             await this.createFlaggedItemIfNeeded(market);
-
         }
 
         return smsgMessage;
@@ -199,6 +195,7 @@ export class MarketAddActionService extends BaseActionService {
         await this.proposalService.findOneByTarget(market.hash)
             .then(async value => {
                 const proposal: resources.Proposal = value.toJSON();
+                this.log.debug('createFlaggedItemIfNeeded(), found proposal: ', proposal.id);
                 return await this.createFlaggedItemForMarket(market, proposal);
             })
             .catch(reason => {

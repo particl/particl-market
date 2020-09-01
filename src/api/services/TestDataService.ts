@@ -1617,7 +1617,7 @@ export class TestDataService {
         } else {
             switch (generateParams.type) {
                 case MPAction.MPA_LISTING_ADD: {
-                    const marketplaceMessage = await this.listingItemAddMessageFactory.get(generateParams.messageParams as ListingItemAddRequest);
+                    const marketplaceMessage = await this.listingItemAddMessageFactory.get(generateParams.messageParams);
                     action = marketplaceMessage.action;
                     break;
                 }

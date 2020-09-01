@@ -20,7 +20,10 @@ import { IdentityService } from './model/IdentityService';
 import { MessageException } from '../exceptions/MessageException';
 import { SettingValue } from '../enums/SettingValue';
 import { DefaultSettingService } from './DefaultSettingService';
-import {Market} from '../models/Market';
+import { Market } from '../models/Market';
+import { MarketFactory } from '../factories/model/MarketFactory';
+import { MarketCreateParams } from '../factories/model/ModelCreateParams';
+import { MarketAddMessage } from '../messages/action/MarketAddMessage';
 
 export class DefaultMarketService {
 
@@ -34,6 +37,7 @@ export class DefaultMarketService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.DefaultSettingService) public defaultSettingService: DefaultSettingService,
+        @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -168,6 +172,7 @@ export class DefaultMarketService {
 
     /**
      * create a default Market for Profile
+     * todo: remove unnecessary profile, marketIdentity has a relation to its Profile which can be used
      *
      * @param profile
      * @param marketIdentity
@@ -182,6 +187,8 @@ export class DefaultMarketService {
         const marketPKSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY;
         });
+
+        // todo: this isnt really needed anymore
         const marketAddressSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
@@ -190,17 +197,21 @@ export class DefaultMarketService {
             throw new MessageException('Default Market settings not found!');
         }
 
-        // then create the market
-        const newMarket: resources.Market = await this.marketService.create({
-            identity_id: marketIdentity.id,
-            profile_id: profile.id,
-            name: marketNameSetting.value,
-            type: MarketType.MARKETPLACE,
-            receiveKey: marketPKSetting.value,
-            receiveAddress: marketAddressSetting.value,
-            publishKey: marketPKSetting.value,
-            publishAddress: marketAddressSetting.value
-        } as MarketCreateRequest).then(value => value.toJSON());
+        const createRequest: MarketCreateRequest = await this.marketFactory.get({
+            actionMessage: {
+                name: marketNameSetting.value,
+                description: 'Particl Market',
+                marketType: MarketType.MARKETPLACE,
+                receiveKey: marketPKSetting.value,
+                publishKey: marketPKSetting.value,
+                // todo: add logo for the default market
+                // image: ContentReference,
+                generated: Date.now()
+            } as MarketAddMessage,
+            identity: marketIdentity
+        } as MarketCreateParams);
+
+        const newMarket: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
 
         // this.log.debug('createDefaultMarket(), newMarket: ', JSON.stringify(newMarket, null, 2));
 

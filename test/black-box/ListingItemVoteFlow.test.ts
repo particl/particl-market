@@ -235,9 +235,7 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('SELLER RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
-        const response: any = await testUtilSellerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -315,7 +313,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilBuyerNode.waitFor(2);
 
-        const response = await testUtilBuyerNode.rpcWaitFor(proposalCommand, [proposalListCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(proposalCommand, [proposalListCommand,
                 timeOfFlagging,
                 '*',
                 ProposalCategory.ITEM_VOTE
@@ -468,7 +466,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const res = await testUtilSellerNode.rpcWaitFor(proposalCommand, [proposalGetCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(proposalCommand, [proposalGetCommand,
                 proposalReceivedOnBuyerNode.hash
             ],
             30 * 60,                // maxSeconds
@@ -477,10 +475,10 @@ describe('Happy ListingItem Vote Flow', () => {
             proposalReceivedOnBuyerNode.hash,   // value
             '='
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Proposal = res.getBody()['result'];
+        const result: resources.Proposal = response.getBody()['result'];
         // log.debug('proposal:', JSON.stringify(result, null, 2));
         expect(result.target).toBe(listingItemReceivedOnSellerNode.hash);
         expect(result.description).toBe('reason for reporting');

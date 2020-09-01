@@ -120,7 +120,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
             + '    <page>                   - Numeric - The number of the page we want to view. \n'
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
             + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
-            + '    <orderField>             - ENUM{ListingItemTemplateSearchOrderField} - The field to use to sort results.\n'
+            + '    <orderField>             - ENUM{MarketSearchOrderField} - The field to use to sort results.\n'
             + '    <searchString>           - [optional] String - A string that is used to search. \n'
             + '    <type>                   - [optional] MarketType, optional - MARKETPLACE \n';
     }

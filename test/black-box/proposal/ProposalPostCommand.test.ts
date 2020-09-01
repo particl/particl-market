@@ -325,7 +325,7 @@ describe('ProposalPostCommand', () => {
     test('Should receive the posted Proposal', async () => {
 
         expect(sent).toEqual(true);
-        const res = await testUtil.rpcWaitFor(proposalCommand, [proposalListCommand,
+        const response = await testUtil.rpcWaitFor(proposalCommand, [proposalListCommand,
                 '*',
                 '*'
             ],
@@ -334,9 +334,9 @@ describe('ProposalPostCommand', () => {
             '[0].title', // property name
             title
         );
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: resources.Proposal = res.getBody()['result'][0];
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: resources.Proposal = response.getBody()['result'][0];
 
         expect(result.title).toBe(title);
         expect(result.description).toBe(description);

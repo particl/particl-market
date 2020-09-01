@@ -30,12 +30,12 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
-        @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public commentAddActionService: CommentAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public actionService: CommentAddActionService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         super(CommentAction.MPA_COMMENT_ADD,
-            commentAddActionService,
+            actionService,
             smsgMessageService,
             bidService,
             proposalService,
@@ -57,7 +57,7 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         const actionMessage: CommentAddMessage = marketplaceMessage.action as CommentAddMessage;
 
         // processProposal will create or update the Proposal
-        return await this.commentAddActionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
+        return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 this.log.debug('==> PROCESSED COMMENT: ', value ? value.msgid : '');
                 return SmsgMessageStatus.PROCESSED;

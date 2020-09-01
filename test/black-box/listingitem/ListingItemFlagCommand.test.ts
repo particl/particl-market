@@ -138,31 +138,31 @@ describe('ListingItemFlagCommand', () => {
     });
 
     test('Should flag the ListingItem using listingItemId and identityId', async () => {
-        let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+        let response = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
             market.Identity.id
         ]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
         // make sure we got the expected result from posting the proposal
-        const result: any = res.getBody()['result'];
+        const result: any = response.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
         log.debug('==> PROPOSAL SENT.');
 
-        res = await testUtil.rpcWaitFor(
-            itemCommand,
-            [itemGetCommand, listingItem.id],
+        response = await testUtil.rpcWaitFor(itemCommand, [itemGetCommand,
+                listingItem.id
+            ],
             8 * 60,
             200,
             'FlaggedItem.reason',
             'This ListingItem should be removed.'
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const item: resources.ListingItem = res.getBody()['result'];
+        const item: resources.ListingItem = response.getBody()['result'];
         // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         expect(item.FlaggedItem.Proposal.title).toBe(listingItem.hash);

@@ -25,7 +25,7 @@ import { NotImplementedException } from '../../exceptions/NotImplementedExceptio
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableMarketCreateRequestConfig } from '../hashableconfig/createrequest/HashableMarketCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import {SmsgMessage} from '../../models/SmsgMessage';
+
 
 export class MarketFactory implements ModelFactoryInterface {
 
@@ -88,7 +88,10 @@ export class MarketFactory implements ModelFactoryInterface {
         }
 
         const createRequest = {
-            msgid: smsgMessage.msgid,
+            identity_id: params.identity ? params.identity.id : undefined,
+            profile_id: params.identity ? params.identity.Profile.id : undefined,
+
+            msgid: smsgMessage ? smsgMessage.msgid : undefined,
             name: marketAddMessage.name,
             description: marketAddMessage.description,
             type: marketAddMessage.marketType,
@@ -96,11 +99,11 @@ export class MarketFactory implements ModelFactoryInterface {
             receiveAddress,
             publishKey: marketAddMessage.publishKey,
             publishAddress,
-            expiryTime: smsgMessage.daysretention,
+            expiryTime: smsgMessage ? smsgMessage.daysretention : undefined,
             image,
-            postedAt: smsgMessage.sent,
-            expiredAt: smsgMessage.expiration,
-            receivedAt: smsgMessage.received,
+            postedAt: smsgMessage ? smsgMessage.sent : undefined,
+            expiredAt: smsgMessage ? smsgMessage.expiration : undefined,
+            receivedAt: smsgMessage ? smsgMessage.received : undefined,
             generatedAt: marketAddMessage.generated,
             hash: 'recalculateandvalidate'
         } as MarketCreateRequest;
@@ -108,7 +111,7 @@ export class MarketFactory implements ModelFactoryInterface {
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());
 
         // the createRequest.hash should have a matching hash with the incoming message
-        if (marketAddMessage.hash !== createRequest.hash) {
+        if (marketAddMessage.hash && marketAddMessage.hash !== createRequest.hash) {
             const exception = new HashMismatchException('MarketCreateRequest', marketAddMessage.hash, createRequest.hash);
             this.log.error(exception.getMessage());
             throw exception;

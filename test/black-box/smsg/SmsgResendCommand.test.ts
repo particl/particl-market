@@ -159,9 +159,7 @@ describe('SmsgResendCommand', () => {
         log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
-        const response: any = await testUtilBuyerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -196,9 +194,9 @@ describe('SmsgResendCommand', () => {
 
     test('Should have received SmsgMessage on BUYER node', async () => {
 
-        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
-            smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD],
+        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(smsgCommand, [smsgSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD
+            ],
             15 * 60,
             200,
             '[0].type',
@@ -258,9 +256,9 @@ describe('SmsgResendCommand', () => {
 
     test('Should have received SmsgMessage on BUYER node', async () => {
 
-        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(
-            smsgCommand,
-            [smsgSearchCommand, PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD],
+        const resBuyer: any = await testUtilBuyerNode.rpcWaitFor(smsgCommand, [smsgSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, SMSG_ORDERFIELD
+            ],
             15 * 60,
             200,
             '[0].type',

@@ -21,6 +21,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.boolean('removed').notNullable().defaultTo(false);
 
             table.integer('image_id').unsigned().nullable();
+            table.string('hash').notNullable();
 
             table.integer('expiry_time').unsigned();
             table.integer('generated_at').unsigned().nullable();

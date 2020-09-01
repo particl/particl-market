@@ -200,9 +200,7 @@ describe('OrderItemStatus', () => {
         log.debug('SELLER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created and matched with the existing ListingItemTemplate');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilSellerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        let response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -264,9 +262,7 @@ describe('OrderItemStatus', () => {
         log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
         log.debug('========================================================================================');
 
-        let response: any = await testUtilBuyerNode.rpcWaitFor(
-            listingItemCommand,
-            [listingItemSearchCommand,
+        let response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -413,7 +409,7 @@ describe('OrderItemStatus', () => {
         // wait for some time to make sure the Bid has been created
         await testUtilSellerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
                 listingItemReceivedOnSellerNode.id,
                 MPAction.MPA_BID                            // type
@@ -426,10 +422,10 @@ describe('OrderItemStatus', () => {
             '[0].type',
             MPAction.MPA_BID.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Bid = res.getBody()['result'];
+        const result: resources.Bid = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_BID);
         expect(result[0].bidder).toBe(buyerMarket.Identity.address);
@@ -556,7 +552,7 @@ describe('OrderItemStatus', () => {
         // wait for some time to make sure the Bid has been updated
         await testUtilSellerNode.waitFor(5);
 
-        const res: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
                 listingItemReceivedOnSellerNode.id,
                 MPAction.MPA_ACCEPT                         // type
@@ -569,10 +565,10 @@ describe('OrderItemStatus', () => {
             '[0].type',
             MPAction.MPA_ACCEPT.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Bid = res.getBody()['result'];
+        const result: resources.Bid = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(mpaBidOnSellerNode.ListingItem.hash);
@@ -664,7 +660,7 @@ describe('OrderItemStatus', () => {
 
         await testUtilBuyerNode.waitFor(5);
 
-        const res: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
                 listingItemReceivedOnBuyerNode.id,
                 MPAction.MPA_ACCEPT                        // type
@@ -676,10 +672,10 @@ describe('OrderItemStatus', () => {
             '[0].type',
             MPAction.MPA_ACCEPT.toString()
         );
-        res.expectJson();
-        res.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        const result: resources.Bid = res.getBody()['result'];
+        const result: resources.Bid = response.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].type).toBe(MPAction.MPA_ACCEPT);
         expect(result[0].bidder).toBe(buyerMarket.Identity.address);

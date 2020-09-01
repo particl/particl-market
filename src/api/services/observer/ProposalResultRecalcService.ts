@@ -115,7 +115,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
                             await this.marketService.destroy(flaggedItem.Market!.id);
 
                             const blacklistMarketCreateRequest = {
-                                type: BlacklistType.LISTINGITEM,
+                                type: BlacklistType.MARKET,
                                 target: flaggedItem.Proposal.market,
                                 market: flaggedItem.Proposal.market
                             } as BlacklistCreateRequest;
