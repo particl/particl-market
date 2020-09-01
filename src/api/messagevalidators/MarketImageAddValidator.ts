@@ -14,7 +14,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { MarketService } from '../services/model/MarketService';
 import { MPActionExtended } from '../enums/MPActionExtended';
-import { ItemImageService } from '../services/model/ItemImageService';
+import { ImageService } from '../services/model/ImageService';
 import { MarketImageAddMessage } from '../messages/action/MarketImageAddMessage';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
@@ -26,7 +26,7 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

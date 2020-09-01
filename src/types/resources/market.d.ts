@@ -28,7 +28,7 @@ declare module 'resources' {
         Profile: Profile;
         Identity: Identity;
         FlaggedItem: FlaggedItem;
-        Image: ItemImage;
+        Image: Image;
 
         createdAt: Date;
         updatedAt: Date;

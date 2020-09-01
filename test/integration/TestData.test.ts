@@ -96,7 +96,7 @@ describe('TestDataService', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice

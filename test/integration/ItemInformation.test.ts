@@ -17,7 +17,7 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ImageService } from 'ImageService.ts';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -33,14 +33,14 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ImageCreateRequest } from 'ImageCreateRequest.ts';
+import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
 import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableItemImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { HashableImageCreateRequestConfig } from 'HashableImageCreateRequestConfig.ts';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 // tslint:enable:max-line-length
 
@@ -59,7 +59,7 @@ describe('ItemInformation', () => {
     let itemLocationService: ItemLocationService;
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
-    let itemImageService: ItemImageService;
+    let imageService: ImageService;
 
     let market: resources.Market;
     let profile: resources.Profile;
@@ -82,7 +82,7 @@ describe('ItemInformation', () => {
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
 
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
@@ -93,7 +93,7 @@ describe('ItemInformation', () => {
             false,              // generateItemInformation
             false,              // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice
@@ -151,7 +151,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(1);
-        expect(result.ItemImages).toHaveLength(0);
+        expect(result.Images).toHaveLength(0);
 
     });
 
@@ -167,7 +167,7 @@ describe('ItemInformation', () => {
         expect(result.ItemCategory).toBe(undefined); // doesnt fetch related
         expect(result.ItemLocation).toBe(undefined); // doesnt fetch related
         expect(result.ShippingDestinations).toBe(undefined); // doesnt fetch related
-        expect(result.ItemImages).toBe(undefined); // doesnt fetch related
+        expect(result.Images).toBe(undefined); // doesnt fetch related
     });
 
     test('Should return one ItemInformation', async () => {
@@ -185,7 +185,7 @@ describe('ItemInformation', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(1);
-        expect(result.ItemImages).toHaveLength(0);
+        expect(result.Images).toHaveLength(0);
     });
 
     test('Should throw ValidationException because missing title', async () => {
@@ -232,15 +232,15 @@ describe('ItemInformation', () => {
                     encoding: 'BASE64',
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     data: randomImageData
-                }] as ItemImageDataCreateRequest[],
+                }] as ImageDataCreateRequest[],
                 featured: false
-            }] as ItemImageCreateRequest[]
+            }] as ImageCreateRequest[]
         } as ItemInformationUpdateRequest;
 
         // update image hash
         testDataUpdated.itemImages[0].hash = ConfigurableHasher.hash({
             data: testDataUpdated.itemImages[0].data[0].data
-        }, new HashableItemImageCreateRequestConfig());
+        }, new HashableImageCreateRequestConfig());
         testDataUpdated.itemImages[0].data[0].imageHash = testDataUpdated.itemImages[0].hash;
 
         const result: resources.ItemInformation = await itemInformationService.update(itemInformation.id, testDataUpdated).then(value => value.toJSON());
@@ -278,9 +278,9 @@ describe('ItemInformation', () => {
             expect(e).toEqual(new NotFoundException(itemInformation.ShippingDestinations[0].id))
         );
 
-        // ItemImages
-        await itemImageService.findOne(itemInformation.ItemImages[0].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemInformation.ItemImages[0].id))
+        // Images
+        await imageService.findOne(itemInformation.Images[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemInformation.Images[0].id))
         );
 
         // delete listing item
@@ -292,7 +292,7 @@ describe('ItemInformation', () => {
 
     const generateItemInformationCreateRequest = async (withImage: boolean = false): Promise<ItemInformationCreateRequest> => {
         const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
-        let itemImages: ItemImageCreateRequest[] = [];
+        let itemImages: ImageCreateRequest[] = [];
 
         if (withImage) {
             itemImages = [{
@@ -303,11 +303,11 @@ describe('ItemInformation', () => {
                     encoding: 'BASE64',
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     data: randomImageData
-                }] as ItemImageDataCreateRequest[],
+                }] as ImageDataCreateRequest[],
                 featured: false
-            }] as ItemImageCreateRequest[];
+            }] as ImageCreateRequest[];
 
-            const hash = ConfigurableHasher.hash(itemImages[0], new HashableItemImageCreateRequestConfig());
+            const hash = ConfigurableHasher.hash(itemImages[0], new HashableImageCreateRequestConfig());
             itemImages[0].hash = hash;
             itemImages[0].data[0].dataId = 'https://particl.io/images/' + hash;
         }

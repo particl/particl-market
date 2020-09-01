@@ -5,7 +5,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection } from 'bookshelf';
 import { ItemLocation } from './ItemLocation';
-import { ItemImage } from './ItemImage';
+import { Image } from './Image';
 import { ShippingDestination } from './ShippingDestination';
 import { ItemCategory } from './ItemCategory';
 import { ListingItemTemplate } from './ListingItemTemplate';
@@ -17,29 +17,17 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
         'ItemCategory',
         'ItemLocation',
         'ItemLocation.LocationMarker',
-        'ItemImages',
-        'ItemImages.ItemImageDatas',
+        'Images',
+        'Images.ImageDatas',
         'ShippingDestinations'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemInformation> {
-        if (withRelated) {
-            return await ItemInformation.where<ItemInformation>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ItemInformation.where<ItemInformation>({ id: value }).fetch();
-        }
+        return ItemInformation.where<ItemInformation>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async findByItemTemplateId(value: number, withRelated: boolean = true): Promise<ItemInformation> {
-        if (withRelated) {
-            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch();
-        }
+        return ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'item_informations'; }
@@ -71,8 +59,8 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
         return this.hasOne(ItemLocation);
     }
 
-    public ItemImages(): Collection<ItemImage> {
-        return this.hasMany(ItemImage, 'item_information_id', 'id');
+    public Images(): Collection<Image> {
+        return this.hasMany(Image, 'item_information_id', 'id');
     }
 
     public ShippingDestinations(): Collection<ShippingDestination> {

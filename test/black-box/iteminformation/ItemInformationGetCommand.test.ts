@@ -47,7 +47,7 @@ describe('ItemInformationGetCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            false,                          // generateItemImages
+            false,                          // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -104,7 +104,7 @@ describe('ItemInformationGetCommand', () => {
             false,              // generateItemInformation
             false,              // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice

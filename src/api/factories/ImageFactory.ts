@@ -9,7 +9,7 @@ import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageVersion } from '../../core/helpers/ImageVersion';
-import { ItemImageDataCreateRequest } from '../requests/model/ItemImageDataCreateRequest';
+import { ImageDataCreateRequest } from '../requests/model/ImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
@@ -25,24 +25,24 @@ export class ImageFactory {
     }
 
     /**
-     * creates ItemImageDataCreateRequests for the required image versions from the original image data
+     * creates ImageDataCreateRequests for the required image versions from the original image data
      *
      * @param {number} itemImageId
      * @param imageHash
-     * @param {ItemImageDataCreateRequest} originalImageData
+     * @param {ImageDataCreateRequest} originalImageData
      * @param {ImageVersion[]} toVersions
-     * @returns {Promise<ItemImageDataCreateRequest[]>}
+     * @returns {Promise<ImageDataCreateRequest[]>}
      */
     public async getImageDatas(
         itemImageId: number,
         imageHash: string,
-        originalImageData: ItemImageDataCreateRequest,
+        originalImageData: ImageDataCreateRequest,
         toVersions: ImageVersion[]
-    ): Promise<ItemImageDataCreateRequest[]> {
+    ): Promise<ImageDataCreateRequest[]> {
 
         let startTime = Date.now();
 
-        const imageDatas: ItemImageDataCreateRequest[] = [];
+        const imageDatas: ImageDataCreateRequest[] = [];
 
         if (originalImageData.data) {
             const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
@@ -79,10 +79,10 @@ export class ImageFactory {
 
     public async getImageDataCreateRequest(itemImageId: number, imageVersion: ImageVersion, imageHash: string, protocol: ProtocolDSN, data: string | undefined,
                                            encoding: string | undefined, originalMime: string | undefined, originalName: string | undefined
-    ): Promise<ItemImageDataCreateRequest> {
+    ): Promise<ImageDataCreateRequest> {
 
         const imageData = {
-            item_image_id: itemImageId,
+            image_id: itemImageId,
             dataId: this.getImageUrl(itemImageId, imageVersion.propName), // todo: fix
             protocol,
             imageVersion: imageVersion.propName,
@@ -91,7 +91,7 @@ export class ImageFactory {
             originalMime,
             originalName,
             data
-        } as ItemImageDataCreateRequest;
+        } as ImageDataCreateRequest;
         return imageData;
     }
 

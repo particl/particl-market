@@ -43,7 +43,7 @@ describe('ListingItemTemplateGetCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateItemImages
+            true,                           // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -120,7 +120,7 @@ describe('ListingItemTemplateGetCommand', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();
-        expect(result.ItemInformation.ItemImages).toBeDefined();
+        expect(result.ItemInformation.Images).toBeDefined();
 
         expect(result.PaymentInformation.type).toBe(listingItemTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(listingItemTemplate.PaymentInformation.Escrow.type);
@@ -146,8 +146,8 @@ describe('ListingItemTemplateGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ListingItemTemplate = res.getBody()['result'];
 
-        // log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
-        expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
+        // log.debug('result.ItemInformation.Images[0].ImageDatas[0].data: ', result.ItemInformation.Images[0].ImageDatas[0].data);
+        expect(result.ItemInformation.Images[0].ImageDatas[0].data.length).toBeGreaterThan(200);
     });
 
 });

@@ -8,11 +8,11 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ItemImageCreateParams, MarketCreateParams } from './ModelCreateParams';
+import { ImageCreateParams, MarketCreateParams } from './ModelCreateParams';
 import { ItemImageFactory } from './ItemImageFactory';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
@@ -35,7 +35,7 @@ export class MarketFactory implements ModelFactoryInterface {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -80,11 +80,11 @@ export class MarketFactory implements ModelFactoryInterface {
                 throw new NotImplementedException();
         }
 
-        let image: ItemImageCreateRequest | undefined;
+        let image: ImageCreateRequest | undefined;
         if (!_.isEmpty(marketAddMessage.image)) {
             image = await this.itemImageFactory.get({
                 image: marketAddMessage.image
-            } as ItemImageCreateParams);
+            } as ImageCreateParams);
         }
 
         const createRequest = {

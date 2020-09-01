@@ -8,26 +8,26 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ImageDataService } from 'ImageDataService.ts';
+import { ImageService } from 'ImageService.ts';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../src/api/requests/model/ItemImageDataUpdateRequest';
+import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
+import { ImageDataUpdateRequest } from 'ImageDataUpdateRequest.ts';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
-describe('ItemImageData', () => {
+describe('ImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let itemImageDataService: ItemImageDataService;
-    let itemImageService: ItemImageService;
+    let itemImageDataService: ImageDataService;
+    let imageService: ImageService;
     let marketService: MarketService;
     let listingItemService: ListingItemService;
     let itemInformationService: ItemInformationService;
@@ -42,7 +42,7 @@ describe('ItemImageData', () => {
         protocol: ProtocolDSN.LOCAL,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
-    } as ItemImageDataCreateRequest;
+    } as ImageDataCreateRequest;
 
     const testDataUpdated = {
         dataId: '',
@@ -50,14 +50,14 @@ describe('ItemImageData', () => {
         imageVersion: ImageVersions.ORIGINAL.propName,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
-    } as ItemImageDataUpdateRequest;
+    } as ImageDataUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
+        imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
@@ -67,7 +67,7 @@ describe('ItemImageData', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,  // generateItemImages
+            false,  // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -85,11 +85,11 @@ describe('ItemImageData', () => {
         createdListingItem = listingItems[0];
 
         // create an image, without data
-        const itemImage: ItemImage = await itemImageService.create({
+        const itemImage: Image = await imageService.create({
             item_information_id: createdListingItem.ItemInformation.id,
             hash: 'hash',
             data: {}
-        } as ItemImageCreateRequest);
+        } as ImageCreateRequest);
         createdImage = itemImage.toJSON();
 */
     });
@@ -98,17 +98,17 @@ describe('ItemImageData', () => {
         // asdf
     });
 /*
-    test('Should throw ValidationException because there is no item_image_id', async () => {
+    test('Should throw ValidationException because there is no image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.create(testData as ItemImageDataCreateRequest).catch(e => {
+        await itemImageDataService.create(testData as ImageDataCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         });
     });
 
     test('Should create a new item image data', async () => {
-        testData.item_image_id = createdImage.id;
+        testData.image_id = createdImage.id;
 
-        const itemImageDataModel: ItemImageData = await itemImageDataService.create(testData);
+        const itemImageDataModel: ImageData = await itemImageDataService.create(testData);
         createdImageDataId = itemImageDataModel.Id;
         const result = itemImageDataModel.toJSON();
         expect(result.dataId).toBe(testData.dataId);
@@ -118,7 +118,7 @@ describe('ItemImageData', () => {
 
     test('Should throw ValidationException because we want to create a empty item image data', async () => {
         expect.assertions(1);
-        await itemImageDataService.create({} as ItemImageDataCreateRequest).catch(e => {
+        await itemImageDataService.create({} as ImageDataCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
@@ -137,7 +137,7 @@ describe('ItemImageData', () => {
     });
 
     test('Should return one item image data', async () => {
-        const itemImageDataModel: ItemImageData = await itemImageDataService.findOne(createdImageDataId);
+        const itemImageDataModel: ImageData = await itemImageDataService.findOne(createdImageDataId);
         const result = itemImageDataModel.toJSON();
 
         expect(result.dataId).toBe(testData.dataId);
@@ -145,9 +145,9 @@ describe('ItemImageData', () => {
         expect(result.encoding).toBe(testData.encoding);
     });
 
-    test('Should throw ValidationException because there is no item_image_id', async () => {
+    test('Should throw ValidationException because there is no image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdImageDataId, testDataUpdated as ItemImageDataUpdateRequest).catch(e => {
+        await itemImageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
@@ -155,15 +155,15 @@ describe('ItemImageData', () => {
 
     test('Should throw ValidationException because we want to update a item image data with empty body', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdImageDataId, {} as ItemImageDataUpdateRequest).catch(e => {
+        await itemImageDataService.update(createdImageDataId, {} as ImageDataUpdateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
     });
 
     test('Should update the item image data', async () => {
-        testDataUpdated.item_image_id = createdImage.id;
-        const itemImageDataModel: ItemImageData = await itemImageDataService.update(createdImageDataId, testDataUpdated as ItemImageDataUpdateRequest);
+        testDataUpdated.image_id = createdImage.id;
+        const itemImageDataModel: ImageData = await itemImageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest);
         const result = itemImageDataModel.toJSON();
 
         expect(result.dataId).toBe(testDataUpdated.dataId);

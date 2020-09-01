@@ -120,9 +120,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
 
-        if (!estimateFee && !_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+        if (!estimateFee && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
             // then post the Images related to the ListingItem one by one
-            const imageSmsgSendResponse: SmsgSendResponse = await this.postListingItemImages(listingItemTemplate, postRequest);
+            const imageSmsgSendResponse: SmsgSendResponse = await this.postListingImages(listingItemTemplate, postRequest);
             smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
         }
 
@@ -297,12 +297,12 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     /**
-     * Post ItemImages
+     * Post Images
      *
      * @param listingItemTemplate
      * @param listingItemAddRequest
      */
-    private async postListingItemImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest):
+    private async postListingImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest):
         Promise<SmsgSendResponse> {
 
         // then prepare the ListingItemImageAddRequest for sending the images
@@ -318,7 +318,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const msgids: string[] = [];
 
         // send each image related to the ListingItem
-        for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
+        for (const itemImage of listingItemTemplate.ItemInformation.Images) {
             imageAddRequest.image = itemImage;
             const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
             msgids.push(smsgSendResponse.msgid || '');
@@ -329,7 +329,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             msgids
         } as SmsgSendResponse;
 
-        this.log.debug('postListingItemImages(), result: ', JSON.stringify(result, null, 2));
+        this.log.debug('postListingImages(), result: ', JSON.stringify(result, null, 2));
         return result;
     }
 

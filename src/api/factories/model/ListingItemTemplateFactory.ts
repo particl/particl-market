@@ -14,7 +14,7 @@ import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ListingItemTemplateCreateParams } from './ModelCreateParams';
 import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
@@ -27,7 +27,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
     }

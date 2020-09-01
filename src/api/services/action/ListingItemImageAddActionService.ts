@@ -31,11 +31,11 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddMessage } from '../../messages/action/ListingItemImageAddMessage';
 import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
 import { ListingItemImageAddValidator } from '../../messagevalidators/ListingItemImageAddValidator';
-import { ItemImageService } from '../model/ItemImageService';
-import { ItemImageDataService } from '../model/ItemImageDataService';
+import { ImageService } from '../model/ImageService';
+import { ImageDataService } from '../model/ImageDataService';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { ItemImageUpdateRequest } from '../../requests/model/ItemImageUpdateRequest';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
+import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
 
 
@@ -48,8 +48,8 @@ export class ListingItemImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
@@ -106,7 +106,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
     }
 
     /**
-     * processListingItem "processes" the incoming ListingItemImageAddMessage, updating the existing ItemImage with data.
+     * processListingItem "processes" the incoming ListingItemImageAddMessage, updating the existing Image with data.
      *
      * called from MessageListener.onEvent(), after the ListingItemImageAddMessage is received.
      *
@@ -125,7 +125,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             // for all incoming messages, update the image data
-            const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
 
             for (const itemImage of itemImages) {
 
@@ -137,13 +137,13 @@ export class ListingItemImageAddActionService extends BaseActionService {
                         data: imageAddMessage.data[0].data,
                         imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
                         imageHash: imageAddMessage.hash
-                    }] as ItemImageDataCreateRequest[],
+                    }] as ImageDataCreateRequest[],
                     hash: imageAddMessage.hash,
                     featured: false     // TODO: add featured flag as param
-                } as ItemImageUpdateRequest;
+                } as ImageUpdateRequest;
 
                 // update the image with the real data
-                await this.itemImageService.update(itemImage.id, updateRequest);
+                await this.imageService.update(itemImage.id, updateRequest);
             }
 
         }
@@ -160,7 +160,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // const itemImages: resources.ItemImage[] = await this.itemImageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            // const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
             // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {

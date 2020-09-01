@@ -65,7 +65,7 @@ describe('FlaggedItem', () => {
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             false,      // generatePaymentInformation
             false,      // generateEscrow
             false,      // generateItemPrice

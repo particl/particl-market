@@ -28,7 +28,7 @@ import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { CommentService } from './CommentService';
 import { CommentType } from '../../enums/CommentType';
-import { ItemImageService } from './ItemImageService';
+import { ImageService } from './ImageService';
 import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 export class ListingItemService {
@@ -39,7 +39,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) public shoppingCartItemService: ShoppingCartItemService,
@@ -333,10 +333,10 @@ export class ListingItemService {
             }
         });
 
-        // manually remove ItemImages
-        if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
-            for (const image of listingItem.ItemInformation.ItemImages) {
-                await this.itemImageService.destroy(image.id);
+        // manually remove Images
+        if (!_.isEmpty(listingItem.ItemInformation.Images)) {
+            for (const image of listingItem.ItemInformation.Images) {
+                await this.imageService.destroy(image.id);
             }
         }
         this.log.debug('destroy(), deleting ListingItem:', listingItem.id);

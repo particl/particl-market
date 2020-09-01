@@ -16,7 +16,7 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { ItemLocationService } from './ItemLocationService';
-import { ItemImageService } from './ItemImageService';
+import { ImageService } from './ImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategory } from '../../models/ItemCategory';
@@ -24,7 +24,7 @@ import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCrea
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 
 export class ItemInformationService {
 
@@ -32,7 +32,7 @@ export class ItemInformationService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ShippingDestinationService) public shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.model.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Repository) @named(Targets.Repository.ItemInformationRepository) public itemInformationRepo: ItemInformationRepository,
@@ -79,7 +79,7 @@ export class ItemInformationService {
         const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
         const itemLocation: ItemLocationCreateRequest = body.itemLocation || {};
         const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
-        const itemImages: ItemImageCreateRequest[] = body.itemImages || [];
+        const itemImages: ImageCreateRequest[] = body.itemImages || [];
 
         delete body.itemCategory;
         delete body.itemLocation;
@@ -112,7 +112,7 @@ export class ItemInformationService {
             for (const itemImage of itemImages) {
                 itemImage.item_information_id = itemInformation.id;
                 // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                await this.itemImageService.create(itemImage);
+                await this.imageService.create(itemImage);
             }
         }
 
@@ -180,9 +180,9 @@ export class ItemInformationService {
         // update only if new data was passed
         if (!_.isEmpty(body.itemImages)) {
             // find related records and delete
-            let itemImages = updatedItemInformation.related('ItemImages').toJSON();
+            let itemImages = updatedItemInformation.related('Images').toJSON();
             for (const itemImage of itemImages) {
-                await this.itemImageService.destroy(itemImage.id);
+                await this.imageService.destroy(itemImage.id);
             }
 
             // recreate related data
@@ -191,7 +191,7 @@ export class ItemInformationService {
                 for (const itemImage of itemImages) {
                     itemImage.item_information_id = itemInformation.id;
                     // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                    await this.itemImageService.create(itemImage);
+                    await this.imageService.create(itemImage);
                 }
             }
         }
@@ -202,9 +202,9 @@ export class ItemInformationService {
 
     public async destroy(id: number): Promise<void> {
         const itemInformation: resources.ItemInformation = await this.findOne(id, true).then(value => value.toJSON());
-        for (const image of itemInformation.ItemImages) {
+        for (const image of itemInformation.Images) {
             // this.log.debug('image: ', JSON.stringify(image, null,  2));
-            await this.itemImageService.destroy(image.id);
+            await this.imageService.destroy(image.id);
         }
         await this.itemInformationRepo.destroy(id);
     }

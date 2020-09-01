@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/model/ItemImageService';
+import { ImageService } from '../../services/model/ImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -17,16 +17,16 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ItemImage } from '../../models/ItemImage';
+import { Image } from '../../models/Image';
 import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
 
-export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_FEATURED_IMAGE);
@@ -36,15 +36,15 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: itemImage: resources.ItemImage
+     *  [1]: itemImage: resources.Image
      * @param data
-     * @returns {Promise<ItemImage>}
+     * @returns {Promise<Image>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const itemImage: resources.ItemImage = data.params[1];
+        const itemImage: resources.Image = data.params[1];
 
         return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, itemImage.id);
     }
@@ -54,7 +54,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
      *  [0]: listingItemTemplateId
      *  [1]: itemImageId
      * @param data
-     * @returns {Promise<ItemImage>}
+     * @returns {Promise<Image>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
@@ -75,13 +75,13 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => value.toJSON());
 
-        const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[1], true)
+        const itemImage: resources.Image = await this.imageService.findOne(data.params[1], true)
             .then(value => value.toJSON());
 
         // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
         // make sure the given image is assigned to the template
-        const foundImage: resources.ItemImage | undefined = _.find(listingItemTemplate.ItemInformation.ItemImages, img => {
+        const foundImage: resources.Image | undefined = _.find(listingItemTemplate.ItemInformation.Images, img => {
             this.log.debug(img.id + ' === ' + itemImage.id + ' = ' + (img.id === itemImage.id));
             return img.id === itemImage.id;
         });

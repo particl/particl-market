@@ -48,7 +48,7 @@ describe('ShippingDestinationRemoveCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -85,7 +85,7 @@ describe('ShippingDestinationRemoveCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice

@@ -7,13 +7,13 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ItemImageCreateParams } from './ModelCreateParams';
+import { ImageCreateParams } from './ModelCreateParams';
 
 export class ItemImageFactory implements ModelFactoryInterface {
 
@@ -21,32 +21,32 @@ export class ItemImageFactory implements ModelFactoryInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
     }
 
     /**
-     * create a ItemImageCreateRequest
+     * create a ImageCreateRequest
      *
      * @param params
      */
-    public async get(params: ItemImageCreateParams): Promise<ItemImageCreateRequest> {
+    public async get(params: ImageCreateParams): Promise<ImageCreateRequest> {
 
-        const data: ItemImageDataCreateRequest[] = await this.getItemImageDataCreateRequests(params.image.data);
+        const data: ImageDataCreateRequest[] = await this.getItemImageDataCreateRequests(params.image.data);
 
         const createRequest = {
             featured: params.image.featured,
             data,
             hash: params.image.hash     // when receiving ListingItem, we should receive the correct hash
-        } as ItemImageCreateRequest;
+        } as ImageCreateRequest;
 
         return createRequest;
     }
 
-    private async getItemImageDataCreateRequests(dsns: DSN[]): Promise<ItemImageDataCreateRequest[]> {
+    private async getItemImageDataCreateRequests(dsns: DSN[]): Promise<ImageDataCreateRequest[]> {
 
-        const imageDataCreateRequests: ItemImageDataCreateRequest[] = [];
+        const imageDataCreateRequests: ImageDataCreateRequest[] = [];
 
         for (const dsn of dsns) {
             // there is no imageVersion on the DSN, so when we receive the ListingItemAddMessage or
@@ -64,7 +64,7 @@ export class ItemImageFactory implements ModelFactoryInterface {
                 // imageHash,       // added after image is created?
                 // originalMime,    // ?
                 // originalName     // ?
-            } as ItemImageDataCreateRequest);
+            } as ImageDataCreateRequest);
         }
         return imageDataCreateRequests;
     }

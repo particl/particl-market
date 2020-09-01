@@ -9,7 +9,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { DSN } from 'omp-lib/dist/interfaces/dsn';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
 import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessage';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
@@ -23,7 +23,7 @@ export class MarketImageAddMessageFactory extends BaseMessageFactory {
 
     constructor(
         // tslint:disable:max-line-length
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
@@ -48,7 +48,7 @@ export class MarketImageAddMessageFactory extends BaseMessageFactory {
         }
 
         // hash should have been calculated when image was created
-        const data: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.image.ItemImageDatas, actionRequest.withData);
+        const data: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.image.ImageDatas, actionRequest.withData);
 
         const message = {
             type: MPActionExtended.MPA_MARKET_IMAGE_ADD,

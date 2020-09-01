@@ -38,7 +38,7 @@ describe('DataGenerateCommand', () => {
             true,                       // generateItemInformation
             true,                       // generateItemLocation
             true,                       // generateShippingDestinations
-            true,                       // generateItemImages
+            true,                       // generateImages
             true,                       // generatePaymentInformation
             true,                       // generateEscrow
             true,                       // generateItemPrice
@@ -111,7 +111,7 @@ describe('DataGenerateCommand', () => {
             false,              // generateItemInformation
             false,              // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice
@@ -147,7 +147,7 @@ describe('DataGenerateCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             false,              // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice
@@ -173,20 +173,20 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).toHaveLength(0);
+        expect(result[0].ItemInformation.Images).toHaveLength(0);
         expect(result[0].PaymentInformation).toMatchObject({});
         expect(result[0].MessagingInformation).toHaveLength(0);
         expect(result[0].ListingItemObjects).toHaveLength(0);
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations and ItemImages', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations and Images', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice
@@ -212,20 +212,20 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation).toMatchObject({});
         expect(result[0].MessagingInformation).toHaveLength(0);
         expect(result[0].ListingItemObjects).toHaveLength(0);
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages and PaymentInformation', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, Images and PaymentInformation', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice
@@ -251,20 +251,20 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation.id).toBeDefined();
         expect(result[0].MessagingInformation).toHaveLength(0);
         expect(result[0].ListingItemObjects).toHaveLength(0);
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation and Escrow', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, Images, PaymentInformation and Escrow', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             false,              // generateItemPrice
@@ -290,7 +290,7 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation.id).toBeDefined();
         expect(result[0].PaymentInformation.Escrow.id).toBeDefined();
         expect(result[0].MessagingInformation).toHaveLength(0);
@@ -298,13 +298,13 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow and ItemPrice', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, Images, PaymentInformation, Escrow and ItemPrice', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -330,7 +330,7 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation.id).toBeDefined();
         expect(result[0].PaymentInformation.Escrow.id).toBeDefined();
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();
@@ -339,14 +339,14 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, Images, PaymentInformation, Escrow, ' +
         'ItemPrice and MessagingInformation', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -372,7 +372,7 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation.id).toBeDefined();
         expect(result[0].PaymentInformation.Escrow.id).toBeDefined();
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();
@@ -381,14 +381,14 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, Images, PaymentInformation, Escrow, ' +
         'ItemPrice, MessagingInformation and ListingItemObjects', async () => {
 
         generateListingItemParams = new GenerateListingItemParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -414,7 +414,7 @@ describe('DataGenerateCommand', () => {
         expect(result).toHaveLength(1);
         expect(result[0].ItemInformation.id).toBeDefined();
         expect(result[0].ItemInformation.ShippingDestinations).not.toHaveLength(0);
-        expect(result[0].ItemInformation.ItemImages).not.toHaveLength(0);
+        expect(result[0].ItemInformation.Images).not.toHaveLength(0);
         expect(result[0].PaymentInformation.id).toBeDefined();
         expect(result[0].PaymentInformation.Escrow.id).toBeDefined();
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();

@@ -74,11 +74,11 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMLOCATION_ROOT: Command       = new Command('itemlocation', 'location', true,
         [this.ITEMLOCATION_ADD, this.ITEMLOCATION_UPDATE, this.ITEMLOCATION_REMOVE], EnvironmentType.ALL);
 
-    public ITEMIMAGE_LIST: Command          = new Command('itemimagelist', 'list', false);
-    public ITEMIMAGE_ADD: Command           = new Command('itemimageadd', 'add', false);
-    public ITEMIMAGE_REMOVE: Command        = new Command('itemimageremove', 'remove', false);
-    public ITEMIMAGE_ROOT: Command          = new Command('itemimage', 'image', true,
-        [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE], EnvironmentType.ALL);
+    public IMAGE_ADD: Command           = new Command('imageadd', 'add', false);
+    public IMAGE_LIST: Command          = new Command('imagelist', 'list', false);
+    public IMAGE_REMOVE: Command        = new Command('imageremove', 'remove', false);
+    public IMAGE_ROOT: Command          = new Command('image', 'image', true,
+        [this.IMAGE_LIST, this.IMAGE_ADD, this.IMAGE_REMOVE], EnvironmentType.ALL);
 
     public ITEMINFORMATION_GET: Command     = new Command('iteminformationget', 'get', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
@@ -98,7 +98,7 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
         [this.TEMPLATE_SEARCH, this.TEMPLATE_GET, this.TEMPLATE_ADD, this.TEMPLATE_REMOVE, this.TEMPLATE_POST,
             this.TEMPLATE_IMPORT, this.TEMPLATE_SIZE, this.TEMPLATE_COMPRESS, this.TEMPLATE_CLONE, this.ITEMINFORMATION_ROOT,
-            this.TEMPLATE_FEATURED_IMAGE, this.ITEMIMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
+            this.TEMPLATE_FEATURED_IMAGE, this.IMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
             this.MESSAGINGINFORMATION_ROOT, this.PAYMENTINFORMATION_ROOT, this.ESCROW_ROOT],
         EnvironmentType.ALL);
 

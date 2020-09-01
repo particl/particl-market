@@ -264,12 +264,12 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      * @param actionRequest
      */
     private async getMessageInformationImages(actionRequest: ListingItemAddRequest): Promise<ContentReference[]> {
-        const images: resources.ItemImage[] = actionRequest.listingItem.ItemInformation.ItemImages;
+        const images: resources.Image[] = actionRequest.listingItem.ItemInformation.Images;
         const withData: boolean = actionRequest.imagesWithData;
         const contentReferences: ContentReference[] = [];
 
         for (const image of images) {
-            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ItemImageDatas, withData);
+            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ImageDatas, withData);
             contentReferences.push({
                 hash: image.hash,
                 data: imageData,

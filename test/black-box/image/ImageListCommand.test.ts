@@ -14,7 +14,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
-describe('ItemImageListCommand', () => {
+describe('ImageListCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -22,8 +22,8 @@ describe('ItemImageListCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageListCommand = Commands.ITEMIMAGE_LIST.commandName;
+    const imageCommand = Commands.IMAGE_ROOT.commandName;
+    const imageListCommand = Commands.IMAGE_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -43,7 +43,7 @@ describe('ItemImageListCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -69,7 +69,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because missing template|item', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand]);
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('template|item').getMessage());
@@ -77,7 +77,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because missing listingItemTemplateId|listingItemId', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item'
         ]);
         res.expectJson();
@@ -87,7 +87,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because invalid template|item', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             true,
             listingItem.id
         ]);
@@ -98,7 +98,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because invalid proposalHash', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item',
             true
         ]);
@@ -109,7 +109,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because ListingItemTemplate not found', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'template',
             0
         ]);
@@ -120,7 +120,7 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should fail because ListingItem not found', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item',
             0
         ]);
@@ -131,28 +131,28 @@ describe('ItemImageListCommand', () => {
 
 
     test('Should list all ListingItemTemplate Images', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'template',
             listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.ItemImage[] = res.getBody()['result'];
+        const result: resources.Image[] = res.getBody()['result'];
         // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.length).toBeGreaterThan(0);
     });
 
 
     test('Should list all ListingItem Images', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageListCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item',
             listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.ItemImage[] = res.getBody()['result'];
+        const result: resources.Image[] = res.getBody()['result'];
         expect(result.length).toBeGreaterThan(0);
     });
 

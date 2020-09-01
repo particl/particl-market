@@ -26,13 +26,13 @@ import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ImageFactory } from '../../factories/ImageFactory';
-import { ItemImage } from '../../models/ItemImage';
+import { Image } from '../../models/Image';
 import { ItemInformationService } from './ItemInformationService';
-import { ItemImageDataService } from './ItemImageDataService';
-import { ItemImageService } from './ItemImageService';
+import { ImageDataService } from './ImageDataService';
+import { ImageService } from './ImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
@@ -42,13 +42,13 @@ import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequ
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
 import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableItemImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import {HashableImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 export class ListingItemTemplateService {
 
@@ -63,8 +63,8 @@ export class ListingItemTemplateService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
@@ -337,9 +337,9 @@ export class ListingItemTemplateService {
         }
 
         // manually remove images
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
-            for (const image of listingItemTemplate.ItemInformation.ItemImages) {
-                await this.itemImageService.destroy(image.id);
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
+            for (const image of listingItemTemplate.ItemInformation.Images) {
+                await this.imageService.destroy(image.id);
             }
         }
 
@@ -380,20 +380,20 @@ export class ListingItemTemplateService {
     public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
         const startTime = new Date().getTime();
 
-        // ItemInformation has ItemImages, which is an array.
-        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-        const originalImageDatas: resources.ItemImageData[] = [];
+        // ItemInformation has Images, which is an array.
+        const itemImages = listingItemTemplate.ItemInformation.Images;
+        const originalImageDatas: resources.ImageData[] = [];
 
         for (const itemImage of itemImages) {
-            const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+            const itemImageDataOriginal: resources.ImageData | undefined = _.find(itemImage.ImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
             });
-            const itemImageDataResized: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
+            const itemImageDataResized: resources.ImageData | undefined = _.find(itemImage.ImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.RESIZED.propName;
             });
 
             if (!itemImageDataOriginal) {
-                // there's something wrong with the ItemImage if original image doesnt have data
+                // there's something wrong with the Image if original image doesnt have data
                 throw new MessageException('Error while resizing: Original image data not found.');
             }
 
@@ -405,7 +405,7 @@ export class ListingItemTemplateService {
 
         for (const originalImageData of originalImageDatas) {
             const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
-            const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
+            const imageDataCreateRequest: ImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
                 originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
                 originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
             await this.itemImageDataService.create(imageDataCreateRequest);
@@ -423,16 +423,16 @@ export class ListingItemTemplateService {
      * @param imageId
      *
      */
-    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<Image> {
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
 
-            for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
+            for (const itemImage of listingItemTemplate.ItemInformation.Images) {
                 const featured = itemImage.id === imageId;
-                await this.itemImageService.updateFeatured(itemImage.id, featured);
+                await this.imageService.updateFeatured(itemImage.id, featured);
             }
-            return await this.itemImageService.findOne(imageId);
+            return await this.imageService.findOne(imageId);
         } else {
-            this.log.error('ListingItemTemplate has no ItemImages.');
+            this.log.error('ListingItemTemplate has no Images.');
             throw new MessageException('ListingItemTemplate has no Images.');
         }
     }
@@ -463,10 +463,10 @@ export class ListingItemTemplateService {
         if (qualityFactor <= 0) {
             return '';
         }
-        const originalItemImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+        const originalImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
 
         let compressedImage = await ImageProcessing.resizeImageToFit(
-            originalItemImage,
+            originalImage,
             ListingItemTemplateService.IMG_BOUNDING_WIDTH,
             ListingItemTemplateService.IMG_BOUNDING_HEIGHT
         );
@@ -497,20 +497,20 @@ export class ListingItemTemplateService {
             });
         }
 
-        let itemImages: ItemImageCreateRequest[] = [];
-        if (!_.isEmpty(templateToClone.ItemInformation.ItemImages)) {
+        let itemImages: ImageCreateRequest[] = [];
+        if (!_.isEmpty(templateToClone.ItemInformation.Images)) {
 
-            itemImages = await Promise.all(_.map(templateToClone.ItemInformation.ItemImages, async (image) => {
+            itemImages = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
 
-                // for each image, get the data from ORIGINAL and create a new ItemImageCreateRequest based on that data
-                const itemImageDataOriginal: resources.ItemImageData = _.find(image.ItemImageDatas, (imageData) => {
+                // for each image, get the data from ORIGINAL and create a new ImageCreateRequest based on that data
+                const itemImageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
                 // load the image data
                 itemImageDataOriginal.data = await this.itemImageDataService.loadImageFile(image.hash, itemImageDataOriginal.imageVersion);
 
-                const itemImageCreateRequest: ItemImageCreateRequest = _.assign({} as ItemImageCreateRequest, {
+                const itemImageCreateRequest: ImageCreateRequest = _.assign({} as ImageCreateRequest, {
                     data: [{
                         dataId: itemImageDataOriginal.dataId,
                         protocol: itemImageDataOriginal.protocol,
@@ -520,12 +520,12 @@ export class ListingItemTemplateService {
                         data: itemImageDataOriginal.data,
                         originalMime: itemImageDataOriginal.originalMime,
                         originalName: itemImageDataOriginal.originalName
-                    }] as ItemImageDataCreateRequest[],
+                    }] as ImageDataCreateRequest[],
                     featured: itemImageDataOriginal.featured,
                     hash: image.hash
-                } as ItemImageCreateRequest);
+                } as ImageCreateRequest);
 
-                itemImageCreateRequest.hash = ConfigurableHasher.hash(itemImageCreateRequest, new HashableItemImageCreateRequestConfig());
+                itemImageCreateRequest.hash = ConfigurableHasher.hash(itemImageCreateRequest, new HashableImageCreateRequestConfig());
 
                 return itemImageCreateRequest;
             }));

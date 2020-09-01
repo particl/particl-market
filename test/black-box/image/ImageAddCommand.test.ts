@@ -17,7 +17,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
-describe('ItemImageAddCommand', () => {
+describe('ImageAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -26,15 +26,15 @@ describe('ItemImageAddCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
+    const imageCommand = Commands.IMAGE_ROOT.commandName;
+    const imageAddCommand = Commands.IMAGE_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
     let image: resources.Image;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let itemImages: resources.ItemImageData[];
+    let images: resources.ImageData[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -48,7 +48,7 @@ describe('ItemImageAddCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -71,7 +71,7 @@ describe('ItemImageAddCommand', () => {
     });
 
     test('Should fail because missing listingItemTemplateId', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand]);
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
@@ -79,7 +79,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because missing dataId', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id
         ]);
         res.expectJson();
@@ -89,7 +89,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because missing protocol', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID'
         ]);
@@ -100,7 +100,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because missing encoding', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL
@@ -112,7 +112,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because missing data', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -125,7 +125,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid listingItemTemplateId', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             true,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -139,7 +139,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid dataId', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             true,
             ProtocolDSN.LOCAL,
@@ -153,7 +153,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid protocol', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             true,
@@ -167,7 +167,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid encoding', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -181,7 +181,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid data', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -195,7 +195,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because invalid protocolDSN', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             'INVALID',
@@ -209,7 +209,7 @@ describe('ItemImageAddCommand', () => {
 
 
     test('Should fail because ListingItemTemplate not found', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             0,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -222,8 +222,8 @@ describe('ItemImageAddCommand', () => {
     });
 
 
-    test('Should add ItemImage with ItemImageData', async () => {
-        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+    test('Should add Image with ImageData', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -234,7 +234,7 @@ describe('ItemImageAddCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         image = result;
-        itemImages = result.ItemImageDatas;
+        images = result.ImageDatas;
         // TODO: this test is just testing that the command response is 200
     });
 
@@ -244,7 +244,7 @@ describe('ItemImageAddCommand', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,  // generateItemImages
+            false,  // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -264,7 +264,7 @@ describe('ItemImageAddCommand', () => {
         );
         listingItemTemplate = listingItemTemplates[0];
 
-        const res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const res = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
             ProtocolDSN.LOCAL,
@@ -279,9 +279,9 @@ describe('ItemImageAddCommand', () => {
     // TODO: this is not an api test and should be moved under unit/integration tests
     test('Should return valid versions of image', async () => {
 
-        expect(itemImages.length).toBe(4);
+        expect(images.length).toBe(4);
 
-        for ( const imageData of itemImages ) {
+        for ( const imageData of images ) {
             // const imageUrl = process.env.APP_HOST
             //    + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
             //    + '/api/item-images/' + image.id + '/' + imageData.imageVersion;

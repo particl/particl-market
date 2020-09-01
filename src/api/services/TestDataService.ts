@@ -31,7 +31,7 @@ import { ItemInformationService } from './model/ItemInformationService';
 import { BidService } from './model/BidService';
 import { ProposalService } from './model/ProposalService';
 import { PaymentInformationService } from './model/PaymentInformationService';
-import { ItemImageService } from './model/ItemImageService';
+import { ImageService } from './model/ImageService';
 import { TestDataGenerateRequest } from '../requests/testdata/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/model/ProfileCreateRequest';
 import { ListingItemCreateRequest } from '../requests/model/ListingItemCreateRequest';
@@ -41,7 +41,7 @@ import { FavoriteItemCreateRequest } from '../requests/model/FavoriteItemCreateR
 import { ItemInformationCreateRequest } from '../requests/model/ItemInformationCreateRequest';
 import { BidCreateRequest } from '../requests/model/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/model/PaymentInformationCreateRequest';
-import { ItemImageCreateRequest } from '../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../requests/model/ImageCreateRequest';
 import { CreatableModel } from '../enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../requests/testdata/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/testdata/GenerateListingItemParams';
@@ -78,7 +78,7 @@ import { ShippingPriceCreateRequest } from '../requests/model/ShippingPriceCreat
 import { MessagingInformationCreateRequest } from '../requests/model/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/model/ListingItemObjectDataCreateRequest';
-import { ItemImageDataCreateRequest } from '../requests/model/ItemImageDataCreateRequest';
+import { ImageDataCreateRequest } from '../requests/model/ImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
@@ -124,7 +124,7 @@ import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import {ListingItemAddMessageCreateParams} from '../requests/message/ListingItemAddMessageCreateParams';
-import {HashableItemImageCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import {HashableImageCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 
 export class TestDataService {
@@ -151,7 +151,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) private proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.model.VoteService) private voteService: VoteService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
@@ -232,7 +232,7 @@ export class TestDataService {
                 return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest);
             }
             case CreatableModel.ITEMIMAGE: {
-                return await this.itemImageService.create(body.data as ItemImageCreateRequest);
+                return await this.imageService.create(body.data as ImageCreateRequest);
             }
             case CreatableModel.COMMENT: {
                 return await this.commentService.create(body.data as CommentCreateRequest);
@@ -328,12 +328,12 @@ export class TestDataService {
      * Generates a new ListingItemTemplate without ListingItem
      */
     public async generateListingItemTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
-                                             generateItemImages: boolean = false): Promise<resources.ListingItemTemplate> {
+                                             generateImages: boolean = false): Promise<resources.ListingItemTemplate> {
         const generateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
             true,                   // generateItemLocation
             true,                   // generateShippingDestinations
-            generateItemImages,     // generateItemImages
+            generateImages,     // generateImages
             true,                   // generatePaymentInformation
             true,                   // generateEscrow
             true,                   // generateItemPrice
@@ -360,12 +360,12 @@ export class TestDataService {
      * Generates a new ListingItem with ListingItemTemplate
      */
     public async generateListingItemWithTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
-                                                 generateItemImages: boolean = false): Promise<resources.ListingItem> {
+                                                 generateImages: boolean = false): Promise<resources.ListingItem> {
         const generateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
             true,                   // generateItemLocation
             true,                   // generateShippingDestinations
-            generateItemImages,     // generateItemImages
+            generateImages,     // generateImages
             true,                   // generatePaymentInformation
             true,                   // generateEscrow
             true,                   // generateItemPrice
@@ -542,8 +542,8 @@ export class TestDataService {
             'location_markers',
             'item_locations',
             'shipping_destinations',
-            'item_image_datas',
-            'item_images',
+            'image_datas',
+            'images',
             'item_informations',
             'shipping_prices',
             'item_prices',
@@ -1403,12 +1403,12 @@ export class TestDataService {
         } as ItemLocationCreateRequest;
     }
 
-    private async generateItemImagesData(amount: number): Promise<ItemImageCreateRequest[]> {
-        const items: ItemImageCreateRequest[] = [];
+    private async generateImagesData(amount: number): Promise<ImageCreateRequest[]> {
+        const items: ImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             const data = await this.generateRandomImage(20, 20);
 
-            const imageHash = ConfigurableHasher.hash({data}, new HashableItemImageCreateRequestConfig());
+            const imageHash = ConfigurableHasher.hash({data}, new HashableImageCreateRequestConfig());
 
             const item = {
                 hash: imageHash,
@@ -1418,8 +1418,8 @@ export class TestDataService {
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     encoding: 'BASE64',
                     data
-                }] as ItemImageDataCreateRequest[]
-            } as ItemImageCreateRequest;
+                }] as ImageDataCreateRequest[]
+            } as ImageCreateRequest;
             items.push(item);
         }
         return items;
@@ -1432,8 +1432,8 @@ export class TestDataService {
             ? this.generateShippingDestinationsData(_.random(1, 5))
             : [];
 
-        const itemImages = generateParams.generateItemImages
-            ? await this.generateItemImagesData(_.random(1, 2))
+        const itemImages = generateParams.generateImages
+            ? await this.generateImagesData(_.random(1, 2))
             : [];
 
         const itemLocation = generateParams.generateItemLocation

@@ -14,7 +14,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
-describe('ItemImageRemoveCommand', () => {
+describe('ImageRemoveCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -23,8 +23,8 @@ describe('ItemImageRemoveCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const itemImageRemoveCommand = Commands.ITEMIMAGE_REMOVE.commandName;
+    const imageCommand = Commands.IMAGE_ROOT.commandName;
+    const imageRemoveCommand = Commands.IMAGE_REMOVE.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -47,7 +47,7 @@ describe('ItemImageRemoveCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateItemImages
+            true,                           // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -71,14 +71,14 @@ describe('ItemImageRemoveCommand', () => {
     });
 
     test('Should fail to remove because missing itemImageId', async () => {
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand]);
+        const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe(new MissingParamException('itemImageId').getMessage());
     });
 
     test('Should fail to remove because invalid itemImageId', async () => {
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
+        const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand,
             true
         ]);
         result.expectJson();
@@ -86,17 +86,17 @@ describe('ItemImageRemoveCommand', () => {
         expect(result.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
     });
 
-    test('Should remove ItemImage', async () => {
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
-            listingItemTemplate.ItemInformation.ItemImages[0].id
+    test('Should remove Image', async () => {
+        const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand,
+            listingItemTemplate.ItemInformation.Images[0].id
         ]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
-    test('Should fail to remove because ItemImage has already been removed', async () => {
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
-            listingItemTemplate.ItemInformation.ItemImages[0].id
+    test('Should fail to remove because Image has already been removed', async () => {
+        const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand,
+            listingItemTemplate.ItemInformation.Images[0].id
         ]);
         result.expectJson();
         result.expectStatusCode(404);
@@ -108,7 +108,7 @@ describe('ItemImageRemoveCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateItemImages
+            true,                           // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -129,8 +129,8 @@ describe('ItemImageRemoveCommand', () => {
         ) as resources.ListingItem[];
         listingItem = listingItems[0];
 
-        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand,
-            listingItem.ItemInformation.ItemImages[0].id
+        const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand,
+            listingItem.ItemInformation.Images[0].id
         ]);
         result.expectJson();
         result.expectStatusCode(400);

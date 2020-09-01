@@ -22,7 +22,7 @@ export class ListingItemImageAddMessage extends MessageBody implements ActionMes
     public signature: string;
 
     @IsNotEmpty()
-    public hash: string;            // ItemImage hash
+    public hash: string;            // Image hash
 
     @IsNotEmpty()
     public data: DSN[];

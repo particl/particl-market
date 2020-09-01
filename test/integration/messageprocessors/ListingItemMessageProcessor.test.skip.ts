@@ -63,7 +63,7 @@ describe('ListingItemMessage', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,   // generateItemImages
+            false,   // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -126,14 +126,14 @@ describe('ListingItemMessage', () => {
         // expect(message.information.shipping_destinations).toContain('-MOROCCO');
         // expect(message.information.shipping_destinations).toContain('PANAMA');
 
-        // ItemInformation.ItemImages
-        expect(result.ItemInformation.ItemImages.length).toBe(message.item.information.images.length);
+        // ItemInformation.Images
+        expect(result.ItemInformation.Images.length).toBe(message.item.information.images.length);
         // todo: test the images
-        // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
+        // expect(message.information.images[0].hash).toBe(testData.ItemInformation.Images[0].hash);
         // expect(message.information.images[0].data.length).toBe(1);
-        // expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
-        // expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
-        // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.Images[0].ImageDatas[0].protocol);
+        // expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.Images[0].ImageDatas[0].encoding);
+        // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.Images[0].ImageDatas[0].data);
 
         // PaymentInformation
         expect(result.PaymentInformation.type).toBe(message.item.payment.type);

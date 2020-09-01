@@ -25,7 +25,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     // GenerateItemInformationParamsInterface
     public generateItemLocation = true;
     public generateShippingDestinations = true;
-    public generateItemImages = true;
+    public generateImages = true;
 
     // GeneratePaymentInformationParamsInterface
     public generateEscrow = true;
@@ -44,7 +44,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [0]: generateItemInformation
      * [1]: generateItemLocation
      * [2]: generateShippingDestinations
-     * [3]: generateItemImages
+     * [3]: generateImages
      * [4]: generatePaymentInformation
      * [5]: generateEscrow
      * [6]: generateItemPrice
@@ -66,7 +66,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateItemInformation        = generateParams[0] ? true : false;
             this.generateItemLocation           = generateParams[1] ? true : false;
             this.generateShippingDestinations   = generateParams[2] ? true : false;
-            this.generateItemImages             = generateParams[3] ? true : false;
+            this.generateImages             = generateParams[3] ? true : false;
             this.generatePaymentInformation     = generateParams[4] ? true : false;
             this.generateEscrow                 = generateParams[5] ? true : false;
             this.generateItemPrice              = generateParams[6] ? true : false;
@@ -85,7 +85,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateItemInformation,
             this.generateItemLocation,
             this.generateShippingDestinations,
-            this.generateItemImages,
+            this.generateImages,
             this.generatePaymentInformation,
             this.generateEscrow,
             this.generateItemPrice,

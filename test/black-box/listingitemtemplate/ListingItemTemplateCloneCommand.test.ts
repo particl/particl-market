@@ -61,7 +61,7 @@ describe('ListingItemTemplateCloneCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -166,7 +166,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.shortDescription).toBe(baseTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(baseTemplate.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory).toBeUndefined();
-        expect(result.ItemInformation.ItemImages).toHaveLength(baseTemplate.ItemInformation.ItemImages.length);
+        expect(result.ItemInformation.Images).toHaveLength(baseTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(baseTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(baseTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(baseTemplate.PaymentInformation.ItemPrice.basePrice);
@@ -290,7 +290,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
-        expect(result.ItemInformation.ItemImages).toHaveLength(marketTemplate.ItemInformation.ItemImages.length);
+        expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(marketTemplate.PaymentInformation.ItemPrice.basePrice);
@@ -365,7 +365,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
-        expect(result.ItemInformation.ItemImages).toHaveLength(marketTemplate.ItemInformation.ItemImages.length);
+        expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(marketTemplate.PaymentInformation.ItemPrice.basePrice);
@@ -405,7 +405,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
-        expect(result.ItemInformation.ItemImages).toHaveLength(marketTemplate.ItemInformation.ItemImages.length);
+        expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(marketTemplate.PaymentInformation.ItemPrice.basePrice);
@@ -442,7 +442,7 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.shortDescription).toBe(baseTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(baseTemplate.ItemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory).toBeUndefined();
-        expect(result.ItemInformation.ItemImages).toHaveLength(baseTemplate.ItemInformation.ItemImages.length);
+        expect(result.ItemInformation.Images).toHaveLength(baseTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(baseTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(baseTemplate.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(baseTemplate.PaymentInformation.ItemPrice.basePrice);

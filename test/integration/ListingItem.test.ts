@@ -27,7 +27,7 @@ import { ItemInformationService } from '../../src/api/services/model/ItemInforma
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ImageService } from 'ImageService.ts';
 import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
@@ -39,14 +39,14 @@ import { ListingItemObjectService } from '../../src/api/services/model/ListingIt
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
+import { ImageDataService } from 'ImageDataService.ts';
 import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from 'ImageCreateRequest.ts';
 import { EscrowReleaseType, EscrowType, MessagingProtocol, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
@@ -55,7 +55,7 @@ import { toSatoshis } from 'omp-lib/dist/util';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceCreateRequest } from '../../src/api/requests/model/ItemPriceCreateRequest';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
@@ -82,8 +82,8 @@ describe('ListingItem', () => {
     let itemLocationService: ItemLocationService;
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
-    let itemImageService: ItemImageService;
-    let itemImageDataService: ItemImageDataService;
+    let imageService: ImageService;
+    let itemImageDataService: ImageDataService;
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
@@ -115,8 +115,8 @@ describe('ListingItem', () => {
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
+        imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
+        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
@@ -346,8 +346,8 @@ describe('ListingItem', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
-        expect(result.ItemImages).toHaveLength(createRequest.itemImages.length);
-        expect(result.ItemImages[0].ItemImageDatas).toHaveLength(4); // 4 sizes
+        expect(result.Images).toHaveLength(createRequest.itemImages.length);
+        expect(result.Images[0].ImageDatas).toHaveLength(4); // 4 sizes
     };
 
     const expectPaymentInformationFromCreateRequest = (result: resources.PaymentInformation, createRequest: PaymentInformationCreateRequest) => {
@@ -416,15 +416,15 @@ describe('ListingItem', () => {
                 );
             }
 
-            // ItemImage
-            if (!_.isEmpty(item.ItemInformation.ItemImages)) {
-                const itemImageId = item.ItemInformation.ItemImages[0].id;
-                await itemImageService.findOne(itemImageId, false).catch(e =>
+            // Image
+            if (!_.isEmpty(item.ItemInformation.Images)) {
+                const itemImageId = item.ItemInformation.Images[0].id;
+                await imageService.findOne(itemImageId, false).catch(e =>
                     expect(e).toEqual(new NotFoundException(itemImageId))
                 );
 
-                if (!_.isEmpty(item.ItemInformation.ItemImages[0].ItemImageDatas)) {
-                    const itemImage: resources.ItemImage = item.ItemInformation.ItemImages[0];
+                if (!_.isEmpty(item.ItemInformation.Images[0].ImageDatas)) {
+                    const itemImage: resources.Image = item.ItemInformation.Images[0];
                     const data = await itemImageDataService.loadImageFile(itemImage.hash, ImageVersions.ORIGINAL.propName)
                         .catch(reason => {
                             //
@@ -560,7 +560,7 @@ describe('ListingItem', () => {
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
                         data: randomImageData
-                    }] as ItemImageDataCreateRequest[],
+                    }] as ImageDataCreateRequest[],
                     featured: false,
                     hash: 'TEST-IMAGEHASH1'
                 }, {
@@ -572,10 +572,10 @@ describe('ListingItem', () => {
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
                         data: randomImageData
-                    }] as ItemImageDataCreateRequest[],
+                    }] as ImageDataCreateRequest[],
                     featured: false,
                     hash: 'TEST-IMAGEHASH2'
-                }] as ItemImageCreateRequest[]
+                }] as ImageCreateRequest[]
             } as ItemInformationCreateRequest,
             paymentInformation: {
                 type: SaleType.SALE,

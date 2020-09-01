@@ -88,7 +88,7 @@ describe('Escrow', () => {
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             true,       // generatePaymentInformation
             false,      // generateEscrow
             false,      // generateItemPrice

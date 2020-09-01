@@ -27,8 +27,8 @@ export const Targets = {
         FlaggedItem: 'FlaggedItem',
         Identity: 'Identity',
         ItemCategory: 'ItemCategory',
-        ItemImage: 'ItemImage',
-        ItemImageData: 'ItemImageData',
+        Image: 'Image',
+        ImageData: 'ImageData',
         ItemInformation: 'ItemInformation',
         ItemLocation: 'ItemLocation',
         ItemPrice: 'ItemPrice',
@@ -70,8 +70,8 @@ export const Targets = {
         FlaggedItemRepository: 'FlaggedItemRepository',
         IdentityRepository: 'IdentityRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
-        ItemImageDataRepository: 'ItemImageDataRepository',
-        ItemImageRepository: 'ItemImageRepository',
+        ImageDataRepository: 'ImageDataRepository',
+        ImageRepository: 'ImageRepository',
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
@@ -126,7 +126,7 @@ export const Targets = {
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
         DefaultSettingService: 'DefaultSettingService',
-        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
+        ImageHttpUploadService: 'ImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
@@ -141,8 +141,8 @@ export const Targets = {
             FlaggedItemService: 'FlaggedItemService',
             IdentityService: 'IdentityService',
             ItemCategoryService: 'ItemCategoryService',
-            ItemImageDataService: 'ItemImageDataService',
-            ItemImageService: 'ItemImageService',
+            ImageDataService: 'ImageDataService',
+            ImageService: 'ImageService',
             ItemInformationService: 'ItemInformationService',
             ItemLocationService: 'ItemLocationService',
             ItemPriceService: 'ItemPriceService',
@@ -259,11 +259,11 @@ export const Targets = {
             ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
-        itemimage: {
-            ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageListCommand: 'ItemImageListCommand',
-            ItemImageRemoveCommand: 'ItemImageRemoveCommand',
-            ItemImageRootCommand: 'ItemImageRootCommand'
+        image: {
+            ImageAddCommand: 'ImageAddCommand',
+            ImageListCommand: 'ImageListCommand',
+            ImageRemoveCommand: 'ImageRemoveCommand',
+            ImageRootCommand: 'ImageRootCommand'
         },
         iteminformation: {
             ItemInformationGetCommand: 'ItemInformationGetCommand',
@@ -394,7 +394,7 @@ export const Targets = {
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
                 HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig',
                 HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
-                HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
+                HashableImageCreateRequestConfig: 'HashableImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
                 HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
@@ -503,7 +503,7 @@ export const Targets = {
         ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {
-        ItemImageController: 'ItemImageController',
+        ImageController: 'ImageController',
         RpcController: 'RpcController'
     }
 };

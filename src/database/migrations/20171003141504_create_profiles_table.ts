@@ -11,6 +11,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('name').notNullable().unique();
+            table.integer('image_id').unsigned().nullable();
+            table.foreign('image_id').references('id').inTable('images');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

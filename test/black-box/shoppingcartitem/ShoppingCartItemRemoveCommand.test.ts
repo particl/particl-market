@@ -52,7 +52,7 @@ describe('ShoppingCartItemRemoveCommand', () => {
             true,           // generateItemInformation
             true,           // generateItemLocation
             true,           // generateShippingDestinations
-            false,          // generateItemImages
+            false,          // generateImages
             true,           // generatePaymentInformation
             true,           // generateEscrow
             true,           // generateItemPrice

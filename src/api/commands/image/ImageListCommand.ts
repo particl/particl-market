@@ -18,7 +18,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
-export class ItemImageListCommand extends BaseCommand implements RpcCommandInterface<resources.ItemImage[]> {
+export class ImageListCommand extends BaseCommand implements RpcCommandInterface<resources.Image[]> {
 
     public log: LoggerType;
 
@@ -27,7 +27,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.ITEMIMAGE_LIST);
+        super(Commands.IMAGE_LIST);
         this.log = new Logger(__filename);
     }
 
@@ -38,8 +38,8 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
      *    or listingItem: resources.ListingItem
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ItemImage[]> {
-        return data.params[1].ItemInformation.ItemImages;
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Image[]> {
+        return data.params[1].ItemInformation.Images;
     }
 
     /**
@@ -53,7 +53,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         if (data.params.length < 1) {
             throw new MissingParamException('template|item');
         } else if (data.params.length < 2) {
-            throw new MissingParamException('listingItemTemplateId|listingItemId');
+            throw new MissingParamException('id');
         }
 
         // make sure the params are of correct type
@@ -62,7 +62,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         }
 
         if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId|listingItemId', 'number');
+            throw new InvalidParamException('id', 'number');
         }
 
         const typeSpecifier = data.params[0];
@@ -96,8 +96,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template whose images we want to list. \n'
-            + '    <listingItemId>               - Numeric - The ID of the listing item whose images we want to list. ';
+            + '    <id>         - number - The ID of the ListingItem or ListingItemTemplate which Images we want to list. \n';
     }
 
     public description(): string {

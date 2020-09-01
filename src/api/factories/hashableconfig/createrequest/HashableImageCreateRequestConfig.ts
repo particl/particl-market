@@ -3,14 +3,14 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { BaseHashableConfig, HashableFieldConfig, HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
-import { HashableItemImageField } from '../HashableField';
+import { HashableImageField } from '../HashableField';
 
 
-export class HashableItemImageCreateRequestConfig extends BaseHashableConfig {
+export class HashableImageCreateRequestConfig extends BaseHashableConfig {
 
     public fields = [{
         from: 'data',
-        to: HashableItemImageField.IMAGE_DATA
+        to: HashableImageField.IMAGE_DATA
     }] as HashableFieldConfig[];
 
     constructor(values?: HashableFieldValueConfig[]) {

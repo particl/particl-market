@@ -8,7 +8,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/model/ItemImageService';
+import { ImageService } from '../../services/model/ImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
@@ -19,57 +19,54 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
-export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(Commands.ITEMIMAGE_REMOVE);
+        super(Commands.IMAGE_REMOVE);
         this.log = new Logger(__filename);
     }
 
     /**
      * data.params[]:
-     *  [0]: itemImageId
-     * todo: we should propably switch to use hashes?
+     *  [0]: imageId
      *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.itemImageService.destroy(data.params[0]);
+        return this.imageService.destroy(data.params[0]);
     }
 
     /**
      * data.params[]:
-     *  [0]: itemImageId
+     *  [0]: imageId
      * @param data
-     * @returns {Promise<ItemImage>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
         // check if we got all the params
         if (data.params.length < 1) {
-            throw new MissingParamException('itemImageId');
+            throw new MissingParamException('id');
         }
 
         if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('itemImageId', 'number');
+            throw new InvalidParamException('id', 'number');
         }
 
-        const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[0]).then(value => value.toJSON());
+        const image: resources.Image = await this.imageService.findOne(data.params[0]).then(value => value.toJSON());
 
-        // check if item already been posted
-        if (!_.isEmpty(itemImage.ItemInformation.ListingItemTemplate)) {
-            // make sure ListingItemTemplate with the id exists
-            const templateId = itemImage.ItemInformation.ListingItemTemplate.id;
+        // if Image has a relation to ItemInformation and ListingItemTemplate, it cannot be deleted
+        if (!_.isEmpty(image.ItemInformation) && !_.isEmpty(image.ItemInformation.ListingItemTemplate)) {
+
+            const templateId = image.ItemInformation.ListingItemTemplate.id;
             const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(templateId)
-                .then(value => {
-                    return value.toJSON();
-                })
+                .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('ListingItemTemplate');
                 });
@@ -87,16 +84,16 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' <itemImageId> ';
+        return this.getName() + ' <id> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <itemImageId>                 - Numeric - The Id of the image we want to remove.';
+            + '    <id>                 - number - The ID of the Image to be removed.';
     }
 
     public description(): string {
-        return 'Remove an item\'s image, identified by its Id.';
+        return 'Remove an Image, identified by its Id.';
     }
 
     public example(): string {

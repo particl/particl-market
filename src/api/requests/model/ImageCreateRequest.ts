@@ -4,17 +4,19 @@
 
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
-import { ItemImageDataUpdateRequest } from './ItemImageDataUpdateRequest';
+import { ImageDataCreateRequest } from './ImageDataCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
-export class ItemImageUpdateRequest extends RequestBody implements ModelRequestInterface {
+export class ImageCreateRequest extends RequestBody implements ModelRequestInterface {
 
     @IsNotEmpty()
-    public data: ItemImageDataUpdateRequest[];
+    public item_information_id: number;
+
+    @IsNotEmpty()
+    public data: ImageDataCreateRequest[];
 
     public hash: string;
     public featured: boolean;
-
 }
 // tslint:enable:variable-name

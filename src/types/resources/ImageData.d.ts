@@ -6,7 +6,7 @@ import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 declare module 'resources' {
 
-    interface ItemImageData {
+    interface ImageData {
         id: number;
         dataId: string;
         protocol: ProtocolDSN;
@@ -21,7 +21,7 @@ declare module 'resources' {
         createdAt: Date;
         updatedAt: Date;
 
-        ItemImage: ItemImage;
+        Image: Image;
     }
 
 }

@@ -126,7 +126,7 @@ describe('PaymentInformation', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             false,              // generatePaymentInformation
             false,              // generateEscrow
             false,              // generateItemPrice

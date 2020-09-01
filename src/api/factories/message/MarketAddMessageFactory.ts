@@ -49,7 +49,7 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
 
         let image: ContentReference | undefined;
         if (!_.isEmpty(actionRequest.market.Image)) {
-            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.market.Image.ItemImageDatas, false);
+            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.market.Image.ImageDatas, false);
             image = {
                 hash: actionRequest.market.Image.hash,
                 data: imageData

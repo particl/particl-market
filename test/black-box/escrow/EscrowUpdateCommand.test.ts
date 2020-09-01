@@ -43,7 +43,7 @@ describe('EscrowUpdateCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -188,7 +188,7 @@ describe('EscrowUpdateCommand', () => {
             false,   // generateItemInformation
             false,   // generateItemLocation
             false,   // generateShippingDestinations
-            false,  // generateItemImages
+            false,  // generateImages
             true,   // generatePaymentInformation
             false,   // generateEscrow
             false,   // generateItemPrice
@@ -244,7 +244,7 @@ describe('EscrowUpdateCommand', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,  // generateItemImages
+            false,  // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice

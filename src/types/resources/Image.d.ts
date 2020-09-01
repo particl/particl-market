@@ -4,14 +4,14 @@
 
 declare module 'resources' {
 
-    interface ItemImage {
+    interface Image {
         id: number;
         hash: string;
         createdAt: Date;
         updatedAt: Date;
         featured: boolean;
 
-        ItemImageDatas: ItemImageData[];
+        ImageDatas: ImageData[];
         ItemInformation: ItemInformation;
     }
 

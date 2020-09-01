@@ -14,7 +14,7 @@ export class ListingItemImageAddRequest extends RequestBody implements ActionReq
     public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public image: resources.ItemImage;
+    public image: resources.Image;
 
     @IsNotEmpty()
     public listingItem: resources.ListingItem | resources.ListingItemTemplate;

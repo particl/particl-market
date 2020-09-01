@@ -49,7 +49,7 @@ export interface ListingItemCreateParams extends ModelCreateParams {
 
 }
 
-export interface ItemImageCreateParams extends ModelCreateParams {
+export interface ImageCreateParams extends ModelCreateParams {
     image: ContentReference;
 }
 

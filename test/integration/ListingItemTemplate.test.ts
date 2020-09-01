@@ -20,7 +20,7 @@ import { ItemInformationService } from '../../src/api/services/model/ItemInforma
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ImageService } from 'ImageService.ts';
 import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
@@ -47,8 +47,8 @@ import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
-import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
+import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
+import { ImageCreateRequest } from 'ImageCreateRequest.ts';
 import { EscrowReleaseType, EscrowType, MessagingProtocol, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
@@ -63,7 +63,7 @@ import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
-import { HashableItemImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
+import { HashableImageCreateRequestConfig } from 'HashableImageCreateRequestConfig.ts';
 import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/model/ListingItemTemplateUpdateRequest';
 import { ItemInformationUpdateRequest } from '../../src/api/requests/model/ItemInformationUpdateRequest';
 import { PaymentInformationUpdateRequest } from '../../src/api/requests/model/PaymentInformationUpdateRequest';
@@ -89,7 +89,7 @@ describe('ListingItemTemplate', async () => {
     let itemLocationService: ItemLocationService;
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
-    let itemImageService: ItemImageService;
+    let imageService: ImageService;
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
@@ -122,7 +122,7 @@ describe('ListingItemTemplate', async () => {
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
@@ -443,7 +443,7 @@ describe('ListingItemTemplate', async () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,  // generateItemImages
+            false,  // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -520,7 +520,7 @@ describe('ListingItemTemplate', async () => {
                                                             withHash: boolean = true): Promise<ListingItemTemplateCreateRequest> => {
         const now = Date.now();
         const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
-        let itemImages: ItemImageCreateRequest[] = [];
+        let itemImages: ImageCreateRequest[] = [];
 
         if (withImage) {
             itemImages = [{
@@ -531,11 +531,11 @@ describe('ListingItemTemplate', async () => {
                     encoding: 'BASE64',
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     data: randomImageData
-                }] as ItemImageDataCreateRequest[],
+                }] as ImageDataCreateRequest[],
                 featured: false
-            }] as ItemImageCreateRequest[];
+            }] as ImageCreateRequest[];
 
-            const hash = ConfigurableHasher.hash(itemImages[0], new HashableItemImageCreateRequestConfig());
+            const hash = ConfigurableHasher.hash(itemImages[0], new HashableImageCreateRequestConfig());
             itemImages[0].hash = hash;
             itemImages[0].data[0].dataId = 'https://particl.io/images/' + hash;
         }
@@ -682,9 +682,9 @@ describe('ListingItemTemplate', async () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
-        expect(result.ItemImages).toHaveLength(createRequest.itemImages.length);
+        expect(result.Images).toHaveLength(createRequest.itemImages.length);
         if (createRequest.itemImages.length > 0) {
-            expect(result.ItemImages[0].ItemImageDatas).toHaveLength(4); // 4 sizes
+            expect(result.Images[0].ImageDatas).toHaveLength(4); // 4 sizes
         }
     };
 
@@ -737,7 +737,7 @@ describe('ListingItemTemplate', async () => {
         // ListingItemTemplate.ItemInformation.ItemLocation,                    2 expects
         // ListingItemTemplate.ItemInformation.ItemLocation.LocationMarker,         1 expect
         // ListingItemTemplate.ItemInformation.ShippingDestinations             1 expect
-        // ListingItemTemplate.ItemInformation.ItemImages                       1 expect
+        // ListingItemTemplate.ItemInformation.Images                       1 expect
         // ListingItemTemplate.PaymentInformation                           6 expects
         // ListingItemTemplate.PaymentInformation.Escrow                        2 expects
         // ListingItemTemplate.PaymentInformation.Escrow.Ratio                      1 expect
@@ -778,10 +778,10 @@ describe('ListingItemTemplate', async () => {
                 );
             }
 
-            // ItemImage
-            if (!_.isEmpty(item.ItemInformation.ItemImages)) {
-                const itemImageId = item.ItemInformation.ItemImages[0].id;
-                await itemImageService.findOne(itemImageId, false).catch(e =>
+            // Image
+            if (!_.isEmpty(item.ItemInformation.Images)) {
+                const itemImageId = item.ItemInformation.Images[0].id;
+                await imageService.findOne(itemImageId, false).catch(e =>
                     expect(e).toEqual(new NotFoundException(itemImageId))
                 );
             }

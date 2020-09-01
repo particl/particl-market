@@ -8,10 +8,10 @@ import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
-export class ItemImageDataCreateRequest extends RequestBody implements ModelRequestInterface {
+export class ImageDataCreateRequest extends RequestBody implements ModelRequestInterface {
 
     // @IsNotEmpty()
-    public item_image_id: number;
+    public image_id: number;
     public dataId: string;
 
     @IsEnum(ProtocolDSN)

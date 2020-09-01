@@ -54,8 +54,8 @@ export enum HashableBidReleaseField {
 // }
 // interface HashableFieldConfigExtended extends Overwrite<HashableFieldConfig, HashableFieldConfigExtension> {}
 
-export enum HashableItemImageField {
-    IMAGE_DATA = 'itemImageData'
+export enum HashableImageField {
+    IMAGE_DATA = 'imageData'
 }
 
 export enum HashableItemCategoryField {

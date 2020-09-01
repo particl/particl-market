@@ -14,7 +14,7 @@ export class MarketImageAddRequest extends RequestBody implements ActionRequestI
     public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
-    public image: resources.ItemImage;
+    public image: resources.Image;
 
     @IsNotEmpty()
     public market: resources.Market;

@@ -12,43 +12,43 @@ import { Types, Core, Targets } from '../../../constants';
 import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { ValidationException } from '../../exceptions/ValidationException';
-import { ItemImageDataRepository } from '../../repositories/ItemImageDataRepository';
-import { ItemImageData } from '../../models/ItemImageData';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { ItemImageDataUpdateRequest } from '../../requests/model/ItemImageDataUpdateRequest';
+import { ImageDataRepository } from '../../repositories/ImageDataRepository';
+import { ImageData } from '../../models/ImageData';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
+import { ImageDataUpdateRequest } from '../../requests/model/ImageDataUpdateRequest';
 import { DataDir } from '../../../core/helpers/DataDir';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ItemImageDataService {
+export class ImageDataService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Repository) @named(Targets.Repository.ItemImageDataRepository) public itemImageDataRepo: ItemImageDataRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ImageDataRepository) public imageDataRepo: ImageDataRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
-    public async findAll(): Promise<Bookshelf.Collection<ItemImageData>> {
-        return this.itemImageDataRepo.findAll();
+    public async findAll(): Promise<Bookshelf.Collection<ImageData>> {
+        return this.imageDataRepo.findAll();
     }
 
-    public async findAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemImageData>> {
-        return await this.itemImageDataRepo.findAllByImageHashAndVersion(hash, version, withRelated);
+    public async findAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ImageData>> {
+        return await this.imageDataRepo.findAllByImageHashAndVersion(hash, version, withRelated);
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<ItemImageData> {
-        const itemImageData = await this.itemImageDataRepo.findOne(id, withRelated);
-        if (itemImageData === null) {
-            this.log.warn(`ItemImageData with the id=${id} was not found!`);
+    public async findOne(id: number, withRelated: boolean = true): Promise<ImageData> {
+        const imageData = await this.imageDataRepo.findOne(id, withRelated);
+        if (imageData === null) {
+            this.log.warn(`ImageData with the id=${id} was not found!`);
             throw new NotFoundException(id);
         }
-        return itemImageData;
+        return imageData;
     }
 
     @validate()
-    public async create( @request(ItemImageDataCreateRequest) data: ItemImageDataCreateRequest): Promise<ItemImageData> {
+    public async create( @request(ImageDataCreateRequest) data: ImageDataCreateRequest): Promise<ImageData> {
         const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
@@ -65,16 +65,12 @@ export class ItemImageDataService {
             body.data = fileName;
         }
 
-        const itemImageData: resources.ItemImageData = await this.itemImageDataRepo.create(body).then(value => value.toJSON());
-
-        // finally find and return the created itemImageData
-        const newItemImageData = await this.findOne(itemImageData.id);
-        // this.log.debug('itemImageDataService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        return newItemImageData;
+        const imageData: resources.ImageData = await this.imageDataRepo.create(body).then(value => value.toJSON());
+        return await this.findOne(imageData.id);
     }
 
     @validate()
-    public async update(id: number, @request(ItemImageDataUpdateRequest) data: ItemImageDataUpdateRequest): Promise<ItemImageData> {
+    public async update(id: number, @request(ImageDataUpdateRequest) data: ImageDataUpdateRequest): Promise<ImageData> {
 
         const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
@@ -88,54 +84,50 @@ export class ItemImageDataService {
         }
 
         // find the existing one without related
-        const itemImageData = await this.findOne(id, false);
+        const imageData = await this.findOne(id, false);
 
-        await this.removeImageFile(itemImageData.ImageHash, itemImageData.ImageVersion);
+        await this.removeImageFile(imageData.ImageHash, imageData.ImageVersion);
         const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
         body.data = fileName;
 
         // set new values
         if (body.dataId) {
-            itemImageData.DataId = body.dataId;
+            imageData.DataId = body.dataId;
         }
         if (body.protocol) {
-            itemImageData.Protocol = body.protocol;
+            imageData.Protocol = body.protocol;
         }
         if (body.imageVersion) {
-            itemImageData.ImageVersion = body.imageVersion;
+            imageData.ImageVersion = body.imageVersion;
         }
         if (body.imageHash) {
-            itemImageData.ImageHash = body.imageHash;
+            imageData.ImageHash = body.imageHash;
         }
         if (body.encoding) {
-            itemImageData.Encoding = body.encoding;
+            imageData.Encoding = body.encoding;
         }
         if (body.data) {
-            itemImageData.Data = body.data;
+            imageData.Data = body.data;
         }
         if (body.originalMime) {
-            itemImageData.OriginalMime = body.originalMime;
+            imageData.OriginalMime = body.originalMime;
         }
         if (body.originalName) {
-            itemImageData.OriginalName = body.originalName;
+            imageData.OriginalName = body.originalName;
         }
 
-        // update itemImageData record
-        const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());
-        // this.log.debug('itemImageDataService.update: ' + (new Date().getTime() - startTime) + 'ms');
-        return updatedItemImageData;
+        return await this.imageDataRepo.update(id, imageData.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {
-        const itemImageData: resources.ItemImageData = await this.findOne(id, false).then(value => value.toJSON());
-        this.log.debug('destroy(), remove itemImageData.id: ' + itemImageData.id);
-        this.log.debug('destroy(), remove itemImageData.data: ' + itemImageData.data);
-        await this.removeImageFile(itemImageData.imageHash, itemImageData.imageVersion);
-        await this.itemImageDataRepo.destroy(id);
+        const imageData: resources.ImageData = await this.findOne(id, false).then(value => value.toJSON());
+        this.log.debug('destroy(), remove imageData.id: ' + imageData.id);
+        await this.removeImageFile(imageData.imageHash, imageData.imageVersion);
+        await this.imageDataRepo.destroy(id);
     }
 
     /**
-     * save the ItemImage (version)
+     * save the Image (version)
      *
      * @param base64String
      * @param imageHash
@@ -156,7 +148,7 @@ export class ItemImageDataService {
     }
 
     /**
-     * remove the ItemImage (version)
+     * remove the Image (version)
      *
      * @param imageHash
      * @param imageVersion
@@ -164,14 +156,14 @@ export class ItemImageDataService {
     public async removeImageFile(imageHash: string, imageVersion: string): Promise<void> {
         this.log.debug('removeImageFile(), imageVersion: ', imageVersion);
 
-        const itemImageDatas: resources.ItemImageData[] = await this.findAllByImageHashAndVersion(imageHash, imageVersion).then(value => value.toJSON());
-        if (itemImageDatas.length === 0) {
+        const imageDatas: resources.ImageData[] = await this.findAllByImageHashAndVersion(imageHash, imageVersion).then(value => value.toJSON());
+        if (imageDatas.length === 0) {
             this.log.warn('removeImageFile(): no file to remove.');
             return;
         }
 
         // only remove the file if there is just this one Image related to it
-        if (itemImageDatas.length === 1) {
+        if (imageDatas.length === 1) {
             const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
             this.log.debug('removeImageFile(), removed: ', filename);
             try {
@@ -190,7 +182,7 @@ export class ItemImageDataService {
     }
 
     /**
-     * load the ItemImage (version)
+     * load the Image (version)
      *
      * @param imageHash
      * @param imageVersion

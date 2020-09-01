@@ -16,7 +16,7 @@ import { MarketService } from '../services/model/MarketService';
 import { MPActionExtended } from '../enums/MPActionExtended';
 import { ListingItemImageAddMessage } from '../messages/action/ListingItemImageAddMessage';
 import { ListingItemService } from '../services/model/ListingItemService';
-import { ItemImageService } from '../services/model/ItemImageService';
+import { ImageService } from '../services/model/ImageService';
 import { MessageException } from '../exceptions/MessageException';
 import { ImageAddMessage } from '../factories/message/ListingItemImageAddMessageFactory';
 
@@ -28,7 +28,7 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

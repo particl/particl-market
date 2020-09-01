@@ -7,7 +7,7 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ItemCategoryUpdateRequest } from './ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from './ItemLocationCreateRequest';
 import { ShippingDestinationCreateRequest } from './ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from './ItemImageCreateRequest';
+import { ImageCreateRequest } from './ImageCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { ItemCategoryCreateRequest } from './ItemCategoryCreateRequest';
 
@@ -29,7 +29,7 @@ export class ItemInformationCreateRequest extends RequestBody implements ModelRe
 
     public itemLocation: ItemLocationCreateRequest;
     public shippingDestinations: ShippingDestinationCreateRequest[];
-    public itemImages: ItemImageCreateRequest[];
+    public itemImages: ImageCreateRequest[];
 
 }
 // tslint:enable:variable-name

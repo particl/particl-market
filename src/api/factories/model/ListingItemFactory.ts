@@ -12,7 +12,7 @@ import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
@@ -23,7 +23,7 @@ import { MessagingInformationCreateRequest } from '../../requests/model/Messagin
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import {
     EscrowConfig,
@@ -38,7 +38,7 @@ import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingD
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ItemImageCreateParams, ListingItemCreateParams } from './ModelCreateParams';
+import { ImageCreateParams, ListingItemCreateParams } from './ModelCreateParams';
 import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';
@@ -55,7 +55,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
     }
@@ -220,7 +220,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
-        let itemImages: ItemImageCreateRequest[] | undefined;
+        let itemImages: ImageCreateRequest[] | undefined;
 
         if (information.location) {
             itemLocation = await this.getModelLocation(information.location);
@@ -231,7 +231,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         if (information.images) {
-            itemImages = await this.getItemImageCreateRequests(information.images);
+            itemImages = await this.getImageCreateRequests(information.images);
         }
 
         return {
@@ -297,14 +297,14 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return destinations;
     }
 
-    private async getItemImageCreateRequests(images: ContentReference[]): Promise<ItemImageCreateRequest[]> {
+    private async getImageCreateRequests(images: ContentReference[]): Promise<ImageCreateRequest[]> {
 
-        const imageCreateRequests: ItemImageCreateRequest[] = [];
+        const imageCreateRequests: ImageCreateRequest[] = [];
         for (const image of images) {
 
-            const createRequest: ItemImageCreateRequest = await this.itemImageFactory.get({
+            const createRequest: ImageCreateRequest = await this.itemImageFactory.get({
                 image
-            } as ItemImageCreateParams);
+            } as ImageCreateParams);
             imageCreateRequests.push(createRequest);
         }
         return imageCreateRequests;

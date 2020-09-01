@@ -7,7 +7,7 @@ import { MessageCreateParamsInterface } from './MessageCreateParamsInterface';
 
 export interface ListingItemImageAddMessageCreateParams extends MessageCreateParamsInterface {
     listingItem: resources.ListingItem;
-    image: resources.ItemImage;
+    image: resources.Image;
     signature: string;
     withData: boolean;  // whether the data is included in the message or not
                         // (... ProtocolDSN LOCAL or SMSG)

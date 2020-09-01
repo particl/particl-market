@@ -42,7 +42,7 @@ describe('ListingItemTemplateSizeCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateItemImages
+            true,                           // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -95,7 +95,7 @@ describe('ListingItemTemplateSizeCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        let result: resources.ItemImage = res.getBody()['result'];
+        let result: resources.Image = res.getBody()['result'];
 
         log.debug('added image: ', result);
 

@@ -30,7 +30,7 @@ describe('MarketPostCommand', () => {
     let market: resources.Market;
 
     let sent = false;
-    const DAYS_RETENTION = 2;
+    const DAYS_RETENTION = 1;
 
     beforeAll(async () => {
         await testUtil.cleanDb();

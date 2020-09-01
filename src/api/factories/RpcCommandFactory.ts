@@ -45,10 +45,10 @@ import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGet
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
-import { ItemImageRootCommand } from '../commands/itemimage/ItemImageRootCommand';
-import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand';
-import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
-import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
+import { ImageRootCommand } from '../commands/image/ImageRootCommand';
+import { ImageListCommand } from '../commands/image/ImageListCommand';
+import { ImageAddCommand } from '../commands/image/ImageAddCommand';
+import { ImageRemoveCommand } from '../commands/image/ImageRemoveCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
@@ -193,10 +193,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageListCommand) private itemImageListCommand: ItemImageListCommand,
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRootCommand) private itemImageRootCommand: ItemImageRootCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageListCommand) private itemImageListCommand: ImageListCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageAddCommand) private itemImageAddCommand: ImageAddCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageRemoveCommand) private itemImageRemoveCommand: ImageRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageRootCommand) private itemImageRootCommand: ImageRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,

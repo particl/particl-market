@@ -8,12 +8,12 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/model/ItemImageService';
+import { ImageService } from '../../services/model/ImageService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ItemImage } from '../../models/ItemImage';
+import { Image } from '../../models/Image';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
@@ -23,19 +23,19 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableItemImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableItemImageCreateRequestConfig';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
+import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 
-export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
+export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(Commands.ITEMIMAGE_ADD);
+        super(Commands.IMAGE_ADD);
         this.log = new Logger(__filename);
     }
 
@@ -49,10 +49,10 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      *  [5]: skipResize
      *
      * @param data
-     * @returns {Promise<ItemImage>}
+     * @returns {Promise<Image>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // TODO: use factory
@@ -65,18 +65,18 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
                 data: data.params[4],
                 imageVersion: ImageVersions.ORIGINAL.propName,
                 imageHash: 'hashToBeCreatedFromORIGINAL.data'
-            } as ItemImageDataCreateRequest],
+            } as ImageDataCreateRequest],
             hash: 'hashToBeCreatedFromORIGINAL.data',
             featured: false     // TODO: add featured flag as param
-        } as ItemImageCreateRequest;
+        } as ImageCreateRequest;
 
         // create the hash
         createRequest.hash = ConfigurableHasher.hash({
             data: createRequest.data[0].data    // using the ORIGINAL image data to create the hash
-        }, new HashableItemImageCreateRequestConfig());
+        }, new HashableImageCreateRequestConfig());
         createRequest.data[0].imageHash = createRequest.hash;
 
-        const itemImage = await this.itemImageService.create(createRequest);
+        const itemImage = await this.imageService.create(createRequest);
 
         if (!data.params[5]) {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
@@ -174,7 +174,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public description(): string {
-        return 'Add an ItemImage to a ListingItemTemplate, identified by its ID.';
+        return 'Add an Image to a ListingItemTemplate, identified by its ID.';
     }
 
     public example(): string {

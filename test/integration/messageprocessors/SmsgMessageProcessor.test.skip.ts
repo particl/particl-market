@@ -131,7 +131,7 @@ describe('MessageProcessor', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false, // true,   // generateItemImages
+            false, // true,   // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice

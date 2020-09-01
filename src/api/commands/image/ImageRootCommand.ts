@@ -12,14 +12,14 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 
-export class ItemImageRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ImageRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.ITEMIMAGE_ROOT);
+        super(Commands.IMAGE_ROOT);
         this.log = new Logger(__filename);
     }
 
@@ -41,7 +41,7 @@ export class ItemImageRootCommand extends BaseCommand implements RpcCommandInter
     }
 
     public description(): string {
-        return 'Commands for managing item images.';
+        return 'Commands for managing images.';
     }
 
     public example(): string {

@@ -44,7 +44,7 @@ describe('ListingItemGetCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice
@@ -116,7 +116,7 @@ describe('ListingItemGetCommand', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItem.ItemInformation.ItemLocation.LocationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItem.ItemInformation.ItemLocation.LocationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toBeDefined();
-        expect(result.ItemInformation.ItemImages).toBeDefined();
+        expect(result.ItemInformation.Images).toBeDefined();
 
         expect(result.PaymentInformation.type).toBe(listingItem.PaymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(listingItem.PaymentInformation.Escrow.type);
@@ -148,10 +148,10 @@ describe('ListingItemGetCommand', () => {
         res.expectStatusCode(200);
         const result: resources.ListingItem = res.getBody()['result'];
 
-        // log.debug('result.ItemInformation.ItemImages[0].ItemImageDatas[0].data: ', result.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // log.debug('result.ItemInformation.Images[0].ImageDatas[0].data: ', result.ItemInformation.Images[0].ImageDatas[0].data);
 
         // todo: check that the data is actually an image
-        expect(result.ItemInformation.ItemImages[0].ItemImageDatas[0].data.length).toBeGreaterThan(200);
+        expect(result.ItemInformation.Images[0].ImageDatas[0].data.length).toBeGreaterThan(200);
     });
 
 

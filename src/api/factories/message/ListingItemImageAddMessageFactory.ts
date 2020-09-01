@@ -12,7 +12,7 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { BaseMessageFactory } from './BaseMessageFactory';
@@ -31,7 +31,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -52,7 +52,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
         const signature = await this.signImageMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.image.hash,
             actionRequest.listingItem.hash);
 
-        const data: DSN[] = await this.getDSNs(actionRequest.image.ItemImageDatas, actionRequest.withData);
+        const data: DSN[] = await this.getDSNs(actionRequest.image.ImageDatas, actionRequest.withData);
 
         const message = {
             type: MPActionExtended.MPA_LISTING_IMAGE_ADD,
@@ -87,9 +87,9 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
      * @param itemImageDatas
      * @param withData
      */
-    public async getDSNs(itemImageDatas: resources.ItemImageData[], withData: boolean = true): Promise<DSN[]> {
+    public async getDSNs(itemImageDatas: resources.ImageData[], withData: boolean = true): Promise<DSN[]> {
         const dsns: DSN[] = [];
-        const imageData: resources.ItemImageData = await this.getPostableImageData(itemImageDatas);
+        const imageData: resources.ImageData = await this.getPostableImageData(itemImageDatas);
 
         let data;
         const protocol = ProtocolDSN.SMSG;
@@ -116,7 +116,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
      * return the resized data, or if that doesnt exist, the original one
      * @param itemImageDatas
      */
-    private async getPostableImageData(itemImageDatas: resources.ItemImageData[]): Promise<resources.ItemImageData> {
+    private async getPostableImageData(itemImageDatas: resources.ImageData[]): Promise<resources.ImageData> {
         let imageData = _.find(itemImageDatas, (value) => {
             return value.imageVersion === ImageVersions.RESIZED.propName;
         });
@@ -128,7 +128,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
             });
 
             if (!imageData) {
-                // there's something wrong with the ItemImage if original image doesnt have data
+                // there's something wrong with the Image if original image doesnt have data
                 throw new MessageException('Data for ImageVersions.ORIGINAL not found.');
             }
         }

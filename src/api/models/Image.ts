@@ -4,25 +4,25 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import { ItemImageData } from './ItemImageData';
+import { ImageData } from './ImageData';
 import { ItemInformation } from './ItemInformation';
 
-export class ItemImage extends Bookshelf.Model<ItemImage> {
+export class Image extends Bookshelf.Model<Image> {
 
     public static RELATIONS = [
-        'ItemImageDatas',
+        'ImageDatas',
         'ItemInformation',
         'ItemInformation.ListingItem',
         'ItemInformation.ListingItemTemplate'
     ];
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImage> {
-        return ItemImage.where<ItemImage>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    public static async fetchById(value: number, withRelated: boolean = true): Promise<Image> {
+        return Image.where<Image>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     // fetchAll because multiple listings could be using the same image
-    public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ItemImage>> {
-        const collection = ItemImage.forge<Model<ItemImage>>()
+    public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<Image>> {
+        const collection = Image.forge<Model<Image>>()
             .query(qb => {
                 qb.where('hash', '=', hash);
             });
@@ -30,7 +30,7 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public get tableName(): string { return 'item_images'; }
+    public get tableName(): string { return 'images'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
@@ -48,8 +48,8 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ItemImageDatas(): Collection<ItemImageData> {
-        return this.hasMany(ItemImageData, 'item_image_id', 'id');
+    public ImageDatas(): Collection<ImageData> {
+        return this.hasMany(ImageData, 'image_id', 'id');
     }
 
     public ItemInformation(): ItemInformation {

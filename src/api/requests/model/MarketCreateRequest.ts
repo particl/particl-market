@@ -6,7 +6,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { MarketType } from '../../enums/MarketType';
-import { ItemImageCreateRequest } from './ItemImageCreateRequest';
+import { ImageCreateRequest } from './ImageCreateRequest';
 
 // tslint:disable:variable-name
 export class MarketCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -44,7 +44,7 @@ export class MarketCreateRequest extends RequestBody implements ModelRequestInte
     public expiredAt: number;
 
     public image_id: number;
-    public image: ItemImageCreateRequest;
+    public image: ImageCreateRequest;
 
 }
 // tslint:enable:variable-name

@@ -23,11 +23,11 @@ import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import { ItemImageService } from '../model/ItemImageService';
-import { ItemImageDataService } from '../model/ItemImageDataService';
+import { ImageService } from '../model/ImageService';
+import { ImageDataService } from '../model/ImageDataService';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { ItemImageUpdateRequest } from '../../requests/model/ItemImageUpdateRequest';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
+import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { MarketImageAddMessageFactory } from '../../factories/message/MarketImageAddMessageFactory';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
 import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessage';
@@ -42,8 +42,8 @@ export class MarketImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public imageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
@@ -118,7 +118,7 @@ export class MarketImageAddActionService extends BaseActionService {
 
             // for all incoming messages, update the image data
             // there could be several, since the same image could be used in multiple Markets/ListingItems.
-            const itemImages: resources.ItemImage[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
 
             for (const itemImage of itemImages) {
                 const updateRequest = {
@@ -129,10 +129,10 @@ export class MarketImageAddActionService extends BaseActionService {
                         data: imageAddMessage.data[0].data,
                         imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
                         imageHash: imageAddMessage.hash
-                    }] as ItemImageDataCreateRequest[],
+                    }] as ImageDataCreateRequest[],
                     hash: imageAddMessage.hash,
                     featured: false     // TODO: add featured flag as param
-                } as ItemImageUpdateRequest;
+                } as ImageUpdateRequest;
 
                 // update the image with the real data
                 await this.imageService.update(itemImage.id, updateRequest);

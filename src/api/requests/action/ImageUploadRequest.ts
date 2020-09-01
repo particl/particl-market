@@ -7,9 +7,11 @@ import { RequestBody } from '../../../core/api/RequestBody';
 
 export class ImageUploadRequest extends RequestBody {
 
-    @IsNotEmpty()
     @IsNumber()
     public listingItemTemplateId: number;
+
+    @IsNumber()
+    public marketId: number;
 
     @IsNotEmpty()
     public requestBody: any;

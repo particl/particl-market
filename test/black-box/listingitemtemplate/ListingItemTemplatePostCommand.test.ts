@@ -57,7 +57,7 @@ describe('ListingItemTemplatePostCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateItemImages
+            true,                           // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice

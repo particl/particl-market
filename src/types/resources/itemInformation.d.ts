@@ -13,7 +13,7 @@ declare module 'resources' {
         updatedAt: Date;
         ShippingDestinations: ShippingDestination[];
         ItemCategory: ItemCategory;
-        ItemImages: ItemImage[];
+        Images: Image[];
         ItemLocation: ItemLocation;
         ListingItem: ListingItem;
         ListingItemTemplate: ListingItemTemplate;

@@ -8,7 +8,7 @@ import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
 import { Identity } from './Identity';
 import { FlaggedItem } from './FlaggedItem';
-import { ItemImage } from './ItemImage';
+import { Image } from './Image';
 import { SearchOrder } from '../enums/SearchOrder';
 import { MarketSearchOrderField } from '../enums/SearchOrderField';
 import { MarketSearchParams } from '../requests/search/MarketSearchParams';
@@ -169,8 +169,8 @@ export class Market extends Bookshelf.Model<Market> {
         return this.hasOne(FlaggedItem);
     }
 
-    public Image(): ItemImage {
-        return this.belongsTo(ItemImage, 'image_id', 'id');
+    public Image(): Image {
+        return this.belongsTo(Image, 'image_id', 'id');
     }
 
 }

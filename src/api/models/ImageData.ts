@@ -3,44 +3,32 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { ItemImage } from './ItemImage';
+import { Image } from './Image';
 import { Collection, Model } from 'bookshelf';
 import { SearchOrder } from '../enums/SearchOrder';
 
-export class ItemImageData extends Bookshelf.Model<ItemImageData> {
+export class ImageData extends Bookshelf.Model<ImageData> {
 
     public static RELATIONS = [
-        'ItemImage'
+        'Image'
     ];
 
-    public static async fetchAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Collection<ItemImageData>> {
-        const proposalResultCollection = ItemImageData.forge<Model<ItemImageData>>()
+    public static async fetchAllByImageHashAndVersion(hash: string, version: string, withRelated: boolean = true): Promise<Collection<ImageData>> {
+        const proposalResultCollection = ImageData.forge<Model<ImageData>>()
             .query(qb => {
                 qb.where('image_hash', '=', hash);
                 qb.where('image_version', '=', version);
             })
             .orderBy('id', SearchOrder.DESC);
 
-        if (withRelated) {
-            return await proposalResultCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await proposalResultCollection.fetchAll();
-        }
+        return proposalResultCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImageData> {
-        if (withRelated) {
-            return await ItemImageData.where<ItemImageData>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ItemImageData.where<ItemImageData>({ id: value }).fetch();
-        }
+    public static async fetchById(value: number, withRelated: boolean = true): Promise<ImageData> {
+        return ImageData.where<ImageData>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public get tableName(): string { return 'item_image_datas'; }
+    public get tableName(): string { return 'image_datas'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
@@ -76,8 +64,8 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ItemImage(): ItemImage {
-        return this.belongsTo(ItemImage, 'item_image_id', 'id');
+    public Image(): Image {
+        return this.belongsTo(Image, 'image_id', 'id');
     }
 
 }

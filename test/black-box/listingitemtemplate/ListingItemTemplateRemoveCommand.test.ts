@@ -42,7 +42,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,           // generateItemInformation
             true,           // generateItemLocation
             true,           // generateShippingDestinations
-            false,          // generateItemImages
+            false,          // generateImages
             true,           // generatePaymentInformation
             true,           // generateEscrow
             true,           // generateItemPrice
@@ -116,7 +116,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            true,               // generateItemImages
+            true,               // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             true,               // generateItemPrice

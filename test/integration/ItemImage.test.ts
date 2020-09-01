@@ -11,22 +11,22 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
+import { ImageService } from 'ImageService.ts';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ItemImageCreateRequest } from '../../src/api/requests/model/ItemImageCreateRequest';
-import { ItemImageUpdateRequest } from '../../src/api/requests/model/ItemImageUpdateRequest';
-import { ItemImageDataService } from '../../src/api/services/model/ItemImageDataService';
+import { ImageCreateRequest } from 'ImageCreateRequest.ts';
+import { ImageUpdateRequest } from 'ImageUpdateRequest.ts';
+import { ImageDataService } from 'ImageDataService.ts';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ItemImageDataCreateRequest } from '../../src/api/requests/model/ItemImageDataCreateRequest';
+import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
-describe('ItemImage', () => {
+describe('Image', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -34,8 +34,8 @@ describe('ItemImage', () => {
 
     let testDataService: TestDataService;
     let defaultMarketService: DefaultMarketService;
-    let itemImageService: ItemImageService;
-    let itemImageDataService: ItemImageDataService;
+    let imageService: ImageService;
+    let itemImageDataService: ImageDataService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
@@ -48,7 +48,7 @@ describe('ItemImage', () => {
     let listingItem: resources.ListingItem;
     let listingItemTemplate: resources.ListingItemTemplate;
 
-    let itemImage: resources.ItemImage;
+    let itemImage: resources.Image;
 
     const testData = {
         data: [{
@@ -58,10 +58,10 @@ describe('ItemImage', () => {
             imageHash: 'TEST-imagehash1',
             encoding: 'BASE64'
             // data: ''
-        }] as ItemImageDataCreateRequest[],
+        }] as ImageDataCreateRequest[],
         hash: 'TEST-imagehash1',
         featured: false
-    } as ItemImageCreateRequest;
+    } as ImageCreateRequest;
 
     const testDataUpdated = {
         data: [{
@@ -71,10 +71,10 @@ describe('ItemImage', () => {
             imageHash: 'TEST-imagehash2',
             encoding: 'BASE64'
             // data: ''
-        }] as ItemImageDataCreateRequest[],
+        }] as ImageDataCreateRequest[],
         hash: 'TEST-imagehash2',
         featured: true
-    } as ItemImageUpdateRequest;
+    } as ImageUpdateRequest;
 
 
     beforeAll(async () => {
@@ -82,8 +82,8 @@ describe('ItemImage', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
-        itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.model.ItemImageDataService);
+        imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
+        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
@@ -113,19 +113,19 @@ describe('ItemImage', () => {
     test('Should throw ValidationException because there is no item_information_id', async () => {
         expect.assertions(1);
 
-        await itemImageService.create(testData).catch(e =>
+        await imageService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new ItemImage', async () => {
+    test('Should create a new Image', async () => {
 
         const randomImageData1 = await testDataService.generateRandomImage(20, 20);
 
         testData.item_information_id = listingItem.ItemInformation.id;
         testData.data[0].data = randomImageData1;
 
-        itemImage = await itemImageService.create(testData).then(value => value.toJSON());
+        itemImage = await imageService.create(testData).then(value => value.toJSON());
         const result = itemImage;
 
         const imageUrl = process.env.APP_HOST
@@ -134,34 +134,34 @@ describe('ItemImage', () => {
 
         expect(result.hash).toBe(testData.hash);
         expect(result.featured).toBeFalsy();
-        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
-        expect(result.ItemImageDatas.length).toBe(4);
+        expect(result.ImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ImageDatas.length).toBe(4);
 
     });
 
-    test('Should throw ValidationException because we want to create a empty ItemImage', async () => {
+    test('Should throw ValidationException because we want to create a empty Image', async () => {
         expect.assertions(1);
-        await itemImageService.create({} as ItemImageCreateRequest).catch(e =>
+        await imageService.create({} as ImageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list ItemImages with our newly created one', async () => {
-        const itemImages: resources.ItemImage[] = await itemImageService.findAll().then(value => value.toJSON());
+    test('Should list Images with our newly created one', async () => {
+        const itemImages: resources.Image[] = await imageService.findAll().then(value => value.toJSON());
         expect(itemImages.length).toBe(1);
 
-        const result: resources.ItemImage = itemImages[0];
+        const result: resources.Image = itemImages[0];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(testData.hash);
         expect(result.featured).toBeFalsy();
-        expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
+        expect(result.ImageDatas).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one ItemImage', async () => {
-        itemImage = await itemImageService.findOne(itemImage.id).then(value => value.toJSON());
+    test('Should return one Image', async () => {
+        itemImage = await imageService.findOne(itemImage.id).then(value => value.toJSON());
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -170,19 +170,19 @@ describe('ItemImage', () => {
         const result = itemImage;
         expect(result.hash).toBe(testData.hash);
         expect(result.featured).toBeFalsy();
-        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+        expect(result.ImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ImageDatas[0].encoding).toBe(testData.data[0].encoding);
 
     });
 
-    test('Should update the ItemImage', async () => {
+    test('Should update the Image', async () => {
 
         const randomImageData1 = await testDataService.generateRandomImage(20, 20);
         testDataUpdated.data[0].data = randomImageData1;
 
-        const result: resources.ItemImage = await itemImageService.update(itemImage.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.Image = await imageService.update(itemImage.id, testDataUpdated).then(value => value.toJSON());
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -190,33 +190,33 @@ describe('ItemImage', () => {
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.featured).toBeTruthy();
-        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
-        expect(result.ItemImageDatas[0].protocol).toBe(testDataUpdated.data[0].protocol);
-        expect(result.ItemImageDatas[0].imageVersion).toBe(testDataUpdated.data[0].imageVersion);
-        expect(result.ItemImageDatas[0].encoding).toBe(testDataUpdated.data[0].encoding);
+        expect(result.ImageDatas[0].dataId).toBe(imageUrl);
+        expect(result.ImageDatas[0].protocol).toBe(testDataUpdated.data[0].protocol);
+        expect(result.ImageDatas[0].imageVersion).toBe(testDataUpdated.data[0].imageVersion);
+        expect(result.ImageDatas[0].encoding).toBe(testDataUpdated.data[0].encoding);
 
-        expect(result.ItemImageDatas.length).toBe(4);
+        expect(result.ImageDatas.length).toBe(4);
 
         itemImage = result;
     });
 
-    test('Should delete the ItemImage', async () => {
+    test('Should delete the Image', async () => {
         expect.assertions(7);
 
         // find the listing item
         listingItem = await listingItemService.findOne(listingItem.id).then(value => value.toJSON());
-        expect(listingItem.ItemInformation.ItemImages.length).toBe(1);
+        expect(listingItem.ItemInformation.Images.length).toBe(1);
 
         // destroy the create image
-        await itemImageService.destroy(listingItem.ItemInformation.ItemImages[0].id);
+        await imageService.destroy(listingItem.ItemInformation.Images[0].id);
 
         // make sure the image is destroyed
-        await itemImageService.findOne(listingItem.ItemInformation.ItemImages[0].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.ItemImages[0].id))
+        await imageService.findOne(listingItem.ItemInformation.Images[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.Images[0].id))
         );
 
         // make sure that the related imagedatas were also destroyed
-        for (const imageData of listingItem.ItemInformation.ItemImages[0].ItemImageDatas) {
+        for (const imageData of listingItem.ItemInformation.Images[0].ImageDatas) {
             await itemImageDataService.findOne(imageData.id).catch(e =>
                 expect(e).toEqual(new NotFoundException(imageData.id))
             );
