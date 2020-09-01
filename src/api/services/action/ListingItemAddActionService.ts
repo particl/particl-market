@@ -165,7 +165,7 @@ export class ListingItemAddActionService extends BaseActionService {
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to,
                 listingItemAddMessage.item.information.category);
 
-            this.log.debug('processMessage(), itemCategory: ', JSON.stringify(itemCategory, null, 2));
+            // this.log.debug('processMessage(), itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
             const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
                 itemCategory,
@@ -173,7 +173,7 @@ export class ListingItemAddActionService extends BaseActionService {
                 smsgMessage
             } as ListingItemCreateParams);
 
-            this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+            // this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
             // - create the ListingItem locally with the listingItemCreateRequest
             await this.listingItemService.create(listingItemCreateRequest)

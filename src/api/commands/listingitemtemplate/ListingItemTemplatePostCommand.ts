@@ -102,7 +102,14 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
-            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
+            sendParams: {
+                wallet: market.Identity.wallet,
+                fromAddress,
+                toAddress,
+                paidMessage: true, // process.env.CHAIN === 'test' ? false : paid,
+                daysRetention,
+                estimateFee
+            } as SmsgSendParams,
             listingItem: listingItemTemplate,
             sellerAddress: market.Identity.address,
             imagesWithData: false

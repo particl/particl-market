@@ -141,7 +141,6 @@ export class SmsgService {
      * @param sendParams
      */
     public async estimateFee(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        // wtf
         const estimateFee = sendParams.estimateFee;
         sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
         const smsgSendResponse: SmsgSendResponse = await this.sendMessage(wallet, marketplaceMessage, sendParams);
@@ -244,16 +243,16 @@ export class SmsgService {
         // enable receiving messages on the sending address, just in case
         await this.smsgAddLocalAddress(fromAddress);
 
-        this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);
+        this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress + ', daysRetention: ' + daysRetention + ', estimateFee: ' + estimateFee);
         const params: any[] = [
             fromAddress,
             toAddress,
             JSON.stringify(message),
             paidMessage,
             daysRetention,
-            estimateFee,
-            options,
-            coinControl
+            estimateFee
+            // options,
+            // coinControl
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));

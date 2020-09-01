@@ -53,34 +53,6 @@ export class CoreRpcService extends CtRpc {
             });
     }
 
-/*
-    public async hasWallet(): Promise<boolean> {
-        return await this.getWalletInfo()
-            .then(response => {
-                // the Hash160 of the HD account pubkey (only present when HD is enabled)
-                return response.hdseedid !== undefined;
-            })
-            .catch(error => {
-                return false;
-            });
-    }
-
-    public get currentWallet(): string {
-        return this.activeWallet;
-    }
-
-    public async setActiveWallet(wallet: string): Promise<void> {
-        this.activeWallet = wallet;
-
-        const walletLoaded = await this.walletLoaded(wallet);
-        if (!walletLoaded) {
-            await this.loadWallet(wallet);
-        }
-        await this.smsgSetWallet(wallet);
-        this.log.debug('ACTIVE WALLET SET TO: ' + wallet);
-    }
-*/
-
     /**
      * Returns a list of loaded wallets.
      *

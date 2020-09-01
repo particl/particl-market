@@ -148,10 +148,10 @@ export class MarketAddActionService extends BaseActionService {
                 smsgMessage
             } as MarketCreateParams);
 
-            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+            // this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
             const market: resources.Market = await this.marketService.create(createRequest).then(async value => value.toJSON());
-            this.log.debug('processMessage(), market: ', JSON.stringify(market, null, 2));
+            // this.log.debug('processMessage(), market: ', JSON.stringify(market, null, 2));
 
             await this.createFlaggedItemIfNeeded(market);
         }

@@ -158,7 +158,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // make sure we got the expected result from posting the template
         const result: any = res.getBody()['result'];
-        // log.debug('result:', JSON.stringify(result, null, 2));
+        log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.result).toBe('Not Sent.');
 
@@ -169,7 +169,6 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
-
 
     test('Should post a ListingItem in to the default market', async () => {
 
@@ -304,4 +303,5 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(postResult.result).toBe('Sent.');
 
     });
+
 });
