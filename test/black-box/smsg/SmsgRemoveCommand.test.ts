@@ -14,11 +14,9 @@ import { GenerateSmsgMessageParams } from '../../../src/api/requests/testdata/Ge
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
-import { ListingItemAddMessageCreateParams } from '../../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { ListingItemAddRequest } from '../../../src/api/requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../../../src/api/requests/action/SmsgSendParams';
 
 

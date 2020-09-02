@@ -28,7 +28,6 @@ import { SmsgMessageCreateParams } from '../../src/api/factories/model/ModelCrea
 import { ActionDirection } from '../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../src/api/enums/SearchOrderField';
 import { ListingItemAddMessage } from '../../src/api/messages/action/ListingItemAddMessage';
-import { ListingItemAddMessageCreateParams } from '../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
@@ -39,8 +38,10 @@ import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProposalAddMessageFactory } from '../../src/api/factories/message/ProposalAddMessageFactory';
 import { VoteMessageFactory } from '../../src/api/factories/message/VoteMessageFactory';
 import { ProposalAddMessage } from '../../src/api/messages/action/ProposalAddMessage';
-import { ProposalAddMessageCreateParams } from '../../src/api/requests/message/ProposalAddMessageCreateParams';
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
+import { SmsgSendParams } from '../../src/api/requests/action/SmsgSendParams';
+import { ListingItemAddRequest } from '../../src/api/requests/action/ListingItemAddRequest';
+import { ProposalAddRequest } from '../../src/api/requests/action/ProposalAddRequest';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -64,7 +65,7 @@ describe('SmsgMessage', () => {
     let smsgMessages: resources.SmsgMessage[];
     let sellerMarket: resources.Market;
     let sellerProfile: resources.Profile;
-    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
     let listingItemCoreMessage: CoreSmsgMessage;
     let proposalCoreMessage: CoreSmsgMessage;
@@ -104,13 +105,16 @@ describe('SmsgMessage', () => {
 
     test('Should create a new SmsgMessage from IncomingSmsgMessage (listingItemMessage)', async () => {
 
-        listingItemTemplate = await testDataService.generateListingItemTemplate(sellerProfile, sellerMarket);
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, sellerMarket, false);
 
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
-            listingItem: listingItemTemplate,
-            sellerAddress: sellerMarket.Identity.address,
-            signature: Faker.random.uuid()
-        } as ListingItemAddMessageCreateParams);
+            sendParams: {
+                wallet: sellerMarket.Identity.wallet
+            } as SmsgSendParams,
+            listingItem,
+            sellerAddress: sellerMarket.Identity.address
+        } as ListingItemAddRequest).then(value => value.action as ListingItemAddMessage);
+
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, sellerMarket.publishAddress, sellerMarket.receiveAddress);
 
         // log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
@@ -127,16 +131,21 @@ describe('SmsgMessage', () => {
         expectSmsgMessageFromCreateRequest(result, MPAction.MPA_LISTING_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
 
+
     test('Should create a new SmsgMessage from IncomingSmsgMessage (proposalMessage)', async () => {
 
         const proposalAddMessage: ProposalAddMessage = await proposalAddMessageFactory.get({
+            sendParams: {
+                wallet: sellerMarket.Identity.wallet
+            } as SmsgSendParams,
+            sender: sellerMarket.Identity,
+            market: sellerMarket,
+            category: ProposalCategory.PUBLIC_VOTE,
             title: Faker.random.words(5),
             description: Faker.random.words(30),
-            options: ['OPTION1', 'OPTION2', 'OPTION3'],
-            sender: sellerMarket.Identity,
-            category: ProposalCategory.PUBLIC_VOTE,
-            market: sellerMarket.receiveAddress
-        } as ProposalAddMessageCreateParams);
+            options: ['OPTION1', 'OPTION2', 'OPTION3']
+        } as ProposalAddRequest).then(value => value.action as ProposalAddMessage);
+
         proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, sellerMarket.publishAddress, sellerMarket.receiveAddress);
 
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
@@ -150,22 +159,6 @@ describe('SmsgMessage', () => {
         // log.debug('result: ', JSON.stringify(result, null, 2));
         expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_PROPOSAL_ADD, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
     });
-
-    /*
-    test('Should create a new SmsgMessage from IncomingSmsgMessage (voteMessage)', async () => {
-
-        const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get({
-            direction: ActionDirection.INCOMING,
-            message: voteMessage
-        } as SmsgMessageCreateParams);
-        log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-        expectCreateRequestFromSmsgMessage(smsgMessageCreateRequest, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, voteMessage);
-
-        const result: resources.SmsgMessage = await smsgMessageService.create(smsgMessageCreateRequest).then(value => value.toJSON());
-        log.debug('result: ', JSON.stringify(result, null, 2));
-        expectSmsgMessageFromCreateRequest(result, GovernanceAction.MPA_VOTE, SmsgMessageStatus.NEW, smsgMessageCreateRequest);
-    });
-*/
 
     test('Should list all SmsgMessages', async () => {
         smsgMessages = await smsgMessageService.findAll().then(value => value.toJSON());
@@ -258,22 +251,7 @@ describe('SmsgMessage', () => {
 
         expect(smsgMessages.length).toBe(2);
     });
-/*
-    test('Should searchBy for SmsgMessages: [MPA_LISTING_ADD, MPA_PROPOSAL_ADD, MPA_VOTE], status: NEW', async () => {
-        const searchParams = {
-            order: SearchOrder.DESC,
-            orderField: SmsgMessageSearchOrderField.RECEIVED,
-            status: SmsgMessageStatus.NEW,
-            types: [MPAction.MPA_LISTING_ADD, GovernanceAction.MPA_PROPOSAL_ADD, GovernanceAction.MPA_VOTE],
-            age: 0
-        } as SmsgMessageSearchParams;
 
-        smsgMessages = await smsgMessageService.searchBy(searchParams).then(value => value.toJSON());
-
-        log.debug('smsgMessages:', JSON.stringify(smsgMessages, null, 2));
-        expect(smsgMessages.length).toBe(2);
-    });
-*/
     test('Should searchBy for SmsgMessages: empty types [] should find all', async () => {
         const searchParams = {
             page: PAGE,
@@ -396,7 +374,6 @@ describe('SmsgMessage', () => {
         expect(result.received).toBeGreaterThan(1530000000000);
         expect(result.sent).toBeGreaterThan(1530000000000);
         expect(result.expiration).toBeGreaterThan(1530000000000);
-
     };
 
 });

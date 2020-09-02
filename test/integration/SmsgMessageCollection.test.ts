@@ -15,7 +15,6 @@ import { SmsgMessageCreateRequest } from '../../src/api/requests/model/SmsgMessa
 import { SmsgMessageFactory } from '../../src/api/factories/model/SmsgMessageFactory';
 import { ActionDirection } from '../../src/api/enums/ActionDirection';
 import { ListingItemAddMessage } from '../../src/api/messages/action/ListingItemAddMessage';
-import { ListingItemAddMessageCreateParams } from '../../src/api/requests/message/ListingItemAddMessageCreateParams';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemAddMessageFactory } from '../../src/api/factories/message/ListingItemAddMessageFactory';
@@ -23,7 +22,10 @@ import { ProposalAddMessageFactory } from '../../src/api/factories/message/Propo
 import { CoreSmsgMessage } from '../../src/api/messages/CoreSmsgMessage';
 import { ProposalAddMessage } from '../../src/api/messages/action/ProposalAddMessage';
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
-import { ProposalAddMessageCreateParams } from '../../src/api/requests/message/ProposalAddMessageCreateParams';
+import { SmsgSendParams } from '../../src/api/requests/action/SmsgSendParams';
+import { ListingItemAddRequest } from '../../src/api/requests/action/ListingItemAddRequest';
+import { ProposalAddRequest } from '../../src/api/requests/action/ProposalAddRequest';
+
 
 describe('SmsgMessageCollection', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -44,7 +46,7 @@ describe('SmsgMessageCollection', () => {
     let sellerMarket: resources.Market;
     let bidderProfile: resources.Profile;
     let sellerProfile: resources.Profile;
-    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
     let listingItemCoreMessage: CoreSmsgMessage;
     let proposalCoreMessage: CoreSmsgMessage;
@@ -70,25 +72,31 @@ describe('SmsgMessageCollection', () => {
 
     test('Should save multiple SmsgMessages at once', async () => {
 
-        listingItemTemplate = await testDataService.generateListingItemTemplate(sellerProfile, bidderMarket);
-
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket, false);
         const listingItemAddMessage: ListingItemAddMessage = await listingItemAddMessageFactory.get({
-            listingItem: listingItemTemplate,
-            sellerAddress: sellerMarket.Identity.address,
-            signature: Faker.random.uuid()
-        } as ListingItemAddMessageCreateParams);
+            sendParams: {
+                wallet: sellerMarket.Identity.wallet
+            } as SmsgSendParams,
+            listingItem,
+            sellerAddress: sellerMarket.Identity.address
+        } as ListingItemAddRequest).then(value => value.action as ListingItemAddMessage);
+
         listingItemCoreMessage = await testDataService.generateCoreSmsgMessage(listingItemAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
 
         // log.debug('listingItemMessage: ', JSON.stringify(listingItemCoreMessage, null, 2));
 
         const proposalAddMessage: ProposalAddMessage = await proposalAddMessageFactory.get({
+            sendParams: {
+                wallet: sellerMarket.Identity.wallet
+            } as SmsgSendParams,
+            sender: sellerMarket.Identity,
+            market: bidderMarket,
+            category: ProposalCategory.PUBLIC_VOTE,
             title: Faker.random.words(5),
             description: Faker.random.words(30),
-            options: ['OPTION1', 'OPTION2', 'OPTION3'],
-            sender: sellerMarket.Identity,
-            category: ProposalCategory.PUBLIC_VOTE,
-            market: bidderMarket.receiveAddress
-        } as ProposalAddMessageCreateParams);
+            options: ['OPTION1', 'OPTION2', 'OPTION3']
+        } as ProposalAddRequest).then(value => value.action as ProposalAddMessage);
+
         proposalCoreMessage = await testDataService.generateCoreSmsgMessage(proposalAddMessage, bidderMarket.publishAddress, bidderMarket.receiveAddress);
 
         const smsgMessageCreateRequest1: SmsgMessageCreateRequest = await smsgMessageFactory.get({

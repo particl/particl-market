@@ -123,8 +123,7 @@ import { ServerStartedListener } from '../listeners/ServerStartedListener';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
-import {ListingItemAddMessageCreateParams} from '../requests/message/ListingItemAddMessageCreateParams';
-import {HashableImageCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { HashableImageCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 
 export class TestDataService {
@@ -361,11 +360,14 @@ export class TestDataService {
      */
     public async generateListingItemWithTemplate(sellerProfile: resources.Profile, bidderMarket: resources.Market,
                                                  generateImages: boolean = false): Promise<resources.ListingItem> {
+
+        const randomCategory: resources.ItemCategory = await this.getRandomCategory();
+
         const generateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
             true,                   // generateItemLocation
             true,                   // generateShippingDestinations
-            generateImages,     // generateImages
+            generateImages,         // generateImages
             true,                   // generatePaymentInformation
             true,                   // generateEscrow
             true,                   // generateItemPrice
@@ -374,7 +376,8 @@ export class TestDataService {
             false,                  // generateObjectDatas
             sellerProfile.id,       // profileId
             true,                   // generateListingItem
-            bidderMarket.id         // soldOnMarketId
+            bidderMarket.id,        // soldOnMarketId
+            randomCategory.id       // categoryId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await this.generate({
