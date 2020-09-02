@@ -79,7 +79,7 @@ export class ItemInformationService {
         const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
         const itemLocation: ItemLocationCreateRequest = body.itemLocation || {};
         const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
-        const itemImages: ImageCreateRequest[] = body.images || [];
+        const images: ImageCreateRequest[] = body.images || [];
 
         delete body.itemCategory;
         delete body.itemLocation;
@@ -108,11 +108,11 @@ export class ItemInformationService {
             }
         }
 
-        if (!_.isEmpty(itemImages)) {
-            for (const itemImage of itemImages) {
-                itemImage.item_information_id = itemInformation.id;
-                // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                await this.imageService.create(itemImage);
+        if (!_.isEmpty(images)) {
+            for (const image of images) {
+                image.item_information_id = itemInformation.id;
+                // this.log.debug('image: ', JSON.stringify(image, null, 2));
+                await this.imageService.create(image);
             }
         }
 

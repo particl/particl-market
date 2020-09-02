@@ -26,7 +26,7 @@ describe('ImageData', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let itemImageDataService: ImageDataService;
+    let imageDataService: ImageDataService;
     let imageService: ImageService;
     let marketService: MarketService;
     let listingItemService: ListingItemService;
@@ -56,7 +56,7 @@ describe('ImageData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
+        imageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
         imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
@@ -100,7 +100,7 @@ describe('ImageData', () => {
 /*
     test('Should throw ValidationException because there is no image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.create(testData as ImageDataCreateRequest).catch(e => {
+        await imageDataService.create(testData as ImageDataCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         });
     });
@@ -108,7 +108,7 @@ describe('ImageData', () => {
     test('Should create a new item image data', async () => {
         testData.image_id = createdImage.id;
 
-        const itemImageDataModel: ImageData = await itemImageDataService.create(testData);
+        const itemImageDataModel: ImageData = await imageDataService.create(testData);
         createdImageDataId = itemImageDataModel.Id;
         const result = itemImageDataModel.toJSON();
         expect(result.dataId).toBe(testData.dataId);
@@ -118,14 +118,14 @@ describe('ImageData', () => {
 
     test('Should throw ValidationException because we want to create a empty item image data', async () => {
         expect.assertions(1);
-        await itemImageDataService.create({} as ImageDataCreateRequest).catch(e => {
+        await imageDataService.create({} as ImageDataCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
     });
 
     test('Should list item image datas with our new create one', async () => {
-        const itemImageDataCollection = await itemImageDataService.findAll();
+        const itemImageDataCollection = await imageDataService.findAll();
         const itemImageData = itemImageDataCollection.toJSON();
         expect(itemImageData.length).toBe(1);
 
@@ -137,7 +137,7 @@ describe('ImageData', () => {
     });
 
     test('Should return one item image data', async () => {
-        const itemImageDataModel: ImageData = await itemImageDataService.findOne(createdImageDataId);
+        const itemImageDataModel: ImageData = await imageDataService.findOne(createdImageDataId);
         const result = itemImageDataModel.toJSON();
 
         expect(result.dataId).toBe(testData.dataId);
@@ -147,7 +147,7 @@ describe('ImageData', () => {
 
     test('Should throw ValidationException because there is no image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest).catch(e => {
+        await imageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
@@ -155,7 +155,7 @@ describe('ImageData', () => {
 
     test('Should throw ValidationException because we want to update a item image data with empty body', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdImageDataId, {} as ImageDataUpdateRequest).catch(e => {
+        await imageDataService.update(createdImageDataId, {} as ImageDataUpdateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }
         );
@@ -163,7 +163,7 @@ describe('ImageData', () => {
 
     test('Should update the item image data', async () => {
         testDataUpdated.image_id = createdImage.id;
-        const itemImageDataModel: ImageData = await itemImageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest);
+        const itemImageDataModel: ImageData = await imageDataService.update(createdImageDataId, testDataUpdated as ImageDataUpdateRequest);
         const result = itemImageDataModel.toJSON();
 
         expect(result.dataId).toBe(testDataUpdated.dataId);
@@ -173,9 +173,9 @@ describe('ImageData', () => {
 
     test('Should delete the item image data', async () => {
         expect.assertions(1);
-        await itemImageDataService.destroy(createdImageDataId);
+        await imageDataService.destroy(createdImageDataId);
 
-        await itemImageDataService.findOne(createdImageDataId).catch(e =>
+        await imageDataService.findOne(createdImageDataId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdImageDataId))
         );
 

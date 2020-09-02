@@ -35,7 +35,7 @@ describe('Image', () => {
     let testDataService: TestDataService;
     let defaultMarketService: DefaultMarketService;
     let imageService: ImageService;
-    let itemImageDataService: ImageDataService;
+    let imageDataService: ImageDataService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
@@ -83,7 +83,7 @@ describe('Image', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
-        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
+        imageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
@@ -217,7 +217,7 @@ describe('Image', () => {
 
         // make sure that the related imagedatas were also destroyed
         for (const imageData of listingItem.ItemInformation.Images[0].ImageDatas) {
-            await itemImageDataService.findOne(imageData.id).catch(e =>
+            await imageDataService.findOne(imageData.id).catch(e =>
                 expect(e).toEqual(new NotFoundException(imageData.id))
             );
         }

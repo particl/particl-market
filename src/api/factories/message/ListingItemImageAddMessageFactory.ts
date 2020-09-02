@@ -31,7 +31,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -99,7 +99,7 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
         if (withData) {
             // load the actual image data
             // we're not sending the image data anymore when posting the ListingItem
-            data = await this.itemImageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
+            data = await this.imageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
         }
 
         dsns.push({

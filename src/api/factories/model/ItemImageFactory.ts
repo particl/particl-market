@@ -21,7 +21,7 @@ export class ItemImageFactory implements ModelFactoryInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
     }

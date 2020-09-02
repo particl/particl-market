@@ -87,7 +87,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
-            + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
+            + '                                |favoriteitem|iteminformation|bid|paymentinformation|image} \n'
             + '                                - The type of data we want to generate. \n'
             + '    <amount>                 - Numeric - The number of objects we want to generate. \n'
             + '    <withRelated>            - Boolean - Whether to return full objects or just id. ';

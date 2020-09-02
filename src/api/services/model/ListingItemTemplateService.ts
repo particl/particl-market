@@ -63,7 +63,7 @@ export class ListingItemTemplateService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -381,34 +381,34 @@ export class ListingItemTemplateService {
         const startTime = new Date().getTime();
 
         // ItemInformation has Images, which is an array.
-        const itemImages = listingItemTemplate.ItemInformation.Images;
+        const images = listingItemTemplate.ItemInformation.Images;
         const originalImageDatas: resources.ImageData[] = [];
 
-        for (const itemImage of itemImages) {
-            const itemImageDataOriginal: resources.ImageData | undefined = _.find(itemImage.ImageDatas, (imageData) => {
+        for (const image of images) {
+            const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
             });
-            const itemImageDataResized: resources.ImageData | undefined = _.find(itemImage.ImageDatas, (imageData) => {
+            const imageDataResized: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.RESIZED.propName;
             });
 
-            if (!itemImageDataOriginal) {
+            if (!imageDataOriginal) {
                 // there's something wrong with the Image if original image doesnt have data
                 throw new MessageException('Error while resizing: Original image data not found.');
             }
 
-            if (!itemImageDataResized) {
+            if (!imageDataResized) {
                 // Only need to process if the resized image does not exist
-                originalImageDatas.push(itemImageDataOriginal);
+                originalImageDatas.push(imageDataOriginal);
             }
         }
 
         for (const originalImageData of originalImageDatas) {
             const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
             const imageDataCreateRequest: ImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
-                originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
+                originalImageData.imageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
                 originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
-            await this.itemImageDataService.create(imageDataCreateRequest);
+            await this.itemDataService.create(imageDataCreateRequest);
         }
 
         this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (Date.now() - startTime) + 'ms');
@@ -426,9 +426,9 @@ export class ListingItemTemplateService {
     public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<Image> {
         if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
 
-            for (const itemImage of listingItemTemplate.ItemInformation.Images) {
-                const featured = itemImage.id === imageId;
-                await this.imageService.updateFeatured(itemImage.id, featured);
+            for (const image of listingItemTemplate.ItemInformation.Images) {
+                const featured = image.id === imageId;
+                await this.imageService.updateFeatured(image.id, featured);
             }
             return await this.imageService.findOne(imageId);
         } else {
@@ -463,7 +463,7 @@ export class ListingItemTemplateService {
         if (qualityFactor <= 0) {
             return '';
         }
-        const originalImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+        const originalImage = await this.itemDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
 
         let compressedImage = await ImageProcessing.resizeImageToFit(
             originalImage,
@@ -497,37 +497,37 @@ export class ListingItemTemplateService {
             });
         }
 
-        let itemImages: ImageCreateRequest[] = [];
+        let images: ImageCreateRequest[] = [];
         if (!_.isEmpty(templateToClone.ItemInformation.Images)) {
 
-            itemImages = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
+            images = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
 
                 // for each image, get the data from ORIGINAL and create a new ImageCreateRequest based on that data
-                const itemImageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
+                const imageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
                 // load the image data
-                itemImageDataOriginal.data = await this.itemImageDataService.loadImageFile(image.hash, itemImageDataOriginal.imageVersion);
+                imageDataOriginal.data = await this.itemDataService.loadImageFile(image.hash, imageDataOriginal.imageVersion);
 
-                const itemImageCreateRequest: ImageCreateRequest = _.assign({} as ImageCreateRequest, {
+                const imageCreateRequest: ImageCreateRequest = _.assign({} as ImageCreateRequest, {
                     data: [{
-                        dataId: itemImageDataOriginal.dataId,
-                        protocol: itemImageDataOriginal.protocol,
+                        dataId: imageDataOriginal.dataId,
+                        protocol: imageDataOriginal.protocol,
                         imageVersion: ImageVersions.ORIGINAL.propName,
-                        imageHash: itemImageDataOriginal.imageHash,
-                        encoding: itemImageDataOriginal.encoding,
-                        data: itemImageDataOriginal.data,
-                        originalMime: itemImageDataOriginal.originalMime,
-                        originalName: itemImageDataOriginal.originalName
+                        imageHash: imageDataOriginal.imageHash,
+                        encoding: imageDataOriginal.encoding,
+                        data: imageDataOriginal.data,
+                        originalMime: imageDataOriginal.originalMime,
+                        originalName: imageDataOriginal.originalName
                     }] as ImageDataCreateRequest[],
-                    featured: itemImageDataOriginal.featured,
+                    featured: imageDataOriginal.featured,
                     hash: image.hash
                 } as ImageCreateRequest);
 
-                itemImageCreateRequest.hash = ConfigurableHasher.hash(itemImageCreateRequest, new HashableImageCreateRequestConfig());
+                imageCreateRequest.hash = ConfigurableHasher.hash(imageCreateRequest, new HashableImageCreateRequestConfig());
 
-                return itemImageCreateRequest;
+                return imageCreateRequest;
             }));
         }
 
@@ -576,7 +576,7 @@ export class ListingItemTemplateService {
                     longDescription: templateToClone.ItemInformation.longDescription,
                     item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
                     shippingDestinations,
-                    images: itemImages,
+                    images: images,
                     itemLocation: templateToClone.ItemInformation.ItemLocation
                         ? {
                             country: templateToClone.ItemInformation.ItemLocation.country,

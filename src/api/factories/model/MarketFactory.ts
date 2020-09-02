@@ -10,7 +10,6 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ImageCreateParams, MarketCreateParams } from './ModelCreateParams';
 import { ItemImageFactory } from './ItemImageFactory';
@@ -35,7 +34,7 @@ export class MarketFactory implements ModelFactoryInterface {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemImageDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -48,6 +47,7 @@ export class MarketFactory implements ModelFactoryInterface {
      */
     public async get(params: MarketCreateParams): Promise<MarketCreateRequest> {
 
+        this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
         const marketAddMessage: MarketAddMessage = params.actionMessage as MarketAddMessage;
         const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 

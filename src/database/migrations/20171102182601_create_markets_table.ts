@@ -21,11 +21,11 @@ exports.up = (db: Knex): Promise<any> => {
             table.boolean('removed').notNullable().defaultTo(false);
 
             table.integer('image_id').unsigned().nullable();
-            table.foreign('image_id').references('id').inTable('images');
+            // table.foreign('image_id').references('id').inTable('images');
 
             table.string('hash').notNullable();
 
-            table.integer('expiry_time').unsigned();
+            table.integer('expiry_time').unsigned().nullable();
             table.integer('generated_at').unsigned().nullable();
             table.integer('received_at').unsigned().nullable();
             table.integer('posted_at').unsigned().nullable();
@@ -35,7 +35,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.timestamp('created_at').defaultTo(db.fn.now());
 
             // can be nullable now, when profile_id/identity_id is not set,
-            // the market isn't joined, but is just been promoted
+            // the market isn't joined, its just been promoted
             table.integer('profile_id').unsigned().nullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('CASCADE');

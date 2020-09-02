@@ -19,6 +19,15 @@ import { MarketType } from '../../src/api/enums/MarketType';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableMarketCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableMarketCreateRequestConfig';
+import { MarketAddMessage } from '../../src/api/messages/action/MarketAddMessage';
+import { MarketCreateParams } from '../../src/api/factories/model/ModelCreateParams';
+import { MarketFactory } from '../../src/api/factories/model/MarketFactory';
+import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { CoreRpcService } from '../../src/api/services/CoreRpcService';
+
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -27,26 +36,35 @@ describe('Market', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let coreRpcService: CoreRpcService;
     let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let profileService: ProfileService;
+    let marketFactory: MarketFactory;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let newMarket: resources.Market;
+    let blockchainInfo: RpcBlockchainInfo;
+    let network: Networks;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        coreRpcService = app.IoC.getNamed<CoreRpcService>(Types.Service, Targets.Service.CoreRpcService);
         defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        marketFactory = app.IoC.getNamed<MarketFactory>(Types.Factory, Targets.Factory.model.MarketFactory);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
+        profile = await profileService.getDefault().then(value => value.toJSON());
 
-        // log.debug('defaultProfile: ', JSON.stringify(defaultProfile, null, 2));
+        blockchainInfo = await coreRpcService.getBlockchainInfo();
+        network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
+
+        // log.debug('profile: ', JSON.stringify(profile, null, 2));
     });
 
     test('Should throw ValidationException because we want to create a empty Market', async () => {
@@ -57,40 +75,43 @@ describe('Market', () => {
     });
 
     test('Should get default default Market for Profile', async () => {
-        defaultMarket = await defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        expect(defaultMarket.name).toBe('DEFAULT');
-        expect(defaultMarket.receiveKey).toBeDefined();
-        expect(defaultMarket.receiveAddress).toBeDefined();
-        expect(defaultMarket.publishKey).toBeDefined();
-        expect(defaultMarket.publishAddress).toBeDefined();
+        expect(market.name).toBe('DEFAULT');
+        expect(market.receiveKey).toBeDefined();
+        expect(market.receiveAddress).toBeDefined();
+        expect(market.publishKey).toBeDefined();
+        expect(market.publishAddress).toBeDefined();
     });
 
     test('Should create a new Market', async () => {
-        const key = 'TEST-PRIVATE-KEY';
-        const address = Faker.random.uuid();
 
-        const testData = {
-            identity_id: defaultMarket.Identity.id,
-            profile_id: defaultProfile.id,
-            name: 'TEST-MARKET',
-            type: MarketType.MARKETPLACE,
-            receiveKey: key,
-            receiveAddress: address,
-            publishKey: key,
-            publishAddress: address
-        } as MarketCreateRequest;
+        const privateKey: PrivateKey = PrivateKey.fromRandom(network);
+        const receiveKey = privateKey.toWIF();
 
-        const result: resources.Market = await marketService.create(testData).then(value => value.toJSON());
-        expect(result.name).toBe(testData.name);
-        expect(result.type).toBe(testData.type);
-        expect(result.receiveKey).toBe(testData.receiveKey);
-        expect(result.receiveAddress).toBe(testData.receiveAddress);
-        expect(result.publishKey).toBe(testData.publishKey);
-        expect(result.publishAddress).toBe(testData.publishAddress);
+        const createRequest: MarketCreateRequest = await marketFactory.get({
+            actionMessage: {
+                name: 'TEST-MARKET',
+                description: 'testing markets',
+                marketType: MarketType.MARKETPLACE,
+                receiveKey,
+                publishKey: receiveKey,
+                generated: Date.now()
+            } as MarketAddMessage,
+            identity: market.Identity
+        } as MarketCreateParams);
+
+        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());
+
+        const result: resources.Market = await marketService.create(createRequest).then(value => value.toJSON());
+        expect(result.name).toBe(createRequest.name);
+        expect(result.type).toBe(createRequest.type);
+        expect(result.receiveKey).toBe(createRequest.receiveKey);
+        expect(result.publishKey).toBe(createRequest.publishKey);
 
         newMarket = result;
     });
+
 
     test('Should list Markets with our new create one', async () => {
         const markets: resources.Market[] = await marketService.findAll().then(value => value.toJSON());
@@ -102,6 +123,7 @@ describe('Market', () => {
         expect(result.receiveAddress).toBe(newMarket.receiveAddress);
     });
 
+
     test('Should find one Market by id', async () => {
         const result: resources.Market = await marketService.findOne(newMarket.id).then(value => value.toJSON());
         expect(result.name).toBe(newMarket.name);
@@ -109,41 +131,53 @@ describe('Market', () => {
         expect(result.receiveAddress).toBe(newMarket.receiveAddress);
     });
 
+
     test('Should find one Market by Profile and receiveAddress', async () => {
         const result: resources.Market = await marketService.findOneByProfileIdAndReceiveAddress(
-            defaultProfile.id, newMarket.receiveAddress).then(value => value.toJSON());
+            profile.id, newMarket.receiveAddress).then(value => value.toJSON());
         expect(result.name).toBe(newMarket.name);
         expect(result.receiveKey).toBe(newMarket.receiveKey);
         expect(result.receiveAddress).toBe(newMarket.receiveAddress);
     });
 
+
     test('Should find all Markets by Profile', async () => {
-        const markets: resources.Market[] = await marketService.findAllByProfileId(defaultProfile.id).then(value => value.toJSON());
+        const markets: resources.Market[] = await marketService.findAllByProfileId(profile.id).then(value => value.toJSON());
         expect(markets.length).toBe(2);
     });
+
 
     test('Should find all Markets by receiveAddress', async () => {
         const markets: resources.Market[] = await marketService.findAllByReceiveAddress(newMarket.receiveAddress).then(value => value.toJSON());
         expect(markets.length).toBe(1);
     });
 
+
     test('Should update the Market', async () => {
+        const privateKey: PrivateKey = PrivateKey.fromRandom(network);
+        const receiveKey = privateKey.toWIF();
+        const receiveAddress = privateKey.toPublicKey().toAddress(network).toString();
+
         const testDataUpdated = {
             type: MarketType.MARKETPLACE,
             name: 'TEST-UPDATE-MARKET',
-            receiveKey: 'TEST-UPDATE-PRIVATE-KEY',
-            receiveAddress: Faker.random.uuid()
+            description: 'newdesc',
+            receiveKey,
+            receiveAddress
         } as MarketUpdateRequest;
 
         const result: resources.Market = await marketService.update(newMarket.id, testDataUpdated).then(value => value.toJSON());
 
-        // test the values
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.receiveKey).toBe(testDataUpdated.receiveKey);
-        expect(result.receiveAddress).toBe(testDataUpdated.receiveAddress);
+        expect(result.description).toBe(testDataUpdated.description);
+        expect(result.receiveKey).not.toBe(testDataUpdated.receiveKey);         // these are not updated
+        expect(result.receiveAddress).not.toBe(testDataUpdated.receiveAddress); // these are not updated
+
+        expect(result.hash).not.toBe(newMarket.hash);   // should have been changed
 
         newMarket = result;
     });
+
 
     test('Should delete the Market', async () => {
         expect.assertions(1);
@@ -153,18 +187,22 @@ describe('Market', () => {
         );
     });
 
+
     test('Should be able to create a new Market without Profile relation', async () => {
-        const key = 'TEST-PRIVATE-KEY';
-        const address = Faker.random.uuid();
+        const privateKey: PrivateKey = PrivateKey.fromRandom(network);
+        const receiveKey = privateKey.toWIF();
+        const receiveAddress = privateKey.toPublicKey().toAddress(network).toString();
 
         const testData = {
             name: 'TEST-MARKET',
             type: MarketType.MARKETPLACE,
-            receiveKey: key,
-            receiveAddress: address,
-            publishKey: key,
-            publishAddress: address
+            receiveKey,
+            receiveAddress,
+            publishKey: receiveKey,
+            publishAddress: receiveAddress
         } as MarketCreateRequest;
+
+        testData.hash = ConfigurableHasher.hash(testData, new HashableMarketCreateRequestConfig());
 
         const result: resources.Market = await marketService.create(testData).then(value => value.toJSON());
         expect(result.name).toBe(testData.name);

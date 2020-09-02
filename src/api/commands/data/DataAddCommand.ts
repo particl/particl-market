@@ -93,7 +93,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
-            + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
+            + '                                |favoriteitem|iteminformation|bid|paymentinformation|image} \n'
             + '                                - The type of data we want to generate. \n'
             + '    <json>                   - String - json for the object to add. \n'
             + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';

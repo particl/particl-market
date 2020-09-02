@@ -95,13 +95,13 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail to set featured because missing itemImageId', async () => {
+    test('Should fail to set featured because missing imageId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('itemImageId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('imageId').getMessage());
     });
 
     test('Should fail to set featured because invalid listingItemTemplateId', async () => {

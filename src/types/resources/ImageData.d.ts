@@ -16,7 +16,7 @@ declare module 'resources' {
         imageHash: string;
         originalMime: string;
         originalName: string;
-        itemImageId: number;    // TODO: should get rid of this, used only in createResizedTemplateImages
+        imageId: number;    // TODO: should get rid of this, used only in createResizedTemplateImages
         featured: boolean;
         createdAt: Date;
         updatedAt: Date;

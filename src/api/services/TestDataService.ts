@@ -231,7 +231,7 @@ export class TestDataService {
             case CreatableModel.PAYMENTINFORMATION: {
                 return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest);
             }
-            case CreatableModel.ITEMIMAGE: {
+            case CreatableModel.IMAGE: {
                 return await this.imageService.create(body.data as ImageCreateRequest);
             }
             case CreatableModel.COMMENT: {
@@ -1432,7 +1432,7 @@ export class TestDataService {
             ? this.generateShippingDestinationsData(_.random(1, 5))
             : [];
 
-        const itemImages = generateParams.generateImages
+        const images = generateParams.generateImages
             ? await this.generateImagesData(_.random(1, 2))
             : [];
 
@@ -1453,7 +1453,7 @@ export class TestDataService {
             item_category_id: generateParams.categoryId,
             itemLocation,
             shippingDestinations,
-            images: itemImages
+            images
         } as ItemInformationCreateRequest;
 
         return itemInformationCreateRequest;

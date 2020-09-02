@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
@@ -20,6 +19,7 @@ export class Market extends Bookshelf.Model<Market> {
         'Profile',
         'Identity',
         'Identity.ShoppingCarts',
+        'Identity.Profile',
         'Image'
     ];
 

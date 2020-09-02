@@ -83,7 +83,7 @@ describe('ListingItem', () => {
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
     let imageService: ImageService;
-    let itemImageDataService: ImageDataService;
+    let imageDataService: ImageDataService;
     let paymentInformationService: PaymentInformationService;
     let escrowService: EscrowService;
     let escrowRatioService: EscrowRatioService;
@@ -116,7 +116,7 @@ describe('ListingItem', () => {
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
         imageService = app.IoC.getNamed<ImageService>(Types.Service, Targets.Service.model.ImageService);
-        itemImageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
+        imageDataService = app.IoC.getNamed<ImageDataService>(Types.Service, Targets.Service.model.ImageDataService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.model.EscrowRatioService);
@@ -218,8 +218,8 @@ describe('ListingItem', () => {
         testDataToSave.seller = profile.address;
 
         // generate random images so that they can be deleted
-        testDataToSave.itemInformation.itemImages[0].data[0].data = await testDataService.generateRandomImage(20, 20);
-        testDataToSave.itemInformation.itemImages[1].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.images[0].data[0].data = await testDataService.generateRandomImage(20, 20);
+        testDataToSave.itemInformation.images[1].data[0].data = await testDataService.generateRandomImage(20, 20);
 
         updatedListingItem1 = await listingItemService.update(createdListingItem2.id, testDataToSave).then(value => value.toJSON());
 
@@ -394,38 +394,33 @@ describe('ListingItem', () => {
 
             // ItemLocation
             if (!_.isEmpty(item.ItemInformation.ItemLocation)) {
-                const itemLocationId = item.ItemInformation.ItemLocation.id;
-                await itemLocationService.findOne(itemLocationId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(itemLocationId))
+                await itemLocationService.findOne(item.ItemInformation.ItemLocation.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(item.ItemInformation.ItemLocation.id))
                 );
 
                 // LocationMarker
                 if (!_.isEmpty(item.ItemInformation.ItemLocation.LocationMarker)) {
-                    const locationMarkerId = item.ItemInformation.ItemLocation.LocationMarker.id;
-                    await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
-                        expect(e).toEqual(new NotFoundException(locationMarkerId))
+                    await locationMarkerService.findOne(item.ItemInformation.ItemLocation.LocationMarker.id, false).catch(e =>
+                        expect(e).toEqual(new NotFoundException(item.ItemInformation.ItemLocation.LocationMarker.id))
                     );
                 }
             }
 
             // ShippingDestination
             if (!_.isEmpty(item.ItemInformation.ShippingDestinations)) {
-                const shipDestinationId = item.ItemInformation.ShippingDestinations[0].id;
-                await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(shipDestinationId))
+                await shippingDestinationService.findOne(item.ItemInformation.ShippingDestinations[0].id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(item.ItemInformation.ShippingDestinations[0].id))
                 );
             }
 
             // Image
             if (!_.isEmpty(item.ItemInformation.Images)) {
-                const itemImageId = item.ItemInformation.Images[0].id;
-                await imageService.findOne(itemImageId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(itemImageId))
+                await imageService.findOne(item.ItemInformation.Images[0].id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(item.ItemInformation.Images[0].id))
                 );
 
                 if (!_.isEmpty(item.ItemInformation.Images[0].ImageDatas)) {
-                    const itemImage: resources.Image = item.ItemInformation.Images[0];
-                    const data = await itemImageDataService.loadImageFile(itemImage.hash, ImageVersions.ORIGINAL.propName)
+                    const data = await imageDataService.loadImageFile(item.ItemInformation.Images[0].hash, ImageVersions.ORIGINAL.propName)
                         .catch(reason => {
                             //
                         });
@@ -442,40 +437,35 @@ describe('ListingItem', () => {
 
             // Escrow
             if (!_.isEmpty(item.PaymentInformation.Escrow)) {
-                const escrowId = item.PaymentInformation.Escrow.id;
-                await escrowService.findOne(escrowId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(escrowId))
+                await escrowService.findOne(item.PaymentInformation.Escrow.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(item.PaymentInformation.Escrow.id))
                 );
 
                 // EscrowRatio
                 if (!_.isEmpty(item.PaymentInformation.Escrow)) {
-                    const escrowRatioId = item.PaymentInformation.Escrow.Ratio.id;
-                    await escrowRatioService.findOne(escrowRatioId, false).catch(e =>
-                        expect(e).toEqual(new NotFoundException(escrowRatioId))
+                    await escrowRatioService.findOne(item.PaymentInformation.Escrow.Ratio.id, false).catch(e =>
+                        expect(e).toEqual(new NotFoundException(item.PaymentInformation.Escrow.Ratio.id))
                     );
                 }
             }
 
             // ItemPrice
             if (!_.isEmpty(item.PaymentInformation.ItemPrice)) {
-                const itemPriceId = item.PaymentInformation.ItemPrice.id;
-                await itemPriceService.findOne(itemPriceId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(itemPriceId))
+                await itemPriceService.findOne(item.PaymentInformation.ItemPrice.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(item.PaymentInformation.ItemPrice.id))
                 );
 
                 // ShippingPrice
                 if (!_.isEmpty(item.PaymentInformation.ItemPrice.ShippingPrice)) {
-                    const shippingPriceId = item.PaymentInformation.ItemPrice.ShippingPrice.id;
-                    await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
-                        expect(e).toEqual(new NotFoundException(shippingPriceId))
+                    await shippingPriceService.findOne(item.PaymentInformation.ItemPrice.ShippingPrice.id, false).catch(e =>
+                        expect(e).toEqual(new NotFoundException(item.PaymentInformation.ItemPrice.ShippingPrice.id))
                     );
                 }
 
                 // CryptocurrencyAddress
                 if (!_.isEmpty(item.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
-                    const cryptoCurrencyId = item.PaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-                    await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
-                        expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+                    await cryptocurrencyAddressService.findOne(item.PaymentInformation.ItemPrice.CryptocurrencyAddress.id, false).catch(e =>
+                        expect(e).toEqual(new NotFoundException(item.PaymentInformation.ItemPrice.CryptocurrencyAddress.id))
                     );
                 }
             }
@@ -484,9 +474,8 @@ describe('ListingItem', () => {
         // MessagingInformation
         if (!_.isEmpty(item.MessagingInformation)) {
             for (const messagingInformation of item.MessagingInformation) {
-                const messagingInformationId = messagingInformation.id;
-                await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(messagingInformationId))
+                await messagingInformationService.findOne(messagingInformation.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(messagingInformation.id))
                 );
             }
         }
@@ -494,7 +483,7 @@ describe('ListingItem', () => {
         // ListingItemObjects
         if (!_.isEmpty(item.ListingItemObjects)) {
             for (const listingItemObject of item.ListingItemObjects) {
-                const listintItemObjectId = listingItemObject.id;
+                const listintItemObjectId = ;
                 // ListingItemObjectDatas
                 const listintItemObjectDatas = listingItemObject.ListingItemObjectDatas;
                 if (!_.isEmpty(listintItemObjectDatas)) {
@@ -504,8 +493,8 @@ describe('ListingItem', () => {
                         );
                     }
                 }
-                await listingItemObjectService.findOne(listintItemObjectId, false).catch(e =>
-                    expect(e).toEqual(new NotFoundException(listintItemObjectId))
+                await listingItemObjectService.findOne(listingItemObject.id, false).catch(e =>
+                    expect(e).toEqual(new NotFoundException(listingItemObject.id))
                 );
             }
         }

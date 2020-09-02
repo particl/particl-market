@@ -24,7 +24,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private itemImageDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_GET);
@@ -47,7 +47,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
         if (data.params[1] && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
             for (const image of listingItemTemplate.ItemInformation.Images) {
                 for (const imageData of image.ImageDatas) {
-                    imageData.data = await this.itemImageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                    imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
                 }
             }
         }

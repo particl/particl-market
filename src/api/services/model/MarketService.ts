@@ -18,6 +18,9 @@ import { ProfileService } from './ProfileService';
 import { SettingService } from './SettingService';
 import { IdentityService } from './IdentityService';
 import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
+import { MarketFactory } from '../../factories/model/MarketFactory';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableMarketCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableMarketCreateRequestConfig';
 
 export class MarketService {
 
@@ -28,6 +31,7 @@ export class MarketService {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
+        @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -101,7 +105,6 @@ export class MarketService {
         const market = await this.findOne(id, false);
 
         market.Msgid = !_.isNil(body.msgid) ? body.msgid : market.Msgid;
-        market.Hash = !_.isNil(body.msgid) ? body.hash : market.Hash;
         market.Name = !_.isNil(body.name) ? body.name : market.Name;
         market.Description = !_.isNil(body.description) ? body.description : market.Description;
         market.Type = !_.isNil(body.type) ? body.type : market.Type;
@@ -122,6 +125,7 @@ export class MarketService {
         if (body.image_id) {
             market.set('imageId', body.image_id);
         }
+        market.Hash = await this.getHash(market.toJSON());
 
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
         return await this.findOne(id, true);
@@ -131,4 +135,21 @@ export class MarketService {
         await this.marketRepo.destroy(id);
     }
 
+    private getHash(market: resources.Market): string {
+        const createRequest = {
+            generatedAt: market.generatedAt,
+            name: market.name,
+            description: market.description,
+            type: market.type,
+            receiveKey: market.receiveKey,
+            publishKey: market.publishKey,
+            image: !_.isNil(market.Image)
+                ? {
+                    hash: market.Image.hash
+                }
+                : undefined
+        } as MarketCreateRequest;
+
+        return ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());
+    }
 }
