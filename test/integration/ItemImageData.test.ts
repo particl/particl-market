@@ -8,16 +8,16 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ImageDataService } from 'ImageDataService.ts';
-import { ImageService } from 'ImageService.ts';
+import { ImageDataService } from '../../src/api/services/model/ImageDataService';
+import { ImageService } from '../../src/api/services/model/ImageService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
-import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
-import { ImageDataUpdateRequest } from 'ImageDataUpdateRequest.ts';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
+import { ImageDataUpdateRequest } from '../../src/api/requests/model/ImageDataUpdateRequest';
 
 describe('ImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

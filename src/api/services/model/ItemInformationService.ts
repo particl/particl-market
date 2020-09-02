@@ -79,12 +79,12 @@ export class ItemInformationService {
         const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
         const itemLocation: ItemLocationCreateRequest = body.itemLocation || {};
         const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
-        const itemImages: ImageCreateRequest[] = body.itemImages || [];
+        const itemImages: ImageCreateRequest[] = body.images || [];
 
         delete body.itemCategory;
         delete body.itemLocation;
         delete body.shippingDestinations;
-        delete body.itemImages;
+        delete body.images;
 
         if (!_.isEmpty(itemCategory)) {
             // get existing ItemCategory or create new one

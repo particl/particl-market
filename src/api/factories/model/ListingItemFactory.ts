@@ -242,7 +242,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
             item_category_id: itemCategory.id,
             itemLocation,
             shippingDestinations,
-            itemImages
+            images: itemImages
         } as ItemInformationCreateRequest;
     }
 

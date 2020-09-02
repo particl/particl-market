@@ -1453,7 +1453,7 @@ export class TestDataService {
             item_category_id: generateParams.categoryId,
             itemLocation,
             shippingDestinations,
-            itemImages
+            images: itemImages
         } as ItemInformationCreateRequest;
 
         return itemInformationCreateRequest;

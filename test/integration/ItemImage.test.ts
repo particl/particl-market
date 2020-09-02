@@ -11,20 +11,20 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ImageService } from 'ImageService.ts';
+import { ImageService } from '../../src/api/services/model/ImageService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ImageCreateRequest } from 'ImageCreateRequest.ts';
-import { ImageUpdateRequest } from 'ImageUpdateRequest.ts';
-import { ImageDataService } from 'ImageDataService.ts';
+import { ImageDataService } from '../../src/api/services/model/ImageDataService';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
+import { ImageCreateRequest } from '../../src/api/requests/model/ImageCreateRequest';
+import { ImageUpdateRequest } from '../../src/api/requests/model/ImageUpdateRequest';
 
 describe('Image', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

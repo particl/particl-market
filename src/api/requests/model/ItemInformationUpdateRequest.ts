@@ -31,6 +31,6 @@ export class ItemInformationUpdateRequest extends RequestBody implements ModelRe
 
     public itemLocation: ItemLocationCreateRequest;
     public shippingDestinations: ShippingDestinationCreateRequest[];
-    public itemImages: ImageCreateRequest[];
+    public images: ImageCreateRequest[];
 }
 // tslint:enable:variable-name

@@ -27,7 +27,7 @@ import { ItemInformationService } from '../../src/api/services/model/ItemInforma
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ImageService } from 'ImageService.ts';
+import { ImageService } from '../../src/api/services/model/ImageService';
 import { PaymentInformationService } from '../../src/api/services/model/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/model/EscrowService';
 import { EscrowRatioService } from '../../src/api/services/model/EscrowRatioService';
@@ -39,14 +39,14 @@ import { ListingItemObjectService } from '../../src/api/services/model/ListingIt
 import { ListingItemObjectDataService } from '../../src/api/services/model/ListingItemObjectDataService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import { ImageDataService } from 'ImageDataService.ts';
+import { ImageDataService } from '../../src/api/services/model/ImageDataService';
 import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
-import { ImageCreateRequest } from 'ImageCreateRequest.ts';
+import { ImageCreateRequest } from '../../src/api/requests/model/ImageCreateRequest';
 import { EscrowReleaseType, EscrowType, MessagingProtocol, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from '../../src/api/requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../src/api/requests/model/EscrowCreateRequest';
@@ -55,7 +55,7 @@ import { toSatoshis } from 'omp-lib/dist/util';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/model/ShippingPriceCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/model/CryptocurrencyAddressCreateRequest';
 import { ItemPriceCreateRequest } from '../../src/api/requests/model/ItemPriceCreateRequest';
-import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
+import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
@@ -346,7 +346,7 @@ describe('ListingItem', () => {
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
-        expect(result.Images).toHaveLength(createRequest.itemImages.length);
+        expect(result.Images).toHaveLength(createRequest.images.length);
         expect(result.Images[0].ImageDatas).toHaveLength(4); // 4 sizes
     };
 
@@ -551,7 +551,7 @@ describe('ListingItem', () => {
                     country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                     shippingAvailability: ShippingAvailability.SHIPS
                 }] as ShippingDestinationCreateRequest[],
-                itemImages: [{
+                images: [{
                     data: [{
                         // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
                         // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL

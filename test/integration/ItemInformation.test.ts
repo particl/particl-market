@@ -17,7 +17,7 @@ import { ListingItemTemplateService } from '../../src/api/services/model/Listing
 import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ImageService } from 'ImageService.ts';
+import { ImageService } from '../../src/api/services/model/ImageService';
 import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -33,15 +33,15 @@ import { MarketService } from '../../src/api/services/model/MarketService';
 import { ItemCategoryCreateRequest } from '../../src/api/requests/model/ItemCategoryCreateRequest';
 import { LocationMarkerCreateRequest } from '../../src/api/requests/model/LocationMarkerCreateRequest';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
-import { ImageCreateRequest } from 'ImageCreateRequest.ts';
-import { ImageDataCreateRequest } from 'ImageDataCreateRequest.ts';
+import { ImageCreateRequest } from '../../src/api/requests/model/ImageCreateRequest';
+import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../src/api/requests/model/ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/model/ItemLocationCreateRequest';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from 'HashableImageCreateRequestConfig.ts';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
+import { HashableImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 // tslint:enable:max-line-length
 
 describe('ItemInformation', () => {
@@ -224,7 +224,7 @@ describe('ItemInformation', () => {
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 shippingAvailability: ShippingAvailability.SHIPS
             }] as ShippingDestinationCreateRequest[],
-            itemImages: [{
+            images: [{
                 data: [{
                     // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
                     // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
@@ -238,10 +238,10 @@ describe('ItemInformation', () => {
         } as ItemInformationUpdateRequest;
 
         // update image hash
-        testDataUpdated.itemImages[0].hash = ConfigurableHasher.hash({
-            data: testDataUpdated.itemImages[0].data[0].data
+        testDataUpdated.images[0].hash = ConfigurableHasher.hash({
+            data: testDataUpdated.images[0].data[0].data
         }, new HashableImageCreateRequestConfig());
-        testDataUpdated.itemImages[0].data[0].imageHash = testDataUpdated.itemImages[0].hash;
+        testDataUpdated.images[0].data[0].imageHash = testDataUpdated.images[0].hash;
 
         const result: resources.ItemInformation = await itemInformationService.update(itemInformation.id, testDataUpdated).then(value => value.toJSON());
 
@@ -334,7 +334,7 @@ describe('ItemInformation', () => {
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 shippingAvailability: ShippingAvailability.SHIPS
             }] as ShippingDestinationCreateRequest[],
-            itemImages
+            images: itemImages
         } as ItemInformationCreateRequest;
 
         return createRequest;

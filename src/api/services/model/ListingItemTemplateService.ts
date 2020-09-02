@@ -576,7 +576,7 @@ export class ListingItemTemplateService {
                     longDescription: templateToClone.ItemInformation.longDescription,
                     item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
                     shippingDestinations,
-                    itemImages,
+                    images: itemImages,
                     itemLocation: templateToClone.ItemInformation.ItemLocation
                         ? {
                             country: templateToClone.ItemInformation.ItemLocation.country,
