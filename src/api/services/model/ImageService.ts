@@ -109,8 +109,6 @@ export class ImageService {
      */
     @validate()
     public async create( @request(ImageCreateRequest) data: ImageCreateRequest): Promise<Image> {
-
-        // const startTime = new Date().getTime();
         const body: ImageCreateRequest = JSON.parse(JSON.stringify(data));
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
@@ -152,11 +150,7 @@ export class ImageService {
             }
 
             // finally find and return the created image
-            const newImage = await this.findOne(image.id);
-            // this.log.debug('saved image:', JSON.stringify(newImage.toJSON(), null, 2));
-
-            // this.log.debug('imageService.create: ' + (new Date().getTime() - startTime) + 'ms');
-            return newImage;
+            return await this.findOne(image.id);
         } else {
             throw new MessageException('Original image data not found.');
         }
@@ -164,8 +158,6 @@ export class ImageService {
 
     @validate()
     public async update(id: number, @request(ImageUpdateRequest) data: ImageUpdateRequest): Promise<Image> {
-
-        const startTime = new Date().getTime();
         const body: ImageUpdateRequest = JSON.parse(JSON.stringify(data));
 
         // grab the existing imagedatas

@@ -55,7 +55,6 @@ describe('ItemInformation', () => {
     let itemInformationService: ItemInformationService;
     let profileService: ProfileService;
     let marketService: MarketService;
-    let listingItemTemplateService: ListingItemTemplateService;
     let itemLocationService: ItemLocationService;
     let locationMarkerService: LocationMarkerService;
     let shippingDestinationService: ShippingDestinationService;
@@ -78,7 +77,6 @@ describe('ItemInformation', () => {
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
@@ -128,6 +126,8 @@ describe('ItemInformation', () => {
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
         expect.assertions(1);
+        testData = await generateItemInformationCreateRequest(false);
+        delete testData.listing_item_id;
         await itemInformationService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
@@ -202,7 +202,7 @@ describe('ItemInformation', () => {
 
         const newRandomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
 
-        const testDataUpdated = {
+        const updateRequest = {
             title: 'updated',
             shortDescription: 'updated',
             longDescription: 'updated',
@@ -238,17 +238,20 @@ describe('ItemInformation', () => {
         } as ItemInformationUpdateRequest;
 
         // update image hash
-        testDataUpdated.images[0].hash = ConfigurableHasher.hash({
-            data: testDataUpdated.images[0].data[0].data
+        updateRequest.images[0].hash = ConfigurableHasher.hash({
+            data: updateRequest.images[0].data[0].data
         }, new HashableImageCreateRequestConfig());
-        testDataUpdated.images[0].data[0].imageHash = testDataUpdated.images[0].hash;
+        updateRequest.images[0].data[0].imageHash = updateRequest.images[0].hash;
 
-        const result: resources.ItemInformation = await itemInformationService.update(itemInformation.id, testDataUpdated).then(value => value.toJSON());
+        const result: resources.ItemInformation = await itemInformationService.update(itemInformation.id, updateRequest).then(value => value.toJSON());
 
-        expect(result.title).toBe(testDataUpdated.title);
-        expect(result.shortDescription).toBe(testDataUpdated.shortDescription);
-        expect(result.longDescription).toBe(testDataUpdated.longDescription);
-        expect(result.ItemCategory.key).toBe(testDataUpdated.itemCategory.key);
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        expect(result.title).toBe(updateRequest.title);
+        expect(result.shortDescription).toBe(updateRequest.shortDescription);
+        expect(result.longDescription).toBe(updateRequest.longDescription);
+        expect(result.ItemCategory.key).toBe(updateRequest.itemCategory.key);
+        expect(result.Images[0].hash).not.toBeNull();
+        expect(result.Images[0].ImageDatas[0].imageHash).toBe(updateRequest.images[0].data[0].imageHash);
 
         itemInformation = result;
     });
@@ -256,7 +259,7 @@ describe('ItemInformation', () => {
     test('Should delete the ItemInformation', async () => {
 
         // log.debug('itemInformation: ', JSON.stringify(itemInformation, null, 2));
-        expect.assertions(6);
+        expect.assertions(5);
         await itemInformationService.destroy(itemInformation.id);
 
         await itemInformationService.findOne(itemInformation.id).catch(e =>
@@ -280,22 +283,17 @@ describe('ItemInformation', () => {
 
         // Images
         await imageService.findOne(itemInformation.Images[0].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemInformation.Images[0].id))
+           expect(e).toEqual(new NotFoundException(itemInformation.Images[0].id))
         );
 
-        // delete listing item
-        await listingItemTemplateService.destroy(listingItemTemplate.id);
-        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
-        );
     });
 
     const generateItemInformationCreateRequest = async (withImage: boolean = false): Promise<ItemInformationCreateRequest> => {
         const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
-        let itemImages: ImageCreateRequest[] = [];
+        let images: ImageCreateRequest[] = [];
 
         if (withImage) {
-            itemImages = [{
+            images = [{
                 data: [{
                     // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
                     // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
@@ -307,9 +305,9 @@ describe('ItemInformation', () => {
                 featured: false
             }] as ImageCreateRequest[];
 
-            const hash = ConfigurableHasher.hash(itemImages[0], new HashableImageCreateRequestConfig());
-            itemImages[0].hash = hash;
-            itemImages[0].data[0].dataId = 'https://particl.io/images/' + hash;
+            const hash = ConfigurableHasher.hash(images[0], new HashableImageCreateRequestConfig());
+            images[0].hash = hash;
+            images[0].data[0].dataId = 'https://particl.io/images/' + hash;
         }
 
         const createRequest = {
@@ -334,11 +332,10 @@ describe('ItemInformation', () => {
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 shippingAvailability: ShippingAvailability.SHIPS
             }] as ShippingDestinationCreateRequest[],
-            images: itemImages
+            images
         } as ItemInformationCreateRequest;
 
         return createRequest;
     };
-
 
 });

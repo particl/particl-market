@@ -150,10 +150,10 @@ describe('Image', () => {
     });
 
     test('Should list Images with our newly created one', async () => {
-        const itemImages: resources.Image[] = await imageService.findAll().then(value => value.toJSON());
-        expect(itemImages.length).toBe(1);
+        const images: resources.Image[] = await imageService.findAll().then(value => value.toJSON());
+        expect(images.length).toBe(1);
 
-        const result: resources.Image = itemImages[0];
+        const result: resources.Image = images[0];
         log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(testData.hash);
         expect(result.featured).toBeFalsy();

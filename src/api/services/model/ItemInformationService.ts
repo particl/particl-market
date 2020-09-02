@@ -26,6 +26,7 @@ import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCrea
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 
+
 export class ItemInformationService {
 
     public log: LoggerType;
@@ -133,65 +134,71 @@ export class ItemInformationService {
         itemInformation.Title = body.title;
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
-        const itemInfoToSave = itemInformation.toJSON();
 
-        if (!itemInfoToSave.item_category_id && !_.isEmpty(body.itemCategory)) {
-            // get existing ItemCategory or create new one
-            const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory).then(value => value.toJSON());
-            itemInfoToSave.item_category_id = existingItemCategory.id;
+        // const itemInfoToSave = itemInformation.toJSON();
+
+        if (!_.isEmpty(body.itemCategory)) {
+            const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(body.itemCategory).then(value => value.toJSON());
+            itemInformation.set('itemCategoryId', existingItemCategory.id);
         }
 
         // update itemInformation record
-        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
+        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInformation.toJSON());
 
         if (body.itemLocation) {
-            // this.log.debug('update(), body.itemLocation: ', JSON.stringify(body.itemLocation, null, 2));
+            // find related and delete
+            const itemLocation: resources.ItemLocation = updatedItemInformation.related('ItemLocation').toJSON() || {} as resources.ItemLocation;
 
-            // find related record and delete it
-            let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
-            await this.itemLocationService.destroy(itemLocation.id);
-            // recreate related data
-            itemLocation = body.itemLocation;
-            itemLocation.item_information_id = id;
-            await this.itemLocationService.create(itemLocation);
+            if (!_.isEmpty(itemLocation)) {
+                await this.itemLocationService.destroy(itemLocation.id);
+            }
+
+            // then create
+            const createRequest: ItemLocationCreateRequest = body.itemLocation;
+            createRequest.item_information_id = id;
+            await this.itemLocationService.create(createRequest);
         }
 
-        // todo: instead of delete and create, update
         // update only if new data was passed
         if (!_.isEmpty(body.shippingDestinations)) {
 
-            // find related records and delete
-            let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
-            for (const shippingDestination of shippingDestinations) {
-                await this.shippingDestinationService.destroy(shippingDestination.id);
-            }
-
-            // recreate related data
-            shippingDestinations = body.shippingDestinations || [];
+            // find related and delete
+            const shippingDestinations: resources.ShippingDestination[] = updatedItemInformation.related('ShippingDestinations').toJSON()
+                || [] as resources.ShippingDestination[];
             if (!_.isEmpty(shippingDestinations)) {
                 for (const shippingDestination of shippingDestinations) {
-                    shippingDestination.item_information_id = id;
-                    // this.log.debug('update(), shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
-                    await this.shippingDestinationService.create(shippingDestination);
+                    await this.shippingDestinationService.destroy(shippingDestination.id);
+                }
+            }
+
+            // then create
+            if (!_.isEmpty(body.shippingDestinations)) {
+                for (const createRequest of body.shippingDestinations) {
+                    createRequest.item_information_id = id;
+                    await this.shippingDestinationService.create(createRequest);
                 }
             }
         }
 
+        // this.log.debug('update(), body.images: ', JSON.stringify(body.images, null, 2));
+
         // update only if new data was passed
-        if (!_.isEmpty(body.itemImages)) {
-            // find related records and delete
-            let itemImages = updatedItemInformation.related('Images').toJSON();
-            for (const itemImage of itemImages) {
-                await this.imageService.destroy(itemImage.id);
+        if (!_.isEmpty(body.images)) {
+
+            // find related and delete
+            const images = updatedItemInformation.related('Images').toJSON() || [] as resources.Image[];
+            if (!_.isEmpty(images)) {
+                for (const image of images) {
+                    await this.imageService.destroy(image.id);
+                }
             }
 
-            // recreate related data
-            itemImages = body.itemImages || [];
-            if (!_.isEmpty(itemImages)) {
-                for (const itemImage of itemImages) {
-                    itemImage.item_information_id = itemInformation.id;
-                    // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                    await this.imageService.create(itemImage);
+            // then create
+            if (!_.isEmpty(body.images)) {
+                for (const createRequest of body.images) {
+                    createRequest.item_information_id = itemInformation.id;
+                    // this.log.debug('image, createRequest: ', JSON.stringify(createRequest, null, 2));
+                    await this.imageService.create(createRequest);
                 }
             }
         }
@@ -225,8 +232,6 @@ export class ItemInformationService {
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }
-
         return result;
     }
-
 }

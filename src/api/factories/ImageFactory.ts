@@ -46,11 +46,11 @@ export class ImageFactory {
 
         if (originalImageData.data) {
             const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
-            this.log.debug('ImageFactory.getImageDatas: ' + (new Date().getTime() - startTime) + 'ms');
+            this.log.debug('ImageFactory.getImageDatas: ' + (Date.now() - startTime) + 'ms');
 
             startTime = Date.now();
             const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
-            this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
+            this.log.debug('ImageProcessing.resizeImageData: ' + (Date.now() - startTime) + 'ms');
             // this.log.debug('resizedDatas: ', resizedDatas);
 
             // first create the original
@@ -98,7 +98,7 @@ export class ImageFactory {
     public getImageUrl(itemImageId: number, version: string): string {
         return process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + itemImageId + '/' + version;
+            + '/api/images/' + itemImageId + '/' + version;
     }
 
 }

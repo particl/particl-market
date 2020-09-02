@@ -47,7 +47,7 @@ export class MarketFactory implements ModelFactoryInterface {
      */
     public async get(params: MarketCreateParams): Promise<MarketCreateRequest> {
 
-        this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
+        // this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
         const marketAddMessage: MarketAddMessage = params.actionMessage as MarketAddMessage;
         const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 

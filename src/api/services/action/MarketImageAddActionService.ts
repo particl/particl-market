@@ -118,9 +118,9 @@ export class MarketImageAddActionService extends BaseActionService {
 
             // for all incoming messages, update the image data
             // there could be several, since the same image could be used in multiple Markets/ListingItems.
-            const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
 
-            for (const itemImage of itemImages) {
+            for (const image of images) {
                 const updateRequest = {
                     data: [{
                         dataId: imageAddMessage.data[0].dataId,
@@ -135,7 +135,7 @@ export class MarketImageAddActionService extends BaseActionService {
                 } as ImageUpdateRequest;
 
                 // update the image with the real data
-                await this.imageService.update(itemImage.id, updateRequest);
+                await this.imageService.update(image.id, updateRequest);
             }
 
         }

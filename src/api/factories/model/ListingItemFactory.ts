@@ -220,7 +220,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
-        let itemImages: ImageCreateRequest[] | undefined;
+        let images: ImageCreateRequest[] | undefined;
 
         if (information.location) {
             itemLocation = await this.getModelLocation(information.location);
@@ -231,7 +231,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         if (information.images) {
-            itemImages = await this.getImageCreateRequests(information.images);
+            images = await this.getImageCreateRequests(information.images);
         }
 
         return {
@@ -242,7 +242,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
             item_category_id: itemCategory.id,
             itemLocation,
             shippingDestinations,
-            images: itemImages
+            images
         } as ItemInformationCreateRequest;
     }
 

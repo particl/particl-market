@@ -125,9 +125,9 @@ export class ListingItemImageAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             // for all incoming messages, update the image data
-            const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
 
-            for (const itemImage of itemImages) {
+            for (const image of images) {
 
                 const updateRequest = {
                     data: [{
@@ -143,7 +143,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
                 } as ImageUpdateRequest;
 
                 // update the image with the real data
-                await this.imageService.update(itemImage.id, updateRequest);
+                await this.imageService.update(image.id, updateRequest);
             }
 
         }
@@ -160,7 +160,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // const itemImages: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            // const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
             // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {
