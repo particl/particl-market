@@ -14,7 +14,19 @@ import { MessageException } from '../exceptions/MessageException';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
-import { RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
+import { RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+
+export interface SmsgGetInfo {
+    enabled: boolean;
+    active_wallet: string;
+    enabled_wallets: string[];
+}
+
+export interface SmsgGetPubKey {
+    address: string;            // (string) address of public key
+    publickey: string;          // (string) public key of address
+}
 
 export interface SmsgInboxOptions {
     updatestatus?: boolean;     // Update read status if true. default=true.
@@ -167,13 +179,12 @@ export class SmsgService {
      * 1. "privkey"          (string, required) The private key (see dumpprivkey)
      * 2. "label"            (string, optional, default="") An optional label
      *
-     * @param wallet
      * @param {string} privateKey
      * @param {string} label
      * @returns {Promise<boolean>}
      */
-    public async smsgImportPrivKey(wallet: string, privateKey: string, label: string = 'default market'): Promise<boolean> {
-        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label], wallet)
+    public async smsgImportPrivKey(privateKey: string, label: string = 'particl-market imported pk'): Promise<boolean> {
+        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label])
             .then(response => true)
             .catch(error => {
                 this.log.error('smsgImportPrivKey failed: ', error);
@@ -194,7 +205,7 @@ export class SmsgService {
      * @param {object} options
      * @returns {Promise<any>}
      */
-    public async smsgInbox(wallet: string, mode: string = 'all',
+    public async smsgInbox(mode: string = 'all',
                            filter: string = '',
                            options?: SmsgInboxOptions): Promise<CoreSmsgMessageResult> {
         if (!options) {
@@ -203,7 +214,7 @@ export class SmsgService {
                 encoding: 'text'
             } as SmsgInboxOptions;
         }
-        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], wallet, false);
+        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], undefined, false);
         // this.log.debug('got response:', response);
         return response;
     }
@@ -238,7 +249,7 @@ export class SmsgService {
                           estimateFee: boolean = false, options?: SmsgSendOptions, coinControl?: SmsgSendCoinControl): Promise<SmsgSendResponse> {
 
         // set secure messaging to use the specified wallet
-        await this.coreRpcService.smsgSetWallet(wallet);
+        await this.smsgSetWallet(wallet);
 
         // enable receiving messages on the sending address, just in case
         await this.smsgAddLocalAddress(fromAddress);
@@ -291,6 +302,7 @@ export class SmsgService {
         return response;
     }
 
+
     /**
      * View smsg by msgid.
      *
@@ -336,6 +348,9 @@ export class SmsgService {
      * ﻿Add address and matching public key to database.
      * ﻿smsgaddaddress <address> <pubkey>
      *
+     * 1. address    (string, required) Address to add.
+     * 2. pubkey     (string, required) Public key for "address".
+     *
      * @param {string} address
      * @param {string} publicKey
      * @returns {Promise<boolean>}
@@ -357,9 +372,10 @@ export class SmsgService {
             });
     }
 
+
     /**
-     * Enable receiving messages on <address>.
-     * Key for "address" must exist in the wallet.
+     * Enable receiving messages on address.
+     * Key for address must exist in the wallet.
      *
      * @param {string} address
      * @returns {Promise<boolean>}
@@ -381,6 +397,91 @@ export class SmsgService {
             });
     }
 
+
+    /**
+     * ﻿Returns a new Particl address for receiving smsg and payments, key is saved in wallet.
+     *
+     * Result:
+     * "address"                (string) The new particl address
+     *
+     * @param wallet
+     * @param {any[]} params
+     * @param {boolean} smsgAddress
+     * @returns {Promise<string>}
+     */
+    public async getNewAddress(wallet: string, params: any[] = [], smsgAddress: boolean = true): Promise<string> {
+        const address = await this.coreRpcService.getNewAddress(wallet, params);
+        const publicKey = await this.smsgGetPubKey(address);    // get address public key
+        await this.smsgAddAddress(address, publicKey);          // add address and matching public key to smsg database
+        await this.smsgAddLocalAddress(address);                // enable receiving messages on address.
+        return address;
+    }
+
+    /**
+     * Reveals the private key corresponding to 'address'.
+     *
+     * @param address    (string, required) The particl address for the private key
+     */
+    public async smsgGetPubKey(address: string): Promise<string> {
+        const result: SmsgGetPubKey = await this.coreRpcService.call('smsggetpubkey', [address]);
+        return result.publickey;
+    }
+
+
+    public async getPublicKeyForAddress(address: string): Promise<string|undefined> {
+        return await this.smsgLocalKeys()
+            .then(localKeys => {
+                for (const smsgKey of localKeys.smsg_keys) {
+                    if (smsgKey.address === address) {
+                        return smsgKey.public_key;
+                    }
+                }
+                return undefined;
+            })
+            .catch(error => undefined);
+    }
+
+
+    /**
+     *
+     * @param address
+     */
+    public async smsgDumpPrivKey(address: string): Promise<string> {
+        return await this.coreRpcService.call('smsgdumpprivkey', [address]);
+    }
+
+
+    /**
+     * Set secure messaging to use the specified wallet.
+     * SMSG can only be enabled on one wallet.
+     * Call with no parameters to unset the active wallet.
+     *
+     * @param walletName
+     */
+    public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
+        const result: RpcWallet = await this.coreRpcService.call('smsgsetwallet', [walletName]);
+        // this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
+        return result;
+    }
+
+
+    /**
+     * USE smsgSetWallet!
+     */
+    public async smsgEnable(walletName: string): Promise<void> {
+        throw new NotImplementedException();
+    }
+
+    /**
+     *
+     */
+    public async smsgGetInfo(): Promise<SmsgGetInfo> {
+        const result: SmsgGetInfo = await this.coreRpcService.call('smsggetinfo', []);
+        // this.log.debug('smsgGetInfo(), result: ', JSON.stringify(result, null, 2));
+        return result;
+    }
+
+
     /**
      * ﻿Resend ZMQ notifications.
      * smsgzmqpush <options>
@@ -395,6 +496,5 @@ export class SmsgService {
                 return response;
             });
     }
-
 
 }

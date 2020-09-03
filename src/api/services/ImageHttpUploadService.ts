@@ -58,7 +58,7 @@ export class ImageHttpUploadService {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
         } else {
             // TODO: handle market image uploads
-            throw NotImplementedException();
+            throw new NotImplementedException();
         }
 
         return createdImages;

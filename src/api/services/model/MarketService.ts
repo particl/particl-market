@@ -14,13 +14,15 @@ import { MarketRepository } from '../../repositories/MarketRepository';
 import { Market } from '../../models/Market';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
-import { ProfileService } from './ProfileService';
-import { SettingService } from './SettingService';
 import { IdentityService } from './IdentityService';
 import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableMarketCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableMarketCreateRequestConfig';
+import { CoreRpcService } from '../CoreRpcService';
+import { MarketType } from '../../enums/MarketType';
+import { SmsgService } from '../SmsgService';
+import { InternalServerException } from '../../exceptions/InternalServerException';
 
 export class MarketService {
 
@@ -28,9 +30,9 @@ export class MarketService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
-        @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -93,8 +95,9 @@ export class MarketService {
 
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
-        const body = JSON.parse(JSON.stringify(data));
+        const body: MarketCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
+
         const market: resources.Market = await this.marketRepo.create(body).then(value => value.toJSON());
         return await this.findOne(market.id, true);
     }
@@ -133,6 +136,50 @@ export class MarketService {
 
     public async destroy(id: number): Promise<void> {
         await this.marketRepo.destroy(id);
+    }
+
+    public async joinMarket(market: resources.Market): Promise<void> {
+        await this.coreRpcService.loadWallet(market.Identity.wallet);
+        await this.smsgService.smsgSetWallet(market.Identity.wallet);
+        await this.importMarketKeys(market);
+        return;
+    }
+
+    /**
+     *
+     *
+     * type === MARKETPLACE -> receive + publish keys are the same
+     * type === STOREFRONT -> receive key is private key, publish key is public key
+     *                        when adding a storefront, both keys should be given
+     * type === STOREFRONT_ADMIN -> receive + publish keys are different
+     *
+     * @param market
+     */
+    public async importMarketKeys(market: resources.Market): Promise<void> {
+
+        // receiveKey
+        await this.smsgService.smsgImportPrivKey(market.receiveKey, market.name);                   // add private key to the smsg database
+        const publicReceiveKey = await this.smsgService.smsgGetPubKey(market.receiveAddress);       // get the base58 encoded compressed public key
+        await this.smsgService.smsgAddAddress(market.receiveAddress, publicReceiveKey);             // add address and matching public key to smsg database
+        await this.smsgService.smsgAddLocalAddress(market.receiveAddress);                          // enable receiving messages on address.
+
+        this.log.debug('importMarketKeys(), receive private key: ', market.receiveKey);
+        this.log.debug('importMarketKeys(), receive public key: ', publicReceiveKey);
+        this.log.debug('importMarketKeys(), receive address: ', market.receiveAddress);
+
+        // publishKey
+        if (market.type === MarketType.STOREFRONT) {
+            await this.smsgService.smsgAddAddress(market.publishAddress, market.publishKey);        // add address and matching public key to smsg database
+            await this.smsgService.smsgAddLocalAddress(market.publishAddress);                      // enable receiving messages on address.
+
+        } else {
+            await this.smsgService.smsgImportPrivKey(market.publishKey, market.name);               // add private key to the smsg database
+            const publicPublishKey = await this.smsgService.smsgGetPubKey(market.publishAddress);   // get the base58 encoded compressed public key
+            await this.smsgService.smsgAddAddress(market.publishAddress, publicPublishKey);         // add address and matching public key to smsg database
+            await this.smsgService.smsgAddLocalAddress(market.publishAddress);                      // enable receiving messages on address.
+        }
+
+        this.log.debug('Market keys imported.');
     }
 
     private getHash(market: resources.Market): string {

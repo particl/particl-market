@@ -14,7 +14,7 @@ import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
 import { MarketType } from '../../enums/MarketType';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -24,17 +24,48 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { IdentityService } from '../../services/model/IdentityService';
-import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
-import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
+import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
+import { MarketFactory } from '../../factories/model/MarketFactory';
 
-export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
+export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
-    public log: LoggerType;
+    public paramValidationRules = {
+        parameters: [{
+            name: 'profileId',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'name',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'type',
+            required: false,
+            type: 'string'
+        }, {
+            name: 'receiveKey',
+            required: false,
+            type: 'string'
+        }, {
+            name: 'publishKey',
+            required: false,
+            type: 'string'
+        }, {
+            name: 'identityId',
+            required: false,
+            type: 'number'
+        }, {
+            name: 'description',
+            required: false,
+            type: 'string'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
@@ -51,40 +82,64 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [1]: name
      *  [2]: type: MarketType
      *  [3]: receiveKey: private key in wif format
-     *  [4]: receiveAddress
-     *  [5]: publishKey: private key in wif format or public key as DER hex encoded string
-     *  [6]: publishAddress
-     *  [7]: identity: resources.Identity
+     *  [4]: publishKey: private key in wif format or public key as DER hex encoded string
+     *  [5]: identity: resources.Identity
+     *  [6]: description
      *
      * @param data
      * @returns {Promise<Market>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Market> {
         const profile: resources.Profile = data.params[0];
         const name: string = data.params[1];
-        let identity: resources.Identity = data.params[7];
+        const type: MarketType = data.params[2];
+        const receiveKey: string = data.params[3];
+        const publishKey: string = data.params[4];
+        let identity: resources.Identity = data.params[5];
+        const description: string = data.params[6];
 
+        // create market identity if one wasnt given
         if (_.isEmpty(identity)) {
             identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
-        } else {
-            // TODO: import key
         }
 
-        // create root category for market
-        await this.itemCategoryService.insertRootItemCategoryForMarket(data.params[4]);
+        const createRequest: MarketCreateRequest = await this.marketFactory.get({
+            actionMessage: {
+                name,
+                description,
+                marketType: type,
+                receiveKey,
+                publishKey,
+                // todo: add logo for the default market
+                // image: ContentReference,
+                generated: Date.now()
+            } as MarketAddMessage,
+            identity
+        } as MarketCreateParams);
 
-        // todo: factory + hash
-        return await this.marketService.create({
-            profile_id: profile.id,
-            identity_id: identity.id,
-            name,
-            type: data.params[2],
-            receiveKey: data.params[3],
-            receiveAddress: data.params[4],
-            publishKey : data.params[5],
-            publishAddress : data.params[6]
-        } as MarketCreateRequest);
+        // make sure Market with the same receiveAddress doesnt exists
+        await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, createRequest.receiveAddress)
+            .then(value => {
+                throw new MessageException('Market with the receiveAddress: ' + createRequest.receiveAddress + ' already exists.');
+            })
+            .catch(reason => {
+                //
+            });
+
+        // create the market
+        return await this.marketService.create(createRequest).then(async value => {
+            const market: resources.Market = value.toJSON();
+
+            if (!_.isNil(market.Identity.id) && !_.isNil(market.Identity.Profile.id)) {
+                await this.marketService.joinMarket(market);
+            }
+
+            // create root category for market
+            await this.itemCategoryService.insertRootItemCategoryForMarket(createRequest.receiveAddress);
+
+            return market;
+        });
     }
 
     /**
@@ -96,40 +151,33 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: publishKey, optional, if type === STOREFRONT -> public key as DER hex encoded string
      *                             if type === STOREFRONT_ADMIN -> private key in wif format
      *  [5]: identityId, optional
+     *  [6]: description, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // make sure the required params exist
+        await super.validate(data);
+
+/*
         if (data.params.length < 1) {
             throw new MissingParamException('profileId');
         } else if (data.params.length < 2) {
             throw new MissingParamException('name');
         }
-/*
-        else if (data.params.length < 3) {
-            throw new MissingParamException('type');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('receiveKey');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('receiveAddress');
-        } else if (data.params.length === 6) {
-            throw new MissingParamException('publishAddress');
-        }
 */
         const profileId = data.params[0];
         const name = data.params[1];
         let type = data.params[2];
-        let receiveKey = data.params[3];
-        let receiveAddress;
-        let publishKey = data.params[4];
-        let publishAddress;
+        const receiveKey = data.params[3];
+        const publishKey = data.params[4];
         const identityId = data.params[5];
+        const description = data.params[6];
 
         this.log.debug('params: ', data.params);
 
-        // make sure the params are of correct type
+
+/*
         if (typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
         } else if (typeof name !== 'string') {
@@ -142,8 +190,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('publishKey', 'string');
         } else if (!_.isNil(identityId) && typeof identityId !== 'number') {
             throw new InvalidParamException('identityId', 'number');
+        } else if (!_.isNil(description) && typeof description !== 'number') {
+            throw new InvalidParamException('description', 'string');
         }
-
+*/
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
@@ -151,17 +201,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 throw new ModelNotFoundException('Profile');
             });
 
-        // make sure Market with the same name doesn't exists for the Profile
-        await this.marketService.findAllByProfileId(profile.id)
-            .then(values => {
-                const markets: resources.Market[] = values.toJSON();
-                const found = _.find(markets, market => {
-                    return market.name === name;
-                });
-                if (!_.isNil(found)) {
-                    throw new MessageException('Market with the name: ' + name + ' already exists.');
-                }
-            });
+        await this.checkForDuplicateMarketName(profile.id, name);
 
         if (_.isNil(type)) {
             // default market type to MARKETPLACE if not set
@@ -182,66 +222,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
         }
 
-        const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
-        const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
-
-        // generate new key if receiveKey wasn't given and get the address
-        // else just get the address for the given pk
-
-        if (_.isNil(receiveKey)) {
-            const privateKey: PrivateKey = PrivateKey.fromRandom(network);
-            receiveKey = privateKey.toWIF();
-            receiveAddress = privateKey.toPublicKey().toAddress(network).toString();
-        } else {
-            // receiveKey was given, get the receiveAddress
-            receiveAddress = PrivateKey.fromWIF(receiveKey).toPublicKey().toAddress(network).toString();
-        }
-
-        this.log.debug('receiveKey: ', receiveKey);
-        this.log.debug('receiveAddress: ', receiveAddress);
-
-        // we have receiveKey and receiveAddress, next get the publishKey and publishAddress
-        switch (type) {
-            case MarketType.MARKETPLACE:
-                // receive + publish keys are the same
-                publishKey = receiveKey;
-                publishAddress = receiveAddress;
-                break;
-
-            case MarketType.STOREFRONT:
-                // both keys should have been given
-                // publish key is public key (DER hex encoded string)
-                publishAddress = PublicKey.fromString(publishKey).toAddress(network).toString();
-                break;
-
-            case MarketType.STOREFRONT_ADMIN:
-                // receive + publish keys are different, both private keys
-                if (receiveKey === publishKey) {
-                    throw new MessageException('Adding a STOREFRONT_ADMIN requires different receive and publish keys.');
-                }
-
-                // generate new publish key if publishKey wasn't given and get the address
-                // else just get the address for the given pk
-                if (_.isNil(publishKey)) {
-                    const privateKey: PrivateKey = PrivateKey.fromRandom(network);
-                    publishKey = privateKey.toWIF();
-                    publishAddress = privateKey.toPublicKey().toAddress(network).toString();
-                } else {
-                    // publishKey was given, get the publishAddress
-                    publishAddress = PrivateKey.fromWIF(publishKey).toPublicKey().toAddress(network).toString();
-                }
-                break;
-
-            default:
-                throw new NotImplementedException();
-        }
-
-        this.log.debug('publishKey: ', publishKey);
-        this.log.debug('publishAddress: ', publishAddress);
+        // this.log.debug('receiveKey: ', receiveKey);
 
         let identity: resources.Identity;
-        if (identityId) {
-            // make sure Identity with the id exists
+        if (!_.isNil(identityId)) {
             identity = await this.identityService.findOne(identityId)
                 .then(value => value.toJSON())
                 .catch(reason => {
@@ -252,30 +236,21 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             if (identity.Profile.id !== profile.id) {
                 throw new MessageException('Identity does not belong to the Profile.');
             }
-            data.params[7] = identity;
+            data.params[5] = identity;
         }
 
-        // make sure Market with the same receiveAddress doesnt exists
-        await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, receiveAddress)
-            .then(value => {
-                throw new MessageException('Market with the receiveAddress: ' + receiveAddress + ' already exists.');
-            })
-            .catch(reason => {
-                //
-            });
-
         data.params[0] = profile;
+        data.params[1] = name;
         data.params[2] = type;
         data.params[3] = receiveKey;
-        data.params[4] = receiveAddress;
-        data.params[5] = publishKey;
-        data.params[6] = publishAddress;
+        data.params[4] = publishKey;
+        data.params[6] = description;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description]';
     }
 
     public help(): string {
@@ -287,7 +262,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             // + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
             + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
             // + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
-            + '    <identityId>             - Number, optional - The identity to be used with the Market. \n';
+            + '    <identityId>             - Number, optional - The identity to be used with the Market. \n'
+            + '    <description>            - String, optional - Market description. \n';
     }
 
     public description(): string {
@@ -297,5 +273,20 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     public example(): string {
         return 'market ' + this.getName() + ' market add 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
             '\'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ';
+    }
+
+    private async checkForDuplicateMarketName(profileId: number, name: string): Promise<void> {
+        // make sure Market with the same name doesn't exists for the Profile
+        // we can't check for the receiveAAddress yet, because we don't know it
+        await this.marketService.findAllByProfileId(profileId)
+            .then(values => {
+                const markets: resources.Market[] = values.toJSON();
+                const found = _.find(markets, market => {
+                    return market.name === name;
+                });
+                if (!_.isNil(found)) {
+                    throw new MessageException('Market with the name: ' + name + ' already exists.');
+                }
+            });
     }
 }

@@ -29,7 +29,7 @@ import { AddressType } from '../../enums/AddressType';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MarketService } from '../../services/model/MarketService';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
-import { CoreRpcService } from '../../services/CoreRpcService';
+import { SmsgService } from '../../services/SmsgService';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -58,7 +58,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.AddressService) private addressService: AddressService,
@@ -105,7 +105,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 this.log.debug('execute(), identity.wallet: ', identity.wallet);
                 this.log.debug('execute(), listingItem.seller: ', listingItem.seller);
                 this.log.debug('execute(), msgInfo.publicKey: ', msgInfo.publicKey);
-                await this.coreRpcService.smsgAddAddress(identity.wallet, listingItem.seller, msgInfo.publicKey);
+                await this.smsgService.smsgAddAddress(listingItem.seller, msgInfo.publicKey);
             }
         }
 

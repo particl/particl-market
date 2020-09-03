@@ -27,7 +27,7 @@ export class ImageController {
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private imageDataService: ImageDataService,
-        @inject(Types.Service) @named(Targets.Service.ItemImageHttpUploadService) private imageHttpUploadService: ImageHttpUploadService,
+        @inject(Types.Service) @named(Targets.Service.ImageHttpUploadService) private imageHttpUploadService: ImageHttpUploadService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -42,14 +42,14 @@ export class ImageController {
      * @param req
      */
     @httpPost('/template/:listingItemTemplateId')
-    public async create(@response() res: myExpress.Response, @requestParam('listingItemTemplateId') listingItemTemplateId: string,
-                        @requestBody() body: any, @request() req: any): Promise<resources.Image[]> {
+    public async uploadTemplateImage(@response() res: myExpress.Response, @requestParam('listingItemTemplateId') listingItemTemplateId: string,
+                                     @requestBody() body: any, @request() req: any): Promise<resources.Image[]> {
         return await this.upload(res, req, body, listingItemTemplateId);
     }
 
     @httpPost('/market/:marketId')
-    public async create(@response() res: myExpress.Response, @requestParam('marketId') marketId: string,
-                        @requestBody() body: any, @request() req: any): Promise<resources.Image[]> {
+    public async uploadMarketImage(@response() res: myExpress.Response, @requestParam('marketId') marketId: string,
+                                   @requestBody() body: any, @request() req: any): Promise<resources.Image[]> {
         return await this.upload(res, req, body, undefined, marketId);
     }
 

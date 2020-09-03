@@ -170,34 +170,6 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * Set secure messaging to use the specified wallet.
-     * SMSG can only be enabled on one wallet.
-     * Call with no parameters to unset the active wallet.
-     *
-     * @param walletName
-     */
-    public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
-        const result: RpcWallet = await this.call('smsgsetwallet', [walletName]);
-        // this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
-        return result;
-    }
-
-    /**
-     * Add address and matching public key to database.
-     *
-     * 1. address    (string, required) Address to add.
-     * 2. pubkey     (string, required) Public key for "address".
-     *
-     * @param walletName
-     * @param address
-     * @param pubkey
-     */
-    public async smsgAddAddress(wallet: string, address: string, pubkey: string): Promise<boolean> {
-        const result: any = await this.call('smsgaddaddress', [address, pubkey], wallet);
-        return result.result === 'Public key added to db.';
-    }
-
-    /**
      * mnemonic new|decode|addchecksum|dumpwords|listlanguages
      *          new ( "password" language nBytesEntropy bip44 )
      *              Generate a new extended key and mnemonic
@@ -448,16 +420,11 @@ export class CoreRpcService extends CtRpc {
      *
      * @param wallet
      * @param {any[]} params
-     * @param {boolean} smsgAddress
      * @returns {Promise<string>}
      */
-    public async getNewAddress(wallet: string, params: any[] = [], smsgAddress: boolean = true): Promise<string> {
-        const address = await this.call('getnewaddress', params, wallet);
-
-        if (smsgAddress) {
-            await this.call('smsgaddlocaladdress', [address], wallet);
-        }
-        return address;
+    public async getNewAddress(wallet: string, params: any[] = []): Promise<string> {
+        // use smsgService.getNewAddress to add keys to smsg db
+        return await this.call('getnewaddress', params, wallet);
     }
 
     /**
@@ -864,15 +831,48 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * ﻿Reveals the private key corresponding to 'address'.
+     * ﻿Reveals the private key corresponding to 'address'. Then the importprivkey can be used with this output.
      *
      * @param wallet
-     * @param {string} address
-     * @returns {Promise<string>}
+     * @param address   (string, required) The particl address for the private key
      */
     public async dumpPrivKey(wallet: string, address: string): Promise<string> {
         const params: any[] = [address];
         return await this.call('dumpprivkey', params, wallet);
+    }
+
+    /**
+     * Adds a private key (as returned by dumpprivkey) to your wallet. Requires a new wallet backup.
+     *
+     * if key is invalid:  Invalid private key encoding (code -5)
+     * Seems to always return null for valid key, even if key exists.
+     *
+     * @param wallet
+     * @param key       (string, required) The private key (see dumpprivkey)
+     * @param label     (string, optional, default="") An optional label
+     * @param rescan    (boolean, optional, default=false) Rescan the wallet for transactions
+     */
+    public async importPrivKey(wallet: string, key: string, label: string = '', rescan: boolean = false): Promise<string> {
+        const params: any[] = [key, label, rescan];
+        return await this.call('importprivkey', params, wallet);
+    }
+
+    /**
+     * Adds a public key (in hex) that can be watched as if it were in your wallet but cannot be used to spend.
+     * Requires a new wallet backup.Adds a public key (in hex) that can be watched as if it were in your wallet
+     * but cannot be used to spend. Requires a new wallet backup.
+     *
+     * if key is invalid: Pubkey must be a hex string (code -5)
+     * Seems to always return null for valid key, even if key exists.
+     *
+     * @param wallet
+     * @param key       (string, required) The hex-encoded public key
+     * @param label     (string, optional, default="") An optional label
+     * @param rescan    (boolean, optional, default=false) Rescan the wallet for transactions
+     */
+    public async importPubKey(wallet: string, key: string, label: string = '', rescan: boolean = false): Promise<string> {
+        const params: any[] = [key, label, rescan];
+        return await this.call('importpubkey', params, wallet);
     }
 
     /**

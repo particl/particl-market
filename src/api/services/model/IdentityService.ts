@@ -108,7 +108,6 @@ export class IdentityService {
      * @param marketName
      */
     public async createMarketIdentityForProfile(profile: resources.Profile, marketName: string): Promise<Identity> {
-        // TODO: move to some actionservice?
 
         // first get the Profile Identity
         const profileIdentity: resources.Identity = await this.findProfileIdentity(profile.id).then(value => value.toJSON());
@@ -135,7 +134,12 @@ export class IdentityService {
 
         if (marketWalletExists) {
             this.log.warn('Market wallet already exists, loading!');
-            await this.coreRpcService.loadWallet(marketWalletName);
+            // load the wallet unless already loaded
+            await this.coreRpcService.loadWallet(marketWalletName)
+                .catch(reason => {
+                    this.log.debug('wallet: ' + marketWalletName + ' already loaded.');
+                });
+
         } else {
             await this.coreRpcService.createAndLoadWallet(marketWalletName, false, true)
                 .catch(async reason => {
@@ -166,7 +170,7 @@ export class IdentityService {
 
         await this.coreRpcService.extKeySetDefaultAccount(marketWalletName, marketAccount.account);
 
-        const address = await this.coreRpcService.getNewAddress(marketWalletName);
+        const address = await this.smsgService.getNewAddress(marketWalletName);
         this.log.debug('createMarketIdentityForProfile(), address: ', address);
 
         this.log.debug('createMarketIdentityForProfile(), walletName: ', marketWalletName);
@@ -250,7 +254,7 @@ export class IdentityService {
         }
         // const keyInfo: RpcExtKeyResult = await this.coreRpcService.extKeyInfo(walletName, masterKey.evkey, "4444446'/0'");
 
-        const address = await this.coreRpcService.getNewAddress(walletName);
+        const address = await this.smsgService.getNewAddress(walletName);
         this.log.debug('createProfileIdentity(), identity.address: ' + address);
 
         await this.smsgService.smsgAddLocalAddress(address);

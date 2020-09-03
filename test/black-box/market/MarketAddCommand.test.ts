@@ -31,6 +31,7 @@ describe('MarketAddCommand', () => {
 
     const marketData = {
         name: 'TEST-1',
+        description: 'test market desc',
         type: MarketType.MARKETPLACE,
         receiveKey: 'receiveKey',
         publishKey: 'publishKey'
@@ -39,6 +40,7 @@ describe('MarketAddCommand', () => {
 
     const storeFrontAdminData = {
         name: 'TEST-2',
+        description: 'storefront admin desc',
         type: MarketType.STOREFRONT_ADMIN,
         receiveKey: 'receiveKey',
         publishKey: 'publishKey'
@@ -47,6 +49,7 @@ describe('MarketAddCommand', () => {
 
     const storeFrontUserData = {
         name: 'TEST-3',
+        description: 'storefront desc',
         type: MarketType.STOREFRONT,
         receiveKey: 'receiveKey',           // private key in wif format
         publishKey: 'publishKey'            // publish key is public key (DER hex encoded string)
@@ -65,7 +68,7 @@ describe('MarketAddCommand', () => {
         let privateKey: PrivateKey = PrivateKey.fromRandom(Networks.testnet);
         marketData.receiveKey = privateKey.toWIF();
         marketData.publishKey = marketData.receiveKey;          // same same
-        marketData.name = marketData.receiveKey;
+        // marketData.name = marketData.receiveKey;
         log.debug('marketData: ', JSON.stringify(marketData, null, 2));
 
         // storefront admin
@@ -73,7 +76,7 @@ describe('MarketAddCommand', () => {
         storeFrontAdminData.receiveKey = privateKey.toWIF();
         privateKey = PrivateKey.fromRandom(network);
         storeFrontAdminData.publishKey = privateKey.toWIF();    // but different
-        storeFrontAdminData.name = storeFrontAdminData.receiveKey;
+        // storeFrontAdminData.name = storeFrontAdminData.receiveKey;
         // log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
 
         // storefront user
@@ -81,7 +84,7 @@ describe('MarketAddCommand', () => {
         storeFrontUserData.receiveKey = privateKey.toWIF();
         privateKey = PrivateKey.fromRandom(network);
         storeFrontUserData.publishKey = privateKey.toPublicKey().toString();    // -> DER hex encoded string
-        storeFrontUserData.name = storeFrontUserData.receiveKey;
+        // storeFrontUserData.name = storeFrontUserData.receiveKey;
 
         // log.debug('storeFrontUserData: ', JSON.stringify(storeFrontUserData, null, 2));
 
@@ -108,10 +111,13 @@ describe('MarketAddCommand', () => {
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             false,
             marketData.name
-            /*marketData.type,
+            /*
+            marketData.type,
             marketData.receiveKey,
             marketData.publishKey,
-            market.Identity.id*/
+            market.Identity.id,
+            marketData.description
+            */
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -123,10 +129,13 @@ describe('MarketAddCommand', () => {
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
             false
-            /*marketData.type,
+            /*
+            marketData.type,
             marketData.receiveKey,
             marketData.publishKey,
-            market.Identity.id*/
+            market.Identity.id,
+            marketData.description
+            */
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -139,9 +148,12 @@ describe('MarketAddCommand', () => {
             profile.id,
             marketData.name,
             false
-            /*marketData.receiveKey,
+            /*
+            marketData.receiveKey,
             marketData.publishKey,
-            market.Identity.id*/
+            market.Identity.id,
+            marketData.description
+            */
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -156,7 +168,8 @@ describe('MarketAddCommand', () => {
             marketData.type,
             false,
             marketData.publishKey,
-            market.Identity.id
+            market.Identity.id,
+            marketData.description
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -171,7 +184,8 @@ describe('MarketAddCommand', () => {
             marketData.type,
             marketData.receiveKey,
             true,
-            market.Identity.id
+            market.Identity.id,
+            marketData.description
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -186,7 +200,8 @@ describe('MarketAddCommand', () => {
             marketData.type,
             marketData.receiveKey,
             marketData.publishKey,
-            market.Identity.id
+            market.Identity.id,
+            marketData.description
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -206,7 +221,8 @@ describe('MarketAddCommand', () => {
             marketData.type,
             marketData.receiveKey,
             marketData.publishKey,
-            market.Identity.id
+            market.Identity.id,
+            marketData.description
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -226,6 +242,24 @@ describe('MarketAddCommand', () => {
         expect(result.receiveKey).toBe(result.publishKey);
     });
 
+    test('Should create a new market (MARKETPLACE) with just a name and identityId', async () => {
+        const marketName = 'TEST-5';
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            marketName,
+            null,
+            null,
+            null,
+            market.Identity.id,
+            marketData.description
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Market = res.getBody()['result'];
+        expect(result.name).toBe(marketName);
+        expect(result.receiveKey).toBe(result.publishKey);
+    });
+
     test('Should create a new market (STOREFRONT_ADMIN)', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -233,7 +267,8 @@ describe('MarketAddCommand', () => {
             storeFrontAdminData.type,
             storeFrontAdminData.receiveKey,
             storeFrontAdminData.publishKey,
-            market.Identity.id
+            market.Identity.id,
+            storeFrontAdminData.description
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -254,7 +289,8 @@ describe('MarketAddCommand', () => {
             storeFrontUserData.type,
             storeFrontUserData.receiveKey,
             storeFrontUserData.publishKey,
-            market.Identity.id
+            market.Identity.id,
+            storeFrontUserData.description
         ]);
         res.expectJson();
         res.expectStatusCode(200);
