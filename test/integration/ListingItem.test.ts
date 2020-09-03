@@ -543,8 +543,8 @@ describe('ListingItem', () => {
                 images: [{
                     data: [{
                         // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-                        // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
-                        protocol: ProtocolDSN.LOCAL,
+                        // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
+                        protocol: ProtocolDSN.FILE,
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
@@ -555,8 +555,8 @@ describe('ListingItem', () => {
                 }, {
                     data: [{
                         // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-                        // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
-                        protocol: ProtocolDSN.LOCAL,
+                        // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
+                        protocol: ProtocolDSN.FILE,
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,

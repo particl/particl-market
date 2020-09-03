@@ -39,14 +39,14 @@ describe('ImageData', () => {
     const testData = {
         dataId: '',
         imageVersion: ImageVersions.ORIGINAL.propName,
-        protocol: ProtocolDSN.LOCAL,
+        protocol: ProtocolDSN.FILE,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat
     } as ImageDataCreateRequest;
 
     const testDataUpdated = {
         dataId: '',
-        protocol: ProtocolDSN.LOCAL,
+        protocol: ProtocolDSN.FILE,
         imageVersion: ImageVersions.ORIGINAL.propName,
         encoding: 'BASE64',
         data: ImageProcessing.milkcat

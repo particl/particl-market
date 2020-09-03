@@ -15,9 +15,8 @@ import { Image } from '../../models/Image';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
@@ -28,7 +27,29 @@ import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequ
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
-    public log: LoggerType;
+    public paramValidationRules = {
+        parameters: [{
+            name: 'template|market',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'id',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'protocol',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'data|uri',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'skipResize',
+            required: false,
+            type: 'boolean'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -41,12 +62,11 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: dataId
+     *  [0]: typeSpecifier: string, template | market
+     *  [1]: type: resources.ListingItemTemplate | market: resources.Market
      *  [2]: protocol
-     *  [3]: encoding
-     *  [4]: data
-     *  [5]: skipResize
+     *  [3]: data|uri
+     *  [4]: skipResize, optional, default false
      *
      * @param data
      * @returns {Promise<Image>}
@@ -87,65 +107,55 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: dataId
+     *  [0]: typeSpecifier: string, template | market
+     *  [1]: id: number
      *  [2]: protocol
-     *  [3]: encoding
-     *  [4]: data
-     *  [5]: skipResize, optional, default false
+     *  [3]: data|uri
+     *  [4]: skipResize, optional, default false
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('dataId');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('protocol');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('encoding');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('data');
+        const typeSpecifier = data.params[0];
+        const id = data.params[1];
+        let protocol = data.params[2];
+        const data = data.params[3];
+        const skipResize = data.params[4];
+
+        switch (typeSpecifier) {
+            case 'template':
+                data.params[1] = await this.listingItemTemplateService.findOne(id)
+                    .then(value => value.toJSON())
+                    .catch(reason => {
+                        throw new ModelNotFoundException('ListingItemTemplate');
+                    });
+
+                // make sure ItemInformation exists
+                if (_.isEmpty(listingItemTemplate.ItemInformation)) {
+                    throw new ModelNotFoundException('ItemInformation');
+                }
+
+                break;
+            case 'market':
+                data.params[1] = await this.marketService.findOne(id)
+                    .then(value => value.toJSON())
+                    .catch(reason => {
+                        throw new ModelNotFoundException('Market');
+                    });
+                break;
+            default:
+                throw new InvalidParamException('typeSpecifier', 'template|item|market');
         }
 
-        // TODO: dataId should be optional
-        // TODO: encoding is not needed
-        // TODO: skipResize is not documented
+        const validProtocolTypes = [ProtocolDSN.REQUEST, ProtocolDSN.FILE, ProtocolDSN.SMSG];
+        // hardcoded for now
+        protocol = ProtocolDSN.REQUEST;
 
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('dataId', 'string');
-        } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('protocol', 'string');
-        } else if (typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('encoding', 'string');
-        } else if (typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('data', 'string');
-        } else if (data.params[5] && typeof data.params[5] !== 'boolean') {
-            throw new InvalidParamException('skipResize', 'boolean');
-        }
-
-        const validProtocolTypes = [ProtocolDSN.IPFS, ProtocolDSN.LOCAL, ProtocolDSN.SMSG, ProtocolDSN.URL];
-        if (validProtocolTypes.indexOf(data.params[2]) === -1) {
+        if (validProtocolTypes.indexOf(protocol) === -1) {
             throw new InvalidParamException('protocol', 'ProtocolDSN');
-        }
-
-        // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
-
-        // make sure ItemInformation exists
-        if (_.isEmpty(listingItemTemplate.ItemInformation)) {
-            throw new ModelNotFoundException('ItemInformation');
         }
 
         const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
@@ -153,28 +163,28 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
-        data.params[0] = listingItemTemplate;
+        data.params[2] = protocol;
+        data.params[3] = data;
+        data.params[4] = skipResize;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <dataId> <protocol> <encoding> <data> [skipResize]';
+        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [skipResize]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the ListingItemTemplate \n'
-            + '                                     we want to associate this item image with. \n'
-            + '    <dataId>                      - String - ID for the data. \n'
-            + '    <protocol>                    - Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image. \n'
-            + '    <encoding>                    - Enum{BASE64} - The format the image is encoded in. \n'
-            + '    <data>                        - String - The image\'s data. '
-            + '    <skipResize>                  - boolean - skip Image resize. ';
+            + '    <type>                       - string - template|item|market\n'
+            + '    <id>                         - number - The ID of the template|market associated with the Image. \n'
+            + '    <protocol>                   - ProtocolDSN - REQUEST, SMSG, FILE, ...} - The protocol used to load the image. \n'
+            + '    <data>                       - string - data/uri, depending on the ProtocolDSN. '
+            + '    <skipResize>                 - boolean - skip Image resize. ';
     }
 
     public description(): string {
-        return 'Add an Image to a ListingItemTemplate, identified by its ID.';
+        return 'Add an Image to a ListingItemTemplate or Market.';
     }
 
     public example(): string {

@@ -53,7 +53,7 @@ export class ItemImageFactory implements ModelFactoryInterface {
             // the ListingItemImageAddMessage, we're always receiving the ORIGINAL version of the Image
 
             // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-            // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
+            // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
             imageDataCreateRequests.push({
                 protocol: dsn.protocol,
                 encoding: dsn.encoding,

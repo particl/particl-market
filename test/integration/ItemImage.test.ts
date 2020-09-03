@@ -53,7 +53,7 @@ describe('Image', () => {
     const testData = {
         data: [{
             dataId: 'http://dataid1',
-            protocol: ProtocolDSN.LOCAL,
+            protocol: ProtocolDSN.FILE,
             imageVersion: ImageVersions.ORIGINAL.propName,
             imageHash: 'TEST-imagehash1',
             encoding: 'BASE64'
@@ -66,7 +66,7 @@ describe('Image', () => {
     const testDataUpdated = {
         data: [{
             dataId: 'http://dataid2',
-            protocol: ProtocolDSN.LOCAL,
+            protocol: ProtocolDSN.FILE,
             imageVersion: ImageVersions.ORIGINAL.propName,
             imageHash: 'TEST-imagehash2',
             encoding: 'BASE64'

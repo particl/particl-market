@@ -88,7 +88,7 @@ describe('ListingItemTemplateSizeCommand', () => {
         let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
+            ProtocolDSN.FILE,
             'BASE64',
             filedata,
             true        // skip resize

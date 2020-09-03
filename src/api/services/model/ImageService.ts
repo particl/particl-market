@@ -83,7 +83,7 @@ export class ImageService {
         // TODO: use factory
         const imageDataCreateRequest = {
             dataId: imageFile.fieldname, // replaced with local url in factory
-            protocol: ProtocolDSN.LOCAL,
+            protocol: ProtocolDSN.FILE,
             imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: 'BASE64',
             data: dataStr,

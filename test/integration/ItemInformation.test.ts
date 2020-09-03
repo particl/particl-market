@@ -227,8 +227,8 @@ describe('ItemInformation', () => {
             images: [{
                 data: [{
                     // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-                    // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
-                    protocol: ProtocolDSN.LOCAL,
+                    // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
+                    protocol: ProtocolDSN.FILE,
                     encoding: 'BASE64',
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     data: randomImageData
@@ -296,8 +296,8 @@ describe('ItemInformation', () => {
             images = [{
                 data: [{
                     // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
-                    // when we receive ListingItemImageAddMessage -> ProtocolDSN.LOCAL
-                    protocol: ProtocolDSN.LOCAL,
+                    // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
+                    protocol: ProtocolDSN.FILE,
                     encoding: 'BASE64',
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     data: randomImageData

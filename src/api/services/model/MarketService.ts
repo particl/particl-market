@@ -127,7 +127,7 @@ export class MarketService {
         if (body.image_id) {
             market.set('imageId', body.image_id);
         }
-        market.Hash = await this.getHash(market.toJSON());
+        market.Hash = this.getHash(market.toJSON());
 
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
         return await this.findOne(id, true);

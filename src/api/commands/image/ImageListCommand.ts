@@ -44,9 +44,8 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     *  [0]: 'template' or 'item'
-     *  [1]: listingItemTemplate: resources.ListingItemTemplate
-     *    or listingItem: resources.ListingItem
+     *  [0]: typeSpecifier: string, template | item | market
+     *  [1]: type: resources.ListingItemTemplate | listingItem: resources.ListingItem | market: resources.Market
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Image[]> {
@@ -67,8 +66,8 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     *  [0]: template | item | market
-     *  [1]: listingItemTemplateId or listingItemId
+     *  [0]: typeSpecifier: string, template | item | market
+     *  [1]: id: number
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
@@ -106,7 +105,7 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <template|item|market> <id> ';
+        return this.getName() + ' <type> <id> ';
     }
 
     public help(): string {

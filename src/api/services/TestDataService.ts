@@ -1417,7 +1417,7 @@ export class TestDataService {
                 hash: imageHash,
                 data: [{
                     dataId: Faker.internet.url(),
-                    protocol: ProtocolDSN.LOCAL,
+                    protocol: ProtocolDSN.FILE,
                     imageVersion: ImageVersions.ORIGINAL.propName,
                     encoding: 'BASE64',
                     data

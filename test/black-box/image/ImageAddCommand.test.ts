@@ -70,28 +70,28 @@ describe('ImageAddCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
     });
 
-    test('Should fail because missing listingItemTemplateId', async () => {
+    test('Should fail because missing typeSpecifier', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('typeSpecifier').getMessage());
     });
 
 
-    test('Should fail because missing dataId', async () => {
+    test('Should fail because missing id', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
-            listingItemTemplate.id
+            'template'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('dataId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
     });
 
 
     test('Should fail because missing protocol', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
-            listingItemTemplate.id,
-            'TEST-DATA-ID'
+            'template',
+            listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -99,66 +99,53 @@ describe('ImageAddCommand', () => {
     });
 
 
-    test('Should fail because missing encoding', async () => {
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
-            listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('encoding').getMessage());
-    });
-
-
     test('Should fail because missing data', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
+            ProtocolDSN.REQUEST
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('data').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
     });
 
 
-    test('Should fail because invalid listingItemTemplateId', async () => {
+    test('Should fail because invalid typeSpecifier', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             true,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcat
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
-    });
-
-
-    test('Should fail because invalid dataId', async () => {
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
-            true,
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcat
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('dataId', 'string').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('template|market', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid id', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
+            true,
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
     });
 
 
     test('Should fail because invalid protocol', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
             true,
-            'BASE64',
-            ImageProcessing.milkcat
+            ImageProcessing.milkcatSmall,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -166,27 +153,13 @@ describe('ImageAddCommand', () => {
     });
 
 
-    test('Should fail because invalid encoding', async () => {
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
-            listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            true,
-            ImageProcessing.milkcat
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('encoding', 'string').getMessage());
-    });
-
-
     test('Should fail because invalid data', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            true
+            ProtocolDSN.REQUEST,
+            true,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -194,27 +167,27 @@ describe('ImageAddCommand', () => {
     });
 
 
-    test('Should fail because invalid protocolDSN', async () => {
+    test('Should fail because invalid skipResize', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            'INVALID',
-            'BASE64',
-            ImageProcessing.milkcatWide
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('protocol', 'ProtocolDSN').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('skipResize', 'boolean').getMessage());
     });
 
 
     test('Should fail because ListingItemTemplate not found', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             0,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcatWide
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -222,13 +195,13 @@ describe('ImageAddCommand', () => {
     });
 
 
-    test('Should add Image with ImageData', async () => {
+    test('Should add Image to ListingItemTemplate', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
-            'BASE64',
-            ImageProcessing.milkcatWide
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -238,7 +211,7 @@ describe('ImageAddCommand', () => {
         // TODO: this test is just testing that the command response is 200
     });
 
-
+/*
     test('Should fail because ListingItemTemplate is not modifiable', async () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -267,7 +240,7 @@ describe('ImageAddCommand', () => {
         const res = await testUtil.rpc(imageCommand, [imageAddCommand,
             listingItemTemplate.id,
             'TEST-DATA-ID',
-            ProtocolDSN.LOCAL,
+            ProtocolDSN.FILE,
             'BASE64',
             ImageProcessing.milkcatWide
         ]);
@@ -286,11 +259,9 @@ describe('ImageAddCommand', () => {
             //    + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
             //    + '/api/item-images/' + image.id + '/' + imageData.imageVersion;
             //  expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ProtocolDSN.LOCAL);
+            expect(imageData.protocol).toBe(ProtocolDSN.FILE);
             expect(imageData.encoding).toBe('BASE64');
         }
     });
-
+*/
 });
-
-
