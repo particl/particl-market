@@ -82,7 +82,7 @@ describe('ImageListCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId|listingItemId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
     });
 
 
@@ -104,7 +104,7 @@ describe('ImageListCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId|listingItemId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
     });
 
 

@@ -22,7 +22,6 @@ import { HashableMarketCreateRequestConfig } from '../../factories/hashableconfi
 import { CoreRpcService } from '../CoreRpcService';
 import { MarketType } from '../../enums/MarketType';
 import { SmsgService } from '../SmsgService';
-import { InternalServerException } from '../../exceptions/InternalServerException';
 
 export class MarketService {
 
