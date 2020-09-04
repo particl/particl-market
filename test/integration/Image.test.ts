@@ -128,9 +128,10 @@ describe('Image', () => {
         itemImage = await imageService.create(testData).then(value => value.toJSON());
         const result = itemImage;
 
+        // TODO: imageDataFactory.getImageUrl
         const imageUrl = process.env.APP_HOST
         + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-        + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
+        + '/api/images/' + itemImage.id + '/' + testData.data[0].imageVersion;
 
         expect(result.hash).toBe(testData.hash);
         expect(result.featured).toBeFalsy();
@@ -165,7 +166,7 @@ describe('Image', () => {
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
+            + '/api/images/' + itemImage.id + '/' + testData.data[0].imageVersion;
 
         const result = itemImage;
         expect(result.hash).toBe(testData.hash);
@@ -186,7 +187,7 @@ describe('Image', () => {
 
         const imageUrl = process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/item-images/' + itemImage.id + '/' + testData.data[0].imageVersion;
+            + '/api/images/' + itemImage.id + '/' + testData.data[0].imageVersion;
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.featured).toBeTruthy();

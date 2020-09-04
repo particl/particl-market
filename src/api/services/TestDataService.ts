@@ -1413,6 +1413,7 @@ export class TestDataService {
 
             const imageHash = ConfigurableHasher.hash({data}, new HashableImageCreateRequestConfig());
 
+            // todo: use factory
             const item = {
                 hash: imageHash,
                 data: [{

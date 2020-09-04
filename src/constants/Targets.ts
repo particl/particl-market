@@ -410,7 +410,6 @@ export const Targets = {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
             }
         },
-        ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         message: {
             BaseMessageFactory: 'BaseMessageFactory',
@@ -436,7 +435,8 @@ export const Targets = {
         model: {
             BidFactory: 'BidFactory',
             CommentFactory: 'CommentFactory',
-            ItemImageFactory: 'ItemImageFactory',
+            ImageFactory: 'ImageFactory',
+            ImageDataFactory: 'ImageDataFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             MarketFactory: 'MarketFactory',

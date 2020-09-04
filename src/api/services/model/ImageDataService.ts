@@ -49,20 +49,15 @@ export class ImageDataService {
 
     @validate()
     public async create( @request(ImageDataCreateRequest) data: ImageDataCreateRequest): Promise<ImageData> {
-        const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
 
-        // if (body.encoding !== 'BASE64') {
-        //     this.log.warn('Unsupported image encoding. Only supports BASE64.');
-        // }
-
         if (body.data) {
             const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
-            body.data = fileName;
+            body.dataId = fileName;
         }
 
         const imageData: resources.ImageData = await this.imageDataRepo.create(body).then(value => value.toJSON());

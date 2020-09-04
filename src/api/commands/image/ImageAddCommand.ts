@@ -20,10 +20,14 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
+import { ImageFactory } from '../../factories/model/ImageFactory';
+import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { MarketService } from '../../services/model/MarketService';
+import {MarketUpdateRequest} from '../../requests/model/MarketUpdateRequest';
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
@@ -45,6 +49,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             required: true,
             type: 'string'
         }, {
+            name: 'featured',
+            required: false,
+            type: 'boolean'
+        }, {
             name: 'skipResize',
             required: false,
             type: 'boolean'
@@ -53,7 +61,9 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.IMAGE_ADD);
@@ -66,43 +76,51 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
      *  [1]: type: resources.ListingItemTemplate | market: resources.Market
      *  [2]: protocol
      *  [3]: data|uri
-     *  [4]: skipResize, optional, default false
+     *  [4]: featured, optional, default: false
+     *  [5]: skipResize, optional, default: false
      *
      * @param data
      * @returns {Promise<Image>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
+
+        const typeSpecifier = data.params[0];
+        const type = data.params[1];
+        const protocol = data.params[2];
+        const dataOrUri = data.params[3];
+        const featured = data.params[4];
+        const skipResize = data.params[5];
+
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
-        // TODO: use factory
-        const createRequest = {
-            item_information_id: listingItemTemplate.ItemInformation.id,
-            data: [{
-                dataId: data.params[1],
-                protocol: data.params[2],
-                encoding: data.params[3],
-                data: data.params[4],
-                imageVersion: ImageVersions.ORIGINAL.propName,
-                imageHash: 'hashToBeCreatedFromORIGINAL.data'
-            } as ImageDataCreateRequest],
-            hash: 'hashToBeCreatedFromORIGINAL.data',
-            featured: false     // TODO: add featured flag as param
-        } as ImageCreateRequest;
+        const createRequest: ImageCreateRequest = await this.imageFactory.get({
+            image: {
+                data: [{
+                    protocol,
+                    encoding: 'BASE64',
+                    dataId: 'string',
+                    data: 'string'
+                }] as DSN[],
+                featured
+            } as ContentReference,
+            listingItemTemplate: typeSpecifier === 'template' ? type : undefined
+        } as ImageCreateParams);
 
-        // create the hash
-        createRequest.hash = ConfigurableHasher.hash({
-            data: createRequest.data[0].data    // using the ORIGINAL image data to create the hash
-        }, new HashableImageCreateRequestConfig());
-        createRequest.data[0].imageHash = createRequest.hash;
+        const image = await this.imageService.create(createRequest);
 
-        const itemImage = await this.imageService.create(createRequest);
+        if (featured) {
+            await this.imageService.updateFeatured(image.id, true);
+        }
 
-        if (!data.params[5]) {
+        if (!skipResize) {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
         }
 
-        return itemImage;
+        if (typeSpecifier === 'market') {
+            await this.marketService.update(type.id, {image_id: image.id} as MarketUpdateRequest);
+        }
+        return image;
     }
 
     /**
@@ -111,7 +129,8 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
      *  [1]: id: number
      *  [2]: protocol
      *  [3]: data|uri
-     *  [4]: skipResize, optional, default false
+     *  [4]: featured, optional, default: false
+     *  [5]: skipResize, optional, default: false
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -122,12 +141,13 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         const typeSpecifier = data.params[0];
         const id = data.params[1];
         let protocol = data.params[2];
-        const data = data.params[3];
-        const skipResize = data.params[4];
+        const dataOrUri = data.params[3];
+        let featured = data.params[4];
+        let skipResize = data.params[5];
 
         switch (typeSpecifier) {
             case 'template':
-                data.params[1] = await this.listingItemTemplateService.findOne(id)
+                const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(id)
                     .then(value => value.toJSON())
                     .catch(reason => {
                         throw new ModelNotFoundException('ListingItemTemplate');
@@ -138,7 +158,14 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
                     throw new ModelNotFoundException('ItemInformation');
                 }
 
+                const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
+                if (!isModifiable) {
+                    throw new ModelNotModifiableException('ListingItemTemplate');
+                }
+
+                data.params[1] = listingItemTemplate;
                 break;
+
             case 'market':
                 data.params[1] = await this.marketService.findOne(id)
                     .then(value => value.toJSON())
@@ -153,25 +180,23 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         const validProtocolTypes = [ProtocolDSN.REQUEST, ProtocolDSN.FILE, ProtocolDSN.SMSG];
         // hardcoded for now
         protocol = ProtocolDSN.REQUEST;
-
         if (validProtocolTypes.indexOf(protocol) === -1) {
             throw new InvalidParamException('protocol', 'ProtocolDSN');
         }
 
-        const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
-        if (!isModifiable) {
-            throw new ModelNotModifiableException('ListingItemTemplate');
-        }
+        featured = !_.isNil(featured) ? featured : false;
+        skipResize = !_.isNil(skipResize) ? skipResize : false;
 
         data.params[2] = protocol;
         data.params[3] = data;
-        data.params[4] = skipResize;
+        data.params[4] = featured;
+        data.params[5] = skipResize;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [skipResize]';
+        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [skipResize] [featured]';
     }
 
     public help(): string {
@@ -180,6 +205,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             + '    <id>                         - number - The ID of the template|market associated with the Image. \n'
             + '    <protocol>                   - ProtocolDSN - REQUEST, SMSG, FILE, ...} - The protocol used to load the image. \n'
             + '    <data>                       - string - data/uri, depending on the ProtocolDSN. '
+            + '    <featured>                   - boolean - set Image as featured. '
             + '    <skipResize>                 - boolean - skip Image resize. ';
     }
 

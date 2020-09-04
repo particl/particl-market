@@ -17,7 +17,7 @@ import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ImageDataService } from './ImageDataService';
-import { ImageFactory } from '../../factories/ImageFactory';
+import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ImageDataRepository } from '../../repositories/ImageDataRepository';
@@ -27,6 +27,8 @@ import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig
 import { ImageDataUpdateRequest } from '../../requests/model/ImageDataUpdateRequest';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {ImageVersion} from '../../../core/helpers/ImageVersion';
+import {ImageProcessing} from '../../../core/helpers/ImageProcessing';
 
 export class ImageService {
 
@@ -36,7 +38,7 @@ export class ImageService {
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ImageRepository) public imageRepository: ImageRepository,
         @inject(Types.Repository) @named(Targets.Repository.ImageDataRepository) public imageDataRepository: ImageDataRepository,
-        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) public imageDataFactory: ImageDataFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -115,73 +117,80 @@ export class ImageService {
 
         // find the ImageVersions.ORIGINAL from the existing ImageDatas
         // the ORIGINAL should always exist, its used to create the other versions
-        // also when receiving a ListingItem, it should be the only one we receive
-        const imageDataCreateRequests: ImageDataCreateRequest[] = body.data;
-        const imageDataOriginal = _.find(imageDataCreateRequests, (imageData) => {
+        // it should also be the only version...
+        const imageDataCreateRequestOriginal: ImageDataCreateRequest | undefined = _.find(body.data, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
-        // remove ImageDatas from the body
         delete body.data;
 
-        if (imageDataOriginal) {
+        if (imageDataCreateRequestOriginal) {
 
-            if (!EnumHelper.containsValue(ProtocolDSN, imageDataOriginal.protocol)) {
-                this.log.warn(`Invalid protocol <${imageDataOriginal.protocol}> encountered.`);
-                throw new InvalidParamException('data.protocol', 'ProtocolDSN');
-            }
-
-            // if (_.isEmpty(imageDataOriginal.data)) {
-            //     throw new MessageException('Image data not found.');
-            // }
-
-            // create the Image
             const image: resources.Image = await this.imageRepository.create(body).then(value => value.toJSON());
 
-            // then create the other imageDatas from the given original data,
+            // then create the ORIGINAL ImageData
+            imageDataCreateRequestOriginal.image_id = image.id;
+            await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
+
+            // then create the other versions from the given original data,
             // original is automatically added as one of the versions
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-            const imageDatas: ImageDataCreateRequest[] = await this.imageFactory.getImageDatas(image.id, image.hash, imageDataOriginal,
-                toVersions);
+            await this.createVersions(imageDataCreateRequestOriginal, toVersions);
 
-            // save all ImageDatas
-            for (const imageData of imageDatas) {
-                await this.imageDataService.create(imageData);
-            }
-
-            // finally find and return the created image
             return await this.findOne(image.id);
         } else {
-            throw new MessageException('Original image data not found.');
+            throw new MessageException('Original ImageData not found.');
         }
     }
+
+    /**
+     * creates ImageDatas for the required Image versions from the original ImageDataCreateRequest
+     *
+     * @param {ImageDataCreateRequest} originalImageData
+     * @param {ImageVersion[]} toVersions
+     * @returns {Promise<ImageDataCreateRequest[]>}
+     */
+    public async createVersions(originalImageData: ImageDataCreateRequest, toVersions: ImageVersion[]): Promise<resources.ImageData[]> {
+
+        let startTime = Date.now();
+        const imageDatas: resources.ImageData[] = [];
+
+        if (originalImageData.data) {
+            const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
+            this.log.debug('createVersions(), convertToJPEG: ' + (Date.now() - startTime) + 'ms');
+
+            startTime = Date.now();
+            const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
+            this.log.debug('createVersions() resizeImageData: ' + (Date.now() - startTime) + 'ms');
+
+            for (const version of toVersions) {
+                const versionCreateRequest: ImageDataCreateRequest = JSON.parse(JSON.stringify(originalImageData));
+                versionCreateRequest.imageVersion = version.propName;
+                versionCreateRequest.data = resizedDatas.get(version.propName) || '';
+                await this.imageDataService.create(versionCreateRequest).then(value => {
+                    imageDatas.push(value.toJSON());
+                });
+            }
+
+        } else {
+            // when there is no data, we received ListingItemAddMessage and we are expecting to receive the data via smsg later
+            // original version has already been created, so theres nothing more to do
+        }
+
+        return imageDatas;
+    }
+
 
     @validate()
     public async update(id: number, @request(ImageUpdateRequest) data: ImageUpdateRequest): Promise<Image> {
         const body: ImageUpdateRequest = JSON.parse(JSON.stringify(data));
 
-        // grab the existing imagedatas
-        const imageDatas: ImageDataUpdateRequest[] = body.data;
-
-        // find the original out of those
-        const imageDataOriginal = _.find(imageDatas, (imageData) => {
+        const imageDataUpdateRequestOriginal: ImageDataCreateRequest | undefined = _.find(body.data, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
-
         delete body.data;
 
-        if (imageDataOriginal) {
-
-            if (!EnumHelper.containsValue(ProtocolDSN, imageDataOriginal.protocol)) {
-                this.log.warn(`Invalid protocol <${imageDataOriginal.protocol}> encountered.`);
-                throw new InvalidParamException('data.protocol', 'ProtocolDSN');
-            }
-
-            if (_.isEmpty(imageDataOriginal.data)) {
-                throw new MessageException('Image data not found.');
-            }
-
-            // first update the Image
+        if (imageDataUpdateRequestOriginal) {
             const image = await this.findOne(id, false);
             image.Hash = body.hash;
             image.Featured = body.featured;
@@ -194,22 +203,16 @@ export class ImageService {
 
             // then recreate the other ImageDatas from the original data
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            await this.createVersions(imageDataUpdateRequestOriginal, toVersions);
 
-            // todo: imageDataFactory
-            const newImageDatas: ImageDataCreateRequest[] = await this.imageFactory.getImageDatas(
-                image.Id, image.Hash, imageDataOriginal, toVersions);
-
-            // save all ImageDatas
-            for (const imageData of newImageDatas) {
-                // todo: update
-                await this.imageDataService.create(imageData);
-            }
             return await this.findOne(updatedImage.id);
 
         } else {
-            throw new MessageException('Original image data not found.');
+            throw new MessageException('Original ImageData not found.');
         }
+
     }
+
 
     public async updateFeatured(imageId: number, featured: boolean): Promise<Image> {
         const data = {
@@ -217,6 +220,7 @@ export class ImageService {
         } as ImageUpdateRequest;
         return await this.imageRepository.update(imageId, data);
     }
+
 
     public async destroy(id: number): Promise<void> {
         const image: resources.Image = await this.findOne(id, true).then(value => value.toJSON());

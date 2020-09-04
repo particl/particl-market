@@ -10,7 +10,6 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class ImageCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    @IsNotEmpty()
     public item_information_id: number;
 
     @IsNotEmpty()

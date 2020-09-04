@@ -257,7 +257,7 @@ describe('ImageAddCommand', () => {
         for ( const imageData of images ) {
             // const imageUrl = process.env.APP_HOST
             //    + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            //    + '/api/item-images/' + image.id + '/' + imageData.imageVersion;
+            //    + '/api/iimages/' + image.id + '/' + imageData.imageVersion;
             //  expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ProtocolDSN.FILE);
             expect(imageData.encoding).toBe('BASE64');

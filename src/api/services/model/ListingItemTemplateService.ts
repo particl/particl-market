@@ -28,7 +28,7 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { ImageFactory } from '../../factories/ImageFactory';
+import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
 import { Image } from '../../models/Image';
 import { ItemInformationService } from './ItemInformationService';
 import { ImageDataService } from './ImageDataService';
@@ -47,8 +47,8 @@ import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCrea
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableImageCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 export class ListingItemTemplateService {
 
@@ -69,7 +69,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) private imageDataFactory: ImageDataFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -372,7 +372,7 @@ export class ListingItemTemplateService {
     }
 
     /**
-     * creates resized versions of the template images, so that all of them fit in one smsgmessage
+     * creates resized versions of the ListingItemTemplate Images, so that all of them fit in one smsgmessage
      *
      * @param {"resources".ListingItemTemplate} listingItemTemplate
      * @returns {Promise<"resources".ListingItemTemplate>}
@@ -397,6 +397,8 @@ export class ListingItemTemplateService {
                 throw new MessageException('Error while resizing: Original image data not found.');
             }
 
+            // TODO: right now ORIGINAL is resized once and saved as RESIZED
+            // TODO: if RESIZED exists, should we resize it again?
             if (!imageDataResized) {
                 // Only need to process if the resized image does not exist
                 originalImageDatas.push(imageDataOriginal);
@@ -405,7 +407,7 @@ export class ListingItemTemplateService {
 
         for (const originalImageData of originalImageDatas) {
             const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
-            const imageDataCreateRequest: ImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
+            const imageDataCreateRequest: ImageDataCreateRequest = await this.imageDataFactory.getImageDataCreateRequest(
                 originalImageData.imageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
                 originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
             await this.itemDataService.create(imageDataCreateRequest);
@@ -510,6 +512,7 @@ export class ListingItemTemplateService {
                 // load the image data
                 imageDataOriginal.data = await this.itemDataService.loadImageFile(image.hash, imageDataOriginal.imageVersion);
 
+                // todo: use factory
                 const imageCreateRequest: ImageCreateRequest = _.assign({} as ImageCreateRequest, {
                     data: [{
                         dataId: imageDataOriginal.dataId,

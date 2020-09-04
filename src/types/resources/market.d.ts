@@ -13,6 +13,8 @@ declare module 'resources' {
         name: string;
         description: string;
         type: MarketType;
+        reqion: string;
+
         receiveKey: string;
         receiveAddress: string;
         publishKey: string;

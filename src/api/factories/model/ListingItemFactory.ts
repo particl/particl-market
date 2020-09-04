@@ -45,7 +45,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { ItemImageFactory } from './ItemImageFactory';
+import { ImageFactory } from './ImageFactory';
 
 export class ListingItemFactory implements ModelFactoryInterface {
 
@@ -54,7 +54,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
@@ -302,7 +302,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const imageCreateRequests: ImageCreateRequest[] = [];
         for (const image of images) {
 
-            const createRequest: ImageCreateRequest = await this.itemImageFactory.get({
+            const createRequest: ImageCreateRequest = await this.imageFactory.get({
                 image
             } as ImageCreateParams);
             imageCreateRequests.push(createRequest);

@@ -12,7 +12,7 @@ import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ImageCreateParams, MarketCreateParams } from './ModelCreateParams';
-import { ItemImageFactory } from './ItemImageFactory';
+import { ImageFactory } from './ImageFactory';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
@@ -36,7 +36,7 @@ export class MarketFactory implements ModelFactoryInterface {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.ItemImageFactory) private itemImageFactory: ItemImageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -128,7 +128,7 @@ export class MarketFactory implements ModelFactoryInterface {
 
         let image: ImageCreateRequest | undefined;
         if (!_.isEmpty(marketAddMessage.image)) {
-            image = await this.itemImageFactory.get({
+            image = await this.imageFactory.get({
                 image: marketAddMessage.image
             } as ImageCreateParams);
         }
