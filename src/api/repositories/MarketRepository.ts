@@ -35,6 +35,10 @@ export class MarketRepository {
         return await this.MarketModel.fetchAllByReceiveAddress(receiveAddress, withRelated);
     }
 
+    public async findAllByRegion(region: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByRegion(region, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchById(id, withRelated);
     }

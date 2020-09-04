@@ -47,6 +47,15 @@ export class Market extends Bookshelf.Model<Market> {
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
+    public static async fetchAllByRegion(region: string, withRelated: boolean = true): Promise<Collection<Market>> {
+        const collection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('region', 'LIKE', region);
+            })
+            .orderBy('updated_at', 'ASC');
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         return Market.where<Market>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
@@ -80,6 +89,12 @@ export class Market extends Bookshelf.Model<Market> {
                 if (options.type) {
                     qb.andWhere( qbInner => {
                         return qbInner.where('markets.type', '=', options.type);
+                    });
+                }
+
+                if (options.region) {
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('markets.region', '=', options.region);
                     });
                 }
 
@@ -120,6 +135,9 @@ export class Market extends Bookshelf.Model<Market> {
 
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
+
+    public get Region(): string { return this.get('region'); }
+    public set Region(value: string) { this.set('region', value); }
 
     public get ReceiveKey(): string { return this.get('receiveKey'); }
     public set ReceiveKey(value: string) { this.set('receiveKey', value); }

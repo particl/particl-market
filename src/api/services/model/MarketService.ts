@@ -50,6 +50,10 @@ export class MarketService {
         return await this.marketRepo.findAllByReceiveAddress(receiveAddress, withRelated);
     }
 
+    public async findAllByRegion(region: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.findAllByRegion(region, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
@@ -110,6 +114,7 @@ export class MarketService {
         market.Name = !_.isNil(body.name) ? body.name : market.Name;
         market.Description = !_.isNil(body.description) ? body.description : market.Description;
         market.Type = !_.isNil(body.type) ? body.type : market.Type;
+        market.Region = !_.isNil(body.region) ? body.region : market.Type;
         // market.ReceiveKey = body.receiveKey;
         // market.ReceiveAddress = body.receiveAddress;
         // market.PublishKey = body.publishKey;

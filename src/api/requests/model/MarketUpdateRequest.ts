@@ -20,6 +20,8 @@ export class MarketUpdateRequest extends RequestBody implements ModelRequestInte
     @IsNotEmpty()
     public type: MarketType;
 
+    public region: string;
+
     @IsNotEmpty()
     public receiveKey: string;
 

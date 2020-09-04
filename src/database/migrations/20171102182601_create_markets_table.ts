@@ -14,7 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('name').notNullable();
             table.string('description').nullable();
             table.string('type').notNullable();
-            table.string('region').nullable();
+            table.string('region').nullable().defaultTo('global');
 
             table.string('receive_key').notNullable();
             table.string('receive_address').notNullable();

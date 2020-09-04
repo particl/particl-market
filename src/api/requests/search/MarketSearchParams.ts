@@ -9,5 +9,6 @@ export class MarketSearchParams extends BaseSearchParams {
 
     public searchString: string;
     public type: MarketType;
+    public region: string;
 
 }
