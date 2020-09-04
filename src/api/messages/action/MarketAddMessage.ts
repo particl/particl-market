@@ -9,6 +9,7 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketType } from '../../enums/MarketType';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
+import {MarketRegion} from '../../enums/MarketRegion';
 
 export class MarketAddMessage extends MessageBody implements ActionMessageInterface {
 
@@ -20,6 +21,8 @@ export class MarketAddMessage extends MessageBody implements ActionMessageInterf
     public name: string;
     public description: string;
     public marketType: MarketType;
+    public region: string;
+
     public receiveKey: string;
     public publishKey: string;
 

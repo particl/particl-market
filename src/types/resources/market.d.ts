@@ -13,7 +13,7 @@ declare module 'resources' {
         name: string;
         description: string;
         type: MarketType;
-        reqion: string;
+        region: string;
 
         receiveKey: string;
         receiveAddress: string;

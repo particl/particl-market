@@ -27,6 +27,7 @@ import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
+import {MarketRegion} from '../../enums/MarketRegion';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
@@ -84,6 +85,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [4]: publishKey: private key in wif format or public key as DER hex encoded string
      *  [5]: identity: resources.Identity
      *  [6]: description
+     *  [7]: region
      *
      * @param data
      * @returns {Promise<Market>}
@@ -97,6 +99,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         const publishKey: string = data.params[4];
         let identity: resources.Identity = data.params[5];
         const description: string = data.params[6];
+        const region = data.params[7];
 
         // create market identity if one wasnt given
         if (_.isEmpty(identity)) {
@@ -108,6 +111,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 name,
                 description,
                 marketType: type,
+                region,
                 receiveKey,
                 publishKey,
                 // todo: add logo for the default market
@@ -151,6 +155,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *                             if type === STOREFRONT_ADMIN -> private key in wif format
      *  [5]: identityId, optional
      *  [6]: description, optional
+     *  [7]: region, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -158,13 +163,6 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
 
-/*
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('name');
-        }
-*/
         const profileId = data.params[0];
         const name = data.params[1];
         let type = data.params[2];
@@ -172,28 +170,8 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         const publishKey = data.params[4];
         const identityId = data.params[5];
         const description = data.params[6];
+        let region = data.params[7];
 
-        this.log.debug('params: ', data.params);
-
-
-/*
-        if (typeof profileId !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof name !== 'string') {
-            throw new InvalidParamException('name', 'string');
-        } else if (!_.isNil(type) && typeof type !== 'string') {
-            throw new InvalidParamException('type', 'string');
-        } else if (!_.isNil(receiveKey) && typeof receiveKey !== 'string') {
-            throw new InvalidParamException('receiveKey', 'string');
-        } else if (!_.isNil(publishKey) && typeof publishKey !== 'string') {
-            throw new InvalidParamException('publishKey', 'string');
-        } else if (!_.isNil(identityId) && typeof identityId !== 'number') {
-            throw new InvalidParamException('identityId', 'number');
-        } else if (!_.isNil(description) && typeof description !== 'number') {
-            throw new InvalidParamException('description', 'string');
-        }
-*/
-        // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
@@ -238,18 +216,25 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             data.params[5] = identity;
         }
 
+        region = !_.isNil(region) ? region : MarketRegion.WORLDWIDE;
+        if (!EnumHelper.containsName(MarketRegion, region)) {
+            // invalid MarketType
+            throw new InvalidParamException('region', 'MarketRegion');
+        }
+
         data.params[0] = profile;
         data.params[1] = name;
         data.params[2] = type;
         data.params[3] = receiveKey;
         data.params[4] = publishKey;
         data.params[6] = description;
+        data.params[7] = region;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description]';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description] [region]';
     }
 
     public help(): string {
@@ -258,11 +243,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             + '    <name>                   - String - The unique name of the Market being created. \n'
             + '    <type>                   - MarketType, optional - MARKETPLACE \n'
             + '    <receiveKey>             - String, optional - The receive private key of the Market. \n'
-            // + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
             + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
-            // + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
             + '    <identityId>             - Number, optional - The identity to be used with the Market. \n'
-            + '    <description>            - String, optional - Market description. \n';
+            + '    <description>            - String, optional - Market description. \n'
+            + '    <region>                 - String, optional - Market region. \n';
     }
 
     public description(): string {

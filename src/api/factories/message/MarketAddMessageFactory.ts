@@ -61,6 +61,7 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
             description: actionRequest.market.description,
             type: MPActionExtended.MPA_MARKET_ADD,
             marketType: actionRequest.market.type,
+            region: actionRequest.market.region,
             receiveKey: actionRequest.market.receiveKey,
             publishKey: actionRequest.market.publishKey,
             image,

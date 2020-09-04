@@ -6,9 +6,7 @@ import { BaseSearchParams } from './BaseSearchParams';
 import { MarketType } from '../../enums/MarketType';
 
 export class MarketSearchParams extends BaseSearchParams {
-
     public searchString: string;
     public type: MarketType;
     public region: string;
-
 }

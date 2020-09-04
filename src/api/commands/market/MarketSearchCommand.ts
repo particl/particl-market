@@ -11,11 +11,10 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
+import {ListingItemTemplateSearchOrderField, SearchOrderField} from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
@@ -24,6 +23,8 @@ import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand
 import { MarketType } from '../../enums/MarketType';
 import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
 import { Market } from '../../models/Market';
+import { MarketRegion } from '../../enums/MarketRegion';
+import { SearchOrder } from '../../enums/SearchOrder';
 
 export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
@@ -36,6 +37,10 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
             type: 'string'
         }, {
             name: 'type',
+            required: false,
+            type: 'string'
+        }, {
+            name: 'region',
             required: false,
             type: 'string'
         }] as ParamValidationRule[]
@@ -69,16 +74,22 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
 
+        const page: number = data.params[0];
+        const pageLimit: number = data.params[1];
+        const order: SearchOrder = data.params[2];
+        const orderField: SearchOrderField = data.params[3];
         const searchString: string = data.params[4];
         const type: MarketType = data.params[5];
+        const region: MarketRegion = data.params[6];
 
         const searchParams = {
-            page: data.params[0] || 0,
-            pageLimit: data.params[1] || 10,
-            order: data.params[2] || SearchOrder.ASC,
-            orderField: data.params[3] || ListingItemTemplateSearchOrderField.UPDATED_AT,
+            page,
+            pageLimit,
+            order,
+            orderField,
             searchString,
-            type
+            type,
+            region: region as string
         } as MarketSearchParams;
 
         return await this.marketService.search(searchParams);
@@ -92,6 +103,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: searchString, string, optional, * for all
      *  [5]: type, MarketType, optional
+     *  [6]: region, MarketRegion, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -101,9 +113,14 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
 
         const searchString = data.params[4];            // optional
         const type = data.params[5];                    // optional
+        const region = data.params[6];                  // optional
 
         if (!EnumHelper.containsName(MarketType, type)) {
             throw new InvalidParamException('type', 'MarketType');
+        }
+
+        if (!EnumHelper.containsName(MarketRegion, region)) {
+            throw new InvalidParamException('region', 'MarketRegion');
         }
 
         data.params[4] = searchString !== '*' ? data.params[4] : undefined;
@@ -122,7 +139,8 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
             + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
             + '    <orderField>             - ENUM{MarketSearchOrderField} - The field to use to sort results.\n'
             + '    <searchString>           - [optional] String - A string that is used to search. \n'
-            + '    <type>                   - [optional] MarketType, optional - MARKETPLACE \n';
+            + '    <type>                   - [optional] MarketType \n'
+            + '    <region>                 - [optional] MarketRegion \n';
     }
 
     public description(): string {

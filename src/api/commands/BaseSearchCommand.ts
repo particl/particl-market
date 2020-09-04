@@ -10,6 +10,8 @@ import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
 import {MissingParamException} from '../exceptions/MissingParamException';
+import {Order} from '../models/Order';
+import {CommonSearchOrderField, OrderSearchOrderField} from '../enums/SearchOrderField';
 
 export abstract class BaseSearchCommand extends BaseCommand {
 
@@ -76,9 +78,11 @@ export abstract class BaseSearchCommand extends BaseCommand {
             } else if (data.params.length < 2) {
                 throw new MissingParamException('pageLimit');
             } else if (data.params.length < 3) {
-                throw new MissingParamException('order');
+                data.params[2] = SearchOrder.ASC;
+                // throw new MissingParamException('order');
             } else if (data.params.length < 4) {
-                throw new MissingParamException('orderField');
+                data.params[3] = CommonSearchOrderField.UPDATED_AT;
+                // throw new MissingParamException('orderField');
             }
 
             // make sure the params are of correct type

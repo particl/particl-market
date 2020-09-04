@@ -141,6 +141,7 @@ export class MarketFactory implements ModelFactoryInterface {
             name: marketAddMessage.name,
             description: marketAddMessage.description,
             type: marketAddMessage.marketType,
+            region: marketAddMessage.region,
             receiveKey: marketAddMessage.receiveKey,
             receiveAddress,
             publishKey: marketAddMessage.publishKey,
