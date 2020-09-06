@@ -23,7 +23,7 @@ import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn'
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
-import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
+
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 

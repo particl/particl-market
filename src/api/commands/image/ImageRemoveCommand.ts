@@ -12,16 +12,20 @@ import { ImageService } from '../../services/model/ImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
-    public log: LoggerType;
+    public paramValidationRules = {
+        parameters: [{
+            name: 'id',
+            required: true,
+            type: 'number'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -49,17 +53,11 @@ export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // check if we got all the params
-        if (data.params.length < 1) {
-            throw new MissingParamException('id');
-        }
+        const id = data.params[0];
 
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('id', 'number');
-        }
-
-        const image: resources.Image = await this.imageService.findOne(data.params[0]).then(value => value.toJSON());
+        const image: resources.Image = await this.imageService.findOne(id).then(value => value.toJSON());
 
         // if Image has a relation to ItemInformation and ListingItemTemplate, it cannot be deleted
         if (!_.isEmpty(image.ItemInformation) && !_.isEmpty(image.ItemInformation.ListingItemTemplate)) {
