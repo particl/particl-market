@@ -24,11 +24,8 @@ import { ImageDataRepository } from '../../repositories/ImageDataRepository';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
-import { ImageDataUpdateRequest } from '../../requests/model/ImageDataUpdateRequest';
-import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import {ImageVersion} from '../../../core/helpers/ImageVersion';
-import {ImageProcessing} from '../../../core/helpers/ImageProcessing';
+import { ImageVersion } from '../../../core/helpers/ImageVersion';
+import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 
 export class ImageService {
 
@@ -126,10 +123,12 @@ export class ImageService {
 
         if (imageDataCreateRequestOriginal) {
 
+            // this.log.debug('body: ', JSON.stringify(body, null, 2));
             const image: resources.Image = await this.imageRepository.create(body).then(value => value.toJSON());
 
             // then create the ORIGINAL ImageData
             imageDataCreateRequestOriginal.image_id = image.id;
+
             await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
 
             // then create the other versions from the given original data,
@@ -155,6 +154,8 @@ export class ImageService {
         let startTime = Date.now();
         const imageDatas: resources.ImageData[] = [];
 
+        // this.log.debug('createVersions(), originalImageData: ', JSON.stringify(originalImageData, null, 2));
+
         if (originalImageData.data) {
             const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
             this.log.debug('createVersions(), convertToJPEG: ' + (Date.now() - startTime) + 'ms');
@@ -167,6 +168,7 @@ export class ImageService {
                 const versionCreateRequest: ImageDataCreateRequest = JSON.parse(JSON.stringify(originalImageData));
                 versionCreateRequest.imageVersion = version.propName;
                 versionCreateRequest.data = resizedDatas.get(version.propName) || '';
+
                 await this.imageDataService.create(versionCreateRequest).then(value => {
                     imageDatas.push(value.toJSON());
                 });
@@ -177,6 +179,7 @@ export class ImageService {
             // original version has already been created, so theres nothing more to do
         }
 
+        this.log.debug('createVersions(), imageDatas: ', JSON.stringify(imageDatas, null, 2));
         return imageDatas;
     }
 

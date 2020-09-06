@@ -116,7 +116,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         if (typeSpecifier === 'market') {
-            await this.marketService.update(type.id, {image_id: image.id} as MarketUpdateRequest);
+            await this.marketService.updateImage(type.id, image.id);
         }
         return image;
     }

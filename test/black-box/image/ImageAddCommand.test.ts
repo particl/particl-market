@@ -34,7 +34,6 @@ describe('ImageAddCommand', () => {
     let image: resources.Image;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let images: resources.ImageData[];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -221,28 +220,36 @@ describe('ImageAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.Image = res.getBody()['result'];
         image = result;
-        images = result.ImageDatas;
-        // TODO: this test is just testing that the command response is 200
+
+        // log.debug('image: ', JSON.stringify(image, null, 2));
+        expect(image.ImageDatas.length).toBe(4);
+
+        for ( const imageData of image.ImageDatas ) {
+            expect(imageData.protocol).toBe(ProtocolDSN.FILE);
+            expect(imageData.encoding).toBe('BASE64');
+        }
+
     });
 
-/*
-    test('Should fail because ListingItemTemplate is not modifiable', async () => {
+
+    test('Should fail because ListingItemTemplate is not modifiable (has published ListingItem)', async () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            profile.id, // profileId
-            true,  // generateListingItem
-            market.id   // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            true,               // generateShippingDestinations
+            false,              // generateImages
+            true,               // generatePaymentInformation
+            true,               // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            true,               // generateListingItem
+            market.id           // soldOnMarketId
+
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
@@ -254,30 +261,40 @@ describe('ImageAddCommand', () => {
         listingItemTemplate = listingItemTemplates[0];
 
         const res = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.FILE,
-            'BASE64',
-            ImageProcessing.milkcatWide
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
 
-    // TODO: this is not an api test and should be moved under unit/integration tests
-    test('Should return valid versions of image', async () => {
 
-        expect(images.length).toBe(4);
+    test('Should add Image to Market', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'market',
+            market.id,
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Image = res.getBody()['result'];
 
-        for ( const imageData of images ) {
-            // const imageUrl = process.env.APP_HOST
-            //    + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            //    + '/api/iimages/' + image.id + '/' + imageData.imageVersion;
-            //  expect(imageData.dataId).toBe(imageUrl);
-            expect(imageData.protocol).toBe(ProtocolDSN.FILE);
-            expect(imageData.encoding).toBe('BASE64');
-        }
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
+        market = await testUtil.getDefaultMarket(profile.id);
+
+        expect(market.id).toBeDefined();
+        expect(result).toBeDefined();
+        expect(result.id).toBe(market.Image.id);
+
     });
-*/
+
 });

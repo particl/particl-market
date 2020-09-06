@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -51,39 +52,24 @@ export class ImageDataService {
     public async create( @request(ImageDataCreateRequest) data: ImageDataCreateRequest): Promise<ImageData> {
         const body = JSON.parse(JSON.stringify(data));
 
-        if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
-            throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
+        if (!_.isNil(body.data)) {
+            body.dataId = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
+            delete body.data;
         }
 
-        if (body.data) {
-            const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
-            body.dataId = fileName;
-        }
-
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
         const imageData: resources.ImageData = await this.imageDataRepo.create(body).then(value => value.toJSON());
         return await this.findOne(imageData.id);
     }
 
     @validate()
     public async update(id: number, @request(ImageDataUpdateRequest) data: ImageDataUpdateRequest): Promise<ImageData> {
-
-        const startTime = new Date().getTime();
         const body = JSON.parse(JSON.stringify(data));
 
-        if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
-            throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
-        }
-
-        if (body.encoding !== 'BASE64') {
-            this.log.warn('Unsupported image encoding. Only supports BASE64.');
-        }
-
-        // find the existing one without related
         const imageData = await this.findOne(id, false);
 
         await this.removeImageFile(imageData.ImageHash, imageData.ImageVersion);
-        const fileName = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
-        body.data = fileName;
+        body.dataId = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
 
         // set new values
         if (body.dataId) {

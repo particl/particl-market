@@ -138,6 +138,13 @@ export class MarketService {
         return await this.findOne(id, true);
     }
 
+    public async updateImage(id: number, imageId: number): Promise<Market> {
+        const market = await this.findOne(id, false);
+        market.set('imageId', imageId);
+        await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
+        return await this.findOne(id, true);
+    }
+
     public async destroy(id: number): Promise<void> {
         await this.marketRepo.destroy(id);
     }

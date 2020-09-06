@@ -2,19 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ImageVersion } from '../../../core/helpers/ImageVersion';
-import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ImageCreateParams } from './ModelCreateParams';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ItemCategoryFactory} from '../ItemCategoryFactory';
+import {ImageVersion} from '../../../core/helpers/ImageVersion';
+import {ImageDataCreateRequest} from '../../requests/model/ImageDataCreateRequest';
+import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
+import {ContentReference, DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import {ModelFactoryInterface} from './ModelFactoryInterface';
+import {ImageCreateParams} from './ModelCreateParams';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableImageCreateRequestConfig} from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import {NotImplementedException} from '../../exceptions/NotImplementedException';
 
 
 export class ImageDataFactory  implements ModelFactoryInterface {
@@ -42,10 +42,27 @@ export class ImageDataFactory  implements ModelFactoryInterface {
         const contentReference: ContentReference = params.image;
         const dsn: DSN = contentReference.data[0];
 
-        // only calculate hash when uploading new image
-        const hash = dsn.protocol === ProtocolDSN.REQUEST
-            ? ConfigurableHasher.hash({data: dsn.data}, new HashableImageCreateRequestConfig())
-            : contentReference.hash;
+        let hash = contentReference.hash;
+
+        switch (dsn.protocol) {
+            case ProtocolDSN.FILE:
+                // todo: try to load an existing local file
+                break;
+            case ProtocolDSN.REQUEST:
+                // data is in dsn.data, called from ImageAddCommand
+                dsn.protocol = ProtocolDSN.FILE;
+                // only calculate hash when uploading new image
+                hash = ConfigurableHasher.hash({data: dsn.data}, new HashableImageCreateRequestConfig());
+                break;
+            case ProtocolDSN.SMSG:
+                // data will be received in a separate smsg.
+                //  - todo: check if dataId is msgid and already contains an image
+                break;
+            case ProtocolDSN.IPFS:
+            case ProtocolDSN.URL:
+            default:
+                throw new NotImplementedException();
+        }
 
         const imageDataCreateRequest = {
             protocol: dsn.protocol,
@@ -54,7 +71,6 @@ export class ImageDataFactory  implements ModelFactoryInterface {
             imageVersion: ImageVersions.ORIGINAL.propName,
             data: dsn.data,
             imageHash: hash
-            // dataId: 'will be set to filename'
         } as ImageDataCreateRequest;
 
         return imageDataCreateRequest;
