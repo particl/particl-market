@@ -16,18 +16,14 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
-import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
-import {MarketUpdateRequest} from '../../requests/model/MarketUpdateRequest';
+import { MarketUpdateRequest } from '../../requests/model/MarketUpdateRequest';
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
@@ -45,7 +41,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             required: true,
             type: 'string'
         }, {
-            name: 'data|uri',
+            name: 'data',
             required: true,
             type: 'string'
         }, {
@@ -84,37 +80,39 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
+        const typeSpecifier: string = data.params[0];
+        const type: resources.ListingItemTemplate | resources.Market = data.params[1];
+        const protocol: string = data.params[2];
+        const dataOrUri: string = data.params[3];
+        const featured: boolean = data.params[4];
+        const skipResize: boolean = data.params[5];
 
-        const typeSpecifier = data.params[0];
-        const type = data.params[1];
-        const protocol = data.params[2];
-        const dataOrUri = data.params[3];
-        const featured = data.params[4];
-        const skipResize = data.params[5];
-
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        // this.log.debug('typeSpecifier:', JSON.stringify(typeSpecifier, null, 2));
+        // this.log.debug('type:', JSON.stringify(type, null, 2));
 
         const createRequest: ImageCreateRequest = await this.imageFactory.get({
             image: {
                 data: [{
                     protocol,
                     encoding: 'BASE64',
-                    dataId: 'string',
-                    data: 'string'
+                    // dataId: '',
+                    data: dataOrUri
                 }] as DSN[],
                 featured
             } as ContentReference,
             listingItemTemplate: typeSpecifier === 'template' ? type : undefined
         } as ImageCreateParams);
 
-        const image = await this.imageService.create(createRequest);
+        // this.log.debug('createRequest:', JSON.stringify(createRequest, null, 2));
+
+        const image = await this.imageService.create(createRequest).then(value => value.toJSON());
 
         if (featured) {
             await this.imageService.updateFeatured(image.id, true);
         }
 
-        if (!skipResize) {
-            await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+        if (!skipResize && typeSpecifier === 'template') {
+            await this.listingItemTemplateService.createResizedTemplateImages(type as resources.ListingItemTemplate);
         }
 
         if (typeSpecifier === 'market') {
@@ -188,15 +186,17 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         skipResize = !_.isNil(skipResize) ? skipResize : false;
 
         data.params[2] = protocol;
-        data.params[3] = data;
+        data.params[3] = dataOrUri;
         data.params[4] = featured;
         data.params[5] = skipResize;
+
+        // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [skipResize] [featured]';
+        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [featured] [skipResize]';
     }
 
     public help(): string {

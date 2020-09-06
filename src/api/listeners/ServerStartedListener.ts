@@ -189,7 +189,7 @@ export class ServerStartedListener implements interfaces.Listener {
             // seed the default Market for default Profile
             const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarketForProfile(defaultProfile)
                 .catch(reason => {
-                    this.log.error('ERROR: seedDefaultMarket, ' + reason);
+                    this.log.error('ERROR: seedDefaultMarketForProfile, ' + reason);
                     throw reason;
                 });
 

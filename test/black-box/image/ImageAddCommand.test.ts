@@ -74,7 +74,7 @@ describe('ImageAddCommand', () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('typeSpecifier').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('template|market').getMessage());
     });
 
 
@@ -107,7 +107,7 @@ describe('ImageAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('data').getMessage());
     });
 
 
@@ -167,12 +167,27 @@ describe('ImageAddCommand', () => {
     });
 
 
+    test('Should fail because invalid featured', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
+            listingItemTemplate.id,
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('featured', 'boolean').getMessage());
+    });
+
+
     test('Should fail because invalid skipResize', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             'template',
             listingItemTemplate.id,
             ProtocolDSN.REQUEST,
             ImageProcessing.milkcatSmall,
+            false,
             'INVALID'
         ]);
         res.expectJson();
@@ -201,6 +216,7 @@ describe('ImageAddCommand', () => {
             listingItemTemplate.id,
             ProtocolDSN.REQUEST,
             ImageProcessing.milkcatSmall,
+            false,
             false
         ]);
         res.expectJson();

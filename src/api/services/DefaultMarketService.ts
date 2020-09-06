@@ -167,7 +167,7 @@ export class DefaultMarketService {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
 
-        if (marketNameSetting === undefined || marketPKSetting === undefined || marketAddressSetting === undefined) {
+        if (marketNameSetting === undefined || marketPKSetting === undefined) {
             throw new MessageException('Default Market settings not found!');
         }
 

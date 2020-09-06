@@ -7,15 +7,14 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryFactory } from '../ItemCategoryFactory';
-import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import {ContentReference, DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ImageCreateParams } from './ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableImageCreateRequestConfig} from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableImageCreateRequestConfig } from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 
 export class ImageDataFactory  implements ModelFactoryInterface {
@@ -35,6 +34,7 @@ export class ImageDataFactory  implements ModelFactoryInterface {
      * @param params
      */
     public async get(params: ImageCreateParams): Promise<ImageDataCreateRequest> {
+        // this.log.debug('params: ', JSON.stringify(params, null, 2));
 
         // there is no imageVersion on the DSN, so when we receive the ListingItemAddMessage or
         // the ListingItemImageAddMessage, we're always receiving the ORIGINAL version of the Image
@@ -59,7 +59,6 @@ export class ImageDataFactory  implements ModelFactoryInterface {
 
         return imageDataCreateRequest;
     }
-
 
 
     // todo: remove

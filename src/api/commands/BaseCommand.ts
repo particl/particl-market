@@ -97,8 +97,8 @@ export abstract class BaseCommand {
                 const paramValidationRule = this.paramValidationRules.parameters[i];
                 if (paramValidationRule) {
                     this.log.debug('validateRequiredParamsExist(): ' + paramValidationRule.name
-                        + ', required: ' + paramValidationRule.required
-                        + ', value: ' + data.params[i]);
+                        + ', required: ' + paramValidationRule.required);
+                        // + ', value: ' + data.params[i]);
 
                     if (paramValidationRule.required && _.isNil(data.params[i])) {
                         throw new MissingParamException(paramValidationRule.name);

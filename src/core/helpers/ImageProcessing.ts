@@ -283,7 +283,7 @@ export class ImageProcessing {
         + 'wwGLYUPufknJcKHuXV+IC9OSPNP4lqtsrH3OPEeETagXkdzmDsb9MEbu3qeBddEtLtGKrHmNOJYyuZh9xzk5+HNT/9k=';
     // Image that is supposed to show up as invalid
     public static milkcatBroken = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RDpRXhpZgAAASDASSASAAAAAAAAAAAA';
-// A shrunken picture of a Japanese cat with a milk carton on his head, converted to base64 using the *NIX command `base64`
+    // A shrunken picture of a Japanese cat with a milk carton on his head, converted to base64 using the *NIX command `base64`
     public static milkcatSmall = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RDpRXhpZgAASUkqAAgAAAAMAA4BAgAgAAAAngAAAA8BAgAYAAAAvgAAABABAgAQAAAA1gAA'
         + 'ABIBAwABAAAAAQAAABoBBQABAAAA5gAAABsBBQABAAAA7gAAACgBAwABAAAAAgAAADEBAgAMAAAA9gAAADIBAgAUAAAAAgEAABMC'
         + 'AwABAAAAAgAAAGmHBAABAAAAOAMAAKXEBwAiAgAAFgEAAMINAABPTFlNUFVTIERJR0lUQUwgQ0FNRVJBICAgICAgICAgAE9MWU1Q'

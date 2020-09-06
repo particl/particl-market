@@ -9,13 +9,10 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
-import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
 import { ModelFactoryInterface } from './ModelFactoryInterface';
 import { ImageCreateParams } from './ModelCreateParams';
 import { ImageDataFactory } from './ImageDataFactory';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 export class ImageFactory implements ModelFactoryInterface {
 
@@ -37,6 +34,7 @@ export class ImageFactory implements ModelFactoryInterface {
      * @param params
      */
     public async get(params: ImageCreateParams): Promise<ImageCreateRequest> {
+        // this.log.debug('params: ', JSON.stringify(params, null, 2));
 
         const contentReference: ContentReference = params.image;
 

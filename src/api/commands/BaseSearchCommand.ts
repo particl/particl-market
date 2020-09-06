@@ -9,9 +9,8 @@ import { BaseCommand } from './BaseCommand';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
-import {MissingParamException} from '../exceptions/MissingParamException';
-import {Order} from '../models/Order';
-import {CommonSearchOrderField, OrderSearchOrderField} from '../enums/SearchOrderField';
+import { MissingParamException } from '../exceptions/MissingParamException';
+import { CommonSearchOrderField } from '../enums/SearchOrderField';
 
 export abstract class BaseSearchCommand extends BaseCommand {
 

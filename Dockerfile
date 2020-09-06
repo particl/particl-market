@@ -2,7 +2,7 @@ FROM mhart/alpine-node:12.18.2
 # 10.16.3
 # 9.6.1
 
-ENV BUILD_PACKAGES git wget curl bash make gcc g++ python libc6-compat build-base openssl-dev ca-certificates libssl1.0 openssl libstdc++
+ENV BUILD_PACKAGES git wget curl bash make gcc g++ python libc6-compat build-base openssl-dev ca-certificates libssl1.1 openssl libstdc++
 ENV NPM_PACKAGES wait-port yarn ts-node tslint typescript
 
 # update and install all of the required packages, then remove the apk cache
