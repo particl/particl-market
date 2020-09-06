@@ -72,17 +72,15 @@ import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDest
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { EscrowReleaseType, EscrowType, HashableBidField, MessagingProtocol, MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ContentReference, DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 import { EscrowRatioCreateRequest } from '../requests/model/EscrowRatioCreateRequest';
 import { ShippingPriceCreateRequest } from '../requests/model/ShippingPriceCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/model/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/model/ListingItemObjectDataCreateRequest';
-import { ImageDataCreateRequest } from '../requests/model/ImageDataCreateRequest';
-import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
-import { OrderCreateParams } from '../factories/model/ModelCreateParams';
+import { ImageCreateParams, OrderCreateParams } from '../factories/model/ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
@@ -123,8 +121,7 @@ import { ServerStartedListener } from '../listeners/ServerStartedListener';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
-import { HashableImageCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
-
+import { ImageFactory } from '../factories/model/ImageFactory';
 
 export class TestDataService {
 
@@ -159,6 +156,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) private orderFactory: OrderFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Listener) @named(Targets.Listener.ServerStartedListener) private serverStartedListener: ServerStartedListener,
@@ -1407,26 +1405,23 @@ export class TestDataService {
     }
 
     private async generateImagesData(amount: number): Promise<ImageCreateRequest[]> {
-        const items: ImageCreateRequest[] = [];
+        const createRequests: ImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
             const data = await this.generateRandomImage(20, 20);
 
-            const imageHash = ConfigurableHasher.hash({data}, new HashableImageCreateRequestConfig());
-
-            // todo: use factory
-            const item = {
-                hash: imageHash,
-                data: [{
-                    dataId: Faker.internet.url(),
-                    protocol: ProtocolDSN.FILE,
-                    imageVersion: ImageVersions.ORIGINAL.propName,
-                    encoding: 'BASE64',
-                    data
-                }] as ImageDataCreateRequest[]
-            } as ImageCreateRequest;
-            items.push(item);
+            const createRequest: ImageCreateRequest = await this.imageFactory.get({
+                image: {
+                    data: [{
+                        protocol: ProtocolDSN.REQUEST,  // using REQUEST to generate hash
+                        encoding: 'BASE64',
+                        data
+                    }] as DSN[],
+                    featured: false
+                } as ContentReference
+            } as ImageCreateParams);
+            createRequests.push(createRequest);
         }
-        return items;
+        return createRequests;
     }
 
     private async generateItemInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):

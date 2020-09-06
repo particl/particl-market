@@ -112,7 +112,7 @@ export class ItemInformationService {
         if (!_.isEmpty(images)) {
             for (const image of images) {
                 image.item_information_id = itemInformation.id;
-                // this.log.debug('image: ', JSON.stringify(image, null, 2));
+                this.log.debug('create(), image: ', JSON.stringify(image, null, 2));
                 await this.imageService.create(image);
             }
         }

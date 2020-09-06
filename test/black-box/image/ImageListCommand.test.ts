@@ -68,15 +68,15 @@ describe('ImageListCommand', () => {
     });
 
 
-    test('Should fail because missing template|item', async () => {
+    test('Should fail because missing template|item|market', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('template|item').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('template|item|market').getMessage());
     });
 
 
-    test('Should fail because missing listingItemTemplateId|listingItemId', async () => {
+    test('Should fail because missing id', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item'
         ]);
@@ -86,18 +86,18 @@ describe('ImageListCommand', () => {
     });
 
 
-    test('Should fail because invalid template|item', async () => {
+    test('Should fail because invalid template|item|market', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             true,
             listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('template|item', 'string').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('template|item|market', 'string').getMessage());
     });
 
 
-    test('Should fail because invalid proposalHash', async () => {
+    test('Should fail because invalid id', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item',
             true
@@ -116,6 +116,17 @@ describe('ImageListCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItemTemplate').getMessage());
+    });
+
+
+    test('Should fail because Market not found', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
 
@@ -148,6 +159,18 @@ describe('ImageListCommand', () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
             'item',
             listingItem.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+        expect(result.length).toBeGreaterThan(0);
+    });
+
+    test('Should list all Market Images', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'item',
+            market.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);

@@ -22,7 +22,7 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
 
     public paramValidationRules = {
         parameters: [{
-            name: 'template|item',
+            name: 'template|item|market',
             required: true,
             type: 'string'
         }, {
