@@ -23,6 +23,8 @@ import { Market } from '../models/Market';
 import { MarketFactory } from '../factories/model/MarketFactory';
 import { MarketCreateParams } from '../factories/model/ModelCreateParams';
 import { MarketAddMessage } from '../messages/action/MarketAddMessage';
+import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 
 export class DefaultMarketService {
 
@@ -171,6 +173,7 @@ export class DefaultMarketService {
             throw new MessageException('Default Market settings not found!');
         }
 
+        // todo: factory
         const createRequest: MarketCreateRequest = await this.marketFactory.get({
             actionMessage: {
                 name: marketNameSetting.value,
@@ -178,8 +181,14 @@ export class DefaultMarketService {
                 marketType: MarketType.MARKETPLACE,
                 receiveKey: marketPKSetting.value,
                 publishKey: marketPKSetting.value,
-                // todo: add logo for the default market
-                // image: ContentReference,
+                image: {
+                    data: [{
+                        protocol: ProtocolDSN.REQUEST,  // using REQUEST to generate hash
+                        encoding: 'BASE64',
+                        data: ImageProcessing.particlLogo
+                    }] as DSN[],
+                    featured: false
+                } as ContentReference,
                 generated: Date.now()
             } as MarketAddMessage,
             identity: defaultMarketIdentity

@@ -47,7 +47,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
         const profile: resources.Profile = data.params[0];
-        return await this.marketService.findAllByProfileId(profile ? profile.id : undefined, false);
+        return await this.marketService.findAllByProfileId(profile ? profile.id : undefined, true);
     }
 
     /**

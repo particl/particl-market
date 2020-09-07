@@ -22,6 +22,7 @@ import { HashableMarketCreateRequestConfig } from '../../factories/hashableconfi
 import { CoreRpcService } from '../CoreRpcService';
 import { MarketType } from '../../enums/MarketType';
 import { SmsgService } from '../SmsgService';
+import { ImageService } from './ImageService';
 
 export class MarketService {
 
@@ -30,6 +31,7 @@ export class MarketService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.MarketRepository) public marketRepo: MarketRepository,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
@@ -101,7 +103,18 @@ export class MarketService {
         const body: MarketCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
 
+        const imageCreateRequest = body.image;
+        delete body.image;
+
         const market: resources.Market = await this.marketRepo.create(body).then(value => value.toJSON());
+
+        if (!_.isEmpty(imageCreateRequest)) {
+            await this.imageService.create(imageCreateRequest).then(async value => {
+                const image: resources.Image = value.toJSON();
+                await this.updateImage(market.id, image.id);
+            });
+        }
+
         return await this.findOne(market.id, true);
     }
 

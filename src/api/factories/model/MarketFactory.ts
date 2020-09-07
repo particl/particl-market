@@ -128,7 +128,6 @@ export class MarketFactory implements ModelFactoryInterface {
 
         let image: ImageCreateRequest | undefined;
         if (!_.isNil(marketAddMessage.image)) {
-            this.log.debug('image: ', JSON.stringify(image, null, 2));
             image = await this.imageFactory.get({
                 image: marketAddMessage.image
             } as ImageCreateParams);
@@ -165,7 +164,7 @@ export class MarketFactory implements ModelFactoryInterface {
             throw exception;
         }
 
-        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
         return createRequest;
     }
 }

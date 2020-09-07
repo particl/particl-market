@@ -38,7 +38,6 @@ export class MarketImageAddMessageFactory extends BaseMessageFactory {
      * @returns {Promise<MarketplaceMessage>}
      */
     public async get(actionRequest: MarketImageAddRequest): Promise<MarketplaceMessage> {
-
         if (!actionRequest.image) {
             throw new MissingParamException('image');
         }

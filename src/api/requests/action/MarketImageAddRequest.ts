@@ -11,7 +11,7 @@ import { SmsgSendParams } from './SmsgSendParams';
 export class MarketImageAddRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
-    public sendParams: SmsgSendParams;   // PostRequest always needs to contain the send parameters for the message
+    public sendParams: SmsgSendParams;  // PostRequest always needs to contain the send parameters for the message
 
     @IsNotEmpty()
     public image: resources.Image;

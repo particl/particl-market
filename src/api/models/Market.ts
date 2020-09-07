@@ -20,7 +20,8 @@ export class Market extends Bookshelf.Model<Market> {
         'Identity',
         'Identity.ShoppingCarts',
         'Identity.Profile',
-        'Image'
+        'Image',
+        'Image.ImageDatas'
     ];
 
     public static async fetchAllByProfileId(profileId: number | undefined, withRelated: boolean = true): Promise<Collection<Market>> {

@@ -51,6 +51,7 @@ describe('MarketListCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
+
     test('Should fail because Profile not found', async () => {
         const res = await testUtil.rpc(marketCommand, [marketListCommand,
             0
@@ -82,7 +83,7 @@ describe('MarketListCommand', () => {
     });
 
 
-    test('Should list the posted Market', async () => {
+    test('Should list the posted (and received) Market', async () => {
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
             30 * 60,                    // maxSeconds
@@ -98,23 +99,53 @@ describe('MarketListCommand', () => {
         log.debug('markets: ', JSON.stringify(markets, null, 2));
         expect(markets).toHaveLength(1);
 
-
         const result: resources.Market = markets[0];
         expect(result.title).toBe(market.title);
         expect(result.description).toBe(market.description);
         expect(result.Profile).toBeUndefined();
-
+        expect(result.Image).toBeDefined();
+        expect(result.Image.hash).toBe('e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b');
     }, 600000); // timeout to 600s
 
 
     test('Should list the default Market for specified Profile', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketListCommand,
+        const response = await testUtil.rpc(marketCommand, [marketListCommand,
             profile.id
         ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(1);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const markets: resources.Market[] = response.getBody()['result'];
+        expect(markets).toHaveLength(1);
+
+        const result: resources.Market = markets[0];
+        expect(result.title).toBe(market.title);
+        expect(result.description).toBe(market.description);
+        expect(result.Image).toBeDefined();
+        expect(result.Image.hash).toBe('e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b');
     });
+
+    test('Should list the posted (and received) Market with Image', async () => {
+
+        const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
+            30 * 60,                                // maxSeconds
+            200,                                // waitForStatusCode
+            '[0].ImageDatas[0].dataId',       // property name
+            'data/images/e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b-ORIGINAL', // value
+            '='
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const markets: resources.Market[] = response.getBody()['result'];
+        expect(markets).toHaveLength(1);
+
+        const result: resources.Market = markets[0];
+        expect(result.title).toBe(market.title);
+        expect(result.description).toBe(market.description);
+        expect(result.Image).toBeDefined();
+        expect(result.Image.hash).toBe('e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b');
+
+    }, 600000); // timeout to 600s
 
 });

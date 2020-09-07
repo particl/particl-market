@@ -122,11 +122,11 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
         this.log.debug('execute(), posting market: ', JSON.stringify(promotedMarket, null, 2));
 
-        // first post the ListingItem
+        // first post the Market
         const smsgSendResponse: SmsgSendResponse = await this.marketAddActionService.post(marketAddRequest);
 
         if (!estimateFee && !_.isEmpty(promotedMarket.Image)) {
-            // then post the Images related to the ListingItem one by one
+            // then post the Image related to the Market
             const imageSmsgSendResponse: SmsgSendResponse = await this.postMarketImage(marketAddRequest);
             smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
         }
@@ -309,7 +309,9 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         // then prepare the ListingItemImageAddRequest for sending the images
         const imageAddRequest = {
             sendParams: marketAddRequest.sendParams,
-            market: marketAddRequest.market
+            market: marketAddRequest.market,
+            image: marketAddRequest.market.Image,
+            withData: true
         } as MarketImageAddRequest;
 
         imageAddRequest.sendParams.paidMessage = false; // sending images is free for now

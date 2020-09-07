@@ -48,6 +48,8 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
         }
 
         let image: ContentReference | undefined;
+
+        this.log.debug('actionRequest: ', JSON.stringify(actionRequest, null, 2));
         if (!_.isNil(actionRequest.market.Image)) {
             const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.market.Image.ImageDatas, false);
             image = {
