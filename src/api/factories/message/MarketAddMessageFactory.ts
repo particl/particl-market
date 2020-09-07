@@ -48,7 +48,7 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
         }
 
         let image: ContentReference | undefined;
-        if (!_.isEmpty(actionRequest.market.Image)) {
+        if (!_.isNil(actionRequest.market.Image)) {
             const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(actionRequest.market.Image.ImageDatas, false);
             image = {
                 hash: actionRequest.market.Image.hash,
@@ -58,7 +58,7 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
 
         const message = {
             name: actionRequest.market.name,
-            description: actionRequest.market.description,
+            description: actionRequest.market.description || '',
             type: MPActionExtended.MPA_MARKET_ADD,
             marketType: actionRequest.market.type,
             region: actionRequest.market.region,

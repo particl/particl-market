@@ -26,10 +26,12 @@ export class HashableMarketAddMessageConfig extends BaseHashableConfig {
     }, {
         from: HashableMarketField.MARKET_PUBLISH_KEY,
         to: HashableMarketField.MARKET_PUBLISH_KEY
-    }, {
+    }/*, {
         from: HashableMarketAddField.MARKET_IMAGE_HASH,
         to: HashableMarketField.MARKET_IMAGE_HASH
-    }] as HashableFieldConfig[];
+    }*/
+    // TODO: maybe later
+    ] as HashableFieldConfig[];
 
     constructor(values?: HashableFieldValueConfig[]) {
         super(values);

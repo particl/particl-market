@@ -81,7 +81,7 @@ describe('MarketListCommand', () => {
 
     });
 
-/*
+
     test('Should list the posted Market', async () => {
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
@@ -116,6 +116,5 @@ describe('MarketListCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
     });
-*/
 
 });
