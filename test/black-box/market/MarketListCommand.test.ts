@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import * as Faker from 'faker';
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
@@ -82,7 +81,7 @@ describe('MarketListCommand', () => {
 
     });
 
-
+/*
     test('Should list the posted Market', async () => {
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
@@ -117,5 +116,6 @@ describe('MarketListCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
     });
+*/
 
 });

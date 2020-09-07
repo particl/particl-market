@@ -13,15 +13,20 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 
 export class MarketListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
-    public log: LoggerType;
+    public paramValidationRules = {
+        parameters: [{
+            name: 'profileId',
+            required: false,
+            type: 'number'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -53,13 +58,12 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        }
+        const profileId = data.params[0];
 
-        if (data.params.length > 0) {
-            data.params[0] = await this.profileService.findOne(data.params[0])
+        if (!_.isNil(profileId)) {
+            data.params[0] = await this.profileService.findOne(profileId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Profile');
