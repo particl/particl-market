@@ -140,7 +140,7 @@ export class MarketFactory implements ModelFactoryInterface {
 
             msgid: smsgMessage ? smsgMessage.msgid : undefined,
             name: marketAddMessage.name,
-            description: marketAddMessage.description,
+            description: marketAddMessage.description || '',    // description is part of the hash
             type: marketAddMessage.marketType,
             region: marketAddMessage.region,
             receiveKey: marketAddMessage.receiveKey,
