@@ -13,6 +13,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
+
 describe('ListingItemTemplateFeatureImageCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -114,14 +115,14 @@ describe('ListingItemTemplateFeatureImageCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail to set featured because invalid itemImageId', async () => {
+    test('Should fail to set featured because invalid imageId', async () => {
         const res: any = await testUtil.rpc(templateCommand, [featuredImageCommand,
             listingItemTemplate.id,
             'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('itemImageId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('imageId', 'number').getMessage());
     });
 
     test('Should set the featured flag on Image', async () => {

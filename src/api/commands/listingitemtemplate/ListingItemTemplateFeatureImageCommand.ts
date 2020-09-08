@@ -13,16 +13,26 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { Image } from '../../models/Image';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
 export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
-    public log: LoggerType;
+    public paramValidationRules = {
+        parameters: [{
+            name: 'listingItemTemplateId',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'imageId',
+            required: true,
+            type: 'number'
+        }] as ParamValidationRule[]
+    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -44,38 +54,29 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const itemImage: resources.Image = data.params[1];
+        const image: resources.Image = data.params[1];
 
-        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, itemImage.id);
+        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, image.id);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: itemImageId
+     *  [1]: imageId
      * @param data
      * @returns {Promise<Image>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // check if we got all the params
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('itemImageId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('itemImageId', 'number');
-        }
+        const listingItemTemplateId = data.params[0];
+        const imageId = data.params[1];
 
         // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
             .then(value => value.toJSON());
 
-        const itemImage: resources.Image = await this.imageService.findOne(data.params[1], true)
+        const itemImage: resources.Image = await this.imageService.findOne(imageId, true)
             .then(value => value.toJSON());
 
         // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
@@ -102,13 +103,13 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     }
 
     public usage(): string {
-        return this.getName() + ' <templateId> <itemImageId> ';
+        return this.getName() + ' <listingItemTemplateId> <imageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '   <templateId>                 - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
-            + '   <itemImageId>                - Numeric - The Id of the Image we want to remove.';
+            + '   <listingItemTemplateId>       - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
+            + '   <imageId>                     - Numeric - The Id of the Image we want to set as featured.';
     }
 
     public description(): string {

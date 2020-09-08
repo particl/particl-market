@@ -89,7 +89,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-/*
+
     test('Should fail to post because missing listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand]);
         res.expectJson();
@@ -177,7 +177,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
-*/
+
 
     test('Should post a ListingItem in to the default market', async () => {
 
