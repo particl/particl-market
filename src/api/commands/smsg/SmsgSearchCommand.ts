@@ -24,10 +24,9 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { CommandParamValidationRules } from '../BaseCommand';
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,6 +34,20 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
     ) {
         super(Commands.SMSG_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {} as CommandParamValidationRules;
+        // TODO: implement
+        /*
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+        */
     }
 
     public getAllowedSearchOrderFields(): string[] {

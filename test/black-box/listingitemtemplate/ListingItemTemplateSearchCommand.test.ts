@@ -12,7 +12,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -129,7 +129,8 @@ describe('ListingItemTemplateSearchCommand', () => {
             0,
             2,
             'INVALID',
-            ListingItemTemplateSearchOrderField.UPDATED_AT
+            ListingItemTemplateSearchOrderField.UPDATED_AT,
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -318,7 +319,7 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result[0].ListingItems.length).toBe(0);
     });
 
-
+/*
     test('Should return market ListingItemTemplates for specified market NOT having published ListingItems', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,
@@ -363,6 +364,6 @@ describe('ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(2);
         expect(result[0].ListingItems.length).toBe(1);
     });
-
+*/
 });
 

@@ -11,7 +11,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import {ListingItemTemplateSearchOrderField, SearchOrderField} from '../../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField, SearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -28,24 +28,6 @@ import { SearchOrder } from '../../enums/SearchOrder';
 
 export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
-    public log: LoggerType;
-
-    public paramValidationRules = {
-        parameters: [{
-            name: 'searchString',
-            required: false,
-            type: 'string'
-        }, {
-            name: 'type',
-            required: false,
-            type: 'string'
-        }, {
-            name: 'region',
-            required: false,
-            type: 'string'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
@@ -53,6 +35,24 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
     ) {
         super(Commands.MARKET_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'searchString',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'type',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'region',
+                required: false,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     public getAllowedSearchOrderFields(): string[] {

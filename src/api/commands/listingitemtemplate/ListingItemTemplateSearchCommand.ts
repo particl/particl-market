@@ -21,13 +21,12 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
+import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+
 
 export class ListingItemTemplateSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,6 +36,36 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
     ) {
         super(Commands.TEMPLATE_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'profileId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'searchString',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'categories',
+                required: false,
+                type: undefined // todo: number[]|string[]'
+            }, {
+                name: 'isBaseTemplate',
+                required: false,
+                type: 'boolean'
+            }, {
+                name: 'marketReceiveAddress',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'hasItems',
+                required: false,
+                type: 'boolean'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     public getAllowedSearchOrderFields(): string[] {
@@ -51,7 +80,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profile, resources.Profile, optional
      *  [5]: searchString, string, optional
-     *  [6]: categories, optional, number[]|string>[], if string -> find using key
+     *  [6]: categories, optional, number[]|string[], if string -> find using key
      *  [7]: isBaseTemplate, boolean, optional, default true
      *  [8]: market, resources.Market, optional
      *  [9]: hasItems, boolean, optional
@@ -88,7 +117,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: profileId, number, required
      *  [5]: searchString, string, * for all, optional
-     *  [6]: categories, optional, number[]|string>[], if string -> find using key
+     *  [6]: categories, optional, number[]|string[], if string -> find using key
      *  [7]: isBaseTemplate, boolean, optional, default true
      *  [8]: marketReceiveAddress, string, * for all, optional
      *  [9]: hasItems, boolean, optional
@@ -98,29 +127,12 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 5) {
-            throw new MissingParamException('profileId');
-        }
-
-        data.params[8] = (data.params[8] !== '*') ? data.params[8] : undefined;
-
         const profileId = data.params[4];               // required
         const searchString = data.params[5];            // optional
         const categories = data.params[6];              // optional
         const isBaseTemplate = data.params[7];          // optional
-        const marketReceiveAddress = data.params[8];    // optional
+        let marketReceiveAddress = data.params[8];    // optional
         const hasItems = data.params[9];                // optional
-
-
-        if (profileId && typeof profileId !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (searchString && typeof searchString !== 'string') {
-            throw new InvalidParamException('searchString', 'string');
-        } else if (isBaseTemplate !== undefined && typeof isBaseTemplate !== 'boolean') {
-            throw new InvalidParamException('isBaseTemplate', 'boolean');
-        } else if (hasItems !== undefined && typeof hasItems !== 'boolean') {
-            throw new InvalidParamException('hasItems', 'boolean');
-        }
 
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(profileId)
@@ -128,9 +140,6 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
-        data.params[4] = profile;
-
-        data.params[5] = searchString !== '*' ? data.params[5] : undefined;
 
         if (categories) {
             // categories needs to be an array
@@ -145,11 +154,9 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
                     throw new InvalidParamException('categories', 'number[] | string[]');
                 }
             }
-            // don't need an empty category array
-            data.params[6] = categories.length > 0 ? categories : undefined;
         }
 
-
+        marketReceiveAddress = (marketReceiveAddress !== '*') ? marketReceiveAddress : undefined;
         if (marketReceiveAddress) {
             const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, marketReceiveAddress)
                 .then(value => value.toJSON())
@@ -158,6 +165,13 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
                 });
             data.params[8] = market;
         }
+
+        data.params[4] = profile;
+        data.params[5] = searchString !== '*' ? searchString : undefined;
+        data.params[6] = (categories && categories.length) > 0 ? categories : undefined;
+        // data.params[7] = !_.isNil(isBaseTemplate) ? isBaseTemplate : false;
+        data.params[8] = marketReceiveAddress;
+        // data.params[9] = !_.isNil(hasItems) ? hasItems : false;
 
         return data;
     }

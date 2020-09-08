@@ -22,10 +22,9 @@ import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules } from '../BaseCommand';
 
 export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,6 +33,20 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
     ) {
         super(Commands.ITEM_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {} as CommandParamValidationRules;
+        // TODO: implement
+        /*
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+        */
     }
 
     public getAllowedSearchOrderFields(): string[] {

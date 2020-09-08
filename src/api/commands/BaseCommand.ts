@@ -28,12 +28,13 @@ export abstract class BaseCommand {
 
     public commands: CommandEnumType;
     public command: Command;
-    protected paramValidationRules: CommandParamValidationRules;
 
     constructor(command: Command) {
         this.command = command;
         this.commands = Commands;
     }
+
+    public abstract getCommandParamValidationRules(): CommandParamValidationRules;
 
     /**
      * execute the next command in data.params
@@ -66,9 +67,15 @@ export abstract class BaseCommand {
         return this.command.childCommands;
     }
 
-    public async validate(data: RpcRequest): Promise<RpcRequest> {
-        await this.validateRequiredParamsExist(data);
-        await this.validateRequiredTypes(data);
+    /**
+     *
+     * @param data
+     * @param rules
+     */
+    public async validate(data: RpcRequest, rules?: CommandParamValidationRules): Promise<RpcRequest> {
+        rules = rules ? rules : this.getCommandParamValidationRules();
+        await this.validateRequiredParamsExist(data, rules);
+        await this.validateRequiredTypes(data, rules);
         return data;
     }
 
@@ -88,13 +95,11 @@ export abstract class BaseCommand {
         return this.command;
     }
 
-    public async validateRequiredParamsExist(data: RpcRequest): Promise<RpcRequest> {
-        if (this.paramValidationRules
-            && this.paramValidationRules.parameters
-            && this.paramValidationRules.parameters.length > 0) {
+    public async validateRequiredParamsExist(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+        if (rules && rules.parameters && rules.parameters.length > 0) {
 
-            for (let i = 0; i < this.paramValidationRules.parameters.length; i++) {
-                const paramValidationRule = this.paramValidationRules.parameters[i];
+            for (let i = 0; i < rules.parameters.length; i++) {
+                const paramValidationRule = rules.parameters[i];
                 if (paramValidationRule) {
                     this.log.debug('validateRequiredParamsExist(): ' + paramValidationRule.name
                         + ', required: ' + paramValidationRule.required);
@@ -109,15 +114,13 @@ export abstract class BaseCommand {
         return data;
     }
 
-    public async validateRequiredTypes(data: RpcRequest): Promise<RpcRequest> {
-        if (this.paramValidationRules
-            && this.paramValidationRules.parameters
-            && this.paramValidationRules.parameters.length > 0) {
+    public async validateRequiredTypes(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+        if (rules && rules.parameters && rules.parameters.length > 0) {
 
             for (let i = 0; i < data.params.length; i++) {
                 const currentParamValue = data.params[i];
-                const requiredType = this.paramValidationRules.parameters[i].type;
-                const parameterName = this.paramValidationRules.parameters[i].name;
+                const requiredType = rules.parameters[i].type;
+                const parameterName = rules.parameters[i].name;
 
                 this.log.debug('validateRequiredTypes(): ' + parameterName
                     + ', requiredType: ' + requiredType
@@ -128,8 +131,6 @@ export abstract class BaseCommand {
                 }
             }
         }
-
         return data;
     }
-
 }

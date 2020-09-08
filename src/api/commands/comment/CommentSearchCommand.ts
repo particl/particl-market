@@ -26,11 +26,10 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MarketService} from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MessageException } from '../../exceptions/MessageException';
+import { CommandParamValidationRules } from '../BaseCommand';
 
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -41,6 +40,20 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     ) {
         super(Commands.COMMENT_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {} as CommandParamValidationRules;
+        // TODO: implement
+        /*
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+        */
     }
 
     public getAllowedSearchOrderFields(): string[] {

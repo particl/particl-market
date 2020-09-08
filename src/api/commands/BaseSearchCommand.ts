@@ -5,12 +5,10 @@
 import * as _ from 'lodash';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
-import { BaseCommand } from './BaseCommand';
+import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from './BaseCommand';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
-import { MissingParamException } from '../exceptions/MissingParamException';
-import { CommonSearchOrderField } from '../enums/SearchOrderField';
 
 export abstract class BaseSearchCommand extends BaseCommand {
 
@@ -29,83 +27,55 @@ export abstract class BaseSearchCommand extends BaseCommand {
     public abstract getAllowedSearchOrderFields(): string[];
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        await this.validateSearchParams(data);
-        return await super.validate(data); // validates the basic params, see: BaseCommand.validate()
+        const rules = this.getSearchCommandParamValidationRules();
+        return await super.validate(data, rules)
+            .then(async value => {
+
+                // validate checks the searchparams based on paramValidationRules
+                const page = value.params[0];
+                const pageLimit = value.params[1];
+                const order = value.params[2];
+                const orderField = value.params[3];
+
+                // valid SearchOrder?
+                if (!EnumHelper.containsName(SearchOrder, order)) {
+                    throw new InvalidParamException('order', 'SearchOrder');
+                }
+
+                // valid orderField?
+                if (!_.includes(this.getAllowedSearchOrderFields(), orderField)) {
+                    throw new InvalidParamException('orderField',  '' + this.getAllowedSearchOrderFields());
+                }
+                return data;
+            }); // validates the basic params, see: BaseCommand.validate()
     }
 
-    /**
-     * data.params[]:
-     *  [0]: page, number, required, 0-based
-     *  [1]: pageLimit, number, required
-     *  [2]: order, SearchOrder, required
-     *  [3]: orderField, SearchOrderField, required, field to which the SearchOrder is applied
-     *  ...
-     *
-     * @param data
-     * @returns {Promise<RpcRequest>}
-     */
-    public async validateSearchParams(data: RpcRequest): Promise<RpcRequest> {
+    public getSearchCommandParamValidationRules(): CommandParamValidationRules {
+        const rules = {
+            parameters: [] as ParamValidationRule[]
+        } as CommandParamValidationRules
 
-        const page = data.params[0];
-        const pageLimit = data.params[1];
-        const order = data.params[2];
-        const orderField = data.params[3];
+        const searchParameters = [{
+            name: 'page',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'pageLimit',
+            required: true,
+            type: 'number'
+        }, {
+            name: 'order',
+            required: true,
+            type: 'string'
+        }, {
+            name: 'orderField',
+            required: true,
+            type: 'string'
+        }] as ParamValidationRule[];
 
-        if (this.paramValidationRules && this.paramValidationRules.parameters) {
-            this.paramValidationRules.parameters.unshift({
-                name: 'page',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'pageLimit',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'order',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'orderField',
-                required: true,
-                type: 'string'
-            });
-
-        } else {
-            // make sure all required parameters exist
-            if (data.params.length < 1) {
-                throw new MissingParamException('page');
-            } else if (data.params.length < 2) {
-                throw new MissingParamException('pageLimit');
-            } else if (data.params.length < 3) {
-                data.params[2] = SearchOrder.ASC;
-                // throw new MissingParamException('order');
-            } else if (data.params.length < 4) {
-                data.params[3] = CommonSearchOrderField.UPDATED_AT;
-                // throw new MissingParamException('orderField');
-            }
-
-            // make sure the params are of correct type
-            if (typeof page !== 'number' || page < 0) {
-                throw new InvalidParamException('page', 'number');
-            } else if (typeof pageLimit !== 'number' || pageLimit <= 0) {
-                throw new InvalidParamException('pageLimit', 'number');
-            } else if (typeof order !== 'string') {
-                throw new InvalidParamException('order', 'string');
-            } else if (typeof orderField !== 'string') {
-                throw new InvalidParamException('orderField', 'string');
-            }
-        }
-
-        // valid SearchOrder?
-        if (!EnumHelper.containsName(SearchOrder, order)) {
-            throw new InvalidParamException('order', 'SearchOrder'/*+ EnumHelper.getNames(SearchOrder)*/);
-        }
-
-        // valid orderField?
-        if (!_.includes(this.getAllowedSearchOrderFields(), orderField)) {
-            throw new InvalidParamException('orderField',  '' + this.getAllowedSearchOrderFields());
-        }
-        return data;
+        const commandRules = this.getCommandParamValidationRules();
+        rules.parameters = searchParameters.concat(commandRules.parameters);
+        return rules;
     }
 
 }

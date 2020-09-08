@@ -24,10 +24,9 @@ import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchPara
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
+import { CommandParamValidationRules } from '../BaseCommand';
 
 export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,6 +36,20 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     ) {
         super(Commands.ORDERITEM_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {} as CommandParamValidationRules;
+        // TODO: implement
+        /*
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+        */
     }
 
     public getAllowedSearchOrderFields(): string[] {

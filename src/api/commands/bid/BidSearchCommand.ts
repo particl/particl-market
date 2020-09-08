@@ -25,10 +25,10 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
+import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -38,6 +38,32 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     ) {
         super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'type',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'searchString',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'market',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'bidder',
+                required: false,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     public getAllowedSearchOrderFields(): string[] {
@@ -119,14 +145,6 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         let type = data.params[5];              // optional
         let searchString = data.params[6];      // optional
         let market = data.params[7];            // optional
-
-        if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (!_.isNil(searchString) && typeof searchString !== 'string') {
-            throw new InvalidParamException('searchString', 'string');
-        } else if (!_.isNil(market) && typeof market !== 'string') {
-            throw new InvalidParamException('market', 'string');
-        }
 
         if (!_.isNil(type)) {
             type = this.validateStatus(type);
