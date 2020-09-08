@@ -23,6 +23,7 @@ import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn'
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
+import {BaseImageAddMessage} from '../../messages/action/BaseImageAddMessage';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
@@ -91,7 +92,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         // this.log.debug('type:', JSON.stringify(type, null, 2));
 
         const createRequest: ImageCreateRequest = await this.imageFactory.get({
-            image: {
+            actionMessage: {
                 data: [{
                     protocol,
                     encoding: 'BASE64',
@@ -99,7 +100,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
                     data: dataOrUri
                 }] as DSN[],
                 featured
-            } as ContentReference,
+            } as BaseImageAddMessage,
             listingItemTemplate: typeSpecifier === 'template' ? type : undefined
         } as ImageCreateParams);
 

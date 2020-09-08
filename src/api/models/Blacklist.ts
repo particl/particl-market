@@ -35,7 +35,7 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
         const collection = Blacklist.forge<Model<Blacklist>>()
             .query(qb => {
                 qb.where('type', '=', type);
-                qb.where('profile_id', '=', profileId);
+                qb.andWhere('profile_id', '=', profileId);
             })
             .orderBy('id', 'ASC');
 
@@ -52,7 +52,7 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
         const collection = Blacklist.forge<Model<Blacklist>>()
             .query(qb => {
                 qb.where('target', '=', target);
-                qb.where('profile_id', '=', profileId);
+                qb.andWhere('profile_id', '=', profileId);
             })
             .orderBy('id', 'ASC');
 

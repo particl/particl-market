@@ -35,6 +35,7 @@ import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketNotification } from '../../messages/notification/MarketNotification';
 import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
+import { ImageService } from '../model/ImageService';
 
 
 export class MarketAddActionService extends BaseActionService {
@@ -49,6 +50,7 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private actionMessageFactory: MarketAddMessageFactory,
@@ -150,7 +152,26 @@ export class MarketAddActionService extends BaseActionService {
 
             // this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
-            const market: resources.Market = await this.marketService.create(createRequest).then(async value => value.toJSON());
+            // Image for the Market might have already been received
+            const existingImages: resources.Image[] = await this.imageService.findAllByTarget(createRequest.hash).then(value => value.toJSON());
+            this.log.debug('processMessage(), existingImages: ' + existingImages.length + ', for market.hash: ' + createRequest.hash);
+
+            for (const existingImage of existingImages) {
+                // then remove existing Image from the MarketCreateRequest if theres a match
+                if (createRequest.hash === existingImage.target) {
+                    // market hash matches the existing image target market hash
+                    delete createRequest.image;
+                }
+            }
+
+            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
+            const market: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
+            for (const existingImage of existingImages) {
+                await this.marketService.updateImage(market.id, existingImage.id).then(value => {
+                    this.log.debug('updated, image: ' + existingImage.id + ', for market: ' + market.id + '.');
+                });
+            }
             // this.log.debug('processMessage(), market: ', JSON.stringify(market, null, 2));
 
             await this.createFlaggedItemIfNeeded(market);
@@ -199,6 +220,7 @@ export class MarketAddActionService extends BaseActionService {
                 return await this.createFlaggedItemForMarket(market, proposal);
             })
             .catch(reason => {
+                this.log.debug('Market is not flagged.');
                 return null;
             });
     }

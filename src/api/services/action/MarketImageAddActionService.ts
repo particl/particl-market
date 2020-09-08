@@ -33,6 +33,9 @@ import { MarketImageAddRequest } from '../../requests/action/MarketImageAddReque
 import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessage';
 import { MarketImageAddValidator } from '../../messagevalidators/MarketImageAddValidator';
 import { MarketImageNotification } from '../../messages/notification/MarketImageNotification';
+import { ImageFactory } from '../../factories/model/ImageFactory';
+import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+
 
 export class MarketImageAddActionService extends BaseActionService {
 
@@ -48,6 +51,7 @@ export class MarketImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketImageAddMessageFactory) private actionMessageFactory: MarketImageAddMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketImageAddValidator) public validator: MarketImageAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -112,36 +116,53 @@ export class MarketImageAddActionService extends BaseActionService {
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
 
-        const imageAddMessage: MarketImageAddMessage = marketplaceMessage.action as MarketImageAddMessage;
+        const actionMessage: MarketImageAddMessage = marketplaceMessage.action as MarketImageAddMessage;
 
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // for all incoming messages, update the image data
-            // there could be several, since the same image could be used in multiple Markets/ListingItems.
-            // also note that the Market/ListingItem might not have been received yet.
-            const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            // for all incoming messages, update the image data if found
+            // if the Market/ListingItem has not been received yet, then create the image.
 
-            // target
-            for (const image of images) {
-                const updateRequest = {
-                    data: [{
-                        dataId: imageAddMessage.data[0].dataId,
-                        protocol: imageAddMessage.data[0].protocol,
-                        encoding: imageAddMessage.data[0].encoding,
-                        data: imageAddMessage.data[0].data,
-                        imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
-                        imageHash: imageAddMessage.hash
-                    }] as ImageDataCreateRequest[],
-                    hash: imageAddMessage.hash,
-                    featured: false     // TODO: add featured flag as param
-                } as ImageUpdateRequest;
+            const images: resources.Image[] = await this.imageService.findAllByHashAndTarget(actionMessage.hash, actionMessage.target)
+                .then(value => value.toJSON());
+            this.log.debug('images exist:', images.length);
 
-                // update the image with the real data
-                await this.imageService.update(image.id, updateRequest);
+            if (!_.isEmpty(images)) {
+                for (const image of images) {
+                    const updateRequest = {
+                        data: [{
+                            dataId: actionMessage.data[0].dataId,
+                            protocol: actionMessage.data[0].protocol,
+                            encoding: actionMessage.data[0].encoding,
+                            data: actionMessage.data[0].data,
+                            imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
+                            imageHash: actionMessage.hash
+                        }] as ImageDataCreateRequest[],
+                        hash: actionMessage.hash,
+                        featured: actionMessage.featured,
+                        target: actionMessage.target,
+                        msgid: smsgMessage.msgid,
+                        generatedAt: actionMessage.generated,
+                        postedAt: smsgMessage.sent,
+                        receivedAt: smsgMessage.received
+                    } as ImageUpdateRequest;
+
+                    // update the image with the real data
+                    await this.imageService.update(image.id, updateRequest).then(value => {
+                        this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
+                    });
+                }
+            } else {
+                this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
+                const createRequest = await this.imageFactory.get({
+                    actionMessage,
+                    smsgMessage
+                } as ImageCreateParams);
+                await this.imageService.create(createRequest).then(value => {
+                    this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
+                });
             }
-
         }
-
         return smsgMessage;
     }
 

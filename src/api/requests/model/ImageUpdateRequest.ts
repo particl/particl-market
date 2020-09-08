@@ -16,5 +16,11 @@ export class ImageUpdateRequest extends RequestBody implements ModelRequestInter
     public hash: string;
     public featured: boolean;
 
+    public msgid: string;
+    public target: string;
+
+    public generatedAt: number;
+    public postedAt: number;
+    public receivedAt: number;
 }
 // tslint:enable:variable-name

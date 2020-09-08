@@ -18,6 +18,12 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.boolean('featured').defaultTo(false);
 
+            table.string('msgid').nullable();
+            table.string('target').nullable();
+            table.timestamp('generated_at').nullable();
+            table.timestamp('posted_at').nullable();
+            table.timestamp('received_at').nullable();
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

@@ -127,9 +127,12 @@ export class MarketFactory implements ModelFactoryInterface {
         this.log.debug('get(), publishAddress: ', publishAddress);
 
         let image: ImageCreateRequest | undefined;
+
+        // this.log.debug('marketAddMessage.image: ', JSON.stringify(marketAddMessage.image, null, 2));
+
         if (!_.isNil(marketAddMessage.image)) {
             image = await this.imageFactory.get({
-                image: marketAddMessage.image
+                actionMessage: marketAddMessage.image
             } as ImageCreateParams);
         }
 

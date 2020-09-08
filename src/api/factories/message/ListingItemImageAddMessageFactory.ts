@@ -60,7 +60,8 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
             signature,
             hash: actionRequest.image.hash,
             data,
-            target: actionRequest.listingItem.hash // TODO: we could remove this later on...
+            target: actionRequest.listingItem.hash,
+            featured: actionRequest.image.featured
         } as ListingItemImageAddMessage;
 
         // this.log.debug('message:', JSON.stringify(message, null, 2));

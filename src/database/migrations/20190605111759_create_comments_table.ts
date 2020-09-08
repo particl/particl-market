@@ -10,7 +10,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('comments', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('msgid').nullable();   // first created without, later updated
+            table.string('msgid').notNullable();
 
             table.integer('parent_comment_id').unsigned().nullable();
             table.foreign('parent_comment_id').references('id')
@@ -22,11 +22,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('type').notNullable();
             table.string('target').nullable();          // ListingItem hash
             table.text('message').notNullable();
-            table.timestamp('generated_at').notNullable();
-
-            table.timestamp('posted_at').notNullable();
-            table.timestamp('expired_at').notNullable();
-            table.timestamp('received_at').notNullable().defaultTo(db.fn.now());
+            table.timestamp('generated_at').nullable();
+            table.timestamp('posted_at').nullable();
+            table.timestamp('expired_at').nullable();
+            table.timestamp('received_at').nullable();
 
             table.timestamp('updated_at').notNullable().defaultTo(db.fn.now());
             table.timestamp('created_at').notNullable().defaultTo(db.fn.now());

@@ -27,6 +27,7 @@ import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 
+
 export class ImageService {
 
     public log: LoggerType;
@@ -56,13 +57,21 @@ export class ImageService {
 
     /**
      * Return all Images with a certain hash.
-     * There could be several, since the same image could be used in multiple ListingItems.
+     * There could be several, since the same image file could be used in multiple ListingItems.
      *
      * @param hash
      * @param withRelated
      */
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
         return await this.imageRepository.findAllByHash(hash, withRelated);
+    }
+
+    public async findAllByTarget(target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
+        return await this.imageRepository.findAllByTarget(target, withRelated);
+    }
+
+    public async findAllByHashAndTarget(hash: string, target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
+        return await this.imageRepository.findAllByHashAndTarget(hash, target, withRelated);
     }
 
     /**
@@ -179,7 +188,7 @@ export class ImageService {
             // original version has already been created, so theres nothing more to do
         }
 
-        this.log.debug('createVersions(), imageDatas: ', JSON.stringify(imageDatas, null, 2));
+        // this.log.debug('createVersions(), created imageDatas: ', JSON.stringify(imageDatas, null, 2));
         return imageDatas;
     }
 
@@ -213,7 +222,14 @@ export class ImageService {
         } else {
             throw new MessageException('Original ImageData not found.');
         }
+    }
 
+
+    public async updateItemInformation(id: number, itemInformationId: number): Promise<Image> {
+        const image = await this.findOne(id, false);
+        image.set('itemInformationId', itemInformationId);
+        await this.imageRepository.update(id, image.toJSON()).then(value => value.toJSON());
+        return await this.findOne(id, true);
     }
 
 

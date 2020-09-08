@@ -8,10 +8,10 @@ import { HashableCommonField } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class HashableMarketCreateRequestConfig extends BaseHashableConfig {
 
-    public fields = [{
+    public fields = [/*{
         from: HashableMarketCRField.GENERATED_AT,
         to: HashableCommonField.GENERATED
-    }, {
+    }, */{
         from: HashableMarketField.MARKET_NAME,
         to: HashableMarketField.MARKET_NAME
     }, {

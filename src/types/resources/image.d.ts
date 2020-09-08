@@ -11,6 +11,13 @@ declare module 'resources' {
         updatedAt: Date;
         featured: boolean;
 
+        msgid: string;
+        target: string;
+
+        generatedAt: number;
+        postedAt: number;
+        receivedAt: number;
+
         ImageDatas: ImageData[];
         ItemInformation: ItemInformation;
     }

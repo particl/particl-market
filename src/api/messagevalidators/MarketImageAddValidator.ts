@@ -42,7 +42,7 @@ export class MarketImageAddValidator implements ActionMessageValidatorInterface 
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
 
         const actionMessage = message.action as MarketImageAddMessage;
-        this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
+        // this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         if (actionMessage.type !== MPActionExtended.MPA_MARKET_IMAGE_ADD) {
             throw new ValidationException('Invalid action type.', ['Accepting only ' + MPActionExtended.MPA_MARKET_IMAGE_ADD]);

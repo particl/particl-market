@@ -10,7 +10,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('votes', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('msgid'); // .notNullable().unique();
+            table.string('msgid').nullable();
 
             table.integer('proposal_option_id').unsigned().notNullable();
             table.foreign('proposal_option_id').references('id')

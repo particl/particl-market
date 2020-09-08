@@ -10,8 +10,8 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { ContentReference } from 'omp-lib/dist/interfaces/dsn';
 import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
+import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -46,11 +46,10 @@ export interface ListingItemCreateParams extends ModelCreateParams {
     itemCategory: resources.ItemCategory;
     actionMessage: ActionMessageInterface;
     smsgMessage: resources.SmsgMessage;
-
 }
 
 export interface ImageCreateParams extends ModelCreateParams {
-    image: ContentReference;
+    actionMessage: BaseImageAddMessage;
     listingItemTemplate?: resources.ListingItem;
 }
 

@@ -30,8 +30,16 @@ export class ImageRepository {
         return await this.ImageModel.fetchById(id, withRelated);
     }
 
-    public async findAllByHash(id: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
-        return await this.ImageModel.fetchAllByHash(id, withRelated);
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
+        return await this.ImageModel.fetchAllByHash(hash, withRelated);
+    }
+
+    public async findAllByTarget(target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
+        return await this.ImageModel.fetchAllByTarget(target, withRelated);
+    }
+
+    public async findAllByHashAndTarget(hash: string, target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
+        return await this.ImageModel.fetchAllByHashAndTarget(hash, target, withRelated);
     }
 
     public async create(data: any): Promise<Image> {

@@ -122,6 +122,7 @@ import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { ImageFactory } from '../factories/model/ImageFactory';
+import {BaseImageAddMessage} from '../messages/action/BaseImageAddMessage';
 
 export class TestDataService {
 
@@ -1410,14 +1411,14 @@ export class TestDataService {
             const data = await this.generateRandomImage(20, 20);
 
             const createRequest: ImageCreateRequest = await this.imageFactory.get({
-                image: {
+                actionMessage: {
                     data: [{
                         protocol: ProtocolDSN.REQUEST,  // using REQUEST to generate hash
                         encoding: 'BASE64',
                         data
                     }] as DSN[],
                     featured: false
-                } as ContentReference
+                } as BaseImageAddMessage
             } as ImageCreateParams);
             createRequests.push(createRequest);
         }

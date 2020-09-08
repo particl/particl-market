@@ -37,6 +37,8 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
+import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { ImageFactory } from '../../factories/model/ImageFactory';
 
 
 export class ListingItemImageAddActionService extends BaseActionService {
@@ -57,6 +59,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private actionMessageFactory: ListingItemImageAddMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemImageAddValidator) public validator: ListingItemImageAddValidator,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -120,34 +123,54 @@ export class ListingItemImageAddActionService extends BaseActionService {
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ListingItemAddRequest): Promise<resources.SmsgMessage> {
 
-        const imageAddMessage: ListingItemImageAddMessage = marketplaceMessage.action as ListingItemImageAddMessage;
+        const actionMessage: ListingItemImageAddMessage = marketplaceMessage.action as ListingItemImageAddMessage;
 
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // for all incoming messages, update the image data
-            const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
+            // for all incoming messages, update the image data if found
+            const images: resources.Image[] = await this.imageService.findAllByHashAndTarget(actionMessage.hash, actionMessage.target)
+                .then(value => value.toJSON());
+            this.log.debug('images exist:', images.length);
 
-            for (const image of images) {
+            if (!_.isEmpty(images)) {
 
-                const updateRequest = {
-                    data: [{
-                        dataId: imageAddMessage.data[0].dataId,
-                        protocol: imageAddMessage.data[0].protocol,
-                        encoding: imageAddMessage.data[0].encoding,
-                        data: imageAddMessage.data[0].data,
-                        imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
-                        imageHash: imageAddMessage.hash
-                    }] as ImageDataCreateRequest[],
-                    hash: imageAddMessage.hash,
-                    featured: false     // TODO: add featured flag as param
-                } as ImageUpdateRequest;
+                for (const image of images) {
 
-                // update the image with the real data
-                await this.imageService.update(image.id, updateRequest);
+                    // todo: use factory
+                    const updateRequest = {
+                        data: [{
+                            dataId: actionMessage.data[0].dataId,
+                            protocol: actionMessage.data[0].protocol,
+                            encoding: actionMessage.data[0].encoding,
+                            data: actionMessage.data[0].data,
+                            imageVersion: ImageVersions.ORIGINAL.propName,  // we only need the ORIGINAL, other versions will be created automatically
+                            imageHash: actionMessage.hash
+                        }] as ImageDataCreateRequest[],
+                        hash: actionMessage.hash,
+                        featured: actionMessage.featured,
+                        target: actionMessage.target,
+                        msgid: smsgMessage.msgid,
+                        generatedAt: actionMessage.generated,
+                        postedAt: smsgMessage.sent,
+                        receivedAt: smsgMessage.received
+                    } as ImageUpdateRequest;
+
+                    // update the image with the real data
+                    await this.imageService.update(image.id, updateRequest).then(value => {
+                        this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
+                    });
+                }
+            } else {
+                this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
+                const createRequest = await this.imageFactory.get({
+                    actionMessage,
+                    smsgMessage
+                } as ImageCreateParams);
+                await this.imageService.create(createRequest).then(value => {
+                    this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
+                });
             }
-
         }
-
         return smsgMessage;
     }
 
@@ -173,23 +196,6 @@ export class ListingItemImageAddActionService extends BaseActionService {
             return notification;
         }
         return undefined;
-    }
-
-    /**
-     * If a ListingItemTemplate matching with ListingItem is found, add a relation
-     *
-     * @param listingItem
-     */
-    public async updateListingItemAndTemplateRelationIfNeeded(listingItem: resources.ListingItem): Promise<void> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOneByHash(listingItem.hash)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                return undefined;
-            });
-        if (listingItemTemplate) {
-            await this.listingItemService.updateListingItemAndTemplateRelation(listingItem, listingItemTemplate);
-        }
-        return;
     }
 
 }

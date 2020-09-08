@@ -79,13 +79,15 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
     public async validateSequence(message: MarketplaceMessage, direction: ActionDirection): Promise<boolean> {
 
         if (ActionDirection.INCOMING === direction) {
-            // in case of incoming message, LISTINGITEM_ADD should have been received already, so ListingItem with the hash should exist
+            // no need for this anymore
+/*
             const actionMessage = message.action as ListingItemImageAddMessage;
             const listingItems: resources.ListingItem[] = await this.listingItemService.findAllByHash(actionMessage.target).then(value => value.toJSON());
             if (_.isEmpty(listingItems)) {
                 this.log.error('LISTINGITEM_ADD has not been received or processed yet.');
                 return false;
             }
+*/
         }
         return true;
     }

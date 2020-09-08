@@ -17,7 +17,7 @@ export class ImageData extends Bookshelf.Model<ImageData> {
         const proposalResultCollection = ImageData.forge<Model<ImageData>>()
             .query(qb => {
                 qb.where('image_hash', '=', hash);
-                qb.where('image_version', '=', version);
+                qb.andWhere('image_version', '=', version);
             })
             .orderBy('id', SearchOrder.DESC);
 

@@ -192,7 +192,6 @@ export class IdentityService {
             name: address,
             identity_id: marketIdentity.id
         } as ShoppingCartCreateRequest);
-
         return await this.findOne(marketIdentity.id);
     }
 

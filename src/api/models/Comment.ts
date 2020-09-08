@@ -40,7 +40,7 @@ export class Comment extends Bookshelf.Model<Comment> {
       const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.type', '=', type);
-                qb.where('comments.target', '=', target);
+                qb.andWhere('comments.target', '=', target);
             });
       return commentResultCollection.fetchAll();
     }

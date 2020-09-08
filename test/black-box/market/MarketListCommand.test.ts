@@ -84,6 +84,7 @@ describe('MarketListCommand', () => {
 
 
     test('Should list the posted (and received) Market', async () => {
+        expect(sent).toBeTruthy();
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
             30 * 60,                    // maxSeconds
@@ -96,7 +97,7 @@ describe('MarketListCommand', () => {
         response.expectStatusCode(200);
 
         const markets: resources.Market[] = response.getBody()['result'];
-        log.debug('markets: ', JSON.stringify(markets, null, 2));
+        // log.debug('markets: ', JSON.stringify(markets, null, 2));
         expect(markets).toHaveLength(1);
 
         const result: resources.Market = markets[0];
@@ -109,6 +110,8 @@ describe('MarketListCommand', () => {
 
 
     test('Should list the default Market for specified Profile', async () => {
+        expect(sent).toBeTruthy();
+
         const response = await testUtil.rpc(marketCommand, [marketListCommand,
             profile.id
         ]);
@@ -126,25 +129,29 @@ describe('MarketListCommand', () => {
     });
 
     test('Should list the posted (and received) Market with Image', async () => {
+        expect(sent).toBeTruthy();
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
-            30 * 60,                                // maxSeconds
-            200,                                // waitForStatusCode
-            '[0].ImageDatas[0].dataId',       // property name
-            'data/images/e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b-ORIGINAL', // value
+            30 * 60,                    // maxSeconds
+            200,                    // waitForStatusCode
+            '.length',          // property name
+            1,              // value
             '='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const markets: resources.Market[] = response.getBody()['result'];
+        // log.debug('markets: ', JSON.stringify(markets, null, 2));
         expect(markets).toHaveLength(1);
 
+        const imageHash = 'e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b';
         const result: resources.Market = markets[0];
         expect(result.title).toBe(market.title);
         expect(result.description).toBe(market.description);
         expect(result.Image).toBeDefined();
-        expect(result.Image.hash).toBe('e985ce59e9cdfdff368fa96de65161572cc755bed9ec5f9913e9f9cc4f7fa66b');
+        expect(result.Image.hash).toBe(imageHash);
+        expect(result.Image.ImageDatas[0].dataId).toBe('data/images/' + imageHash + '-ORIGINAL');
 
     }, 600000); // timeout to 600s
 

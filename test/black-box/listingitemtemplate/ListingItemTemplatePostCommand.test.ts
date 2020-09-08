@@ -15,6 +15,8 @@ import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoun
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import {BidSearchOrderField, ListingItemSearchOrderField, OrderSearchOrderField} from '../../../src/api/enums/SearchOrderField';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -30,7 +32,8 @@ describe('ListingItemTemplatePostCommand', () => {
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
     const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
-
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
     const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
@@ -40,9 +43,14 @@ describe('ListingItemTemplatePostCommand', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
     let randomCategory: resources.ItemCategory;
 
     let sent = false;
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const SEARCHORDER = SearchOrder.ASC;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
     const DAYS_RETENTION = 1;
 
     beforeAll(async () => {
@@ -81,7 +89,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-
+/*
     test('Should fail to post because missing listingItemTemplateId', async () => {
         const res = await testUtil.rpc(templateCommand, [templatePostCommand]);
         res.expectJson();
@@ -169,7 +177,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('==============================================================================================');
 
     });
-
+*/
 
     test('Should post a ListingItem in to the default market', async () => {
 
@@ -211,6 +219,50 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
+
+    test('Should have received MPA_LISTING_ADD on default market', async () => {
+
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
+        log.debug('========================================================================================');
+        log.debug('SELLER RECEIVES MPA_LISTING_ADD');
+        log.debug('========================================================================================');
+
+        const response: any = await testUtil.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+                market.receiveAddress,
+                [],
+                '*',
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                listingItemTemplate.hash
+            ],
+            15 * 60,
+            200,
+            '[0].hash',
+            listingItemTemplate.hash
+        );
+
+        const results: resources.ListingItem[] = response.getBody()['result'];
+        expect(results.length).toBe(1);
+        expect(results[0].hash).toBe(listingItemTemplate.hash);
+
+        listingItem = results[0];
+        log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+        expect(listingItem.ItemInformation.Images.length).toBeGreaterThan(0);
+        expect(listingItem.ItemInformation.Images[0].msgid).toBeDefined();
+        expect(listingItem.ItemInformation.Images[0].target).toBeDefined();
+        expect(listingItem.ItemInformation.Images[0].generatedAt).toBeDefined();
+        expect(listingItem.ItemInformation.Images[0].postedAt).toBeDefined();
+        expect(listingItem.ItemInformation.Images[0].receivedAt).toBeDefined();
+        expect(listingItem.ItemInformation.Images[0].ImageDatas[0].data).toBeNull();
+
+    }, 600000); // timeout to 600s
 
 
     test('Should post ListingItemTemplate created using the basic gui flow (old?)', async () => {

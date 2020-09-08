@@ -32,16 +32,9 @@ export class CommentCreateRequest extends RequestBody implements ModelRequestInt
     @IsNotEmpty()
     public message: string;
 
-    @IsNotEmpty()
     public generatedAt: number;
-
-    @IsNotEmpty()
     public postedAt: number;
-
-    @IsNotEmpty()
     public expiredAt: number;
-
-    @IsNotEmpty()
     public receivedAt: number;
 
 }

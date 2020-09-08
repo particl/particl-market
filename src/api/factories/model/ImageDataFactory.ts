@@ -2,19 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Targets, Types} from '../../../constants';
-import {ItemCategoryFactory} from '../ItemCategoryFactory';
-import {ImageVersion} from '../../../core/helpers/ImageVersion';
-import {ImageDataCreateRequest} from '../../requests/model/ImageDataCreateRequest';
-import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
-import {ContentReference, DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {ImageCreateParams} from './ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashableImageCreateRequestConfig} from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
-import {NotImplementedException} from '../../exceptions/NotImplementedException';
+import * as _ from 'lodash';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Targets, Types } from '../../../constants';
+import { ItemCategoryFactory } from '../ItemCategoryFactory';
+import { ImageVersion } from '../../../core/helpers/ImageVersion';
+import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
+import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
+import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { ImageCreateParams } from './ModelCreateParams';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashableImageCreateRequestConfig } from '../hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 
 
 export class ImageDataFactory  implements ModelFactoryInterface {
@@ -39,10 +41,10 @@ export class ImageDataFactory  implements ModelFactoryInterface {
         // there is no imageVersion on the DSN, so when we receive the ListingItemAddMessage or
         // the ListingItemImageAddMessage, we're always receiving the ORIGINAL version of the Image
 
-        const contentReference: ContentReference = params.image;
-        const dsn: DSN = contentReference.data[0];
+        const actionMessage: BaseImageAddMessage = params.actionMessage;
+        const dsn: DSN = actionMessage.data[0];
 
-        let hash = contentReference.hash;
+        let hash = actionMessage.hash;
 
         switch (dsn.protocol) {
             case ProtocolDSN.FILE:
@@ -56,7 +58,10 @@ export class ImageDataFactory  implements ModelFactoryInterface {
                 break;
             case ProtocolDSN.SMSG:
                 // data will be received in a separate smsg.
-                //  - todo: check if dataId is msgid and already contains an image
+                // ...this could also be the separate smsg, so if data exists, store as FILE
+                if (!_.isEmpty(dsn.data)) {
+                    dsn.protocol = ProtocolDSN.FILE;
+                }
                 break;
             case ProtocolDSN.IPFS:
             case ProtocolDSN.URL:

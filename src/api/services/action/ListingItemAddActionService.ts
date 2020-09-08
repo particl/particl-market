@@ -36,7 +36,8 @@ import { ListingItemNotification } from '../../messages/notification/ListingItem
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { MessageSize } from '../../responses/MessageSize';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
-import {ActionMessageInterface} from '../../messages/action/ActionMessageInterface';
+import { ImageService } from '../model/ImageService';
+
 
 export class ListingItemAddActionService extends BaseActionService {
 
@@ -49,6 +50,7 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
@@ -158,16 +160,17 @@ export class ListingItemAddActionService extends BaseActionService {
         this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
         if (actionDirection === ActionDirection.INCOMING) {
-            // we're creating the listingitem only when it arrives
+
+            // we're creating the ListingItem only when it arrives
             const listingItemAddMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-            // if ListingItem contains a custom category, create them
+            // if ListingItem contains a custom category, create it if needed
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createMarketCategoriesFromArray(smsgMessage.to,
                 listingItemAddMessage.item.information.category);
 
             // this.log.debug('processMessage(), itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-            const listingItemCreateRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
+            const createRequest: ListingItemCreateRequest = await this.listingItemFactory.get({
                 itemCategory,
                 actionMessage: listingItemAddMessage,
                 smsgMessage
@@ -175,15 +178,33 @@ export class ListingItemAddActionService extends BaseActionService {
 
             // this.log.debug('processMessage(), listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
-            // - create the ListingItem locally with the listingItemCreateRequest
-            await this.listingItemService.create(listingItemCreateRequest)
-                .then(async value => {
-                    const listingItem: resources.ListingItem = value.toJSON();
+            // some of the ListingItems Images might have already been received
+            const existingImages: resources.Image[] = await this.imageService.findAllByTarget(createRequest.hash).then(value => value.toJSON());
+            this.log.debug('processMessage(), existingImages: ' + existingImages.length + ', for market.hash: ' + createRequest.hash);
 
-                    // - if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
+            for (const existingImage of existingImages) {
+                // then remove existing Image from the ListingItemCreateRequest
+                _.remove(createRequest.itemInformation.images, (imageCR) => {
+                    return imageCR.hash === existingImage.hash;
+                });
+            }
+
+            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
+            // create the ListingItem
+            await this.listingItemService.create(createRequest)
+                .then(async listingValue => {
+                    const listingItem: resources.ListingItem = listingValue.toJSON();
+
+                    // update the relation for all existing Images
+                    for (const existingImage of existingImages) {
+                        await this.imageService.updateItemInformation(existingImage.id, listingItem.ItemInformation.id).then(imageValue => imageValue.toJSON());
+                    }
+
+                    // if there's a Proposal to remove the ListingItem, create a FlaggedItem related to the ListingItem
                     await this.createFlaggedItemIfNeeded(listingItem);
 
-                    // - if there's a matching ListingItemTemplate, create a relation
+                    // if there's a matching ListingItemTemplate, create a relation
                     await this.updateListingItemAndTemplateRelationIfNeeded(listingItem);
 
                     this.log.debug('CREATED: ' + smsgMessage.msgid + ' / ' + listingItem.id + ' / ' + listingItem.hash);

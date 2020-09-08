@@ -32,7 +32,7 @@ export class MarketAddValidator implements ActionMessageValidatorInterface {
     public async validateMessage(message: MarketplaceMessage, direction: ActionDirection, smsgMessage?: resources.SmsgMessage): Promise<boolean> {
 
         const actionMessage = message.action as MarketAddMessage;
-        this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
+        // this.log.debug('actionMessage:', JSON.stringify(actionMessage, null, 2));
 
         if (actionMessage.type !== MPActionExtended.MPA_MARKET_ADD) {
             this.log.error('Not MPActionExtended.MPA_MARKET_ADD');
@@ -59,7 +59,7 @@ export class MarketAddValidator implements ActionMessageValidatorInterface {
             throw new MissingParamException('generated');
         }
 
-        this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
+        // this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
         return true;
 
     }

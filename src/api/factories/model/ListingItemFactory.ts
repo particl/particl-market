@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+// tslint:disable:max-line-length
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -25,15 +26,7 @@ import { ListingItemObjectDataCreateRequest } from '../../requests/model/Listing
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import {
-    EscrowConfig,
-    EscrowRatio,
-    ItemInfo,
-    ItemObject,
-    Location,
-    LocationMarker, MessagingInfo, PaymentInfo,
-    PaymentOption, ShippingPrice
-} from 'omp-lib/dist/interfaces/omp';
+import { EscrowConfig, EscrowRatio, ItemInfo, ItemObject, Location, LocationMarker, MessagingInfo, PaymentInfo, PaymentOption, ShippingPrice } from 'omp-lib/dist/interfaces/omp';
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
@@ -46,6 +39,9 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { ImageFactory } from './ImageFactory';
+import { ImageService } from '../../services/model/ImageService';
+// tslint:enable:max-line-length
+
 
 export class ListingItemFactory implements ModelFactoryInterface {
 
@@ -55,6 +51,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
     ) {
         this.log = new Logger(__filename);
@@ -69,13 +66,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
         const smsgMessage = params.smsgMessage;
 
-        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(listingItemAddMessage.item.information, params.itemCategory);
-        const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(listingItemAddMessage.item.payment);
-        const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(listingItemAddMessage.item.messaging);
+        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(params);
+        const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(params);
+        const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(params);
 
         let listingItemObjects;
         if (listingItemAddMessage.item.objects) {
-            listingItemObjects = await this.getModelListingItemObjects(listingItemAddMessage.item.objects);
+            listingItemObjects = await this.getModelListingItemObjects(params);
         }
 
         const createRequest = {
@@ -107,7 +104,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return createRequest;
     }
 
-    private async getModelListingItemObjects(objects: ItemObject[]): Promise<ListingItemObjectCreateRequest[]> {
+    private async getModelListingItemObjects(params: ListingItemCreateParams): Promise<ListingItemObjectCreateRequest[]> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const objects: ItemObject[] = listingItemAddMessage.item.objects || [];
+
         const objectArray: ListingItemObjectCreateRequest[] = [];
         for (const object of objects) {
             let objectData;
@@ -136,7 +139,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return objectDataArray;
     }
 
-    private async getModelMessagingInformation(messaging: MessagingInfo): Promise<MessagingInformationCreateRequest[]> {
+    private async getModelMessagingInformation(params: ListingItemCreateParams): Promise<MessagingInformationCreateRequest[]> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const messaging: MessagingInfo = listingItemAddMessage.item.messaging;
+
         const messagingArray: MessagingInformationCreateRequest[] = [];
         if (!messaging || !_.isArray(messaging.options)) {
             return messagingArray;
@@ -150,9 +159,15 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return messagingArray;
     }
 
-    private async getModelPaymentInformation(payment: PaymentInfo): Promise<PaymentInformationCreateRequest> {
-        const escrow = payment.escrow ? await this.getModelEscrow(payment.escrow) : undefined;
-        const itemPrice = payment.options ? await this.getModelItemPrice(payment.options) : undefined;
+    private async getModelPaymentInformation(params: ListingItemCreateParams): Promise<PaymentInformationCreateRequest> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const payment: PaymentInfo = listingItemAddMessage.item.payment;
+
+        const escrow = payment.escrow ? await this.getModelEscrow(params) : undefined;
+        const itemPrice = payment.options ? await this.getModelItemPrice(params) : undefined;
 
         return {
             type: payment.type,
@@ -161,7 +176,13 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as PaymentInformationCreateRequest;
     }
 
-    private async getModelItemPrice(paymentOptions: PaymentOption[]): Promise<ItemPriceCreateRequest> {
+    private async getModelItemPrice(params: ListingItemCreateParams): Promise<ItemPriceCreateRequest> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const paymentOptions: PaymentOption[] = listingItemAddMessage.item.payment.options || [];
+
         // todo: this needs to be refactored
         const paymentOption: PaymentOption | undefined = _.find(paymentOptions, (option: PaymentOption) => {
             return option.currency === Cryptocurrency.PART;
@@ -198,13 +219,23 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as CryptocurrencyAddressCreateRequest;
     }
 
-    private async getModelEscrow(escrow: EscrowConfig): Promise<EscrowCreateRequest> {
-        const ratio = await this.getModelEscrowRatio(escrow.ratio);
+    private async getModelEscrow(params: ListingItemCreateParams): Promise<EscrowCreateRequest> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const escrow: EscrowConfig | undefined = listingItemAddMessage.item.payment.escrow;
+        let ratio: EscrowRatioCreateRequest | undefined;
+
+        if (!_.isNil(escrow) && !_.isNil(escrow.ratio)) {
+            ratio = await this.getModelEscrowRatio(escrow.ratio);
+        }
+
         return {
-            type: escrow.type,
+            type: (escrow && escrow.type) ? escrow.type : undefined,
             ratio,
-            releaseType: escrow.releaseType,
-            secondsToLock: escrow.secondsToLock
+            releaseType: (escrow && escrow.releaseType) ? escrow.releaseType : undefined,
+            secondsToLock: (escrow && escrow.secondsToLock) ? escrow.secondsToLock : undefined
         } as EscrowCreateRequest;
     }
 
@@ -215,23 +246,28 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as EscrowRatioCreateRequest;
     }
 
-    private async getModelItemInformation(information: ItemInfo, itemCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
-        // const itemCategory = await this.itemCategoryFactory.getCreateRequest(information.category, itemCategory);
+    private async getModelItemInformation(params: ListingItemCreateParams): Promise<ItemInformationCreateRequest> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const information: ItemInfo = listingItemAddMessage.item.information;
+        const itemCategory: resources.ItemCategory = params.itemCategory;
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
         let images: ImageCreateRequest[] | undefined;
 
         if (information.location) {
-            itemLocation = await this.getModelLocation(information.location);
+            itemLocation = await this.getModelLocation(params);
         }
 
         if (information.shippingDestinations) {
-            shippingDestinations = await this.getModelShippingDestinations(information.shippingDestinations);
+            shippingDestinations = await this.getModelShippingDestinations(params);
         }
 
         if (information.images) {
-            images = await this.getImageCreateRequests(information.images);
+            images = await this.getImageCreateRequests(params);
         }
 
         return {
@@ -246,36 +282,50 @@ export class ListingItemFactory implements ModelFactoryInterface {
         } as ItemInformationCreateRequest;
     }
 
-    private async getModelLocation(location: Location): Promise<ItemLocationCreateRequest> {
+    private async getModelLocation(params: ListingItemCreateParams): Promise<ItemLocationCreateRequest> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const location: Location | undefined = listingItemAddMessage.item.information.location;
+
         let locationMarker: LocationMarkerCreateRequest | undefined;
-        if (location.gps) {
-            locationMarker = await this.getModelLocationMarker(location.gps);
+        if (!_.isNil(location) && !_.isNil(location.gps)) {
+            locationMarker = await this.getModelLocationMarker(params);
         }
-        const country = location.country ? location.country : undefined;
-        const address = location.address ? location.address : undefined;
 
         return {
-            country,
-            address,
+            country: (location && location.country) ? location.country : undefined,
+            address: (location && location.address) ? location.address : undefined,
             locationMarker
         } as ItemLocationCreateRequest;
     }
 
-    private async getModelLocationMarker(gps: LocationMarker): Promise<LocationMarkerCreateRequest> {
-        const lat = gps.lat;
-        const lng = gps.lng;
-        const title = gps.title ? gps.title : undefined;
-        const description = gps.description ? gps.description : undefined;
+    private async getModelLocationMarker(params: ListingItemCreateParams): Promise<LocationMarkerCreateRequest | undefined> {
 
-        return {
-            lat,
-            lng,
-            title,
-            description
-        } as LocationMarkerCreateRequest;
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const location: Location | undefined = listingItemAddMessage.item.information.location;
+
+        if (!_.isNil(location) && !_.isNil(location.gps)) {
+            const gps: LocationMarker = location.gps;
+            return {
+                lat: gps.lat,
+                lng: gps.lng,
+                title: gps.title ? gps.title : undefined,
+                description: gps.description ? gps.description : undefined
+            } as LocationMarkerCreateRequest;
+        }
+        return undefined;
     }
 
-    private async getModelShippingDestinations(shippingDestinations: string[]): Promise<ShippingDestinationCreateRequest[]> {
+    private async getModelShippingDestinations(params: ListingItemCreateParams): Promise<ShippingDestinationCreateRequest[]> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
+
+        const shippingDestinations: string[] = listingItemAddMessage.item.information.shippingDestinations || [];
 
         const destinations: ShippingDestinationCreateRequest[] = [];
         for (const destination of shippingDestinations) {
@@ -297,13 +347,19 @@ export class ListingItemFactory implements ModelFactoryInterface {
         return destinations;
     }
 
-    private async getImageCreateRequests(images: ContentReference[]): Promise<ImageCreateRequest[]> {
+    private async getImageCreateRequests(params: ListingItemCreateParams): Promise<ImageCreateRequest[]> {
+
+        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const smsgMessage = params.smsgMessage;
 
         const imageCreateRequests: ImageCreateRequest[] = [];
+
+        const images: ContentReference[] = listingItemAddMessage.item.information.images || [];
         for (const image of images) {
 
             const createRequest: ImageCreateRequest = await this.imageFactory.get({
-                image
+                smsgMessage,
+                actionMessage: image
             } as ImageCreateParams);
             imageCreateRequests.push(createRequest);
         }
