@@ -10,10 +10,11 @@ import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/search/BidSearchParams';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
-import { Profile } from './Profile';
+import { Identity } from './Identity';
 import { OrderItem } from './OrderItem';
 import { BidSearchOrderField } from '../enums/SearchOrderField';
 import { Logger as LoggerType } from '../../core/Logger';
+
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -57,13 +58,26 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemObjects.ListingItemObjectDatas',
         'ListingItem.ListingItemTemplate',
         'ListingItem.ListingItemTemplate.Profile',
-        'Profile'
+        'Identity',
+        'Identity.Profile'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Bid>> {
         const BidCollection = Bid.forge<Model<Bid>>()
             .query(qb => {
-                qb.where('profile_id', '=', profileId);
+                qb.join('identities', 'bids.identity_id', 'identities.id');
+                qb.where('identities.profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        return BidCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchAllByIdentityId(identityId: number, withRelated: boolean = true): Promise<Collection<Bid>> {
+        const BidCollection = Bid.forge<Model<Bid>>()
+            .query(qb => {
+                qb.join('identities', 'bids.identity_id', 'identities.id');
+                qb.where('bids.identity_id', '=', identityId);
             })
             .orderBy('id', 'ASC');
 
@@ -123,9 +137,16 @@ export class Bid extends Bookshelf.Model<Bid> {
                     });
                 }
 
-                if (options.profileId) {
+                if (options.identityId) {
                     qb.andWhere( qbInner => {
-                        return qbInner.where('bids.profile_id', '=', options.profileId);
+                        return qbInner.where('bids.identity_id', '=', options.identityId);
+                    });
+                }
+
+                if (options.profileId) {
+                    qb.join('identities', 'bids.identity_id', 'identities.id');
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('identities.profile_id', '=', options.profileId);
                     });
                 }
 
@@ -172,6 +193,18 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get GeneratedAt(): number { return this.get('generatedAt'); }
     public set GeneratedAt(value: number) { this.set('generatedAt', value); }
 
+    public get ExpiryTime(): number { return this.get('expiryTime'); }
+    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
@@ -202,8 +235,8 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.hasMany(Bid, 'parent_bid_id', 'id');
     }
 
-    public Profile(): Profile {
-        return this.belongsTo(Profile, 'profile_id', 'id');
+    public Identity(): Identity {
+        return this.belongsTo(Identity, 'identity_id', 'id');
     }
 
 }

@@ -41,7 +41,7 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
     }
 
     public description(): string {
-        return 'Commands for managing bids.';
+        return 'Commands for managing Bids.';
     }
 
     public example(): string {

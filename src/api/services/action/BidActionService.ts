@@ -38,6 +38,8 @@ import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest'
 import { AddressType } from '../../enums/AddressType';
 import { ProfileService } from '../model/ProfileService';
 import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
+import { IdentityService } from '../model/IdentityService';
+
 
 export class BidActionService extends BaseActionService {
 
@@ -49,6 +51,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
@@ -125,20 +128,27 @@ export class BidActionService extends BaseActionService {
 
         this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
-        const bidMessage: BidMessage = marketplaceMessage.action as BidMessage;
+        // actionDirection === ActionDirection.OUTGOING -> buyer sending
+        // actionDirection === ActionDirection.INCOMING -> seller receiving
+
+        const bidderAddress = smsgMessage.from;
+        const sellerAddress = smsgMessage.to;
 
         // first get the Market address on which the bid was made on
+        const bidMessage: BidMessage = marketplaceMessage.action as BidMessage;
         const marketReceiveAddressKVS: KVS | undefined = _.find(bidMessage.objects || [], (kvs: KVS) => {
             return kvs.key === ActionMessageObjects.BID_ON_MARKET;
         });
         const marketReceiveAddress = marketReceiveAddressKVS!.value as string;
         // smsgMessage.to should be the same?
 
-        // then
+        // find the ListingItem the Bid is for
         const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(bidMessage.item,
             marketReceiveAddress).then(value => value.toJSON());
+        const identity: resources.Identity = await this.identityService.findOneByAddress(
+            actionDirection === ActionDirection.OUTGOING ? bidderAddress : sellerAddress).then(value => value.toJSON());
 
-        this.log.debug('Processing a Bid for listingItem: ', listingItem.id);
+        this.log.debug('Processing a Bid for ListingItem: ', listingItem.id);
         this.log.debug('bidMessage: ', JSON.stringify(bidMessage, null, 2));
 
         let address: AddressCreateRequest;
@@ -155,25 +165,20 @@ export class BidActionService extends BaseActionService {
             address.profile_id = listingItem.ListingItemTemplate.Profile.id;
             address.type = AddressType.SHIPPING_BID;
 
-
         } else { // (ActionDirection.OUTGOING === actionDirection) {
             // outgoing message -> we are the bidder, there is no ListingItemTemplate
-
-            // actionRequest exists and should contain AddressCreateRequest
             address = actionRequest!.address;
         }
 
-        const profile: resources.Profile = await this.profileService.findOne(address.profile_id).then(value => value.toJSON());
-
         const bidCreateRequest: BidCreateRequest = await this.bidFactory.get({
-                profile,
-                listingItem,
-                address,
-                bidder: smsgMessage.from
-                // parentBid: undefined
-            } as BidCreateParams,
-            marketplaceMessage.action as BidMessage,
-            smsgMessage);
+            actionMessage: marketplaceMessage.action as BidMessage,
+            smsgMessage,
+            identity,
+            listingItem,
+            address,
+            bidder: smsgMessage.from
+            // parentBid: undefined
+        } as BidCreateParams);
 
         // TODO: currently we support just one OrderItem per Order
 
@@ -200,7 +205,6 @@ export class BidActionService extends BaseActionService {
         if (bid.bidder !== smsgMessage.from || bid.ListingItem.seller !== smsgMessage.to) {
             throw new MessageException('Something funny going on with the seller/buyer addresses.');
         }
-
         // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
 
         const order: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());

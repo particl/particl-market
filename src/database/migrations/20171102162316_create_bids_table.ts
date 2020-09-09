@@ -9,16 +9,16 @@ exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
         db.schema.createTable('bids', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
-            table.string('msgid'); // .notNullable().unique();
+            table.string('msgid').nullable(); // .notNullable().unique();
 
             table.string('type').notNullable();
             table.string('bidder').notNullable();
             table.string('hash').notNullable();
             table.integer('generated_at').notNullable();
 
-            table.integer('profile_id').unsigned().nullable()/*.notNullable()*/;
-            table.foreign('profile_id').references('id')
-                .inTable('profiles').onDelete('cascade');
+            table.integer('identity_id').unsigned().notNullable();
+            table.foreign('identity_id').references('id')
+                .inTable('identities').onDelete('cascade');
 
             table.integer('listing_item_id').unsigned().notNullable();
             table.foreign('listing_item_id').references('id')
@@ -31,6 +31,11 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('parent_bid_id').unsigned().nullable();
             table.foreign('parent_bid_id').references('id')
                 .inTable('bids').onDelete('cascade');
+
+            table.integer('expiry_time').unsigned().nullable();
+            table.integer('received_at').unsigned().nullable();
+            table.integer('posted_at').unsigned().nullable();
+            table.integer('expired_at').unsigned().nullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

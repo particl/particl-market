@@ -52,7 +52,7 @@ export class MarketFactory implements ModelFactoryInterface {
 
         // this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
         const marketAddMessage: MarketAddMessage = params.actionMessage as MarketAddMessage;
-        const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
+        const smsgMessage: resources.SmsgMessage | undefined = params.smsgMessage;
 
         const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
         const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;

@@ -17,7 +17,7 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
     @IsNotEmpty()
     public listing_item_id: number;
     @IsNotEmpty()
-    public profile_id: number;
+    public identity_id: number;
 
     public parent_bid_id: number;
 
@@ -36,6 +36,11 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
     public hash: string;
     @IsNotEmpty()
     public generatedAt: number;
+
+    public expiryTime: number;
+    public receivedAt: number;
+    public postedAt: number;
+    public expiredAt: number;
 
     public bidDatas: BidDataCreateRequest[];
 }

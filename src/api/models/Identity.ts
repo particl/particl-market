@@ -6,14 +6,16 @@ import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
-import {ShoppingCart} from './ShoppingCart';
+import { ShoppingCart } from './ShoppingCart';
+import { Bid } from './Bid';
 
 export class Identity extends Bookshelf.Model<Identity> {
 
     public static RELATIONS = [
         'Markets',
         'Profile',
-        'ShoppingCarts'
+        'ShoppingCarts',
+        'Bids'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Identity>> {
@@ -23,43 +25,19 @@ export class Identity extends Bookshelf.Model<Identity> {
             })
             .orderBy('id', 'ASC');
 
-        if (withRelated) {
-            return await IdentityCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await IdentityCollection.fetchAll();
-        }
+        return IdentityCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Identity> {
-        if (withRelated) {
-            return await Identity.where<Identity>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Identity.where<Identity>({ id: value }).fetch();
-        }
+        return Identity.where<Identity>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByWalletName(value: string, withRelated: boolean = true): Promise<Identity> {
-        if (withRelated) {
-            return await Identity.where<Identity>({ wallet: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Identity.where<Identity>({ wallet: value }).fetch();
-        }
+        return Identity.where<Identity>({ wallet: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Identity> {
-        if (withRelated) {
-            return await Identity.where<Identity>({ address: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Identity.where<Identity>({ address: value }).fetch();
-        }
+        return Identity.where<Identity>({ address: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'identities'; }
@@ -105,6 +83,10 @@ export class Identity extends Bookshelf.Model<Identity> {
 
     public ShoppingCarts(): Collection<ShoppingCart> {
         return this.hasMany(ShoppingCart, 'identity_id', 'id');
+    }
+
+    public Bids(): Collection<Bid> {
+        return this.hasMany(Bid, 'identity_id', 'id');
     }
 
 }

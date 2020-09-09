@@ -57,6 +57,10 @@ export class BidService {
         return await this.bidRepo.findAllByProfileId(id, withRelated);
     }
 
+    public async findAllByIdentityId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.bidRepo.findAllByIdentityId(id, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
         const bid = await this.bidRepo.findOne(id, withRelated);
         if (bid === null) {

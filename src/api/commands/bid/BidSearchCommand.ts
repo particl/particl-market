@@ -26,6 +26,9 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
 import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { IdentityService } from '../../services/model/IdentityService';
+import { ProfileService } from '../../services/model/ProfileService';
+import {MessageException} from '../../exceptions/MessageException';
 
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
@@ -34,6 +37,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.BID_SEARCH);
@@ -43,9 +48,17 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             parameters: [{
-                name: 'listingItemId',
+                name: 'profileId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'identityId',
                 required: false,
                 type: 'number'
+            }, {
+                name: 'listingItemId',
+                required: false,
+                type: undefined     // 'number|string'
             }, {
                 name: 'type',
                 required: false,
@@ -77,11 +90,12 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: listingItem, resources.ListingItem, optional
-     *  [5]: type, ActionMessageTypes, optional
-     *  [6]: searchString, string, optional
-     *  [7]: market, string, optional
-     *  [8...]: bidder: particl address, optional
+     *  [4]: identity, resources.Identity
+     *  [5]: listingItem, resources.ListingItem, optional
+     *  [6]: type, ActionMessageTypes, optional
+     *  [7]: searchString, string, optional
+     *  [8]: market, string, optional
+     *  [9...]: bidder: particl address, optional
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -93,16 +107,18 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         const pageLimit = data.params[1];
         const order = data.params[2];
         const orderField = data.params[3];
-        const listingItem: resources.ListingItem = data.params[4];
-        const type = data.params[5];
-        const searchString = data.params[6];
-        const market = data.params[7];
+        const profile: resources.Profile = data.params[4];
+        const identity: resources.Identity = data.params[5];
+        const listingItem: resources.ListingItem = data.params[6];
+        const type = data.params[7];
+        const searchString = data.params[8];
+        const market = data.params[9];
 
         // TODO: maybe we should also add support for bid expiry at some point
 
-        if (data.params.length > 8) {
+        if (data.params.length > 10) {
             // remove items so that data.params contains only the bidders
-            data.params.splice(0, 8);
+            data.params.splice(0, 10);
         } else {
             // no bidders
             data.params = [];
@@ -111,6 +127,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         const searchParams = {
             page, pageLimit, order, orderField,
             listingItemId: listingItem ? listingItem.id : undefined,
+            profileId: profile.id,
+            identityId: !_.isNil(identity) ? identity.id : undefined,
             type,
             searchString,
             bidders: data.params,
@@ -129,11 +147,13 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, BidSearchOrderField, field to which the SearchOrder is applied
-     *  [4]: listingItemId, number, optional
-     *  [5]: type, ActionMessageTypes, optional
-     *  [6]: searchString, string, optional
-     *  [7]: market, string, optional
-     *  [8...]: bidder: particl address, optional
+     *  [4]: profileId, number
+     *  [5]: identityId, number, optional
+     *  [6]: listingItemId, number, optional
+     *  [7]: type, ActionMessageTypes, optional
+     *  [8]: searchString, string, optional
+     *  [9]: market, string, optional
+     *  [10...]: bidder: particl address, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -141,10 +161,16 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        let listingItemId = data.params[4];     // optional
-        let type = data.params[5];              // optional
-        let searchString = data.params[6];      // optional
-        let market = data.params[7];            // optional
+        const profileId = data.params[4];
+        let identityId = data.params[5];        // optional
+        let listingItemId = data.params[6];     // optional
+        let type = data.params[7];              // optional
+        let searchString = data.params[8];      // optional
+        let market = data.params[9];            // optional
+
+        let profile: resources.Profile;
+        let identity: resources.Identity | undefined;
+        let listingItem: resources.ListingItem | undefined;
 
         if (!_.isNil(type)) {
             type = this.validateStatus(type);
@@ -154,15 +180,35 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         // todo: do we really need the searchString?
 
         // * -> undefined
+        identityId = identityId !== '*' ? identityId : undefined;
         listingItemId = listingItemId !== '*' ? listingItemId : undefined;
         searchString = searchString !== '*' ? searchString : undefined;
         market = market !== '*' ? market : undefined;
 
-        // this.log.debug('listingItemId: ', JSON.stringify(listingItemId, null, 2));
+        // make sure Identity with the id exists
+        profile = await this.profileService.findOne(profileId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Profile');
+            });
+
+        if (!_.isNil(identityId)) {
+            // make sure Identity with the id exists
+            identity = await this.identityService.findOne(identityId)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Identity');
+                });
+
+            // make sure Identity belongs to the given Profile
+            if (identity!.Profile.id !== profile.id) {
+                throw new MessageException('Identity does not belong to the Profile.');
+            }
+        }
 
         if (!_.isNil(listingItemId)) {
-            // make sure ListingItemTemplate with the id exists
-            data.params[4] = await this.listingItemService.findOne(listingItemId)
+            // make sure ListingItem with the id exists
+            listingItem = await this.listingItemService.findOne(listingItemId)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('ListingItem');
@@ -170,6 +216,8 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         }
 
         if (!_.isNil(market)) {
+            // todo: check that the market given is using the given identity
+            // findAllByReceiveAddress now returns also markets that the user hasn't joined...
             await this.marketService.findAllByReceiveAddress(market)
                 .then(results => {
                     const markets: resources.Market[] = results.toJSON();
@@ -180,16 +228,19 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
         }
 
         // * -> undefined
-        data.params[5] = type;
-        data.params[6] = searchString !== '*' ? searchString : undefined;
-        data.params[7] = market !== '*' ? market : undefined;
+        data.params[4] = profile;
+        data.params[5] = identity;
+        data.params[6] = listingItem;
+        data.params[7] = type;
+        data.params[8] = searchString !== '*' ? searchString : undefined;
+        data.params[9] = market !== '*' ? market : undefined;
 
         return data;
     }
 
     public usage(): string {
         return this.getName()
-            + ' <page> <pageLimit> <order> <orderField> [listingItemId] [type] [searchString] [market] [bidderAddress...] ';
+            + ' <page> <pageLimit> <order> <orderField> <profileId> <identityId> [listingItemId] [type] [searchString] [market] [bidderAddress...] ';
     }
 
     public help(): string {
@@ -198,17 +249,18 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
             + '    <pageLimit>              - number - The number of results per page. \n'
             + '    <order>                  - SearchOrder - The order of the returned results. \n'
             + '    <orderField>             - SearchOrderField - The field to order the results by. \n'
-            + '    <listingItemId>          - string - The Id of the ListingItemId we want to search Bids for. \n'
-            + '    <type>                   - [optional] ActionMessageType, The status of the Bids we want to search for. \n'
-            + '    <searchString>           - [optional] string - A string that is used to \n'
-            + '                                find Bids related to ListingItems by their titles and descriptions. \n'
-            + '    <market>                 - [optional] string - Market receiveAddress.\n'
-            + '    <bidderAddress>          - [optional] string(s) - The addresses of the bidders we want to search Bids for. ';
+            + '    <profileId>              - number - Id of the Profile to filter with. \n'
+            + '    <identityId>             - [optional] number - Id of the Identity to filter with. \n'
+            + '    <listingItemId>          - [optional] number - Id of the ListingItemId to filter with. \n'
+            + '    <type>                   - [optional] ActionMessageType, status of the Bids to filter with. \n'
+            + '    <searchString>           - [optional] string - A string in ListingItem title and/or descriptions to filter with. \n'
+            + '    <market>                 - [optional] string - Market receiveAddress to filter with.\n'
+            + '    <bidderAddress>          - [optional] string(s) - Addresses of the bidders to filter with. ';
 
     }
 
     public description(): string {
-            return 'Search Bids by listingItemId, type, or bidder address';
+            return 'Search Bids.';
     }
 
     public example(): string {

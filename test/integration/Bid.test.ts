@@ -144,7 +144,7 @@ describe('Bid', () => {
     test('Should create a new Bid for ListingItem', async () => {
 
         testData.listing_item_id = listingItem.id;
-        testData.profile_id = bidderProfile.id;
+        testData.identity_id = bidderMarket.Identity.id;
         testData.address.profile_id = bidderProfile.id;
         testData.address.type = AddressType.SHIPPING_OWN;
         testData.bidder = bidderMarket.Identity.address;
@@ -157,7 +157,7 @@ describe('Bid', () => {
         expect(result.type).toBe(testData.type);
         expect(result.bidder).toBe(testData.bidder);
         expect(result.ShippingAddress.type).toBe(testData.address.type);
-        expect(result.Profile.id).toBe(testData.profile_id);
+        expect(result.Identity.id).toBe(testData.identity_id);
 
     });
 

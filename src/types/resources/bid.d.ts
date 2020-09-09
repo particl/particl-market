@@ -19,7 +19,7 @@ declare module 'resources' {
         ListingItem: ListingItem;
         ShippingAddress: Address;
         OrderItem: OrderItem;
-        Profile: Profile;
+        Identity: Identity;
         ParentBid: Bid;
         ChildBids: Bid[];
 

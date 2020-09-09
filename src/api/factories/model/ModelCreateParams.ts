@@ -12,6 +12,7 @@ import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypt
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
+import {BidMessageTypes} from './BidFactory';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -54,10 +55,12 @@ export interface ImageCreateParams extends ModelCreateParams {
 }
 
 export interface BidCreateParams extends ModelCreateParams {
+    actionMessage: BidMessageTypes;
+    // smsgMessage: resources.SmsgMessage, optional for now
     listingItem: resources.ListingItem;
-    profile: resources.Profile;
+    identity: resources.Identity;
     address?: AddressCreateRequest;
-    bidder: string;
+    // bidder: string;  // get from identity
     parentBid?: resources.Bid;  // the bid that happened before this
 }
 

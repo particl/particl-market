@@ -47,11 +47,11 @@ export class BidFactory implements ModelFactoryInterface {
      * create a BidCreateRequest
      *
      * @param params
-     * @param bidMessage
-     * @param smsgMessage
      */
-    public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage: resources.SmsgMessage): Promise<BidCreateRequest> {
+    public async get(params: BidCreateParams): Promise<BidCreateRequest> {
 
+        const actionMessage: BidMessageTypes = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage | undefined = params.smsgMessage;
         const bidDataValues = {};
 
         // copy the existing key-value pairs from parentBid.BidDatas
@@ -72,8 +72,8 @@ export class BidFactory implements ModelFactoryInterface {
         }
 
         // copy the new key-value pairs from bidMessage overriding the old if some exist
-        if (bidMessage.objects) {
-            for (const bidData of bidMessage.objects) {
+        if (actionMessage.objects) {
+            for (const bidData of actionMessage.objects) {
                 bidDataValues[bidData.key] = bidData.value;
             }
         }
@@ -86,17 +86,22 @@ export class BidFactory implements ModelFactoryInterface {
             } as BidDataCreateRequest;
         });
 
-        // create and return the request that can be used to create the bid
         const createRequest = {
-            profile_id: params.profile.id,
+            // profile_id: params.profile.id,
+            identity_id: params.identity.id,
             listing_item_id: params.listingItem.id,
-            msgid: smsgMessage.msgid,
-            generatedAt: bidMessage.generated,
-            type: bidMessage.type,
-            bidder: params.bidder,
+
+            generatedAt: actionMessage.generated,
+            type: actionMessage.type,
+            bidder: params.identity.address,
             address: params.address,
             bidDatas,
-            hash: 'recalculateandvalidate'
+            hash: 'recalculateandvalidate',
+
+            msgid: smsgMessage ? smsgMessage.msgid : undefined,
+            postedAt: smsgMessage ? smsgMessage.sent : undefined,
+            expiredAt: smsgMessage ? smsgMessage.expiration : undefined,
+            receivedAt: smsgMessage ? smsgMessage.received : undefined
         } as BidCreateRequest;
 
         if (params.parentBid) {
@@ -117,13 +122,13 @@ export class BidFactory implements ModelFactoryInterface {
             }]));
         } else {
             createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidBasicCreateRequestConfig([{
-                value: (bidMessage as BidMessageTypesWithParentBid).bid,
+                value: (actionMessage as BidMessageTypesWithParentBid).bid,
                 to: HashableBidReleaseField.BID_HASH
             }]));
         }
 
         // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
-        this.log.debug('get(), bidMessage.hash:', bidMessage.hash);
+        this.log.debug('get(), bidMessage.hash:', actionMessage.hash);
         this.log.debug('get(), createRequest.hash:', createRequest.hash);
 
         return createRequest;

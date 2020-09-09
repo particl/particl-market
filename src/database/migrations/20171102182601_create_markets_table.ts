@@ -38,6 +38,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             // can be nullable now, when profile_id/identity_id is not set,
             // the market isn't joined, its just been promoted
+
             table.integer('profile_id').unsigned().nullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('CASCADE');

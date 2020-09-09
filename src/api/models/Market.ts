@@ -85,8 +85,6 @@ export class Market extends Bookshelf.Model<Market> {
         const collection = Market.forge<Model<Market>>()
             .query( qb => {
 
-                // qb.whereNull('bids.profile_id');
-
                 if (options.type) {
                     qb.andWhere( qbInner => {
                         return qbInner.where('markets.type', '=', options.type);

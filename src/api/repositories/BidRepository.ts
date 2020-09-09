@@ -26,6 +26,10 @@ export class BidRepository {
         return await this.BidModel.fetchAllByProfileId(id, withRelated);
     }
 
+    public async findAllByIdentityId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.BidModel.fetchAllByIdentityId(id, withRelated);
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<Bid>> {
         const list = await this.BidModel.fetchAll();
         return list as Bookshelf.Collection<Bid>;

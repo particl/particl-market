@@ -7,11 +7,10 @@ import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
-import { ShoppingCart } from './ShoppingCart';
 import { Market } from './Market';
 import { Identity } from './Identity';
 import { Setting } from './Setting';
-import { Bid } from './Bid';
+
 
 export class Profile extends Bookshelf.Model<Profile> {
 
@@ -23,28 +22,15 @@ export class Profile extends Bookshelf.Model<Profile> {
         'Markets.Identity',
         'Identities',
         'Identities.Markets',
-        'Settings',
-        'Bids'
+        'Settings'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
-        if (withRelated) {
-            return await Profile.where<Profile>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Profile.where<Profile>({ id: value }).fetch();
-        }
+        return Profile.where<Profile>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByName(value: string, withRelated: boolean = true): Promise<Profile> {
-        if (withRelated) {
-            return await Profile.where<Profile>({ name: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Profile.where<Profile>({ name: value }).fetch();
-        }
+        return Profile.where<Profile>({ name: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'profiles'; }
@@ -84,10 +70,6 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public Settings(): Collection<Setting> {
         return this.hasMany(Setting, 'profile_id', 'id');
-    }
-
-    public Bids(): Collection<Bid> {
-        return this.hasMany(Bid, 'profile_id', 'id');
     }
 
 }

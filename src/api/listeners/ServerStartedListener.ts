@@ -5,6 +5,8 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as interfaces from '../../types/interfaces';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 import { inject, named } from 'inversify';
 import { Core, Targets, Types } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -29,10 +31,8 @@ import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
 import { ProfileService } from '../services/model/ProfileService';
 import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatusServiceStatus';
-import pForever from 'pm-forever';
-import delay from 'pm-delay';
 import { ExpiredProposalService } from '../services/observer/ExpiredProposalService';
-import {RpcBlockchainInfo} from 'omp-lib/dist/interfaces/rpc';
+import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
 
 export class ServerStartedListener implements interfaces.Listener {
 

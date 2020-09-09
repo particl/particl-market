@@ -84,7 +84,7 @@ import { ImageCreateParams, OrderCreateParams } from '../factories/model/ModelCr
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import { HashableProposalAddField, HashableProposalOptionField } from '../factories/hashableconfig/HashableField';
+import {HashableBidReleaseField, HashableProposalAddField, HashableProposalOptionField} from '../factories/hashableconfig/HashableField';
 import { HashableListingItemTemplateCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { OrderStatus } from '../enums/OrderStatus';
@@ -123,6 +123,8 @@ import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest'
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { ImageFactory } from '../factories/model/ImageFactory';
 import {BaseImageAddMessage} from '../messages/action/BaseImageAddMessage';
+import {HashableBidBasicCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
+import {BidMessageTypesWithParentBid} from '../factories/model/BidFactory';
 
 export class TestDataService {
 
@@ -410,7 +412,7 @@ export class TestDataService {
         const bids: resources.Bid[] = [];
         bids[0] = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
 
-        bidCreateRequest.profile_id = sellerMarket.Profile.id;
+        bidCreateRequest.identity_id = sellerMarket.Identity.id;
         bidCreateRequest.address.profile_id = sellerMarket.Profile.id;
         bids[1] = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
 
@@ -861,15 +863,12 @@ export class TestDataService {
             .then(value => value.toJSON())
             .catch(reason => undefined);
 
-        let profileId;
+        const identity: resources.Identity = _.isNil(bidderIdentity) ? sellerIdentity : bidderIdentity;
 
-        if (_.isNil(bidderIdentity)) {
-            // creating for seller
-            profileId = sellerIdentity.Profile.id;
-        } else {
-            profileId = bidderIdentity.Profile.id;
+        let parentBid: resources.Bid | undefined;
+        if (generateParams.parentBidId) {
+            parentBid = await this.bidService.findOne(generateParams.parentBidId).then(value => value.toJSON());
         }
-
         const type = generateParams.type ? generateParams.type : MPAction.MPA_BID;
         const bidDatas = [{
             key: 'size',
@@ -893,7 +892,7 @@ export class TestDataService {
 
         const bidCreateRequest = {
             listing_item_id: listingItem.id,
-            profile_id: profileId,
+            identity_id: identity.id,
             parent_bid_id: generateParams.parentBidId,
             type,
             bidder: generateParams.bidder,
@@ -901,7 +900,7 @@ export class TestDataService {
             generatedAt: +Date.now(),
             msgid: Faker.random.uuid(),
             address: MPAction.MPA_BID === type ? {
-                profile_id: profileId,
+                profile_id: identity.Profile.id,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 addressLine1: Faker.address.streetAddress(),
@@ -914,17 +913,24 @@ export class TestDataService {
         } as BidCreateRequest;
 
         // TODO: this hash is incorrect and should be fixed.
-        // TODO: add market to the hash?
-        bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
-            value: listingItem.hash,
-            to: HashableBidField.ITEM_HASH
-        }, {
-            value: EscrowType.MULTISIG,
-            to: HashableBidField.PAYMENT_ESCROW_TYPE
-        }, {
-            value: Cryptocurrency.PART,
-            to: HashableBidField.PAYMENT_CRYPTO
-        }]));
+        // TODO: add market to the hash?'
+        if (type === MPAction.MPA_BID) {
+            bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidCreateRequestConfig([{
+                value: listingItem.hash,
+                to: HashableBidField.ITEM_HASH
+            }, {
+                value: EscrowType.MULTISIG,
+                to: HashableBidField.PAYMENT_ESCROW_TYPE
+            }, {
+                value: Cryptocurrency.PART,
+                to: HashableBidField.PAYMENT_CRYPTO
+            }]));
+        } else {
+            bidCreateRequest.hash = ConfigurableHasher.hash(bidCreateRequest, new HashableBidBasicCreateRequestConfig([{
+                value: !_.isNil(parentBid) ? parentBid.hash : 'thisshouldbetheparentbidhash',
+                to: HashableBidReleaseField.BID_HASH
+            }]));
+        }
 
         return bidCreateRequest;
     }
