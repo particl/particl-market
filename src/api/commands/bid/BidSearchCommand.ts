@@ -28,7 +28,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { IdentityService } from '../../services/model/IdentityService';
 import { ProfileService } from '../../services/model/ProfileService';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {

@@ -22,7 +22,7 @@ import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { IdentityService } from '../../services/model/IdentityService';
-import { CommandParamValidationRules } from '../BaseCommand';
+import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 
 export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
@@ -36,17 +36,53 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
-        return {} as CommandParamValidationRules;
-        // TODO: implement
-        /*
         return {
             parameters: [{
-                name: 'listingItemId',
+                name: 'market',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'categories',
+                required: false,
+                type: undefined     // todo: number[]|string>[]
+            }, {
+                name: 'seller',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'minPrice',
                 required: false,
                 type: 'number'
+            }, {
+                name: 'maxPrice',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'country',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'shippingDestination',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'searchString',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'flagged',
+                required: false,
+                type: 'boolean'
+            }, {
+                name: 'listingItemHash',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'msgid',
+                required: false,
+                type: 'string'
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
-        */
     }
 
     public getAllowedSearchOrderFields(): string[] {

@@ -12,7 +12,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { MessageException } from '../../exceptions/MessageException';
@@ -36,9 +36,8 @@ import { ListingItemImageAddActionService } from '../../services/action/ListingI
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
 
-export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public log: LoggerType;
+export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     constructor(
         // tslint:disable:max-line-length
@@ -56,6 +55,24 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     ) {
         super(Commands.TEMPLATE_POST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemTemplateId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'daysRetention',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'estimateFee',
+                required: false,
+                type: 'boolean'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -139,36 +156,28 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('daysRetention');
-        }
+        const listingItemTemplateId = data.params[0];
+        const daysRetention = data.params[1];
+        let estimateFee = data.params[2];
 
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('daysRetention', 'number');
-        }
-
-        if (data.params[1] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+        if (daysRetention > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
 
-        if (data.params[2] !== undefined) {
-            if (typeof data.params[2] !== 'boolean') {
+        if (estimateFee !== undefined) {
+            if (typeof estimateFee !== 'boolean') {
                 throw new InvalidParamException('estimateFee', 'boolean');
             }
         } else {
-            data.params[2] = false;
+            estimateFee = false;
         }
 
         // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         // make sure required data exists and fetch it
-        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItemTemplate');

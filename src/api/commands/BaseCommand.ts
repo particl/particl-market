@@ -10,7 +10,8 @@ import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
-import {Logger as LoggerType} from '../../core/Logger';
+import { Logger as LoggerType } from '../../core/Logger';
+
 
 export interface ParamValidationRule {
     name: string;

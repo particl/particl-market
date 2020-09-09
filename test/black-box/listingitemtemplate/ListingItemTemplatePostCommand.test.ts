@@ -15,8 +15,8 @@ import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoun
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
-import {SearchOrder} from '../../../src/api/enums/SearchOrder';
-import {BidSearchOrderField, ListingItemSearchOrderField, OrderSearchOrderField} from '../../../src/api/enums/SearchOrderField';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -219,6 +219,7 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('listingItemTemplate.hash: ', listingItemTemplate.hash);
 
     });
+
 
     test('Should have received MPA_LISTING_ADD on default market', async () => {
 
