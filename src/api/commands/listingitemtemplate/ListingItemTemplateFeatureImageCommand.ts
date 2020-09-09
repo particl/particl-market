@@ -15,24 +15,11 @@ import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { Image } from '../../models/Image';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 
-export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'listingItemTemplateId',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'imageId',
-            required: true,
-            type: 'number'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -41,6 +28,20 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     ) {
         super(Commands.TEMPLATE_FEATURED_IMAGE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemTemplateId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'imageId',
+                required: true,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

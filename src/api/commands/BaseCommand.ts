@@ -34,7 +34,11 @@ export abstract class BaseCommand {
         this.commands = Commands;
     }
 
-    public abstract getCommandParamValidationRules(): CommandParamValidationRules;
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
 
     /**
      * execute the next command in data.params

@@ -31,31 +31,8 @@ import { MarketImageAddActionService } from '../../services/action/MarketImageAd
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
 
-export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'promotedMarketId',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'daysRetention',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'estimateFee',
-            required: false,
-            type: 'boolean'
-        }, {
-            name: 'toMarketIdOrAddress',
-            required: false,
-            type: undefined
-        }, {
-            name: 'fromIdentityId',
-            required: false,
-            type: 'number'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
+export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     constructor(
         // tslint:disable:max-line-length
@@ -76,6 +53,32 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.MARKET_POST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'promotedMarketId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'daysRetention',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'estimateFee',
+                required: false,
+                type: 'boolean'
+            }, {
+                name: 'toMarketIdOrAddress',
+                required: false,
+                type: undefined
+            }, {
+                name: 'fromIdentityId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -167,8 +170,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         const toMarketIdOrAddress: number | string = data.params[3];
         const fromIdentityId: number = data.params[4];
 
-        let toMarket: resources.Market;
-        let toAddress: string;
+        let toMarket: resources.Market | undefined;
+        let toAddress: string | undefined;
 
         let fromMarket: resources.Market | undefined;
         let fromIdentity: resources.Identity | undefined;
@@ -256,7 +259,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
         const marketAddRequest = {
             sendParams: {
-                wallet: _.isNil(fromIdentity) ? fromMarket!.Identity.wallet : fromIdentity!.wallet
+                wallet: _.isNil(fromIdentity) ? fromMarket!.Identity.wallet : fromIdentity.wallet
             } as SmsgSendParams,
             market: promotedMarket
         } as MarketAddRequest;
@@ -271,9 +274,9 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         data.params[1] = daysRetention;
         data.params[2] = estimateFee;
         data.params[3] = fromMarket;
-        data.params[4] = toMarket!;
+        data.params[4] = !_.isNil(toMarket) ? toMarket : undefined;
         data.params[5] = fromIdentity;
-        data.params[6] = toAddress!;
+        data.params[6] = !_.isNil(toAddress) ? toMarket : undefined;
 
         return data;
     }

@@ -27,41 +27,10 @@ import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
-import {MarketRegion} from '../../enums/MarketRegion';
+import { MarketRegion } from '../../enums/MarketRegion';
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'profileId',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'name',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'type',
-            required: false,
-            type: 'string'
-        }, {
-            name: 'receiveKey',
-            required: false,
-            type: 'string'
-        }, {
-            name: 'publishKey',
-            required: false,
-            type: 'string'
-        }, {
-            name: 'identityId',
-            required: false,
-            type: 'number'
-        }, {
-            name: 'description',
-            required: false,
-            type: 'string'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -74,6 +43,44 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     ) {
         super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'profileId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'name',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'type',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'receiveKey',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'publishKey',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'identityId',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'description',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'region',
+                required: false,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

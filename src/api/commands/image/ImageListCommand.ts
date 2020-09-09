@@ -20,18 +20,6 @@ import { MarketService } from '../../services/model/MarketService';
 
 export class ImageListCommand extends BaseCommand implements RpcCommandInterface<resources.Image[]> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'template|item|market',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'id',
-            required: true,
-            type: 'number'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -40,6 +28,20 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
     ) {
         super(Commands.IMAGE_LIST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'template|item|market',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'id',
+                required: true,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

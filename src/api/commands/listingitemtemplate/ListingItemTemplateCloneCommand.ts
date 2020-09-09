@@ -11,19 +11,15 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -32,6 +28,20 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     ) {
         super(Commands.TEMPLATE_CLONE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemTemplateId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'marketId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -63,21 +73,11 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
+        await super.validate(data);
 
         const listingItemTemplateId = data.params[0];
         const marketId = data.params[1];
         let targetParentId;
-
-        // make sure the params are of correct type
-        if (typeof listingItemTemplateId !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (!_.isNil(marketId) && typeof marketId !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
 
         // make sure required data exists and fetch it
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
@@ -96,7 +96,6 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
         if (!_.isNil(marketId)) {
             // creating new market template based on given templateId for marketId
-
             const market: resources.Market = await this.marketService.findOne(marketId)
                 .then(value => value.toJSON())
                 .catch(reason => {

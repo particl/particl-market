@@ -19,13 +19,6 @@ import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiable
 
 export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'id',
-            required: true,
-            type: 'number'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,6 +27,16 @@ export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterfa
     ) {
         super(Commands.IMAGE_REMOVE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'id',
+                required: true,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

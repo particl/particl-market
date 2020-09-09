@@ -136,7 +136,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
 
                 for (const image of images) {
 
-                    // todo: use factory
+                    // todo: factory
                     const updateRequest = {
                         data: [{
                             dataId: actionMessage.data[0].dataId,
@@ -157,17 +157,17 @@ export class ListingItemImageAddActionService extends BaseActionService {
 
                     // update the image with the real data
                     await this.imageService.update(image.id, updateRequest).then(value => {
-                        this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
+                        // this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
                     });
                 }
             } else {
-                this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
+                // this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
                 const createRequest = await this.imageFactory.get({
                     actionMessage,
                     smsgMessage
                 } as ImageCreateParams);
                 await this.imageService.create(createRequest).then(value => {
-                    this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
+                    // this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
                 });
             }
         }

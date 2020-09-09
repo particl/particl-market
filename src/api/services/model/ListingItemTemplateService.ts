@@ -49,6 +49,13 @@ import { ListingItemObjectDataCreateRequest } from '../../requests/model/Listing
 import { MessagingInformation } from '../../models/MessagingInformation';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { ImageFactory } from '../../factories/model/ImageFactory';
+import {ImageCreateParams} from '../../factories/model/ModelCreateParams';
+import {BaseImageAddMessage} from '../../messages/action/BaseImageAddMessage';
+import {ListingItemImageAddMessage} from '../../messages/action/ListingItemImageAddMessage';
+import {DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import {KVS} from 'omp-lib/dist/interfaces/common';
+import {HashMismatchException} from '../../exceptions/HashMismatchException';
 
 export class ListingItemTemplateService {
 
@@ -70,6 +77,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) private imageDataFactory: ImageDataFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -159,7 +167,7 @@ export class ListingItemTemplateService {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
             const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
                 .then(value => value.toJSON());
-            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
+            this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {
@@ -198,8 +206,10 @@ export class ListingItemTemplateService {
      * @param market: resources.Market
      */
     public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
+        // this.log.debug('clone(), listingItemTemplateId: ' + listingItemTemplate.id + ', targetParentId: '
+        //    + targetParentId + ', market: ' + (market ? market.id : undefined));
         const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
-        this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
         // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
@@ -509,27 +519,27 @@ export class ListingItemTemplateService {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
-                // load the image data
-                imageDataOriginal.data = await this.itemDataService.loadImageFile(image.hash, imageDataOriginal.imageVersion);
+                this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
 
-                // todo: use factory
-                const imageCreateRequest: ImageCreateRequest = _.assign({} as ImageCreateRequest, {
-                    data: [{
-                        dataId: imageDataOriginal.dataId,
-                        protocol: imageDataOriginal.protocol,
-                        imageVersion: ImageVersions.ORIGINAL.propName,
-                        imageHash: imageDataOriginal.imageHash,
-                        encoding: imageDataOriginal.encoding,
-                        data: imageDataOriginal.data,
-                        originalMime: imageDataOriginal.originalMime,
-                        originalName: imageDataOriginal.originalName
-                    }] as ImageDataCreateRequest[],
-                    featured: imageDataOriginal.featured,
-                    hash: image.hash
-                } as ImageCreateRequest);
+                const imageCreateRequest: ImageCreateRequest = await this.imageFactory.get({
+                    actionMessage: {
+                        hash: image.hash,
+                        data: [{
+                            protocol: ProtocolDSN.FILE,
+                            dataId: imageDataOriginal.dataId,
+                            encoding: imageDataOriginal.encoding,
+                            data: imageDataOriginal.data
+                        }] as DSN[],
+                        generated: Date.now(),
+                        featured: image.featured
+                    } as BaseImageAddMessage
+                } as ImageCreateParams);
 
-                imageCreateRequest.hash = ConfigurableHasher.hash(imageCreateRequest, new HashableImageCreateRequestConfig());
-
+                if (image.hash !== imageCreateRequest.hash) {
+                    const exception = new HashMismatchException('ImageCreateRequest', image.hash, imageCreateRequest.hash);
+                    this.log.error(exception.getMessage());
+                    throw exception;
+                }
                 return imageCreateRequest;
             }));
         }

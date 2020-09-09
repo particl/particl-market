@@ -19,42 +19,15 @@ import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '.
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
-import {BaseImageAddMessage} from '../../messages/action/BaseImageAddMessage';
+import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'template|market',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'id',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'protocol',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'data',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'featured',
-            required: false,
-            type: 'boolean'
-        }, {
-            name: 'skipResize',
-            required: false,
-            type: 'boolean'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -65,6 +38,36 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
     ) {
         super(Commands.IMAGE_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'template|market',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'id',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'protocol',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'data',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'featured',
+                required: false,
+                type: 'boolean'
+            }, {
+                name: 'skipResize',
+                required: false,
+                type: 'boolean'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

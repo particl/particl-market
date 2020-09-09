@@ -20,13 +20,6 @@ import { ProfileService } from '../../services/model/ProfileService';
 
 export class MarketListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
-    public paramValidationRules = {
-        parameters: [{
-            name: 'profileId',
-            required: false,
-            type: 'number'
-        }] as ParamValidationRule[]
-    } as CommandParamValidationRules;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,6 +28,16 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.MARKET_LIST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'profileId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**

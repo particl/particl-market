@@ -53,7 +53,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
     public getSearchCommandParamValidationRules(): CommandParamValidationRules {
         const rules = {
             parameters: [] as ParamValidationRule[]
-        } as CommandParamValidationRules
+        } as CommandParamValidationRules;
 
         const searchParameters = [{
             name: 'page',

@@ -14,7 +14,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { ListingItemSearchOrderField, ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('ListingItemTemplateCloneCommand', () => {
@@ -229,7 +229,7 @@ describe('ListingItemTemplateCloneCommand', () => {
     });
 
 
-    test('Should post MPA_LISTING_ADD from SELLER node', async () => {
+    test('Should post Market ListingItemTemplate from SELLER node', async () => {
         expect(marketTemplate.id).toBeDefined();
 
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
@@ -249,7 +249,7 @@ describe('ListingItemTemplateCloneCommand', () => {
     });
 
 
-    test('Should have updated ListingItemTemplate hash on SELLER node', async () => {
+    test('Should have updated Market ListingItemTemplate hash on SELLER node', async () => {
         expect(sent).toBeTruthy();
         expect(marketTemplate.id).toBeDefined();
 
@@ -302,7 +302,7 @@ describe('ListingItemTemplateCloneCommand', () => {
     });
 
 
-    test('Should post MPA_LISTING_ADD from SELLER node', async () => {
+    test('Should post new Market ListingItemTemplate from SELLER node', async () => {
         expect(marketTemplate.id).toBeDefined();
 
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,

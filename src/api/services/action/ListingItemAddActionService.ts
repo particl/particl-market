@@ -189,7 +189,7 @@ export class ListingItemAddActionService extends BaseActionService {
                 });
             }
 
-            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+            // this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
             // create the ListingItem
             await this.listingItemService.create(createRequest)

@@ -61,7 +61,7 @@ describe('MarketPostCommand', () => {
     });
 
 
-    test('Should fail to add because invalid promotedMarketId', async () => {
+    test('Should fail to post because invalid promotedMarketId', async () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand,
             'INVALID',
             DAYS_RETENTION
@@ -72,7 +72,7 @@ describe('MarketPostCommand', () => {
     });
 
 
-    test('Should fail to add because invalid daysRetention', async () => {
+    test('Should fail to post because invalid daysRetention', async () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand,
             market.id,
             'INVALID'
@@ -83,7 +83,7 @@ describe('MarketPostCommand', () => {
     });
 
 
-    test('Should fail to add because invalid estimateFee', async () => {
+    test('Should fail to post because invalid estimateFee', async () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand,
             market.id,
             DAYS_RETENTION,
@@ -95,7 +95,7 @@ describe('MarketPostCommand', () => {
     });
 
 
-    test('Should fail to add because Market not found', async () => {
+    test('Should fail to post because Market not found', async () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand,
             0,
             DAYS_RETENTION,
@@ -144,7 +144,7 @@ describe('MarketPostCommand', () => {
 
     });
 
-/*
+
     test('Should list the posted Market', async () => {
 
         const response: any = await testUtil.rpcWaitFor(marketCommand, [marketListCommand],
@@ -161,13 +161,12 @@ describe('MarketPostCommand', () => {
         log.debug('markets: ', JSON.stringify(markets, null, 2));
         expect(markets).toHaveLength(1);
 
-
         const result: resources.Market = markets[0];
         expect(result.title).toBe(market.title);
         expect(result.description).toBe(market.description);
         expect(result.Profile).toBeUndefined();
 
     }, 600000); // timeout to 600s
-*/
+
 
 });

@@ -171,7 +171,7 @@ export class ImageDataService {
      */
     public async loadImageFile(imageHash: string, imageVersion: string): Promise<string> {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-        // this.log.debug('loadImageFile(): ', filename);
+        this.log.debug('loadImageFile(): ', filename);
         try {
             return fs.readFileSync(filename, { encoding: 'base64' });
         } catch (err) {
