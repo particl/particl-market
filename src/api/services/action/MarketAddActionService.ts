@@ -147,7 +147,8 @@ export class MarketAddActionService extends BaseActionService {
 
             const createRequest: MarketCreateRequest = await this.marketFactory.get({
                 actionMessage: marketAddMessage,
-                smsgMessage
+                smsgMessage,
+                skipJoin: false
             } as MarketCreateParams);
 
             // this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));

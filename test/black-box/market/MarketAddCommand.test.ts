@@ -13,6 +13,8 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { MarketRegion } from '../../../src/api/enums/MarketRegion';
+
 
 describe('MarketAddCommand', () => {
 
@@ -33,6 +35,7 @@ describe('MarketAddCommand', () => {
         name: 'TEST-1',
         description: 'test market desc',
         type: MarketType.MARKETPLACE,
+        region: MarketRegion.WORLDWIDE,
         receiveKey: 'receiveKey',
         publishKey: 'publishKey'
         // publishKey === receiveKey
@@ -54,6 +57,8 @@ describe('MarketAddCommand', () => {
         receiveKey: 'receiveKey',           // private key in wif format
         publishKey: 'publishKey'            // publish key is public key (DER hex encoded string)
     };
+
+    // todo: missing region + skipjoin tests
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -90,14 +95,14 @@ describe('MarketAddCommand', () => {
 
     });
 
-    test('Should fail to create Market because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to create Market because missing name', async () => {
+    test('Should fail because missing name', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id
         ]);
@@ -106,7 +111,7 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
-    test('Should fail to create Market because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             false,
@@ -124,7 +129,7 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to create Market because invalid name', async () => {
+    test('Should fail because invalid name', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -142,7 +147,7 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
-    test('Should fail to create Market because invalid type', async () => {
+    test('Should fail because invalid type', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -160,7 +165,7 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('type', 'string').getMessage());
     });
 
-    test('Should fail to create Market because invalid receiveKey', async () => {
+    test('Should fail because invalid receiveKey', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -176,7 +181,7 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('receiveKey', 'string').getMessage());
     });
 
-    test('Should fail to create Market because invalid publishKey', async () => {
+    test('Should fail because invalid publishKey', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
@@ -214,7 +219,7 @@ describe('MarketAddCommand', () => {
         expect(result.publishAddress).toBeDefined();
     });
 
-    test('Should fail to create Market because duplicate name', async () => {
+    test('Should fail because duplicate name', async () => {
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
             marketData.name,
@@ -251,13 +256,16 @@ describe('MarketAddCommand', () => {
             null,
             null,
             market.Identity.id,
-            marketData.description
+            marketData.description,
+            marketData.region,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Market = res.getBody()['result'];
         expect(result.name).toBe(marketName);
         expect(result.receiveKey).toBe(result.publishKey);
+
     });
 
     test('Should create a new market (STOREFRONT_ADMIN)', async () => {
@@ -302,6 +310,28 @@ describe('MarketAddCommand', () => {
         expect(result.publishKey).toBe(storeFrontUserData.publishKey);
         expect(result.publishAddress).toBeDefined();
         expect(result.receiveKey).not.toBe(result.publishKey);
+    });
+
+    test('Should create a new market (MARKETPLACE), skipping joining', async () => {
+        const marketName = 'TEST-6';
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            marketName,
+            null,
+            null,
+            null,
+            market.Identity.id,         // Identity required to create a receiveKey
+            marketData.description,
+            marketData.region,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Market = res.getBody()['result'];
+        expect(result.name).toBe(marketName);
+        expect(result.receiveKey).toBe(result.publishKey);
+        expect(result.Profile).toBeUndefined();
     });
 
 });

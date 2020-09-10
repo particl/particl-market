@@ -79,6 +79,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 name: 'region',
                 required: false,
                 type: 'string'
+            }, {
+                name: 'skipJoin',
+                required: false,
+                type: 'boolean'
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -93,6 +97,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [5]: identity: resources.Identity
      *  [6]: description
      *  [7]: region
+     *  [8]: skipJoin
      *
      * @param data
      * @returns {Promise<Market>}
@@ -106,10 +111,11 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         const publishKey: string = data.params[4];
         let identity: resources.Identity = data.params[5];
         const description: string = data.params[6];
-        const region = data.params[7];
+        const region: string = data.params[7];
+        const skipJoin: boolean = data.params[8];
 
         // create market identity if one wasnt given
-        if (_.isEmpty(identity)) {
+        if (_.isNil(identity) && !skipJoin) {
             identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
         }
 
@@ -125,23 +131,38 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 // image: ContentReference,
                 generated: Date.now()
             } as MarketAddMessage,
-            identity
+            identity,   // Identity required to create keys
+            skipJoin
         } as MarketCreateParams);
 
-        // make sure Market with the same receiveAddress doesnt exists
-        await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, createRequest.receiveAddress)
-            .then(value => {
-                throw new MessageException('Market with the receiveAddress: ' + createRequest.receiveAddress + ' already exists.');
-            })
-            .catch(reason => {
-                //
-            });
+        if (skipJoin) {
+            // make sure that unjoined Market with the same hash doesnt exists
+            await this.marketService.findAllByHash(createRequest.hash)
+                .then(value => {
+                    const allMarkets: resources.Market[] = value.toJSON();
+                    for (const market of allMarkets) {
+                        if (_.isNil(market.Profile)) {
+                            // unjoined market exists
+                            throw new MessageException('Market already exists.');
+                        }
+                    }
+                });
+        } else {
+            // make sure joined Market with the same receiveAddress doesnt exists
+            await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, createRequest.receiveAddress)
+                .then(value => {
+                    throw new MessageException('Market with the receiveAddress: ' + createRequest.receiveAddress + ' already exists.');
+                })
+                .catch(reason => {
+                    //
+                });
+        }
 
         // create the market
         return await this.marketService.create(createRequest).then(async value => {
             const market: resources.Market = value.toJSON();
 
-            if (!_.isNil(market.Identity.id) && !_.isNil(market.Identity.Profile.id)) {
+            if (!skipJoin && !_.isNil(market.Identity.id) && !_.isNil(market.Identity.Profile.id)) {
                 await this.marketService.joinMarket(market);
             }
 
@@ -163,6 +184,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [5]: identityId, optional
      *  [6]: description, optional
      *  [7]: region, optional
+     *  [8]: skipJoin, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -178,6 +200,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         const identityId = data.params[5];
         const description = data.params[6];
         let region = data.params[7];
+        let skipJoin = data.params[8];
 
         const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
@@ -229,6 +252,10 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new InvalidParamException('region', 'MarketRegion');
         }
 
+        skipJoin = _.isNil(skipJoin) ? false : skipJoin;
+        type = skipJoin ? MarketType.MARKETPLACE : type;
+
+
         data.params[0] = profile;
         data.params[1] = name;
         data.params[2] = type;
@@ -236,24 +263,26 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         data.params[4] = publishKey;
         data.params[6] = description;
         data.params[7] = region;
+        data.params[8] = skipJoin;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description] [region]';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description] [region] [skipJoin]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - Number - The ID of the Profile for which the Market is added. \n'
-            + '    <name>                   - String - The unique name of the Market being created. \n'
-            + '    <type>                   - MarketType, optional - MARKETPLACE \n'
-            + '    <receiveKey>             - String, optional - The receive private key of the Market. \n'
-            + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
-            + '    <identityId>             - Number, optional - The identity to be used with the Market. \n'
-            + '    <description>            - String, optional - Market description. \n'
-            + '    <region>                 - String, optional - Market region. \n';
+            + '    <profileId>              - number - The ID of the Profile for which the Market is added. \n'
+            + '    <name>                   - string - The unique name of the Market being created. \n'
+            + '    <type>                   - [optional], MarketType, The type of the Market. \n'
+            + '    <receiveKey>             - [optional], string, The receive private key of the Market. \n'
+            + '    <publishKey>             - [optional], string, The publish private key of the Market. \n'
+            + '    <identityId>             - [optional], number, The identity to be used with the Market. \n'
+            + '    <description>            - [optional], string, Market description. \n'
+            + '    <region>                 - [optional], string, Market region. \n'
+            + '    <skipJoin>               - [optional], string, skip Market join. \n';
     }
 
     public description(): string {

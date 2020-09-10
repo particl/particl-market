@@ -12,7 +12,7 @@ import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypt
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
-import {BidMessageTypes} from './BidFactory';
+import { BidMessageTypes } from './BidFactory';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -41,6 +41,7 @@ export interface ListingItemTemplateCreateParams extends ModelCreateParams {
 
 export interface MarketCreateParams extends ModelCreateParams {
     identity?: resources.Identity;
+    skipJoin: boolean;
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {

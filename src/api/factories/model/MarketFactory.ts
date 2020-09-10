@@ -137,8 +137,8 @@ export class MarketFactory implements ModelFactoryInterface {
         }
 
         const createRequest = {
-            identity_id: params.identity ? params.identity.id : undefined,
-            profile_id: params.identity ? params.identity.Profile.id : undefined,
+            identity_id: (!params.skipJoin && params.identity) ? params.identity.id : undefined,
+            profile_id: (!params.skipJoin && params.identity) ? params.identity.Profile.id : undefined,
 
             msgid: smsgMessage ? smsgMessage.msgid : undefined,
             name: marketAddMessage.name,

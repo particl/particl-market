@@ -98,7 +98,8 @@ describe('Market', () => {
                 publishKey: receiveKey,
                 generated: Date.now()
             } as MarketAddMessage,
-            identity: market.Identity
+            identity: market.Identity,
+            skipJoin: false
         } as MarketCreateParams);
 
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());

@@ -39,12 +39,12 @@ export class MarketRepository {
         return await this.MarketModel.fetchAllByRegion(region, withRelated);
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchById(id, withRelated);
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByHash(hash, withRelated);
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByHash(hash, withRelated);
+    public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchById(id, withRelated);
     }
 
     public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Market> {

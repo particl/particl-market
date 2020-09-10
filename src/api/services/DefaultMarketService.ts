@@ -191,7 +191,8 @@ export class DefaultMarketService {
                 } as ContentReference,
                 generated: Date.now()
             } as MarketAddMessage,
-            identity: defaultMarketIdentity
+            identity: defaultMarketIdentity,
+            skipJoin: false
         } as MarketCreateParams);
 
         const newMarket: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());

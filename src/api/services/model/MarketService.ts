@@ -24,6 +24,7 @@ import { MarketType } from '../../enums/MarketType';
 import { SmsgService } from '../SmsgService';
 import { ImageService } from './ImageService';
 
+
 export class MarketService {
 
     public log: LoggerType;
@@ -56,20 +57,15 @@ export class MarketService {
         return await this.marketRepo.findAllByRegion(region, withRelated);
     }
 
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.findAllByHash(hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
             this.log.warn(`Market with the id=${id} was not found!`);
             throw new NotFoundException(id);
-        }
-        return market;
-    }
-
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Market> {
-        const market = await this.marketRepo.findOneByHash(hash, withRelated);
-        if (market === null) {
-            this.log.warn(`Market with the hash=${hash} was not found!`);
-            throw new NotFoundException(hash);
         }
         return market;
     }
@@ -166,6 +162,8 @@ export class MarketService {
         await this.coreRpcService.loadWallet(market.Identity.wallet);
         await this.smsgService.smsgSetWallet(market.Identity.wallet);
         await this.importMarketKeys(market);
+
+        this.log.debug('joinMarket(): JOINED!');
         return;
     }
 

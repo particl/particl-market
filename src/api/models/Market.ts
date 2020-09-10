@@ -24,11 +24,11 @@ export class Market extends Bookshelf.Model<Market> {
         'Image.ImageDatas'
     ];
 
-    public static async fetchAllByProfileId(profileId: number | undefined, withRelated: boolean = true): Promise<Collection<Market>> {
+    public static async fetchAllByProfileId(value: number | undefined, withRelated: boolean = true): Promise<Collection<Market>> {
         const collection = Market.forge<Model<Market>>()
             .query(qb => {
-                if (profileId) {
-                    qb.where('profile_id', '=', profileId);
+                if (value) {
+                    qb.where('profile_id', '=', value);
                 } else {
                     qb.whereNull('profile_id');
                 }
@@ -39,19 +39,28 @@ export class Market extends Bookshelf.Model<Market> {
     }
 
     // different Profiles could have added the same Market
-    public static async fetchAllByReceiveAddress(receiveAddress: string, withRelated: boolean = true): Promise<Collection<Market>> {
+    public static async fetchAllByReceiveAddress(value: string, withRelated: boolean = true): Promise<Collection<Market>> {
         const collection = Market.forge<Model<Market>>()
             .query(qb => {
-                qb.where('receive_address', 'LIKE', receiveAddress);
+                qb.where('receive_address', 'LIKE', value);
             })
             .orderBy('id', 'ASC');
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public static async fetchAllByRegion(region: string, withRelated: boolean = true): Promise<Collection<Market>> {
+    public static async fetchAllByRegion(value: string, withRelated: boolean = true): Promise<Collection<Market>> {
         const collection = Market.forge<Model<Market>>()
             .query(qb => {
-                qb.where('region', 'LIKE', region);
+                qb.where('region', 'LIKE', value);
+            })
+            .orderBy('updated_at', 'ASC');
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchAllByHash(value: string, withRelated: boolean = true): Promise<Collection<Market>> {
+        const collection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('hash', 'LIKE', value);
             })
             .orderBy('updated_at', 'ASC');
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
@@ -59,10 +68,6 @@ export class Market extends Bookshelf.Model<Market> {
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         return Market.where<Market>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
-    }
-
-    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Market> {
-        return Market.where<Market>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Market> {
