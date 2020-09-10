@@ -13,14 +13,10 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -31,9 +27,25 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'returnImageData',
+                required: false,
+                type: 'boolean',
+                defaultValue: false
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
-     *  [0]: listingItemId
+     *  [0]: listingItem: resources.ListingItem
+     *  [1]: returnImageData
      *
      * @param data
      * @returns {Promise<ListingItem>}
@@ -41,9 +53,10 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItem> {
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0]).then(value => value.toJSON());
+        const listingItem: resources.ListingItem = data.params[0];
+        const returnImageData: boolean = data.params[1];
 
-        if (data.params[1] && !_.isEmpty(listingItem.ItemInformation.Images)) {
+        if (returnImageData && !_.isEmpty(listingItem.ItemInformation.Images)) {
             for (const image of listingItem.ItemInformation.Images) {
                 for (const imageData of image.ImageDatas) {
                     imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
@@ -63,20 +76,16 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemId');
-        }
+        const listingItemId: number = data.params[0];
+        const returnImageData: boolean = data.params[1];
 
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
-            throw new InvalidParamException('returnImageData', 'boolean');
-        }
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId).then(value => value.toJSON());
 
-        if (_.isNil(data.params[1])) {
-            data.params[1] = false;
-        }
+        data.params[0] = listingItem;
+        data.params[1] = returnImageData;
+
         return data;
     }
 
@@ -91,7 +100,7 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
     }
 
     public description(): string {
-        return 'Get a ListingItem using id.';
+        return 'Get a ListingItem.';
     }
 
     public example(): string {

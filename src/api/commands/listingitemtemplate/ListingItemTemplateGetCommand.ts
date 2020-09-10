@@ -36,7 +36,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
             }, {
                 name: 'returnImageData',
                 required: false,
-                type: 'boolean'
+                type: 'boolean',
+                defaultValue: false
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -44,7 +45,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: returnImageData (optional)
+     *  [1]: returnImageData
      *
      * @param data
      * @returns {Promise<resources.ListingItemTemplate>}
@@ -69,7 +70,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: returnImageData (optional)
+     *  [1]: returnImageData (optional), default false
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -78,9 +79,8 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const listingItemTemplateId: number = data.params[0];
-        let returnImageData: boolean = data.params[1];
+        const returnImageData: boolean = data.params[1];
 
-        returnImageData = _.isNil(returnImageData) ? false : returnImageData;
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
             .then(value => value.toJSON());
 
@@ -96,12 +96,12 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number - The ID of the ListingItemTemplate that we want to retrieve. '
-            + '    <returnImageData>             - boolean, optional - Whether to return image data or not. ';
+            + '    <listingTemplateId>           - number, The ID of the ListingItemTemplate that we want to retrieve. '
+            + '    <returnImageData>             - [optional] boolean, default: false, return Image data or not. ';
     }
 
     public description(): string {
-        return 'Get ListingItemTemplate using its id.';
+        return 'Get a ListingItemTemplate.';
     }
 
     public example(): string {
