@@ -71,6 +71,7 @@ import { ListingItemTemplateCloneCommand } from '../commands/listingitemtemplate
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
+import { MarketGetCommand } from '../commands/market/MarketGetCommand';
 import { MarketRemoveCommand } from '../commands/market/MarketRemoveCommand';
 import { MarketDefaultCommand } from '../commands/market/MarketDefaultCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
@@ -223,6 +224,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketFlagCommand) private marketFlagCommand: MarketFlagCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketGetCommand) private marketGetCommand: MarketGetCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRemoveCommand) private marketRemoveCommand: MarketRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketDefaultCommand) private marketDefaultCommand: MarketDefaultCommand,
@@ -395,6 +397,7 @@ export class RpcCommandFactory {
 
         this.commands.push(marketAddCommand);
         this.commands.push(marketFlagCommand);
+        this.commands.push(marketGetCommand);
         this.commands.push(marketListCommand);
         this.commands.push(marketRemoveCommand);
         this.commands.push(marketDefaultCommand);

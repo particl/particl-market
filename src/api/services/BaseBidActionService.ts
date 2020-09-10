@@ -73,14 +73,14 @@ export abstract class BaseBidActionService extends BaseActionService {
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(mpaBid.ListingItem.id).then(value => value.toJSON());
 
         const bidCreateParams = {
-            msgid: smsgMessage.msgid,
-            profile: mpaBid.Profile,
+            actionMessage,
+            smsgMessage,
             listingItem,
-            bidder: mpaBid.bidder,
+            identity: mpaBid.Identity,
             parentBid: mpaBid
         } as BidCreateParams;
 
-        return await this.bidFactory.get(bidCreateParams, actionMessage, smsgMessage);
+        return await this.bidFactory.get(bidCreateParams);
     }
 
     public async createBidNotification(marketplaceMessage: MarketplaceMessage,

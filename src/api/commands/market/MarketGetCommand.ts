@@ -8,28 +8,29 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { Market } from '../../models/Market';
+import { MarketService } from '../../services/model/MarketService';
 import { ImageDataService } from '../../services/model/ImageDataService';
 
-export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
+export class MarketGetCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private imageDataService: ImageDataService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
-        super(Commands.TEMPLATE_GET);
+        super(Commands.MARKET_GET);
         this.log = new Logger(__filename);
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             parameters: [{
-                name: 'listingItemTemplateId',
+                name: 'marketId',
                 required: true,
                 type: 'number'
             }, {
@@ -42,33 +43,31 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: returnImageData (optional)
+     *  [0]: market: resources.Market
+     *  [1]: returnImageData: boolean
      *
      * @param data
-     * @returns {Promise<resources.ListingItemTemplate>}
+     * @returns {Promise<Market>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItemTemplate> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Market> {
 
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const market: resources.Market = data.params[0];
         const returnImageData: boolean = data.params[1];
 
-        if (returnImageData && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
-            for (const image of listingItemTemplate.ItemInformation.Images) {
-                for (const imageData of image.ImageDatas) {
-                    imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
-                }
+        if (returnImageData && !_.isEmpty(market.Image)) {
+            for (const imageData of market.Image.ImageDatas) {
+                imageData.data = await this.imageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
             }
         }
 
-        return listingItemTemplate;
+        return market;
     }
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: returnImageData (optional)
+     *  [0]: marketId
+     *  [1]: returnImageData (optional), default false
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -76,34 +75,33 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const listingItemTemplateId: number = data.params[0];
+        const marketId: number = data.params[0];
         let returnImageData: boolean = data.params[1];
 
         returnImageData = _.isNil(returnImageData) ? false : returnImageData;
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => value.toJSON());
+        const market: resources.Market = await this.marketService.findOne(marketId).then(value => value.toJSON());
 
-        data.params[0] = listingItemTemplate;
+        data.params[0] = market;
         data.params[1] = returnImageData;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> [returnImageData]';
+        return this.getName() + ' <marketId> [returnImageData]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number - The ID of the ListingItemTemplate that we want to retrieve. '
-            + '    <returnImageData>             - boolean, optional - Whether to return image data or not. ';
+            + '    <marketId>           - number - The ID of the Market that we want to retrieve. '
+            + '    <returnImageData>             - [optional] boolean, optional - Whether to return image data or not. ';
     }
 
     public description(): string {
-        return 'Get ListingItemTemplate using its id.';
+        return 'Get Market using its id.';
     }
 
     public example(): string {
-        return 'template ' + this.getName() + ' 1';
+        return 'market ' + this.getName() + ' 1';
     }
 }

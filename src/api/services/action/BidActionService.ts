@@ -175,8 +175,7 @@ export class BidActionService extends BaseActionService {
             smsgMessage,
             identity,
             listingItem,
-            address,
-            bidder: smsgMessage.from
+            address
             // parentBid: undefined
         } as BidCreateParams);
 

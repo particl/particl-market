@@ -299,6 +299,7 @@ export const Targets = {
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketFlagCommand: 'MarketFlagCommand',
+            MarketGetCommand: 'MarketGetCommand',
             MarketListCommand: 'MarketListCommand',
             MarketRemoveCommand: 'MarketRemoveCommand',
             MarketJoinCommand: 'MarketJoinCommand',

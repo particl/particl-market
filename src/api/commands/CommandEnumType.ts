@@ -146,6 +146,7 @@ export class CommandEnumType extends Enum<Command> {
     public MARKET_ADD: Command          = new Command('marketadd', 'add', false);
     public MARKET_DEFAULT: Command      = new Command('marketdefault', 'default', false);
     public MARKET_FLAG: Command         = new Command('marketflag', 'flag', false);
+    public MARKET_GET: Command          = new Command('marketget', 'get', false);
     public MARKET_JOIN: Command         = new Command('marketjoin', 'join', false);
     public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
     public MARKET_POST: Command         = new Command('marketpost', 'post', false);
@@ -153,7 +154,7 @@ export class CommandEnumType extends Enum<Command> {
     public MARKET_REMOVE: Command       = new Command('marketremove', 'remove', false);
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
         [this.MARKET_LIST, this.MARKET_ADD, this.MARKET_REMOVE, this.MARKET_DEFAULT, this.MARKET_FLAG,
-            this.MARKET_JOIN, this.MARKET_POST, this.MARKET_SEARCH], EnvironmentType.ALL);
+            this.MARKET_JOIN, this.MARKET_GET, this.MARKET_POST, this.MARKET_SEARCH], EnvironmentType.ALL);
 
     public SHOPPINGCART_LIST: Command   = new Command('cartlist', 'list', false);
     public SHOPPINGCART_GET: Command    = new Command('cartget', 'get', false);
