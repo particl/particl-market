@@ -17,6 +17,7 @@ export interface ParamValidationRule {
     name: string;
     required: boolean;
     type: string;
+    defaultValue: any;
 }
 
 export interface CommandParamValidationRules {
@@ -79,6 +80,7 @@ export abstract class BaseCommand {
      */
     public async validate(data: RpcRequest, rules?: CommandParamValidationRules): Promise<RpcRequest> {
         rules = rules ? rules : this.getCommandParamValidationRules();
+        await this.setDefaults(data, rules);
         await this.validateRequiredParamsExist(data, rules);
         await this.validateRequiredTypes(data, rules);
         return data;
@@ -138,4 +140,21 @@ export abstract class BaseCommand {
         }
         return data;
     }
+
+    public async setDefaults(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+        if (rules && rules.parameters && rules.parameters.length > 0) {
+
+            for (let i = 0; i < data.params.length; i++) {
+                const currentParamValue = data.params[i];
+                const defaultValue = rules.parameters[i].defaultValue;
+
+                if (!_.isNil(defaultValue) && _.isNil(currentParamValue)) {
+                    // defaultValue exists and currentParamValue doesnt
+                    data.params[i] = defaultValue;
+                }
+            }
+        }
+        return data;
+    }
+
 }
