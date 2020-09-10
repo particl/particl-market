@@ -10,17 +10,13 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ImageDataService } from '../../services/model/ImageDataService';
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -31,13 +27,27 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemTemplateId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'returnImageData',
+                required: false,
+                type: 'boolean'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
      *  [1]: returnImageData (optional)
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<resources.ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItemTemplate> {
@@ -61,17 +71,12 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
      *  [1]: returnImageData (optional)
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
-
-        if (typeof data.params[0] !== 'number' ) {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
+        if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
             throw new InvalidParamException('returnImageData', 'boolean');
         }
 

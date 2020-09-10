@@ -13,7 +13,7 @@ import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingIt
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
@@ -25,9 +25,8 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
-    public log: LoggerType;
+export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -38,6 +37,68 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     ) {
         super(Commands.TEMPLATE_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'profileId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'title',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'shortDescription',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'longDescription',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'categoryId',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'saleType',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'currency',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'basePrice',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'domesticShippingPrice',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'internationalShippingPrice',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'escrowType',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'buyerRatio',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'sellerRatio',
+                required: false,
+                type: 'number'
+            }, {
+                name: 'escrowReleaseType',
+                required: false,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -139,10 +200,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // TODO: use super.validate(data);
-
-        this.validateParamsExist(data.params);
         data.params = this.setDefaultsForMissingParams(data.params);
         this.validateParamTypes(data.params);
 
@@ -208,38 +267,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     }
 
     private validateParamTypes(params: any[]): void {
-        // make sure the params are of correct type
-        if (typeof params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof params[1] !== 'string') {
-            throw new InvalidParamException('title', 'string');
-        } else if (typeof params[2] !== 'string') {
-            throw new InvalidParamException('shortDescription', 'string');
-        } else if (typeof params[3] !== 'string') {
-            throw new InvalidParamException('longDescription', 'string');
-        } else if (params[4] && typeof params[4] !== 'number') {
-            throw new InvalidParamException('categoryId', 'number');
-        } else if (params[5] && typeof params[5] !== 'string') {
-            throw new InvalidParamException('saleType', 'string');
-        } else if (params[6] && typeof params[6] !== 'string') {
-            throw new InvalidParamException('currency', 'string');
-        } else if (params[7] && typeof params[7] !== 'number') {
-            throw new InvalidParamException('basePrice', 'number');
-        } else if (params[8] && typeof params[8] !== 'number') {
-            throw new InvalidParamException('domesticShippingPrice', 'number');
-        } else if (params[9] && typeof params[9] !== 'number') {
-            throw new InvalidParamException('internationalShippingPrice', 'number');
-        } else if (params[10] && typeof params[10] !== 'string') {
-            throw new InvalidParamException('escrowType', 'EscrowType');
-        } else if (params[11] && typeof params[11] !== 'number') {
-            throw new InvalidParamException('buyerRatio', 'number');
-        } else if (params[12] && typeof params[12] !== 'number') {
-            throw new InvalidParamException('sellerRatio', 'number');
-        } else if (params[13] && typeof params[13] !== 'string') {
-            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-        }
-
-
         const validSaleTypeTypes = [SaleType.SALE];
         if (validSaleTypeTypes.indexOf(params[5]) === -1) {
             throw new InvalidParamException('saleType', 'SaleType');
@@ -259,44 +286,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         if (validEscrowReleaseTypes.indexOf(params[13]) === -1) {
             throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
         }
-
-    }
-
-    private validateParamsExist(params: any[]): void {
-        // make sure the required params exist
-        if (params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (params.length < 2) {
-            throw new MissingParamException('title');
-        } else if (params.length < 3) {
-            throw new MissingParamException('shortDescription');
-        } else if (params.length < 4) {
-            throw new MissingParamException('longDescription');
-        }
-        /*
-        else if (data.params.length < 5) {
-            throw new MissingParamException('categoryId');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('saleType');
-        } else if (data.params.length < 7) {
-            throw new MissingParamException('currency');
-        } else if (data.params.length < 8) {
-            throw new MissingParamException('basePrice');
-        } else if (data.params.length < 9) {
-            throw new MissingParamException('domesticShippingPrice');
-        } else if (data.params.length < 10) {
-            throw new MissingParamException('internationalShippingPrice');
-        }
-
-        else if (data.params.length < 11) {
-            throw new MissingParamException('escrowType');
-        } else if (data.params.length < 12) {
-            throw new MissingParamException('buyerRatio');
-        } else if (data.params.length < 13) {
-            throw new MissingParamException('sellerRatio');
-        }
-        */
-
     }
 
     /**

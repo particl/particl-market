@@ -12,10 +12,8 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
 import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
@@ -25,9 +23,8 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
 
-export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
-    public log: LoggerType;
+export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,6 +34,16 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     ) {
         super(Commands.TEMPLATE_SIZE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'listingItemTemplateId',
+                required: true,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -82,22 +89,17 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplateId
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        }
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
 
         // todo: pretty much the same validations as in template post
         // ListingItemTemplate should be a market template
