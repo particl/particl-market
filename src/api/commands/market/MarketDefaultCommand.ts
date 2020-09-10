@@ -13,21 +13,18 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { SettingService } from '../../services/model/SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class MarketDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
-    public log: LoggerType;
+export class MarketDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -39,6 +36,20 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
     ) {
         super(Commands.MARKET_DEFAULT);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'profileId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'marketId',
+                required: false,
+                type: 'number'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -76,19 +87,10 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        }
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const profileId = data.params[0];
         const marketId = data.params[1];
-
-        if (profileId && typeof profileId !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (marketId && typeof marketId !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
 
         // make sure Profile with the id exists
         data.params[0] = await this.profileService.findOne(profileId)
@@ -97,7 +99,7 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
                 throw new ModelNotFoundException('Profile');
             });
 
-        if (marketId) {
+        if (!_.isNil(marketId)) {
             // make sure Market with the id exists
             const market: resources.Market = await this.marketService.findOne(marketId)
                 .then(value => value.toJSON())

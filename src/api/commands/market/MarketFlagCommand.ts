@@ -11,23 +11,20 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 
-export class MarketFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public log: LoggerType;
+export class MarketFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,6 +34,20 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.MARKET_FLAG);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            parameters: [{
+                name: 'marketId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'reason',
+                required: false,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -85,18 +96,14 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        }
+        const marketId = data.params[0];
+        const reason = data.params[1];
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
-
-        const market: resources.Market = await this.marketService.findOne(data.params[0])
+        const market: resources.Market = await this.marketService.findOne(marketId)
             .then(value => value.toJSON())
-            .catch(reason => {
+            .catch(ex => {
                 throw new ModelNotFoundException('Market');
             });
 
@@ -109,7 +116,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
         // make sure identity exists
         const identity: resources.Identity = await this.identityService.findOne(market.Identity.id)
             .then(value => value.toJSON())
-            .catch(reason => {
+            .catch(ex => {
                 throw new ModelNotFoundException('Identity');
             });
 
@@ -117,7 +124,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
 
         data.params[0] = market;
         data.params[1] = identity;
-        data.params[2] = data.params[2] ? data.params[2] : 'This Market should be removed.';
+        data.params[2] = reason ? reason : 'This Market should be removed.';
         data.params[3] = daysRetention;
 
         return data;

@@ -26,6 +26,7 @@ import { Market } from '../../models/Market';
 import { MarketRegion } from '../../enums/MarketRegion';
 import { SearchOrder } from '../../enums/SearchOrder';
 
+
 export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
 
     constructor(
