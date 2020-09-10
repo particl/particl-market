@@ -15,6 +15,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
 
+
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
 
     constructor(

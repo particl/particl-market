@@ -13,9 +13,8 @@ import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingIt
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';

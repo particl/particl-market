@@ -16,6 +16,7 @@ import { Market } from '../../models/Market';
 import { MarketService } from '../../services/model/MarketService';
 import { ImageDataService } from '../../services/model/ImageDataService';
 
+
 export class MarketGetCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
     constructor(

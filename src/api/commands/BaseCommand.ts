@@ -13,11 +13,14 @@ import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { Logger as LoggerType } from '../../core/Logger';
 
 
+export type ValidationFunction = (value: any, index: number, allValues: any[]) => boolean;
+
 export interface ParamValidationRule {
     name: string;
     required: boolean;
     type: string;
     defaultValue: any;
+    customValidate: ValidationFunction;
 }
 
 export interface CommandParamValidationRules {
@@ -83,6 +86,7 @@ export abstract class BaseCommand {
         await this.setDefaults(data, rules);
         await this.validateRequiredParamsExist(data, rules);
         await this.validateRequiredTypes(data, rules);
+        await this.validateValues(data, rules);
         return data;
     }
 
@@ -102,6 +106,32 @@ export abstract class BaseCommand {
         return this.command;
     }
 
+    /**
+     * set default values if such are set
+     * @param data
+     * @param rules
+     */
+    public async setDefaults(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+        if (rules && rules.parameters && rules.parameters.length > 0) {
+
+            for (let i = 0; i < data.params.length; i++) {
+                const currentParamValue = data.params[i];
+                const defaultValue = rules.parameters[i].defaultValue;
+
+                if (!_.isNil(defaultValue) && _.isNil(currentParamValue)) {
+                    // defaultValue exists and currentParamValue doesnt
+                    data.params[i] = defaultValue;
+                }
+            }
+        }
+        return data;
+    }
+
+    /**
+     * make sure the required params exist
+     * @param data
+     * @param rules
+     */
     public async validateRequiredParamsExist(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
         if (rules && rules.parameters && rules.parameters.length > 0) {
 
@@ -121,6 +151,11 @@ export abstract class BaseCommand {
         return data;
     }
 
+    /**
+     * make sure the params are of required type
+     * @param data
+     * @param rules
+     */
     public async validateRequiredTypes(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
         if (rules && rules.parameters && rules.parameters.length > 0) {
 
@@ -141,20 +176,19 @@ export abstract class BaseCommand {
         return data;
     }
 
-    public async setDefaults(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+    public async validateValues(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
         if (rules && rules.parameters && rules.parameters.length > 0) {
 
             for (let i = 0; i < data.params.length; i++) {
                 const currentParamValue = data.params[i];
-                const defaultValue = rules.parameters[i].defaultValue;
+                const parameterName = rules.parameters[i].name;
 
-                if (!_.isNil(defaultValue) && _.isNil(currentParamValue)) {
-                    // defaultValue exists and currentParamValue doesnt
-                    data.params[i] = defaultValue;
+                if (typeof rules.parameters[i].customValidate === 'function'
+                    && !rules.parameters[i].customValidate(currentParamValue, i, data.params)) {
+                    throw new InvalidParamException(parameterName);
                 }
             }
         }
         return data;
     }
-
 }

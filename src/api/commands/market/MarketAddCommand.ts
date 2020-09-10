@@ -29,8 +29,8 @@ import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketRegion } from '../../enums/MarketRegion';
 
-export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
+export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

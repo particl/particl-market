@@ -20,9 +20,9 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseSearchCommand } from '../BaseSearchCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+
 
 export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
@@ -52,11 +52,35 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
             }, {
                 name: 'minPrice',
                 required: false,
-                type: 'number'
+                type: 'number',
+                customValidate: (value, index, allValues) => {
+                    if (!_.isNil(value)) {
+                        const maxPrice = allValues[index + 1];
+                        // if set, must be >= 0
+                        // if maxPrice set, must be < maxPrice
+                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                        const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
+                        this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
+                        return largerThanZero && smallerThanMaxPrice;
+                    }
+                    return true;
+                }
             }, {
                 name: 'maxPrice',
                 required: false,
-                type: 'number'
+                type: 'number',
+                customValidate: (value, index, allValues) => {
+                    if (!_.isNil(value)) {
+                        const minPrice = allValues[index - 1];
+                        // if set, must be >= 0
+                        // if minPrice set, must be > minPrice
+                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                        const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
+                        this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
+                        return largerThanZero && largerThanMinPrice;
+                    }
+                    return true;
+                }
             }, {
                 name: 'country',
                 required: false,
@@ -105,6 +129,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
      *  [11]: searchString, optional, string
      *  [12]: flagged, optional, boolean
      *  [13]: listingItemHash, optional, string
+     *  [14]: msgid, optional, string
      *
      * @param data
      * @returns {Promise<ListingItem>}
@@ -157,10 +182,6 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 5) {
-            throw new MissingParamException('market');
-        }
-
         const market = data.params[4];                  // required
         const categories = data.params[5];              // optional
         const seller = data.params[6];                  // optional
@@ -171,11 +192,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
         const searchString = data.params[11];           // optional
         const flagged = data.params[12];                // optional
         const listingItemHash = data.params[13];        // optional
-
-        // make sure the params are of correct type
-        if (!_.isNil(market) && typeof market !== 'string') {
-            throw new InvalidParamException('market', 'string');
-        }
+        const msgid = data.params[14];                  // optional
 
         if (!_.isNil(categories) && categories !== null) {
             // categories needs to be an array
@@ -194,54 +211,17 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
                 // don't need an empty category array
                 data.params[5] = categories.length > 0 ? categories : undefined;
             }
-        } else {
-            //
         }
 
-        if (!_.isNil(seller) && typeof seller !== 'string') {
-            throw new InvalidParamException('seller', 'string');
-        } else if (!_.isNil(minPrice) && typeof minPrice !== 'number') {
-            throw new InvalidParamException('minPrice', 'number');
-        } else if (!_.isNil(minPrice) && minPrice < 0) {
-            throw new InvalidParamException('minPrice');
-        } else if (!_.isNil(maxPrice) && typeof maxPrice !== 'number') {
-            throw new InvalidParamException('maxPrice', 'number');
-        } else if (!_.isNil(maxPrice) && maxPrice < 0) {
-            throw new InvalidParamException('maxPrice');
-        } else if (!_.isNil(country) && typeof country !== 'string') {
-            throw new InvalidParamException('country', 'string');
-        } else if (!_.isNil(shippingDestination) && typeof shippingDestination !== 'string') {
-            throw new InvalidParamException('shippingDestination', 'string');
-        } else if (!_.isNil(searchString) && typeof searchString !== 'string') {
-            throw new InvalidParamException('searchString', 'string');
-        } else if (!_.isNil(flagged) && !_.isBoolean(flagged)) {
-            throw new InvalidParamException('flagged', 'boolean');
-        } else if (!_.isNil(listingItemHash) && typeof listingItemHash !== 'string') {
-            throw new InvalidParamException('listingItemHash', 'string');
-        }
-
-        if (_.isNil(seller) || seller === '*') {
-            data.params[6] = undefined;
-        }
-
-        if (_.isNil(minPrice)) {
-            data.params[7] = undefined;
-        }
-        if (_.isNil(maxPrice)) {
-            data.params[8] = undefined;
-        }
-
-        data.params[9] = _.isNil(country)
-            ? undefined
-            : ShippingCountries.convertAndValidate(country + '');
-
-        data.params[10] = _.isNil(shippingDestination)
-            ? undefined
-            : ShippingCountries.convertAndValidate(shippingDestination + '');
-
-        if (_.isNil(searchString) || searchString === '*') {
-            data.params[11] = undefined;
-        }
+        data.params[6] = _.isNil(seller) || seller === '*' ? undefined : seller;
+        data.params[7] = _.isNil(minPrice) ? undefined : minPrice;
+        data.params[8] = _.isNil(maxPrice) ? undefined : maxPrice;
+        data.params[9] = _.isNil(country) ? undefined : ShippingCountries.convertAndValidate(country + '');
+        data.params[10] = _.isNil(shippingDestination) ? undefined : ShippingCountries.convertAndValidate(shippingDestination + '');
+        data.params[11] = _.isNil(searchString) || searchString === '*' ? undefined : searchString;
+        data.params[12] = _.isNil(flagged) ? undefined : flagged;
+        data.params[13] = _.isNil(listingItemHash) || listingItemHash === '*' ? undefined : listingItemHash;
+        data.params[14] = _.isNil(msgid) || msgid === '*' ? undefined : msgid;
 
         return data;
     }
@@ -249,7 +229,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
     public usage(): string {
         return this.getName() + ' <page> <pageLimit> <order> <orderField> <market> [categories]' +
             ' [seller] [minPrice] [maxPrice] [country] [shippingDestination]' +
-            ' [searchString] [flagged] [listingItemHash]';
+            ' [searchString] [flagged] [listingItemHash] [msgid]';
     }
 
     public help(): string {
@@ -264,10 +244,11 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
             + '    <minPrice>               - [optional] Numeric - The minimum price of the ListingItem. \n'
             + '    <maxPrice>               - [optional] Numeric - The maximum price of the ListingItem. \n'
             + '    <country>                - [optional] String - The country of the ListingItem. \n'
-            + '    <shippingDestination>    - [optional] String - The shipping destination of the ListingItem. \n'
-            + '    <searchString>           - [optional] String - ListingItems title. \n'
+            + '    <shippingDestination>    - [optional] String - The ShippingDestination of the ListingItem. \n'
+            + '    <searchString>           - [optional] String - ListingItem title. \n'
             + '    <flagged>                - [optional] Boolean - Flagged ListingItems (default: false). \n'
-            + '    <listingItemHash>        - [optional] String - ListingItems hash. \n';
+            + '    <listingItemHash>        - [optional] String - ListingItem hash. \n'
+            + '    <msgid>                  - [optional] String - ListingItem msgid. \n';
     }
 
 

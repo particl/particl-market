@@ -42,7 +42,6 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
         this.log = new Logger(__filename);
     }
 
-
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             parameters: [{
