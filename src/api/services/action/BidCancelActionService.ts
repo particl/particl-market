@@ -5,7 +5,6 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { EventEmitter } from 'events';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';

@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -36,6 +35,8 @@ import { MarketNotification } from '../../messages/notification/MarketNotificati
 import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { ImageService } from '../model/ImageService';
+import { MarketType } from '../../enums/MarketType';
+import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
 
 
 export class MarketAddActionService extends BaseActionService {
@@ -108,8 +109,16 @@ export class MarketAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(actionRequest: MarketAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
-        // this.log.debug('beforePost()');
-        return marketplaceMessage;
+        this.log.debug('beforePost()');
+
+        // convert MarketType.STOREFRONT_ADMIN to MarketType.STOREFRONT
+        const marketAddMessage: MarketAddMessage = marketplaceMessage.action as MarketAddMessage;
+        if (marketAddMessage.marketType === MarketType.STOREFRONT_ADMIN) {
+            // publish private key -> public key
+            marketAddMessage.marketType = MarketType.STOREFRONT;
+            marketAddMessage.publishKey = PrivateKey.fromWIF(marketAddMessage.publishKey).toPublicKey().toString();
+        }
+        return await this.actionMessageFactory.getMarketplaceMessage(marketAddMessage);
     }
 
     /**
