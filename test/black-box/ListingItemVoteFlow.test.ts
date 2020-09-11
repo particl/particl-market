@@ -36,10 +36,10 @@ describe('Happy ListingItem Vote Flow', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
-    const listingItemCommand = Commands.ITEM_ROOT.commandName;
-    const listingItemGetCommand = Commands.ITEM_GET.commandName;
-    const listingItemFlagCommand = Commands.ITEM_FLAG.commandName;
-    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const itemCommand = Commands.ITEM_ROOT.commandName;
+    const itemGetCommand = Commands.ITEM_GET.commandName;
+    const itemFlagCommand = Commands.ITEM_FLAG.commandName;
+    const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
 
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
@@ -193,7 +193,7 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('BUYER RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
-        const response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
+        const response: any = await testUtilBuyerNode.rpcWaitFor(itemCommand, [itemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -235,7 +235,7 @@ describe('Happy ListingItem Vote Flow', () => {
         log.debug('SELLER RECEIVES MPA_LISTING_ADD');
         log.debug('========================================================================================');
 
-        const response: any = await testUtilSellerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
+        const response: any = await testUtilSellerNode.rpcWaitFor(itemCommand, [itemSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
@@ -283,7 +283,7 @@ describe('Happy ListingItem Vote Flow', () => {
         timeOfFlagging = Date.now();
         await testUtilBuyerNode.waitFor(2);
 
-        const response: any = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemFlagCommand,
+        const response: any = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             listingItemReceivedOnBuyerNode.id,
             buyerMarket.Identity.id,
             'reason for reporting'
@@ -350,7 +350,7 @@ describe('Happy ListingItem Vote Flow', () => {
         await testUtilBuyerNode.waitFor(2);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
-        const res = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
+        const res = await testUtilBuyerNode.rpc(itemCommand, [itemGetCommand,
             listingItemReceivedOnBuyerNode.id,
             true
         ]);
@@ -511,7 +511,7 @@ describe('Happy ListingItem Vote Flow', () => {
         await testUtilSellerNode.waitFor(2);
 
         // ListingItem should have a relation to FlaggedItem with a relation to previously received Proposal
-        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemGetCommand,
+        const res = await testUtilSellerNode.rpc(itemCommand, [itemGetCommand,
             listingItemReceivedOnSellerNode.id
         ]);
         res.expectJson();

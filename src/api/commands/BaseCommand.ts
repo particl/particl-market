@@ -34,6 +34,8 @@ export abstract class BaseCommand {
     public commands: CommandEnumType;
     public command: Command;
 
+    public debug = false;
+
     constructor(command: Command) {
         this.command = command;
         this.commands = Commands;
@@ -117,9 +119,11 @@ export abstract class BaseCommand {
             for (let i = 0; i < rules.params.length; i++) {
 
                 if (rules.params[i]) {
-                    this.log.debug('setDefaults(): ' + rules.params[i].name
-                        + ', defaultValue: ' + rules.params[i].defaultValue
-                        + ', value: ' + data.params[i]);
+                    if (this.debug) {
+                        this.log.debug('setDefaults(): ' + rules.params[i].name
+                            + ', defaultValue: ' + rules.params[i].defaultValue
+                            + ', value: ' + data.params[i]);
+                    }
 
                     if (!_.isNil(rules.params[i].defaultValue) && _.isNil(data.params[i])) {
                         // defaultValue exists and currentParamValue doesnt
@@ -140,10 +144,11 @@ export abstract class BaseCommand {
         if (rules && rules.params && rules.params.length > 0) {
 
             for (let i = 0; i < rules.params.length; i++) {
-                this.log.debug('validateRequiredParamsExist(): ' + rules.params[i].name
-                    + ', required: ' + rules.params[i].required);
+                if (this.debug) {
+                    this.log.debug('validateRequiredParamsExist(): ' + rules.params[i].name
+                        + ', required: ' + rules.params[i].required);
                     // + ', value: ' + data.params[i]);
-
+                }
                 if (rules.params[i].required && _.isNil(data.params[i])) {
                     throw new MissingParamException(rules.params[i].name);
                 }
@@ -162,9 +167,11 @@ export abstract class BaseCommand {
 
             for (let i = 0; i < rules.params.length; i++) {
 
-                this.log.debug('validateRequiredTypes(): ' + rules.params[i].name
-                    + ', requiredType: ' + rules.params[i].type
-                    + ', matches: ' + (typeof data.params[i] === rules.params[i].type));
+                if (this.debug) {
+                    this.log.debug('validateRequiredTypes(): ' + rules.params[i].name
+                        + ', requiredType: ' + rules.params[i].type
+                        + ', matches: ' + (typeof data.params[i] === rules.params[i].type));
+                }
 
                 if (!_.isNil(data.params[i])
                     && !_.isNil(rules.params[i].type)
@@ -184,6 +191,11 @@ export abstract class BaseCommand {
 
                 if (typeof rules.params[i].customValidate === 'function'
                     && !rules.params[i].customValidate(data.params[i], i, data.params)) {
+
+                    if (this.debug) {
+                        this.log.debug('validateValues(): ' + rules.params[i].name
+                            + ', the computer says no.');
+                    }
 
                     throw new InvalidParamException(rules.params[i].name);
                 }
