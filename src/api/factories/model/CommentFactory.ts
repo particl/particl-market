@@ -15,6 +15,7 @@ import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableCommentCreateRequestConfig } from '../hashableconfig/createrequest/HashableCommentCreateRequestConfig';
+import {BidMessageTypes} from './BidFactory';
 
 export class CommentFactory implements ModelFactoryInterface {
 
@@ -29,25 +30,12 @@ export class CommentFactory implements ModelFactoryInterface {
     /**
      *
      * @param {CommentCreateParams} params
-     * @param {CommentAddMessage} commentAddMessage
-     * @param {resources.SmsgMessage} smsgMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(params: CommentCreateParams, commentAddMessage: CommentAddMessage, smsgMessage?: resources.SmsgMessage):
-        Promise<CommentCreateRequest | CommentUpdateRequest> {
+    public async get(params: CommentCreateParams): Promise<CommentCreateRequest | CommentUpdateRequest> {
 
-        const smsgData: any = {
-            postedAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER,
-            expiredAt: Number.MAX_SAFE_INTEGER
-        };
-
-        if (smsgMessage) {
-            smsgData.postedAt = smsgMessage.sent;
-            smsgData.receivedAt = smsgMessage.received;
-            smsgData.expiredAt = smsgMessage.expiration;
-            smsgData.msgid = smsgMessage.msgid;
-        }
+        const actionMessage: CommentAddMessage = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage | undefined = params.smsgMessage;
 
         const commentRequest = {
             sender: params.sender,
@@ -56,18 +44,22 @@ export class CommentFactory implements ModelFactoryInterface {
             target: params.target,
             message: params.message,
             parent_comment_id: params.parentCommentId,
-            generatedAt: commentAddMessage.generated,
-            ...smsgData
+            generatedAt: actionMessage.generated,
+
+            msgid: smsgMessage ? smsgMessage.msgid : undefined,
+            postedAt: smsgMessage ? smsgMessage.sent : undefined,
+            expiredAt: smsgMessage ? smsgMessage.expiration : undefined,
+            receivedAt: smsgMessage ? smsgMessage.received : undefined
         } as CommentCreateRequest || CommentUpdateRequest;
 
         commentRequest.hash = ConfigurableHasher.hash({
             ...commentRequest,
-            parentCommentHash: commentAddMessage.parentCommentHash
+            parentCommentHash: actionMessage.parentCommentHash
         }, new HashableCommentCreateRequestConfig());
 
         // validate that the commentAddMessage.hash should have a matching hash with the incoming or outgoing message
-        if (commentAddMessage.hash !== commentRequest.hash) {
-            const error = new HashMismatchException('CommentCreateRequest', commentAddMessage.hash, commentRequest.hash);
+        if (actionMessage.hash !== commentRequest.hash) {
+            const error = new HashMismatchException('CommentCreateRequest', actionMessage.hash, commentRequest.hash);
             this.log.error(error.getMessage());
             throw error;
         }

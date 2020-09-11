@@ -92,26 +92,6 @@ export class CommentAddActionService extends BaseActionService {
     }
 
     /**
-     * send a Comment
-     *
-     * @param commentAddRequest
-     */
-/*
-    public async send(commentAddRequest: CommentAddRequest): Promise<SmsgSendResponse> {
-
-        // TODO: why not call post directly?
-        const smsgSendResponse = await this.post(commentAddRequest);
-
-        const result = {
-            result: 'Sent.',
-            msgid: smsgSendResponse.msgid
-        } as SmsgSendResponse;
-
-        this.log.debug('comment(), result: ', JSON.stringify(result, null, 2));
-        return result;
-    }
-*/
-    /**
      * called after posting a message and after receiving it
      *
      * processMessage "processes" the Message (ListingItemAdd/Bid/ProposalAdd/Vote/etc), often creating and/or updating
@@ -144,16 +124,16 @@ export class CommentAddActionService extends BaseActionService {
                 this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
 
                 const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
-                        msgid: smsgMessage.msgid,
-                        sender: commentAddMessage.sender,
-                        receiver: commentAddMessage.receiver,
-                        type: commentAddMessage.commentType,
-                        target: commentAddMessage.target,
-                        message: commentAddMessage.message,
-                        parentCommentId
-                    } as CommentCreateParams,
-                    commentAddMessage,
-                    smsgMessage) as CommentCreateRequest;
+                    actionMessage: commentAddMessage,
+                    smsgMessage,
+                    msgid: smsgMessage.msgid,
+                    sender: commentAddMessage.sender,
+                    receiver: commentAddMessage.receiver,
+                    type: commentAddMessage.commentType,
+                    target: commentAddMessage.target,
+                    message: commentAddMessage.message,
+                    parentCommentId
+                } as CommentCreateParams) as CommentCreateRequest;
 
                 this.log.debug('processMessage(), commentCreateRequest.hash: ', commentCreateRequest.hash);
 

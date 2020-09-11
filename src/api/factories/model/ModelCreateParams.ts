@@ -13,7 +13,8 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { BidMessageTypes } from './BidFactory';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import {CommentAddMessage} from '../../messages/action/CommentAddMessage';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -93,8 +94,8 @@ export interface SmsgMessageCreateParams extends ModelCreateParams {
     target?: string;
 }
 
-
 export interface CommentCreateParams extends ModelCreateParams {
+    actionMessage: CommentAddMessage;
     msgid: string;
     sender: string;
     receiver: string;

@@ -13,7 +13,7 @@ import { OrderItemCreateRequest } from '../../requests/model/OrderItemCreateRequ
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableOrderCreateRequestConfig } from '../hashableconfig/createrequest/HashableOrderCreateRequestConfig';
-import {HashableOrderField} from '../hashableconfig/HashableField';
+
 
 export class OrderFactory implements ModelFactoryInterface {
 
