@@ -16,6 +16,7 @@ import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { VoteMessage } from '../messages/action/VoteMessage';
+import {MessagingOption} from 'omp-lib/dist/interfaces/omp';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;

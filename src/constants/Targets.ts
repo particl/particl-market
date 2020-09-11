@@ -443,11 +443,13 @@ export const Targets = {
             ImageFactory: 'ImageFactory',
             ImageDataFactory: 'ImageDataFactory',
             ItemCategoryFactory: 'ItemCategoryFactory',
+            ItemInformationFactory: 'ItemInformationFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             MarketFactory: 'MarketFactory',
             OrderFactory: 'OrderFactory',
             OrderItemFactory: 'OrderItemFactory',
+            PaymentInformationFactory: 'PaymentInformationFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'

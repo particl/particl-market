@@ -9,37 +9,23 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
-import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
-import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
-import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
-import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
-import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
-import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
-import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
-import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
-import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
-import { EscrowConfig, EscrowRatio, ItemInfo, ItemObject, Location, LocationMarker, MessagingInfo, PaymentInfo, PaymentOption, ShippingPrice } from 'omp-lib/dist/interfaces/omp';
-import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
+import { ItemObject } from 'omp-lib/dist/interfaces/omp';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelFactoryInterface } from '../ModelFactoryInterface';
-import { ImageCreateParams, ListingItemCreateParams } from '../ModelCreateParams';
-import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { MessageException } from '../../exceptions/MessageException';
+import { ListingItemCreateParams } from '../ModelCreateParams';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { ImageFactory } from './ImageFactory';
-import { ImageService } from '../../services/model/ImageService';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ItemInformationFactory } from './ItemInformationFactory';
+import { PaymentInformationFactory } from './PaymentInformationFactory';
 // tslint:enable:max-line-length
 
 
@@ -49,9 +35,8 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
+        @inject(Types.Factory) @named(Targets.Factory.model.PaymentInformationFactory) private paymentInformationFactory: PaymentInformationFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemInformationFactory) private itemInformationFactory: ItemInformationFactory
     ) {
         this.log = new Logger(__filename);
     }
@@ -62,44 +47,51 @@ export class ListingItemFactory implements ModelFactoryInterface {
      * @param params
      */
     public async get(params: ListingItemCreateParams): Promise<ListingItemCreateRequest> {
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
+        const actionMessage = params.actionMessage as ListingItemAddMessage;
         const smsgMessage = params.smsgMessage;
 
         if (_.isNil(smsgMessage)) {
             throw new MissingParamException('smsgMessage');
         }
 
-        const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(params);
-        const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(params);
-        const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(params);
+        const itemInformation: ItemInformationCreateRequest = await this.itemInformationFactory.get(params);
+        const paymentInformation: PaymentInformationCreateRequest = await this.paymentInformationFactory.get(params);
+        const messagingInformations: MessagingInformationCreateRequest[] = [];
+
+        for (const options of actionMessage.item.messaging.options) {
+            messagingInformations.push({
+                protocol: MessagingProtocol[options.protocol],
+                publicKey: options.publicKey
+            } as MessagingInformationCreateRequest);
+        }
 
         let listingItemObjects;
-        if (listingItemAddMessage.item.objects) {
+        if (actionMessage.item.objects) {
             listingItemObjects = await this.getModelListingItemObjects(params);
         }
 
         const createRequest = {
-            seller: listingItemAddMessage.item.seller.address,
-            signature: listingItemAddMessage.item.seller.signature,
+            seller: actionMessage.item.seller.address,
+            signature: actionMessage.item.seller.signature,
             itemInformation,
             paymentInformation,
-            messagingInformation,
+            messagingInformation: messagingInformations,
             listingItemObjects,
-            hash: 'recalculateandvalidate',
             market: smsgMessage.to,
             msgid: smsgMessage.msgid,
             expiryTime: smsgMessage.daysretention,
             postedAt: smsgMessage.sent,
             expiredAt: smsgMessage.expiration,
             receivedAt: smsgMessage.received,
-            generatedAt: listingItemAddMessage.generated
+            generatedAt: actionMessage.generated,
+            hash: 'recalculateandvalidate'
         } as ListingItemCreateRequest;
 
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
 
         // the createRequest.hash should have a matching hash with the incoming message
-        if (listingItemAddMessage.hash !== createRequest.hash) {
-            const exception = new HashMismatchException('ListingItemCreateRequest', listingItemAddMessage.hash, createRequest.hash);
+        if (actionMessage.hash !== createRequest.hash) {
+            const exception = new HashMismatchException('ListingItemCreateRequest', actionMessage.hash, createRequest.hash);
             this.log.error(exception.getMessage());
             throw exception;
         }
@@ -110,8 +102,6 @@ export class ListingItemFactory implements ModelFactoryInterface {
     private async getModelListingItemObjects(params: ListingItemCreateParams): Promise<ListingItemObjectCreateRequest[]> {
 
         const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
         const objects: ItemObject[] = listingItemAddMessage.item.objects || [];
 
         const objectArray: ListingItemObjectCreateRequest[] = [];
@@ -140,231 +130,5 @@ export class ListingItemFactory implements ModelFactoryInterface {
             } as ListingItemObjectDataCreateRequest);
         }
         return objectDataArray;
-    }
-
-    private async getModelMessagingInformation(params: ListingItemCreateParams): Promise<MessagingInformationCreateRequest[]> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const messaging: MessagingInfo = listingItemAddMessage.item.messaging;
-
-        const messagingArray: MessagingInformationCreateRequest[] = [];
-        if (!messaging || !_.isArray(messaging.options)) {
-            return messagingArray;
-        }
-        for (const messagingData of messaging.options) {
-            messagingArray.push({
-                protocol: MessagingProtocol[messagingData.protocol],
-                publicKey: messagingData.publicKey
-            } as MessagingInformationCreateRequest);
-        }
-        return messagingArray;
-    }
-
-    private async getModelPaymentInformation(params: ListingItemCreateParams): Promise<PaymentInformationCreateRequest> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const payment: PaymentInfo = listingItemAddMessage.item.payment;
-
-        const escrow = payment.escrow ? await this.getModelEscrow(params) : undefined;
-        const itemPrice = payment.options ? await this.getModelItemPrice(params) : undefined;
-
-        return {
-            type: payment.type,
-            escrow,
-            itemPrice
-        } as PaymentInformationCreateRequest;
-    }
-
-    private async getModelItemPrice(params: ListingItemCreateParams): Promise<ItemPriceCreateRequest> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const paymentOptions: PaymentOption[] = listingItemAddMessage.item.payment.options || [];
-
-        // todo: this needs to be refactored
-        const paymentOption: PaymentOption | undefined = _.find(paymentOptions, (option: PaymentOption) => {
-            return option.currency === Cryptocurrency.PART;
-        });
-
-        if (!paymentOption) {
-            this.log.error('There needs to be a PaymentOption for PART');
-            throw new MessageException('There needs to be a PaymentOption for PART');
-        }
-
-        const shippingPrice = await this.getModelShippingPrice(paymentOption.shippingPrice);
-
-        const cryptocurrencyAddress = paymentOption.address ? await this.getModelCryptocurrencyAddress(paymentOption.address) : undefined;
-
-        return {
-            currency: paymentOption.currency,
-            basePrice: paymentOption.basePrice,
-            shippingPrice,
-            cryptocurrencyAddress
-        } as ItemPriceCreateRequest;
-    }
-
-    private async getModelShippingPrice(shippingPrice: ShippingPrice): Promise<ShippingPriceCreateRequest> {
-        return {
-            domestic: shippingPrice.domestic,
-            international: shippingPrice.international
-        } as ShippingPriceCreateRequest;
-    }
-
-    private async getModelCryptocurrencyAddress(cryptocurrencyAddress: CryptoAddress): Promise<CryptocurrencyAddressCreateRequest> {
-        return {
-            type: cryptocurrencyAddress.type,
-            address: cryptocurrencyAddress.address
-        } as CryptocurrencyAddressCreateRequest;
-    }
-
-    private async getModelEscrow(params: ListingItemCreateParams): Promise<EscrowCreateRequest> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const escrow: EscrowConfig | undefined = listingItemAddMessage.item.payment.escrow;
-        let ratio: EscrowRatioCreateRequest | undefined;
-
-        if (!_.isNil(escrow) && !_.isNil(escrow.ratio)) {
-            ratio = await this.getModelEscrowRatio(escrow.ratio);
-        }
-
-        return {
-            type: (escrow && escrow.type) ? escrow.type : undefined,
-            ratio,
-            releaseType: (escrow && escrow.releaseType) ? escrow.releaseType : undefined,
-            secondsToLock: (escrow && escrow.secondsToLock) ? escrow.secondsToLock : undefined
-        } as EscrowCreateRequest;
-    }
-
-    private async getModelEscrowRatio(ratio: EscrowRatio): Promise<EscrowRatioCreateRequest> {
-        return {
-            buyer: ratio.buyer,
-            seller: ratio.seller
-        } as EscrowRatioCreateRequest;
-    }
-
-    private async getModelItemInformation(params: ListingItemCreateParams): Promise<ItemInformationCreateRequest> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const information: ItemInfo = listingItemAddMessage.item.information;
-
-        let itemLocation: ItemLocationCreateRequest | undefined;
-        let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
-        let images: ImageCreateRequest[] | undefined;
-
-        if (information.location) {
-            itemLocation = await this.getModelLocation(params);
-        }
-
-        if (information.shippingDestinations) {
-            shippingDestinations = await this.getModelShippingDestinations(params);
-        }
-
-        if (information.images) {
-            images = await this.getImageCreateRequests(params);
-        }
-
-        return {
-            title: information.title,
-            shortDescription: information.shortDescription,
-            longDescription: information.longDescription,
-            // itemCategory,
-            item_category_id: params.categoryId,
-            itemLocation,
-            shippingDestinations,
-            images
-        } as ItemInformationCreateRequest;
-    }
-
-    private async getModelLocation(params: ListingItemCreateParams): Promise<ItemLocationCreateRequest> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const location: Location | undefined = listingItemAddMessage.item.information.location;
-
-        let locationMarker: LocationMarkerCreateRequest | undefined;
-        if (!_.isNil(location) && !_.isNil(location.gps)) {
-            locationMarker = await this.getModelLocationMarker(params);
-        }
-
-        return {
-            country: (location && location.country) ? location.country : undefined,
-            address: (location && location.address) ? location.address : undefined,
-            locationMarker
-        } as ItemLocationCreateRequest;
-    }
-
-    private async getModelLocationMarker(params: ListingItemCreateParams): Promise<LocationMarkerCreateRequest | undefined> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const location: Location | undefined = listingItemAddMessage.item.information.location;
-
-        if (!_.isNil(location) && !_.isNil(location.gps)) {
-            const gps: LocationMarker = location.gps;
-            return {
-                lat: gps.lat,
-                lng: gps.lng,
-                title: gps.title ? gps.title : undefined,
-                description: gps.description ? gps.description : undefined
-            } as LocationMarkerCreateRequest;
-        }
-        return undefined;
-    }
-
-    private async getModelShippingDestinations(params: ListingItemCreateParams): Promise<ShippingDestinationCreateRequest[]> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const shippingDestinations: string[] = listingItemAddMessage.item.information.shippingDestinations || [];
-
-        const destinations: ShippingDestinationCreateRequest[] = [];
-        for (const destination of shippingDestinations) {
-
-            let shippingAvailability = ShippingAvailability.SHIPS;
-            let country = destination;
-
-            if (destination.charAt(0) === '-') {
-                shippingAvailability = ShippingAvailability.DOES_NOT_SHIP;
-                country = destination.substring(1);
-            }
-
-            destinations.push({
-                country,
-                shippingAvailability
-            } as ShippingDestinationCreateRequest);
-        }
-
-        return destinations;
-    }
-
-    private async getImageCreateRequests(params: ListingItemCreateParams): Promise<ImageCreateRequest[]> {
-
-        const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
-        const smsgMessage = params.smsgMessage;
-
-        const imageCreateRequests: ImageCreateRequest[] = [];
-
-        const images: ContentReference[] = listingItemAddMessage.item.information.images || [];
-        for (const image of images) {
-
-            const createRequest: ImageCreateRequest = await this.imageFactory.get({
-                smsgMessage,
-                actionMessage: image
-            } as ImageCreateParams);
-            imageCreateRequests.push(createRequest);
-        }
-        return imageCreateRequests;
     }
 }
