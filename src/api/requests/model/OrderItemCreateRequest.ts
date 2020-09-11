@@ -10,9 +10,7 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 // tslint:disable:variable-name
 export class OrderItemCreateRequest extends RequestBody implements ModelRequestInterface {
 
-    // @IsNotEmpty()
-    // public listing_item_id: number;
-
+    // todo: rename to target
     @IsNotEmpty()
     public itemHash: string;
 

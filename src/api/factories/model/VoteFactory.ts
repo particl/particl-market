@@ -11,9 +11,9 @@ import { VoteMessage } from '../../messages/action/VoteMessage';
 import { VoteCreateRequest } from '../../requests/model/VoteCreateRequest';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { ProposalOptionService } from '../../services/model/ProposalOptionService';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { VoteCreateParams } from './ModelCreateParams';
-import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { VoteCreateParams } from '../ModelCreateParams';
+
 
 export class VoteFactory implements ModelFactoryInterface {
 
@@ -28,30 +28,21 @@ export class VoteFactory implements ModelFactoryInterface {
 
     /**
      *
-     * @param voteMessage
-     * @param smsgMessage
      * @param params
-     * @returns {Promise<ProposalCreateRequest>}
+     * @returns {Promise<VoteCreateRequest>}
      */
-    public async get(params: VoteCreateParams, voteMessage: VoteMessage, smsgMessage?: resources.SmsgMessage): Promise<VoteCreateRequest | VoteUpdateRequest> {
+    public async get(params: VoteCreateParams): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
-        const smsgData: any = {
-            postedAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER,
-            expiredAt: Number.MAX_SAFE_INTEGER
-        };
-
-        if (smsgMessage) {
-            smsgData.postedAt = smsgMessage.sent;
-            smsgData.receivedAt = smsgMessage.received;
-            smsgData.expiredAt = smsgMessage.expiration;
-        }
+        const actionMessage: VoteMessage = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 
         const voteRequest = {
             msgid: params.msgid,
-            signature: voteMessage.signature,
-            voter: voteMessage.voter,
-            ...smsgData
+            signature: actionMessage.signature,
+            voter: actionMessage.voter,
+            postedAt: !_.isNil(smsgMessage) ? smsgMessage.sent : undefined,
+            receivedAt: !_.isNil(smsgMessage) ? smsgMessage.received : undefined,
+            expiredAt: !_.isNil(smsgMessage) ? smsgMessage.expiration : undefined
         } as VoteCreateRequest || VoteUpdateRequest;
 
         if (params) {

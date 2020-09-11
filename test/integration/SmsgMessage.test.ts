@@ -24,7 +24,7 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionMessageTypes } from '../../src/api/enums/ActionMessageTypes';
 import { GovernanceAction } from '../../src/api/enums/GovernanceAction';
-import { SmsgMessageCreateParams } from '../../src/api/factories/model/ModelCreateParams';
+import { SmsgMessageCreateParams } from '../../src/api/factories/ModelCreateParams';
 import { ActionDirection } from '../../src/api/enums/ActionDirection';
 import { SmsgMessageSearchOrderField } from '../../src/api/enums/SearchOrderField';
 import { ListingItemAddMessage } from '../../src/api/messages/action/ListingItemAddMessage';

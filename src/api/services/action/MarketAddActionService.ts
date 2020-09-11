@@ -30,7 +30,7 @@ import { MarketAddMessageFactory } from '../../factories/message/MarketAddMessag
 import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { MarketFactory } from '../../factories/model/MarketFactory';
-import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
+import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketNotification } from '../../messages/notification/MarketNotification';
 import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';

@@ -37,7 +37,7 @@ import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
-import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { ImageFactory } from '../../factories/model/ImageFactory';
 
 

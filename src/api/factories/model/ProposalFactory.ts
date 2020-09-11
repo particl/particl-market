@@ -10,14 +10,13 @@ import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ProposalCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { ProposalCreateParams } from '../ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
 import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
-import { ProposalCategory } from '../../enums/ProposalCategory';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 
 
@@ -90,7 +89,7 @@ export class ProposalFactory implements ModelFactoryInterface {
         return createRequest;
     }
 
-
+    // todo: ProposalOptionFactory
     private getOptionCreateRequests(options: resources.ProposalOption[]): ProposalOptionCreateRequest[] {
         const optionsList: ProposalOptionCreateRequest[] = [];
 

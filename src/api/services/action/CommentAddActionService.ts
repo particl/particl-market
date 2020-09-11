@@ -18,7 +18,7 @@ import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { CommentAddMessageFactory } from '../../factories/message/CommentAddMessageFactory';
 import { CommentService } from '../model/CommentService';
 import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest';
-import { CommentCreateParams } from '../../factories/model/ModelCreateParams';
+import { CommentCreateParams } from '../../factories/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';

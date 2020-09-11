@@ -21,14 +21,13 @@ import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { BidValidator } from '../../messagevalidators/BidValidator';
 import { BidMessage } from '../../messages/action/BidMessage';
-import { BidCreateParams, OrderCreateParams } from '../../factories/model/ModelCreateParams';
+import { BidCreateParams, OrderCreateParams } from '../../factories/ModelCreateParams';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { OrderFactory } from '../../factories/model/OrderFactory';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { OrderStatus } from '../../enums/OrderStatus';
 import { MPAction  } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotificationService } from '../NotificationService';
 import { MessageException } from '../../exceptions/MessageException';
@@ -182,7 +181,9 @@ export class BidActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
 
         const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
-        // this.log.debug('createBid(), bid: ', JSON.stringify(bid, null, 2));
+        if (bid.bidder !== smsgMessage.from || bid.ListingItem.seller !== smsgMessage.to) {
+            throw new MessageException('Something funny going on with the seller/buyer addresses.');
+        }
 
         // if we're the buyer, Order hash was generated before posting the BidMessage to the seller
         // if we're the seller, we should have received the Order hash from the buyer in the message
@@ -192,22 +193,13 @@ export class BidActionService extends BaseActionService {
         this.log.debug('createBid(), orderHash: ', orderHash);
 
         const orderCreateRequest: OrderCreateRequest = await this.orderFactory.get({
+                actionMessage: marketplaceMessage.action as BidMessage,
+                smsgMessage,
                 bids: [bid],
-                addressId: bid.ShippingAddress.id,
-                buyer: bid.bidder,                      // smsgMessage.from
-                seller: bid.ListingItem.seller,         // smsgMessage.to
-                status: smsgMessage.direction === ActionDirection.INCOMING ? OrderStatus.RECEIVED : OrderStatus.SENT,
-                generatedAt: bid.generatedAt,
                 hash: orderHash!.value
             } as OrderCreateParams);
 
-        if (bid.bidder !== smsgMessage.from || bid.ListingItem.seller !== smsgMessage.to) {
-            throw new MessageException('Something funny going on with the seller/buyer addresses.');
-        }
-        // this.log.debug('createBid(), orderCreateRequest: ', JSON.stringify(orderCreateRequest, null, 2));
-
-        const order: resources.Order = await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
-        this.log.debug('createBid(), created Order: ', order.id);
+        await this.orderService.create(orderCreateRequest).then(value => value.toJSON());
 
         return smsgMessage;
     }

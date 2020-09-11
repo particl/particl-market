@@ -390,6 +390,7 @@ export const Targets = {
     },
     Factory:     {
         hashableconfig: {
+            HashableField: 'HashableField',
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
@@ -397,13 +398,14 @@ export const Targets = {
                 HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
                 HashableImageCreateRequestConfig: 'HashableImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
+                HashableMarketCreateRequestConfig: 'HashableMarketCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
                 HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
             },
-            HashableField: 'HashableField',
             message: {
                 HashableBidMessageConfig: 'HashableBidMessageConfig',
                 HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig',
+                HashableMarketAddMessageConfig: 'HashableMarketAddMessageConfig',
                 HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
                 HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
             },
@@ -412,6 +414,11 @@ export const Targets = {
             }
         },
         ItemCategoryFactory: 'ItemCategoryFactory',
+        MessageFactoryInterface: 'MessageFactoryInterface',
+        MessagingInformationFactory: 'MessagingInformationFactory',
+        ModelCreateParams: 'ModelCreateParams',
+        ModelFactoryInterface: 'ModelFactoryInterface',
+        RpcCommandFactory: 'RpcCommandFactory',
         message: {
             BaseMessageFactory: 'BaseMessageFactory',
             BidMessageFactory: 'BidMessageFactory',
@@ -427,12 +434,10 @@ export const Targets = {
             ListingItemImageAddMessageFactory: 'ListingItemImageAddMessageFactory',
             MarketAddMessageFactory: 'MarketAddMessageFactory',
             MarketImageAddMessageFactory: 'MarketImageAddMessageFactory',
-            MessageFactoryInterface: 'MessageFactoryInterface',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'
         },
-        MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
             BidFactory: 'BidFactory',
             CommentFactory: 'CommentFactory',
@@ -441,14 +446,12 @@ export const Targets = {
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             MarketFactory: 'MarketFactory',
-            ModelCreateParams: 'ModelCreateParams',
-            ModelFactoryInterface: 'ModelFactoryInterface',
             OrderFactory: 'OrderFactory',
+            OrderItemFactory: 'OrderItemFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'
-        },
-        RpcCommandFactory: 'RpcCommandFactory'
+        }
     },
     MessageValidator:     {
         BidAcceptValidator: 'BidAcceptValidator',

@@ -13,8 +13,8 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { SmsgMessageCreateParams } from './ModelCreateParams';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { SmsgMessageCreateParams } from '../ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
 
 export class SmsgMessageFactory implements ModelFactoryInterface {
 

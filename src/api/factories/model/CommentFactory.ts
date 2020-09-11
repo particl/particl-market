@@ -7,15 +7,15 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core } from '../../../constants';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { CommentCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { CommentCreateParams } from '../ModelCreateParams';
 import { CommentCreateRequest } from '../../requests/model/CommentCreateRequest';
 import { CommentUpdateRequest } from '../../requests/model/CommentUpdateRequest';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { HashableCommentCreateRequestConfig } from '../hashableconfig/createrequest/HashableCommentCreateRequestConfig';
-import {BidMessageTypes} from './BidFactory';
+
 
 export class CommentFactory implements ModelFactoryInterface {
 
@@ -35,7 +35,7 @@ export class CommentFactory implements ModelFactoryInterface {
     public async get(params: CommentCreateParams): Promise<CommentCreateRequest | CommentUpdateRequest> {
 
         const actionMessage: CommentAddMessage = params.actionMessage;
-        const smsgMessage: resources.SmsgMessage | undefined = params.smsgMessage;
+        const smsgMessage: resources.SmsgMessage = params.smsgMessage;
 
         const commentRequest = {
             sender: params.sender,

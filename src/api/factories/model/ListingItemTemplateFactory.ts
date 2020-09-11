@@ -15,10 +15,10 @@ import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreate
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ListingItemTemplateCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { ListingItemTemplateCreateParams } from '../ModelCreateParams';
 import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
-import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+
 
 export class ListingItemTemplateFactory implements ModelFactoryInterface {
 

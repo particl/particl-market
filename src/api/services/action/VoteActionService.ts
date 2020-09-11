@@ -25,7 +25,7 @@ import { SmsgMessageService } from '../model/SmsgMessageService';
 import { ProposalResultService } from '../model/ProposalResultService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { VoteMessageFactory } from '../../factories/message/VoteMessageFactory';
-import { VoteCreateParams } from '../../factories/model/ModelCreateParams';
+import { VoteCreateParams } from '../../factories/ModelCreateParams';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { VoteRequest } from '../../requests/action/VoteRequest';
@@ -275,12 +275,12 @@ export class VoteActionService extends BaseActionService {
                 // Vote was found, update it
                 const foundVote: resources.Vote = value.toJSON();
                 const voteUpdateRequest: VoteUpdateRequest = await this.voteFactory.get({
+                        actionMessage: voteMessage,
+                        smsgMessage,
                         msgid: smsgMessage.msgid,
                         proposalOption: votedProposalOption,
                         weight: balance
-                    } as VoteCreateParams,
-                    voteMessage,
-                    smsgMessage);
+                    } as VoteCreateParams);
 
                 return await this.voteService.update(foundVote.id, voteUpdateRequest).then(value2 => value.toJSON());
 
@@ -290,12 +290,12 @@ export class VoteActionService extends BaseActionService {
                 // if Vote doesnt exist yet, we need to create it.
                 this.log.debug('did not find Vote, creating...');
                 const voteCreateRequest: VoteCreateRequest = await this.voteFactory.get({
-                        msgid: smsgMessage ? smsgMessage.msgid : '',
+                        actionMessage: voteMessage,
+                        smsgMessage,
+                        msgid: smsgMessage ? smsgMessage.msgid : undefined,
                         proposalOption: votedProposalOption,
                         weight: balance
-                    } as VoteCreateParams,
-                    voteMessage,
-                    smsgMessage);
+                    } as VoteCreateParams);
 
                 return await this.voteService.create(voteCreateRequest).then(value => value.toJSON());
             });

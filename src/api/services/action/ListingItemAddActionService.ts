@@ -19,7 +19,7 @@ import { ListingItemAddRequest } from '../../requests/action/ListingItemAddReque
 import { ListingItemAddValidator } from '../../messagevalidators/ListingItemAddValidator';
 import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
 import { CoreRpcService } from '../CoreRpcService';
-import { ListingItemCreateParams } from '../../factories/model/ModelCreateParams';
+import { ListingItemCreateParams } from '../../factories/ModelCreateParams';
 import { ItemCategoryService } from '../model/ItemCategoryService';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';

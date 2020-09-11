@@ -19,7 +19,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
-import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
+import { ListingItemTemplateCreateParams } from '../../factories/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';

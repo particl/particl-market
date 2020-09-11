@@ -9,8 +9,8 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ImageCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { ImageCreateParams } from '../ModelCreateParams';
 import { ImageDataFactory } from './ImageDataFactory';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 

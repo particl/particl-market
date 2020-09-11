@@ -21,13 +21,12 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageFactory } from '../../factories/model/ImageFactory';
-import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
-
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

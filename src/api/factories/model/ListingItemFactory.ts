@@ -30,8 +30,8 @@ import { EscrowConfig, EscrowRatio, ItemInfo, ItemObject, Location, LocationMark
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { ImageCreateParams, ListingItemCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { ImageCreateParams, ListingItemCreateParams } from '../ModelCreateParams';
 import { CryptoAddress, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { MessageException } from '../../exceptions/MessageException';
 import { KVS } from 'omp-lib/dist/interfaces/common';

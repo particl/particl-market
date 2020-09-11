@@ -25,7 +25,7 @@ import { CoreRpcService } from '../../services/CoreRpcService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
-import { MarketCreateParams } from '../../factories/model/ModelCreateParams';
+import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketRegion } from '../../enums/MarketRegion';
 

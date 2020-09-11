@@ -48,7 +48,7 @@ import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarker
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
 import { ImageFactory } from '../../factories/model/ImageFactory';
-import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';

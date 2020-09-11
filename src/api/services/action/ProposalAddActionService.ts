@@ -23,7 +23,7 @@ import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreate
 import { VoteActionService } from './VoteActionService';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
-import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
+import { ProposalCreateParams } from '../../factories/ModelCreateParams';
 import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';

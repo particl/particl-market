@@ -12,7 +12,7 @@ import { ActionRequestInterface } from '../requests/action/ActionRequestInterfac
 import { SmsgService } from './SmsgService';
 import { SmsgMessageService } from './model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
+import { SmsgMessageCreateParams } from '../factories/ModelCreateParams';
 import { MessageException } from '../exceptions/MessageException';
 import { ValidationException } from '../exceptions/ValidationException';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';

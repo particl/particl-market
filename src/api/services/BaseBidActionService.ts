@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { SmsgService } from './SmsgService';
 import { SmsgMessageService } from './model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
-import { BidCreateParams } from '../factories/model/ModelCreateParams';
+import { BidCreateParams } from '../factories/ModelCreateParams';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { NotificationService } from './NotificationService';

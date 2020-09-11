@@ -34,7 +34,7 @@ import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessa
 import { MarketImageAddValidator } from '../../messagevalidators/MarketImageAddValidator';
 import { MarketImageNotification } from '../../messages/notification/MarketImageNotification';
 import { ImageFactory } from '../../factories/model/ImageFactory';
-import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { ImageCreateParams } from '../../factories/ModelCreateParams';
 
 
 export class MarketImageAddActionService extends BaseActionService {

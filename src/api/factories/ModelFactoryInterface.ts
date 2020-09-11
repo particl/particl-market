@@ -4,8 +4,8 @@
 
 import * as resources from 'resources';
 import { ModelCreateParams } from './ModelCreateParams';
-import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
-import { ModelRequestInterface } from '../../requests/model/ModelRequestInterface';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { ModelRequestInterface } from '../requests/model/ModelRequestInterface';
 
 /**
  * ModelFactoryInterface defines how the Factory classes for the CreateRequests should be implemented

@@ -72,7 +72,7 @@ import { ShippingDestinationCreateRequest } from '../requests/model/ShippingDest
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { EscrowReleaseType, EscrowType, HashableBidField, MessagingProtocol, MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { ContentReference, DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
+import { DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 import { EscrowRatioCreateRequest } from '../requests/model/EscrowRatioCreateRequest';
 import { ShippingPriceCreateRequest } from '../requests/model/ShippingPriceCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/model/MessagingInformationCreateRequest';
@@ -80,14 +80,13 @@ import { ListingItemObjectCreateRequest } from '../requests/model/ListingItemObj
 import { ListingItemObjectDataCreateRequest } from '../requests/model/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
-import { ImageCreateParams, OrderCreateParams } from '../factories/model/ModelCreateParams';
+import { ImageCreateParams, OrderCreateParams } from '../factories/ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import {HashableBidReleaseField, HashableProposalAddField, HashableProposalOptionField} from '../factories/hashableconfig/HashableField';
+import { HashableBidReleaseField, HashableProposalAddField, HashableProposalOptionField } from '../factories/hashableconfig/HashableField';
 import { HashableListingItemTemplateCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
-import { OrderStatus } from '../enums/OrderStatus';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
 import { CommentType } from '../enums/CommentType';
@@ -122,9 +121,9 @@ import { ActionMessageObjects } from '../enums/ActionMessageObjects';
 import { ListingItemAddRequest } from '../requests/action/ListingItemAddRequest';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { ImageFactory } from '../factories/model/ImageFactory';
-import {BaseImageAddMessage} from '../messages/action/BaseImageAddMessage';
-import {HashableBidBasicCreateRequestConfig} from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
-import {BidMessageTypesWithParentBid} from '../factories/model/BidFactory';
+import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
+import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
+
 
 export class TestDataService {
 
@@ -954,12 +953,7 @@ export class TestDataService {
         const bid: resources.Bid = await this.bidService.findOne(generateParams.bidId).then(value => value.toJSON());
 
         const orderCreateParamsForBidder = {
-            bids: [bid],
-            addressId: bid.ShippingAddress.id,
-            status: OrderStatus.PROCESSING,
-            buyer: bid.bidder,
-            seller: bid.ListingItem.seller,
-            generatedAt: +Date.now()
+            bids: [bid]
         } as OrderCreateParams;
 
         const orderCreateRequest: OrderCreateRequest = await this.orderFactory.get(orderCreateParamsForBidder);

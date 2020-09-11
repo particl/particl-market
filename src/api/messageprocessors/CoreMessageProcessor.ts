@@ -17,7 +17,7 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { ActionDirection } from '../enums/ActionDirection';
-import { SmsgMessageCreateParams } from '../factories/model/ModelCreateParams';
+import { SmsgMessageCreateParams } from '../factories/ModelCreateParams';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../enums/ActionMessageObjects';
