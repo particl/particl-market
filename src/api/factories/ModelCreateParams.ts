@@ -6,7 +6,6 @@ import * as resources from 'resources';
 import { ActionDirection } from '../enums/ActionDirection';
 import { AddressCreateRequest } from '../requests/model/AddressCreateRequest';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
-import { OrderStatus } from '../enums/OrderStatus';
 import { CryptoAddressType, Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
@@ -15,9 +14,8 @@ import { BidMessageTypes } from './model/BidFactory';
 import { ProposalAddMessage } from '../messages/action/ProposalAddMessage';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import {OrderItemStatus} from '../enums/OrderItemStatus';
-import {BidMessage} from '../messages/action/BidMessage';
-import {VoteMessage} from '../messages/action/VoteMessage';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
+import { VoteMessage } from '../messages/action/VoteMessage';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -50,9 +48,14 @@ export interface MarketCreateParams extends ModelCreateParams {
 }
 
 export interface ListingItemCreateParams extends ModelCreateParams {
-    itemCategory: resources.ItemCategory;
     actionMessage: ActionMessageInterface;
     smsgMessage: resources.SmsgMessage;
+    categoryId: number;
+}
+
+export interface ItemCategoryCreateParams extends ModelCreateParams {
+    fullCategoryPath: string[];
+    parentCategory: resources.ItemCategory;
 }
 
 export interface ImageCreateParams extends ModelCreateParams {

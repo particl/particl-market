@@ -9,7 +9,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
@@ -40,6 +39,7 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../hashableconfi
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { ImageFactory } from './ImageFactory';
 import { ImageService } from '../../services/model/ImageService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 // tslint:enable:max-line-length
 
 
@@ -49,7 +49,6 @@ export class ListingItemFactory implements ModelFactoryInterface {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
@@ -66,6 +65,10 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const listingItemAddMessage = params.actionMessage as ListingItemAddMessage;
         const smsgMessage = params.smsgMessage;
 
+        if (_.isNil(smsgMessage)) {
+            throw new MissingParamException('smsgMessage');
+        }
+
         const itemInformation: ItemInformationCreateRequest = await this.getModelItemInformation(params);
         const paymentInformation: PaymentInformationCreateRequest = await this.getModelPaymentInformation(params);
         const messagingInformation: MessagingInformationCreateRequest[] = await this.getModelMessagingInformation(params);
@@ -76,20 +79,20 @@ export class ListingItemFactory implements ModelFactoryInterface {
         }
 
         const createRequest = {
-            msgid: smsgMessage.msgid,
             seller: listingItemAddMessage.item.seller.address,
             signature: listingItemAddMessage.item.seller.signature,
-            market: smsgMessage.to,
-            expiryTime: smsgMessage.daysretention,
-            postedAt: smsgMessage.sent,
-            expiredAt: smsgMessage.expiration,
-            receivedAt: smsgMessage.received,
-            generatedAt: listingItemAddMessage.generated,
             itemInformation,
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            hash: 'recalculateandvalidate'
+            hash: 'recalculateandvalidate',
+            market: smsgMessage.to,
+            msgid: smsgMessage.msgid,
+            expiryTime: smsgMessage.daysretention,
+            postedAt: smsgMessage.sent,
+            expiredAt: smsgMessage.expiration,
+            receivedAt: smsgMessage.received,
+            generatedAt: listingItemAddMessage.generated
         } as ListingItemCreateRequest;
 
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableListingItemTemplateCreateRequestConfig());
@@ -252,7 +255,6 @@ export class ListingItemFactory implements ModelFactoryInterface {
         const smsgMessage = params.smsgMessage;
 
         const information: ItemInfo = listingItemAddMessage.item.information;
-        const itemCategory: resources.ItemCategory = params.itemCategory;
 
         let itemLocation: ItemLocationCreateRequest | undefined;
         let shippingDestinations: ShippingDestinationCreateRequest[] | undefined;
@@ -275,7 +277,7 @@ export class ListingItemFactory implements ModelFactoryInterface {
             shortDescription: information.shortDescription,
             longDescription: information.longDescription,
             // itemCategory,
-            item_category_id: itemCategory.id,
+            item_category_id: params.categoryId,
             itemLocation,
             shippingDestinations,
             images

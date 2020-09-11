@@ -33,7 +33,7 @@ import { ItemPriceService } from '../../services/model/ItemPriceService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -49,7 +49,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
         // tslint:enable:max-line-length
     ) {
         super(Commands.TEMPLATE_POST);
@@ -105,7 +105,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const toAddress = market.receiveAddress;
 
         // if ListingItem contains a category, create the market categories
-        const categoryArray: string[] = await this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
+        const categoryArray: string[] = this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
         await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
 
         // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore

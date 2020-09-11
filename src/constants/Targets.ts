@@ -413,7 +413,6 @@ export const Targets = {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
             }
         },
-        ItemCategoryFactory: 'ItemCategoryFactory',
         MessageFactoryInterface: 'MessageFactoryInterface',
         MessagingInformationFactory: 'MessagingInformationFactory',
         ModelCreateParams: 'ModelCreateParams',
@@ -443,6 +442,7 @@ export const Targets = {
             CommentFactory: 'CommentFactory',
             ImageFactory: 'ImageFactory',
             ImageDataFactory: 'ImageDataFactory',
+            ItemCategoryFactory: 'ItemCategoryFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
             MarketFactory: 'MarketFactory',

@@ -20,7 +20,8 @@ import { MarketService } from '../../services/model/MarketService';
 import { hash } from 'omp-lib/dist/hasher/hash';
 import { MarketType } from '../../enums/MarketType';
 import { MessageException } from '../../exceptions/MessageException';
-import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -28,7 +29,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
@@ -60,7 +61,8 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
-        let path: string[] = await this.itemCategoryFactory.getArray(parentItemCategory);
+
+        let path: string[] = this.itemCategoryFactory.getArray(parentItemCategory);
         path = [...path, data.params[1]];
         createRequest.key = hash(path.toString());
 

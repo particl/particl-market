@@ -7,7 +7,7 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
+import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelFactoryInterface } from '../ModelFactoryInterface';

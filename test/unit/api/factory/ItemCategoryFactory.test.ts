@@ -4,7 +4,7 @@
 
 import * from 'jest';
 import { LogMock } from '../../lib/LogMock';
-import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
+import { ItemCategoryFactory } from '../../../../src/api/factories/model/ItemCategoryFactory';
 import { ItemCategoryCreateRequest } from '../../../../src/api/requests/model/ItemCategoryCreateRequest';
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryWithRelated5levels from '../../../testdata/model/listingItemCategoryWithRelated5levels.json';
@@ -31,7 +31,7 @@ describe('ItemCategoryFactory', () => {
     // getArray tests
     // TODO: there's no test cases for duplicate category cases, and propably there's no functionality for validating those cases either
     test('Should convert ListingItemCategory to categoryArray, 3 levels', async () => {
-        const result: string[] = await itemCategoryFactory.getArray(listingItemCategoryWithRelated);
+        const result: string[] = itemCategoryFactory.getArray(listingItemCategoryWithRelated);
         expect(result).toHaveLength(3);
         expect(result[2]).toBe(listingItemCategoryWithRelated.key);
         expect(result[1]).toBe((listingItemCategoryWithRelated as resources.ListingItemCategory).ParentItemCategory.key);
@@ -39,7 +39,7 @@ describe('ItemCategoryFactory', () => {
     });
 
     test('Should convert ListingItemCategory to categoryArray, 5 levels', async () => { // for length 3
-        const result: string[] = await itemCategoryFactory.getArray(listingItemCategoryWithRelated5levels);
+        const result: string[] = itemCategoryFactory.getArray(listingItemCategoryWithRelated5levels);
         const category = listingItemCategoryWithRelated5levels as resources.ListingItemCategory;
         expect(result).toHaveLength(5);
         expect(result[4]).toBe(category.key);

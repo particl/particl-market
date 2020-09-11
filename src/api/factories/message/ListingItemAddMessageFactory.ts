@@ -9,24 +9,11 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { MessageException } from '../../exceptions/MessageException';
-import {
-    EscrowConfig,
-    EscrowRatio,
-    Item,
-    ItemInfo,
-    ItemObject,
-    Location, LocationMarker,
-    MessagingInfo,
-    MessagingOption,
-    MPA,
-    PaymentInfo,
-    PaymentInfoEscrow,
-    PaymentOption,
-    SellerInfo,
-    ShippingPrice
-} from 'omp-lib/dist/interfaces/omp';
-import {MessagingProtocol, MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
+import { EscrowConfig, EscrowRatio, Item, ItemInfo, ItemObject, Location, LocationMarker,
+    MessagingInfo, MessagingOption, PaymentInfo, PaymentInfoEscrow, PaymentOption, SellerInfo,
+    ShippingPrice } from 'omp-lib/dist/interfaces/omp';
+import { MessagingProtocol, MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ItemCategoryFactory } from '../model/ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
@@ -61,7 +48,7 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
     constructor(
         // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
@@ -181,7 +168,7 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
     private async getMessageItemInfo(actionRequest: ListingItemAddRequest): Promise<ItemInfo> {
         const itemInformation = actionRequest.listingItem.ItemInformation;
 
-        const category: string[] = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
+        const category: string[] = this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
         const location: Location = await this.getMessageItemInfoLocation(actionRequest);
         const shippingDestinations: string[] | undefined = await this.getMessageItemInfoShippingDestinations(actionRequest);
         const images: ContentReference[] = await this.getMessageInformationImages(actionRequest);

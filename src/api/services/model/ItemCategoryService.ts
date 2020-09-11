@@ -15,8 +15,9 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { hash } from 'omp-lib/dist/hasher/hash';
-import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 import { ItemCategorySearchParams } from '../../requests/search/ItemCategorySearchParams';
+import { ItemCategoryCreateParams } from '../../factories/ModelCreateParams';
 
 export class ItemCategoryService {
 
@@ -24,7 +25,7 @@ export class ItemCategoryService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ItemCategoryRepository) public itemCategoryRepo: ItemCategoryRepository,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -147,21 +148,14 @@ export class ItemCategoryService {
      */
     public async createMarketCategoriesFromArray(market: string, categoryArray: string[]): Promise<resources.ItemCategory> {
 
-        // this.log.debug('createMarketCategoriesFromArray(), market:', market);
-        // this.log.debug('createMarketCategoriesFromArray(), categoryArray:', categoryArray);
-
+        // if root category for the market didn't exist, create it
+        // todo: we should propably/also make sure the root category is being created when market is created so we dont need to do it here
+        // todo: propably fixed already
         await this.findRoot(market)
             .then(value => value.toJSON())
             .catch(async reason => {
-                // if root category for the market didn't exist, create it
-                // todo: we should propably/also make sure the root category is being created when market is created
                 this.log.error('rootCategory not found, fixing it...');
-                return await this.insertRootItemCategoryForMarket(market)
-                    .then(value => {
-                        const root = value.toJSON();
-                        // this.log.debug('createMarketCategoriesFromArray(), new ROOT:', JSON.stringify(root, null, 2));
-                        return root;
-                    });
+                return await this.insertRootItemCategoryForMarket(market).then(value => value.toJSON());
             });
 
         const currentPathToLookFor: string[] = [];
@@ -176,26 +170,27 @@ export class ItemCategoryService {
             this.log.debug('createMarketCategoriesFromArray(), currentPathToLookFor: ', currentPathToLookFor);
             index++;
 
-            const keyForPath = hash(currentPathToLookFor.toString());
+            const keyForPath = this.itemCategoryFactory.keyForItemCategoryArray(currentPathToLookFor);
 
             // if category for the key and market isn't found, create it
             parentCategory = await this.findOneByKeyAndMarket(keyForPath, market)
                 .then(value => value.toJSON())
                 .catch(async reason => {
+
                     this.log.debug('createMarketCategoriesFromArray(), missing category: ' + keyForPath + ', for market: ' + market);
                     // there was no child category, then create it
                     // root should have always been found, so parentCategory is always set
-                    const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.getCreateRequest(currentPathToLookFor, parentCategory);
-                    // this.log.debug('createMarketCategoriesFromArray(), createRequest:', JSON.stringify(createRequest, null, 2));
+                    const createRequest: ItemCategoryCreateRequest = await this.itemCategoryFactory.get({
+                        fullCategoryPath: currentPathToLookFor,
+                        parentCategory
+                    } as ItemCategoryCreateParams);
 
                     return await this.create(createRequest).then(value => value.toJSON());
                 });
         }
 
-        const category: resources.ItemCategory = await this.findOneByKeyAndMarket(hash(categoryArray.toString()), market).then(value => value.toJSON());
-        // this.log.debug('createMarketCategoriesFromArray(), category:', JSON.stringify(category, null, 2));
-
-        return category;
+        const key = this.itemCategoryFactory.keyForItemCategoryArray(categoryArray);
+        return await this.findOneByKeyAndMarket(key, market).then(value => value.toJSON());
     }
 
     public async insertRootItemCategoryForMarket(market: string): Promise<ItemCategory> {

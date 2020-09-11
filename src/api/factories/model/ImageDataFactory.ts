@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
+import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';

@@ -22,7 +22,7 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 import { ProfileService } from '../../services/model/ProfileService';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { IdentityService } from '../../services/model/IdentityService';
