@@ -35,8 +35,7 @@ export class DefaultSettingService {
         const settings: resources.Setting[] = [];
 
         if (!_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME])
-            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY])
-            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS])) {
+            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY])) {
 
             await this.insertOrUpdateSettingFromEnv(SettingValue.APP_DEFAULT_MARKETPLACE_NAME)
                 .then(value => {
@@ -56,14 +55,6 @@ export class DefaultSettingService {
                     }
                 });
 
-            await this.insertOrUpdateSettingFromEnv(SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS)
-                .then(value => {
-                    const settingValue = value ? value.value : 'undefined';
-                    this.log.debug('APP_DEFAULT_MARKETPLACE_ADDRESS: ', settingValue);
-                    if (value) {
-                        settings.push(value);
-                    }
-                });
         }
 
         return settings;

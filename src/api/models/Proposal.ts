@@ -9,6 +9,7 @@ import { ProposalResult } from './ProposalResult';
 import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
 
+
 export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [

@@ -1307,10 +1307,7 @@ export class TestDataService {
             key: SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY.toString(),
             value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY]
         } as SettingCreateRequest);
-        settings.push({
-            key: SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS.toString(),
-            value: process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS]
-        } as SettingCreateRequest);
+
         return settings;
     }
 

@@ -119,7 +119,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [10]: escrowType
      *  [11]: buyerRatio
      *  [12]: sellerRatio
-     *  [13]: listingItemTemplate: resources.ListingItemTemplate (optional)
+     *  [13]: escrowReleaseType, default EscrowReleaseType.ANON
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}

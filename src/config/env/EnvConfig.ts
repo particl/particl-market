@@ -28,11 +28,6 @@ export class EnvConfig {
         INIT: true,
         MIGRATE: true,
         JASMINE_TIMEOUT: 100000,
-        // APP_DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
-        // APP_DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
-        // APP_DEFAULT_MARKETPLACE_ADDRESS: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
-        PAID_MESSAGE_RETENTION_DAYS: 7,
-        FREE_MESSAGE_RETENTION_DAYS: 7,
         MARKET_RPC_AUTH_DISABLED: false,
         MARKET_RPC_USER: 'test',
         MARKET_RPC_PASSWORD: 'test',
@@ -55,7 +50,14 @@ export class EnvConfig {
         DATA_CHECK_DELAY: 60,
         CHASING_COINS_API: 'https://chasing-coins.com/api/v1/convert',
         CHASING_COINS_API_DELAY: 60,
-        LISTING_ITEMS_EXPIRED_INTERVAL: 10 // minutes
+
+        // APP_DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
+        // APP_DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
+        PAID_MESSAGE_RETENTION_DAYS: 7,
+        FREE_MESSAGE_RETENTION_DAYS: 7,
+        LISTING_ITEMS_EXPIRED_INTERVAL: 10,             // minutes
+        LISTING_ITEM_REMOVE_PERCENTAGE: 0.1,
+        PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30      // minutes
     };
 
     /**

@@ -26,6 +26,7 @@ import { MarketAddMessage } from '../messages/action/MarketAddMessage';
 import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 
+
 export class DefaultMarketService {
 
     public log: LoggerType;
@@ -52,9 +53,15 @@ export class DefaultMarketService {
         const profile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
 
         // cant use this.defaultMarketService.getDefaultForProfile() because its using SettingValue.DEFAULT_MARKETPLACE_ID, which is not yet in use
-        const oldDefaultMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(
-            profile.id, process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS])
-            .then(value => value.toJSON());
+        // const oldDefaultMarket: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(
+        //    profile.id, process.env[SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS])
+        //    .then(value => value.toJSON());
+
+        // there is only one market if we're upgrading
+        const oldDefaultMarket: resources.Market = await this.marketService.findAllByProfileId(profile.id).then(values => {
+            const markets: resources.Market[] = values.toJSON();
+            return markets[0];
+        });
 
         return await this.marketService.update(oldDefaultMarket.id, {
             name: oldDefaultMarket.name + ' (OLD)',
@@ -162,11 +169,6 @@ export class DefaultMarketService {
         });
         const marketPKSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY;
-        });
-
-        // todo: this isnt really needed anymore
-        const marketAddressSetting = _.find(profileSettings, value => {
-            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_ADDRESS;
         });
 
         if (marketNameSetting === undefined || marketPKSetting === undefined) {
