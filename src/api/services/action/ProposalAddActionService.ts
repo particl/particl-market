@@ -117,7 +117,8 @@ export class ProposalAddActionService extends BaseActionService {
         this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
         const proposalAddMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
-        this.log.debug('processProposal(), proposalAddMessage:', JSON.stringify(proposalAddMessage, null, 2));
+
+        // this.log.debug('processProposal(), proposalAddMessage:', JSON.stringify(proposalAddMessage, null, 2));
 
         // if Proposal doesnt exist yet, create it
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalAddMessage.hash)

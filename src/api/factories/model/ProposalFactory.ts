@@ -36,7 +36,7 @@ export class ProposalFactory implements ModelFactoryInterface {
      */
     public async get(params: ProposalCreateParams): Promise<ProposalCreateRequest> {
 
-        this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
+        // this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
         const actionMessage: ProposalAddMessage = params.actionMessage;
         const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 
@@ -85,7 +85,7 @@ export class ProposalFactory implements ModelFactoryInterface {
             }]));
         }
         // createRequest.options = optionsList;
-        this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         return createRequest;
     }

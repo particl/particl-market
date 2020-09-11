@@ -96,7 +96,7 @@ export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMes
             }
         }
 
-        this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
+        // this.log.debug('validateMessage(), message: ', JSON.stringify(message, null, 2));
 
         // omp-lib doesnt support all the ActionMessageTypes which the market supports, so msg needs to be cast to MPM
 

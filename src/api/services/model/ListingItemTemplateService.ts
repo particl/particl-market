@@ -47,15 +47,12 @@ import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCrea
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 import { ImageFactory } from '../../factories/model/ImageFactory';
-import {ImageCreateParams} from '../../factories/model/ModelCreateParams';
-import {BaseImageAddMessage} from '../../messages/action/BaseImageAddMessage';
-import {ListingItemImageAddMessage} from '../../messages/action/ListingItemImageAddMessage';
-import {DSN, ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
-import {KVS} from 'omp-lib/dist/interfaces/common';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
+import { ImageCreateParams } from '../../factories/model/ModelCreateParams';
+import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
+import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+
 
 export class ListingItemTemplateService {
 
@@ -167,7 +164,7 @@ export class ListingItemTemplateService {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
             const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
                 .then(value => value.toJSON());
-            this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {

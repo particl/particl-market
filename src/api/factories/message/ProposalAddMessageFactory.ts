@@ -35,7 +35,7 @@ export class ProposalAddMessageFactory extends BaseMessageFactory {
      */
     public async get(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
 
-        this.log.debug('actionRequest: ', JSON.stringify(actionRequest, null, 2));
+        // this.log.debug('actionRequest: ', JSON.stringify(actionRequest, null, 2));
 
         const optionsList: resources.ProposalOption[] = this.createOptionsList(actionRequest.options);
 
@@ -59,7 +59,7 @@ export class ProposalAddMessageFactory extends BaseMessageFactory {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
 
-        this.log.debug('message: ', JSON.stringify(message, null, 2));
+        // this.log.debug('message: ', JSON.stringify(message, null, 2));
 
         // todo:
         message.hash = ConfigurableHasher.hash(message, new HashableProposalAddMessageConfig([{

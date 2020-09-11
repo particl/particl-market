@@ -162,7 +162,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const identityId: number = data.params[1];
         const reason: string = data.params[2];
 
-        this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
+        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
 
         const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
             .then(value => value.toJSON())
