@@ -42,7 +42,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'template|market',
                 required: true,
                 type: 'string'

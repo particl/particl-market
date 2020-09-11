@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
@@ -19,6 +20,7 @@ import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/H
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 
+
 export class ProposalFactory implements ModelFactoryInterface {
 
     public log: LoggerType;
@@ -29,46 +31,31 @@ export class ProposalFactory implements ModelFactoryInterface {
 
     /**
      *
-     * @param params TODO: not used, get rid of this
-     * @param {ProposalAddMessage} proposalMessage
-     * @param smsgMessage
+     * @param params
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(params: ProposalCreateParams, proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
+    public async get(params: ProposalCreateParams): Promise<ProposalCreateRequest> {
 
-        const smsgData: any = {
-            postedAt: Number.MAX_SAFE_INTEGER,
-            expiredAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER,
-            timeStart: Number.MAX_SAFE_INTEGER
-        };
+        this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
+        const actionMessage: ProposalAddMessage = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 
-        if (smsgMessage) {
-            smsgData.postedAt = smsgMessage.sent;
-            smsgData.receivedAt = smsgMessage.received;
-            smsgData.expiredAt = smsgMessage.expiration;
-            smsgData.timeStart = smsgMessage.sent;
-            smsgData.msgid = smsgMessage.msgid;
-            smsgData.market = smsgMessage.to;
-        }
-
-        const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
+        const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(actionMessage.options);
 
         const createRequest = {
-            submitter: proposalMessage.submitter,
-            category: proposalMessage.category,
-            title: proposalMessage.title,
-            description: proposalMessage.description,
-            target: proposalMessage.target,
+            submitter: actionMessage.submitter,
+            category: actionMessage.category,
+            title: actionMessage.title,
+            description: actionMessage.description,
+            target: actionMessage.target,
             options: optionsList,
-            ...smsgData
+            postedAt: !_.isNil(smsgMessage) ? smsgMessage.sent : undefined,
+            receivedAt: !_.isNil(smsgMessage) ? smsgMessage.received : undefined,
+            expiredAt: !_.isNil(smsgMessage) ? smsgMessage.expiration : undefined,
+            timeStart: !_.isNil(smsgMessage) ? smsgMessage.sent : undefined,
+            msgid: !_.isNil(smsgMessage) ? smsgMessage.msgid : undefined,
+            market: !_.isNil(smsgMessage) ? smsgMessage.to : undefined
         } as ProposalCreateRequest;
-
-        // if ProposalCategory.ITEM_VOTE or MARKET_VOTE, the itemHash/marketReceiveAddress is in the title
-        if (proposalMessage.category === ProposalCategory.ITEM_VOTE
-            || proposalMessage.category === ProposalCategory.MARKET_VOTE) {
-            createRequest.target = proposalMessage.title;
-        }
 
         // hash the proposal
         let hashableOptions = '';
@@ -79,13 +66,13 @@ export class ProposalFactory implements ModelFactoryInterface {
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS
         }, {
-            value: smsgData.market,
+            value: createRequest.market,
             to: HashableProposalAddField.PROPOSAL_MARKET
         }] as HashableFieldValueConfig[]));
 
         // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
-        if (proposalMessage.hash !== createRequest.hash) {
-            const error = new HashMismatchException('ProposalCreateRequest', proposalMessage.hash, createRequest.hash);
+        if (actionMessage.hash !== createRequest.hash) {
+            const error = new HashMismatchException('ProposalCreateRequest', actionMessage.hash, createRequest.hash);
             this.log.error(error.getMessage());
             throw error;
         }

@@ -40,7 +40,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'searchString',
                 required: false,
                 type: 'string'

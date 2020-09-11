@@ -32,7 +32,7 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'

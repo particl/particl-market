@@ -26,7 +26,7 @@ export enum HashableProposalAddField {
     PROPOSAL_CATEGORY = 'proposalCategory',
     PROPOSAL_TITLE = 'proposalTitle',
     PROPOSAL_DESCRIPTION = 'proposalDescription',
-    PROPOSAL_ITEM = 'proposalItem',
+    PROPOSAL_TARGET = 'proposalTarget',
     PROPOSAL_OPTIONS = 'proposalOptions',
     PROPOSAL_MARKET = 'proposalMarket'
 }

@@ -114,6 +114,8 @@ export class ProposalAddActionService extends BaseActionService {
                                 smsgMessage: resources.SmsgMessage,
                                 actionRequest?: ProposalAddRequest): Promise<resources.SmsgMessage> {
 
+        this.log.debug('processMessage(), actionDirection: ', actionDirection);
+
         const proposalAddMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
         this.log.debug('processProposal(), proposalAddMessage:', JSON.stringify(proposalAddMessage, null, 2));
 
@@ -122,11 +124,11 @@ export class ProposalAddActionService extends BaseActionService {
             .then(value => value.toJSON())
             .catch(async reason => {
 
-                const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get(
-                    {} as ProposalCreateParams,
-                    proposalAddMessage,
+                const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({
+                    actionMessage: proposalAddMessage,
                     smsgMessage
-                );
+                } as ProposalCreateParams);
+
                 const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
 
                 // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem

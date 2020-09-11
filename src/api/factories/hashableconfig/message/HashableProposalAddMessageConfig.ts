@@ -20,8 +20,8 @@ export class HashableProposalAddMessageConfig extends BaseHashableConfig {
         from: 'description',
         to: HashableProposalAddField.PROPOSAL_DESCRIPTION
     }, {
-        from: 'item',
-        to: HashableProposalAddField.PROPOSAL_ITEM
+        from: 'target',
+        to: HashableProposalAddField.PROPOSAL_TARGET
     }] as HashableFieldConfig[];
 
     /**

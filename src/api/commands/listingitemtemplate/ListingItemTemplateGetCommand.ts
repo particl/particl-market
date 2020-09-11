@@ -29,7 +29,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'

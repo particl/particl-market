@@ -38,7 +38,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'

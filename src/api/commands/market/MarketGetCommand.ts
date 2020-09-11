@@ -30,7 +30,7 @@ export class MarketGetCommand extends BaseCommand implements RpcCommandInterface
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'marketId',
                 required: true,
                 type: 'number'

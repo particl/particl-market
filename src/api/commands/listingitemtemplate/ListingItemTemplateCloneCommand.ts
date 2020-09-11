@@ -33,7 +33,7 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'

@@ -32,7 +32,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'profileId',
                 required: false,
                 type: 'number'

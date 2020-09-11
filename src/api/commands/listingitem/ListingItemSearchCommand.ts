@@ -37,7 +37,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'market',
                 required: true,
                 type: 'string'

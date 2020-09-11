@@ -12,7 +12,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProfileService } from '../../services/model/ProfileService';
@@ -20,8 +20,6 @@ import { MarketService } from '../../services/model/MarketService';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ItemVote } from '../../enums/ItemVote';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
@@ -30,9 +28,8 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { VoteActionService } from '../../services/action/VoteActionService';
 
-export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public log: LoggerType;
+export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -46,6 +43,25 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [{
+                name: 'listingItemId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'identityId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'reason',
+                required: false,
+                type: 'string',
+                defaultValue: 'This ListingItem should be removed.'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -63,9 +79,10 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         const listingItem: resources.ListingItem = data.params[0];
         const identity: resources.Identity = data.params[1];
-        const title = listingItem.hash;
         const description = data.params[2];
         const daysRetention = data.params[3];
+
+        const title = listingItem.hash;
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // get the ListingItem market
@@ -139,22 +156,17 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('identityId');
-        }
+        const listingItemId: number = data.params[0];
+        const identityId: number = data.params[1];
+        const reason: string = data.params[2];
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('identityId', 'number');
-        }
+        this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(data.params[0])
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
             .then(value => value.toJSON())
-            .catch(reason => {
+            .catch(ex => {
                 throw new ModelNotFoundException('ListingItem');
             });
 
@@ -165,9 +177,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         }
 
         // make sure identity with the id exists
-        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
+        const identity: resources.Identity = await this.identityService.findOne(identityId)
             .then(value => value.toJSON())
-            .catch(reason => {
+            .catch(ex => {
                 throw new ModelNotFoundException('Identity');
             });
 
@@ -184,7 +196,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         data.params[0] = listingItem;
         data.params[1] = identity;
-        data.params[2] = data.params[2] ? data.params[2] : 'This ListingItem should be removed.';
+        data.params[2] = reason;
         data.params[3] = daysRetention;
 
         return data;
@@ -196,9 +208,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>    - Numeric - The id of the ListingItem we want to report. \n'
-            + '    <identityId>       - Numeric - The id of the Identity used to report the item. \n'
-            + '    <reason>           - String - Optional reason for the flagging';
+            + '    <listingItemId>    - number, The id of the ListingItem we want to report. \n'
+            + '    <identityId>       - number, The id of the Identity used to report the item. \n'
+            + '    <reason>           - [optional] string, Optional reason for the flagging';
     }
 
     public description(): string {

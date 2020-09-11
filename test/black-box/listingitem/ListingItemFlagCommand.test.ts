@@ -70,7 +70,7 @@ describe('ListingItemFlagCommand', () => {
         listingItem = listingItems[0];
 
     });
-
+/*
     test('Should fail to flag because missing listingItemId', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
@@ -136,7 +136,7 @@ describe('ListingItemFlagCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result.FlaggedItem).toMatchObject({});
     });
-
+*/
     test('Should flag the ListingItem using listingItemId and identityId', async () => {
         let response = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
@@ -167,7 +167,7 @@ describe('ListingItemFlagCommand', () => {
 
         expect(item.FlaggedItem.Proposal.title).toBe(listingItem.hash);
     }, 600000); // timeout to 600s
-
+/*
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
             listingItem.id,
@@ -177,5 +177,5 @@ describe('ListingItemFlagCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
-
+*/
 });

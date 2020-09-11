@@ -13,6 +13,7 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { BidMessageTypes } from './BidFactory';
+import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
 
 export interface ModelCreateParams {
     actionMessage?: ActionMessageInterface;
@@ -76,9 +77,7 @@ export interface OrderCreateParams extends ModelCreateParams {
 }
 
 export interface ProposalCreateParams extends ModelCreateParams {
-    // we get these from the SmsgMessage...
-    // msgid: string;
-    // market: string;
+    actionMessage: ProposalAddMessage;
 }
 
 export interface VoteCreateParams extends ModelCreateParams {

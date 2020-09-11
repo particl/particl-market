@@ -27,7 +27,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'

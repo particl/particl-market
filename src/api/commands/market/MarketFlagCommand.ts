@@ -38,7 +38,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'marketId',
                 required: true,
                 type: 'number'

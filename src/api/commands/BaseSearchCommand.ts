@@ -53,7 +53,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
 
     public getSearchCommandParamValidationRules(): CommandParamValidationRules {
         const rules = {
-            parameters: [] as ParamValidationRule[]
+            params: [] as ParamValidationRule[]
         } as CommandParamValidationRules;
 
         const searchParameters = [{
@@ -75,7 +75,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
         }] as ParamValidationRule[];
 
         const commandRules = this.getCommandParamValidationRules();
-        rules.parameters = searchParameters.concat(commandRules.parameters);
+        rules.params = searchParameters.concat(commandRules.params);
         return rules;
     }
 

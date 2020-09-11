@@ -40,7 +40,7 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'profileId',
                 required: true,
                 type: 'number'

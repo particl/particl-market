@@ -47,7 +47,7 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'profileId',
                 required: true,
                 type: 'number'

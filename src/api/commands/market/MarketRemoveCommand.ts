@@ -34,7 +34,7 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'marketId',
                 required: true,
                 type: 'number'

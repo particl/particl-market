@@ -44,7 +44,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'profileId',
                 required: true,
                 type: 'number'

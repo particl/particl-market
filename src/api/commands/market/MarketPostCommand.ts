@@ -57,7 +57,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            parameters: [{
+            params: [{
                 name: 'promotedMarketId',
                 required: true,
                 type: 'number'
