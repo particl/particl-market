@@ -414,7 +414,6 @@ export const Targets = {
             }
         },
         MessageFactoryInterface: 'MessageFactoryInterface',
-        MessagingInformationFactory: 'MessagingInformationFactory',
         ModelCreateParams: 'ModelCreateParams',
         ModelFactoryInterface: 'ModelFactoryInterface',
         RpcCommandFactory: 'RpcCommandFactory',

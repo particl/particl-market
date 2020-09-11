@@ -7,14 +7,12 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
-import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelFactoryInterface } from '../ModelFactoryInterface';
 import { ListingItemTemplateCreateParams } from '../ModelCreateParams';
 import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingItemTemplateCreateRequest';
@@ -25,9 +23,7 @@ export class ListingItemTemplateFactory implements ModelFactoryInterface {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }

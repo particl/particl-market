@@ -21,8 +21,6 @@ import { CoreRpcService } from '../../services/CoreRpcService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CryptocurrencyAddressService } from '../../services/model/CryptocurrencyAddressService';
 import { ItemPriceService } from '../../services/model/ItemPriceService';
-import { ItemCategoryService } from '../../services/model/ItemCategoryService';
-import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 import { ProfileService } from '../../services/model/ProfileService';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { IdentityService } from '../../services/model/IdentityService';
@@ -45,10 +43,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Service) @named(Targets.Service.model.ItemPriceService) public itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService
         // tslint:enable:max-line-length
     ) {
         super(Commands.MARKET_POST);

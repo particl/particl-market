@@ -7,7 +7,6 @@ import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelFactoryInterface } from '../ModelFactoryInterface';
@@ -35,7 +34,6 @@ export class MarketFactory implements ModelFactoryInterface {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
