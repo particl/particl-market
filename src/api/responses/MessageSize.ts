@@ -2,9 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { CoreMessageVersion } from '../enums/CoreMessageVersion';
+
 export class MessageSize {
-    public messageData: number;
-    public imageData: number;
+    public messageVersion: CoreMessageVersion;
+    public size: number;
+    public maxSize: number;
     public spaceLeft: number;
     public fits: boolean;
 }

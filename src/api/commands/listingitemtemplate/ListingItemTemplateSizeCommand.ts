@@ -20,8 +20,8 @@ import { ListingItemAddActionService } from '../../services/action/ListingItemAd
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
@@ -49,6 +49,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: market: resources.Market
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -75,12 +76,22 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
             }
         }
 
-        // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
-        // since ListingItemTemplates with hash should not (CANT) be modified anymore.
-        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-        listingItemTemplate.hash = hash;
+        const actionRequest = {
+            sendParams: {
+                wallet: market.Identity.wallet,
+                fromAddress: market.publishAddress,
+                toAddress: market.receiveAddress,
+                daysRetention: 1,
+                estimateFee: false
+            } as SmsgSendParams,
+            listingItem: listingItemTemplate,
+            sellerAddress: market.Identity.address,
+            imagesWithData: false
+        } as ListingItemAddRequest;
 
-        return await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
+        const marketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage(actionRequest);
+
+        return await this.listingItemAddActionService.getMarketplaceMessageSize(marketplaceMessage);
 
     }
 

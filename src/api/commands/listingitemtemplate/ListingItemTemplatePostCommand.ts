@@ -34,6 +34,7 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+import {MessageSizeException} from '../../exceptions/MessageSizeException';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -108,13 +109,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const categoryArray: string[] = this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
         await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
 
-        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
-        if (!estimateFee) {
-            // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
-            // since ListingItemTemplates with hash should not (CANT) be modified anymore.
-            const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
-        }
         // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
@@ -122,7 +116,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 wallet: market.Identity.wallet,
                 fromAddress,
                 toAddress,
-                paidMessage: true, // process.env.CHAIN === 'test' ? false : paid,
                 daysRetention,
                 estimateFee
             } as SmsgSendParams,
@@ -131,13 +124,25 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             imagesWithData: false
         } as ListingItemAddRequest;
 
+        // TODO: run estimation only for paid messages
+        // sendParams.paidMessage unnecessary, maybe rename ???
+
         this.log.debug('execute(), posting...');
 
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
 
-        if (!estimateFee && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
-            // then post the Images related to the ListingItem one by one
+        // if post was succesful, update the hash
+        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
+        if (!estimateFee && smsgSendResponse.result === 'Sent.') {
+            // note!! hash should not be saved unless ListingItemTemplate is actually posted.
+            // ...because ListingItemTemplates with hash can't be modified anymore.
+            const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
+        }
+
+        // then post the Images related to the ListingItem one by one
+        if (!estimateFee && smsgSendResponse.result === 'Sent.' && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
             const imageSmsgSendResponse: SmsgSendResponse = await this.postListingImages(listingItemTemplate, postRequest);
             smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
         }
@@ -223,12 +228,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // since ListingItemTemplates with hash should not (CANT) be modified anymore.
         const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
         listingItemTemplate.hash = hash;
-
-        const templateMessageDataSize = await this.listingItemAddActionService.calculateMarketplaceMessageSize(listingItemTemplate, market);
-        if (!templateMessageDataSize.fits) {
-            this.log.debug('templateMessageDataSize:', JSON.stringify(templateMessageDataSize, null, 2));
-            throw new MessageException('ListingItemTemplate information exceeds message size limitations');
-        }
 
         data.params[0] = listingItemTemplate;
         data.params[3] = market;
@@ -320,8 +319,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             sellerAddress: listingItemAddRequest.sellerAddress,
             withData: true
         } as ListingItemImageAddRequest;
-
-        imageAddRequest.sendParams.paidMessage = false; // sending images is free for now
 
         const msgids: string[] = [];
 

@@ -14,7 +14,7 @@ import { BidService } from '../services/model/BidService';
 import { ProposalService } from '../services/model/ProposalService';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { ActionDirection } from '../enums/ActionDirection';
-import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
+import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { unmanaged } from 'inversify';
 

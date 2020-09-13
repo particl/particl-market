@@ -112,7 +112,6 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 wallet,
                 fromAddress,
                 toAddress,
-                paidMessage: true,
                 daysRetention,
                 estimateFee
             } as SmsgSendParams,
@@ -253,19 +252,6 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
             throw new MessageException('Invalid parameters.');
         }
 
-        const marketAddRequest = {
-            sendParams: {
-                wallet: _.isNil(fromIdentity) ? fromMarket!.Identity.wallet : fromIdentity.wallet
-            } as SmsgSendParams,
-            market: promotedMarket
-        } as MarketAddRequest;
-
-        const messageDataSize = await this.marketAddActionService.calculateMarketplaceMessageSize(marketAddRequest);
-        if (!messageDataSize.fits) {
-            this.log.debug('messageDataSize:', JSON.stringify(messageDataSize, null, 2));
-            throw new MessageException('Message is too large.');
-        }
-
         data.params[0] = promotedMarket;
         data.params[1] = daysRetention;
         data.params[2] = estimateFee;
@@ -283,11 +269,11 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <marketId>               - number, The ID of the Market that we want to post. \n'
-            + '    <daysRetention>          - [optional] number, Days the market will be retained by network.\n'
-            + '    <estimateFee>            - [optional] boolean, estimate the fee, don\'t post. \n'
-            + '    <identityId>             - [optional] number, The ID of the Identity that we want to use for posting. default: default market Identity.\n'
-            + '    <smsgAddress>            - [optional] string, address to post the message to. default: default market publishAddress.\n';
+            + '    <promotedMarketId>           - number, The ID of the Market that we want to post. \n'
+            + '    <daysRetention>              - [optional] number, days the market will be retained by network.\n'
+            + '    <estimateFee>                - [optional] boolean, estimate the fee, don\'t post. \n'
+            + '    <toMarketIdOrAddress>        - [optional] number | string, the Market Id to post to or address to post the message to.\n'
+            + '    <fromIdentityId>             - [optional] number, id of the Identity to use for posting.\n';
     }
 
     public description(): string {
@@ -312,8 +298,6 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
             image: marketAddRequest.market.Image,
             withData: true
         } as MarketImageAddRequest;
-
-        imageAddRequest.sendParams.paidMessage = false; // sending images is free for now
 
         const smsgSendResponse: SmsgSendResponse = await this.marketImageAddActionService.post(imageAddRequest);
 

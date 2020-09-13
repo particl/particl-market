@@ -77,7 +77,8 @@ export class ListingItemAddActionService extends BaseActionService {
      * @param listingItemTemplate
      * @param market
      */
-    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
+/*
+    public async calculateMarketplaceMessageSize2(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
 
         const marketplaceMessage = await this.createMarketplaceMessage({
             sendParams: {
@@ -97,7 +98,7 @@ export class ListingItemAddActionService extends BaseActionService {
         //     }
         // }
         const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize; // - imageDataSize;
+        const spaceLeft = process.env.SMSG_MAX_MSG_BYTES_PAID - messageDataSize; // - imageDataSize;
         const fits = spaceLeft > 0;
 
         return {
@@ -107,7 +108,7 @@ export class ListingItemAddActionService extends BaseActionService {
             fits
         } as MessageSize;
     }
-
+*/
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *

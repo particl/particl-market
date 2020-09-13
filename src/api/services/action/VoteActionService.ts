@@ -164,7 +164,6 @@ export class VoteActionService extends BaseActionService {
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
                 voteRequest.sendParams.fromAddress = addressInfo.address;
-                voteRequest.sendParams.paidMessage = false; // vote messages should be free
                 voteRequest.addressInfo = addressInfo;
 
                 await this.post(voteRequest)
@@ -177,7 +176,6 @@ export class VoteActionService extends BaseActionService {
         }
 
         // once we have posted the votes, update the removed flag based on the vote, if ItemVote.REMOVE -> true, else false
-        // TODO: removed flag should not be needed anymore
         if (voteRequest.proposal.category === ProposalCategory.ITEM_VOTE) {
 
             this.log.debug('vote(), voteRequest.proposal.target: ', voteRequest.proposal.target);

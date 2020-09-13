@@ -13,7 +13,7 @@ import { ListingItemService } from '../services/model/ListingItemService';
 import { BidFactory } from '../factories/model/BidFactory';
 import { BaseActionMessageProcessor } from './BaseActionMessageProcessor';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
-import { ActionServiceInterface } from '../services/action/ActionServiceInterface';
+import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { unmanaged } from 'inversify';
 
 // @injectable()

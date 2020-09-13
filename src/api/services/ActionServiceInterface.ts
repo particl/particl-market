@@ -3,15 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
-import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { SmsgService } from '../SmsgService';
-import { SmsgMessageService } from '../model/SmsgMessageService';
-import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { ActionDirection } from '../../enums/ActionDirection';
-import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationService } from '../NotificationService';
+import { ActionRequestInterface } from '../requests/action/ActionRequestInterface';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { SmsgService } from './SmsgService';
+import { SmsgMessageService } from './model/SmsgMessageService';
+import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
+import { ActionDirection } from '../enums/ActionDirection';
+import { MarketplaceNotification } from '../messages/MarketplaceNotification';
+import { NotificationService } from './NotificationService';
 
 /**
  * ActionServiceInterface defines how the Service classes for the different Actions should be implemented
@@ -25,16 +25,16 @@ export interface ActionServiceInterface {
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
-     * @param params
+     * @param actionRequest
      */
-    createMarketplaceMessage(params: ActionRequestInterface): Promise<MarketplaceMessage>;
+    createMarketplaceMessage(actionRequest: ActionRequestInterface): Promise<MarketplaceMessage>;
 
     /**
      * called before post is executed and message is sent
-     * @param params
+     * @param actionRequest
      * @param message
      */
-    beforePost(params: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
+    beforePost(actionRequest: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
 
     /**
      * posts the MarketplaceMessage, this is the method that should be called from the command to execute
@@ -52,7 +52,7 @@ export interface ActionServiceInterface {
      *
      * @param params
      */
-    post(params: ActionRequestInterface): Promise<SmsgSendResponse>;
+    post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse>;
 
     /**
      * called after post is executed and message is sent

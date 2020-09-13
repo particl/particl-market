@@ -57,8 +57,13 @@ export class EnvConfig {
         FREE_MESSAGE_RETENTION_DAYS: 7,
         LISTING_ITEMS_EXPIRED_INTERVAL: 10,             // minutes
         LISTING_ITEM_REMOVE_PERCENTAGE: 0.1,
-        PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30      // minutes
-    };
+        PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30,     // minutes
+
+        // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+        SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,
+        SMSG_MAX_AMSG_BYTES: 512,
+        SMSG_MAX_MSG_BYTES: 24000
+};
 
     /**
      * sets the environment configuration.
@@ -69,7 +74,6 @@ export class EnvConfig {
      * @param {string} envFileName
      */
     constructor(dataDirLocation?: string, envFileName?: string) {
-
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
             this.envFile = envFileName;

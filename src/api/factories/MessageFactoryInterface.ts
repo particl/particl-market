@@ -6,5 +6,5 @@ import { ActionRequestInterface } from '../requests/action/ActionRequestInterfac
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
 export interface MessageFactoryInterface {
-    get(params: ActionRequestInterface): Promise<MarketplaceMessage>;
+    get(actionRequest: ActionRequestInterface): Promise<MarketplaceMessage>;
 }

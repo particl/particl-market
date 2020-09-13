@@ -10,6 +10,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MessageSize } from '../../../src/api/responses/MessageSize';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
 
 
 describe('ListingItemTemplateSizeCommand', () => {
@@ -65,6 +68,22 @@ describe('ListingItemTemplateSizeCommand', () => {
 
     });
 
+    test('Should fail to post because missing listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateSizeCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail to add because invalid listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateSizeCommand,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
     test('Should return MessageSize for ListingItemTemplate, fits', async () => {
         const res = await testUtil.rpc(templateCommand, [templateSizeCommand, listingItemTemplate.id]);
         res.expectJson();
@@ -72,10 +91,12 @@ describe('ListingItemTemplateSizeCommand', () => {
 
         const result: MessageSize = res.getBody()['result'];
         log.debug('MessageSize: ', JSON.stringify(result, null, 2));
-        expect(result.messageData).toBeGreaterThan(0);
-        expect(result.imageData).toBe(0);
-        expect(result.spaceLeft).toBeGreaterThan(500000);
+        expect(result.messageVersion).toBe(CoreMessageVersion.PAID);
+        expect(result.size).toBeGreaterThan(0);
+        expect(result.maxSize).toBe(process.env.SMSG_MAX_MSG_BYTES_PAID);
+        expect(result.spaceLeft).toBeGreaterThan(0);
         expect(result.fits).toBe(true);
+
     });
 /*
     TODO: fix

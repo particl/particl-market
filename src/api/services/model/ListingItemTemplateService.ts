@@ -56,8 +56,6 @@ import { HashMismatchException } from '../../exceptions/HashMismatchException';
 
 export class ListingItemTemplateService {
 
-    public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
-
     private static IMG_BOUNDING_WIDTH = 600;
     private static IMG_BOUNDING_HEIGHT = 600;
     private static FRACTION_LOWEST_COMPRESSION = 0.8;

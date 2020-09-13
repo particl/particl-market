@@ -7,7 +7,6 @@ export class SmsgSendParams {
     public wallet: string;              // wallet used for sending
     public fromAddress: string;
     public toAddress: string;
-    public paidMessage: boolean;
     public daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
     public estimateFee = false;
 
@@ -17,7 +16,6 @@ export class SmsgSendParams {
         this.wallet = wallet;
         this.fromAddress = from;
         this.toAddress = to;
-        this.paidMessage = process.env.CHAIN === 'test' ? false : paid;
         this.daysRetention = daysRetention;
         this.estimateFee = estimateFee;
     }

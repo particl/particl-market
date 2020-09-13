@@ -128,11 +128,6 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
         this.log.debug('params.listingItem.hash:', JSON.stringify(actionRequest.listingItem.hash, null, 2));
         this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
 
-        // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
-        if (actionRequest.listingItem.hash && actionRequest.listingItem.hash !== message.hash) {
-            throw new HashMismatchException('ListingItemAddMessage', actionRequest.listingItem.hash, message.hash);
-        }
-
         return await this.getMarketplaceMessage(message);
     }
 

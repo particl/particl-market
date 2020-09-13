@@ -70,30 +70,6 @@ export class MarketAddActionService extends BaseActionService {
     }
 
     /**
-     * calculates the size of the MarketplaceMessage.
-     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
-     *
-     * @param actionRequest
-     */
-    public async calculateMarketplaceMessageSize(actionRequest: MarketAddRequest): Promise<MessageSize> {
-        // todo: move to base class
-
-        const marketplaceMessage = await this.createMarketplaceMessage(actionRequest);
-
-        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-        const messageDataSize = JSON.stringify(marketplaceMessage).length;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize;
-        const fits = spaceLeft > 0;
-
-        return {
-            messageData: messageDataSize,
-            imageData: 0,
-            spaceLeft,
-            fits
-        } as MessageSize;
-    }
-
-    /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * @param actionRequest

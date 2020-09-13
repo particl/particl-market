@@ -16,6 +16,8 @@ import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
 import { RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import {CoreMessageVersion} from '../enums/CoreMessageVersion';
+import {MessageVersions} from '../messages/MessageVersions';
 
 export interface SmsgGetInfo {
     enabled: boolean;
@@ -167,7 +169,9 @@ export class SmsgService {
      * @param sendParams
      */
     public async sendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
+        const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        const paidMessage = messageVersion === CoreMessageVersion.PAID;
+        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, paidMessage,
             sendParams.daysRetention, sendParams.estimateFee);
     }
 
