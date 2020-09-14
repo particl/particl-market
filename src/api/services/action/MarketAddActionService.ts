@@ -23,7 +23,6 @@ import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { MessageSize } from '../../responses/MessageSize';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketAddMessageFactory } from '../../factories/message/MarketAddMessageFactory';

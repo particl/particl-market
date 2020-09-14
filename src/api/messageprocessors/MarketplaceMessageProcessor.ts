@@ -84,6 +84,17 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
                 // emitted as each item is processed in the queue for the purpose of tracking progress.
                 this.log.debug(`ACTIONQUEUE: queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
             })
+            .on('idle', () => {
+                // emitted every time the queue becomes empty and all promises have completed
+                this.log.debug(`ACTIONQUEUE: idle. queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
+            })
+            .on('add', () => {
+                // emitted every time the add method is called and the number of pending or queued tasks is increased.
+            })
+            .on('next', () => {
+                // emitted every time a task is completed and the number of pending or queued tasks is decreased.
+                this.log.debug(`ACTIONQUEUE: messaage processed. queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
+            })
             .start();
 
     }
@@ -120,7 +131,7 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
             + ' : ' + smsgMessage.msgid);
 
         this.log.debug('=====================================================================================================');
-        this.log.debug('ADDING MPAction TO QUEUE msgid: ', msgid);
+        this.log.debug('ADDING ' + smsgMessage.type + ' TO QUEUE msgid: ', msgid);
         this.log.debug('=====================================================================================================');
 
         // add the action processing function to the messageprocessing queue
@@ -207,7 +218,6 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
                 break;
             default:
                 // a valid mp message, possibly should be handled by a bot
-                // TODO: pass it on to using zmq to all listening bots
                 this.log.error('ERROR: Received a message type thats missing a Listener.');
                 throw new NotImplementedException();
         }

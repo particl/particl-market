@@ -93,6 +93,11 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                 .then(async status => {
                     // update the status based on onEvent result
                     updatedSmsgMessage = await this.smsgMessageService.updateStatus(event.smsgMessage.id, status).then(value => value.toJSON());
+
+                    if (status === SmsgMessageStatus.PROCESSED) {
+                        await this.actionService.callWebHooks(event.marketplaceMessage.action, ActionDirection.INCOMING);
+                    }
+
                 })
                 .catch(async reason => {
 

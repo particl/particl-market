@@ -12,6 +12,7 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { ActionDirection } from '../enums/ActionDirection';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { NotificationService } from './NotificationService';
+import {ActionMessageInterface} from '../messages/action/ActionMessageInterface';
 
 /**
  * ActionServiceInterface defines how the Service classes for the different Actions should be implemented
@@ -50,7 +51,7 @@ export interface ActionServiceInterface {
      * - save outgoing marketplaceMessage to database (as SmsgMessage, ActionDirection.OUTGOING)
      * - call afterPost(), should be overridden if something should be done after posting the message
      *
-     * @param params
+     * @param actionRequest
      */
     post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse>;
 
@@ -97,4 +98,6 @@ export interface ActionServiceInterface {
                        smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined>;
 
     sendNotification(notification: MarketplaceNotification): Promise<void>;
+    callWebHooks(action: ActionMessageInterface, direction: ActionDirection): Promise<void>;
+
 }
