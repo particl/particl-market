@@ -118,7 +118,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
             market: promotedMarket
         } as MarketAddRequest;
 
-        this.log.debug('execute(), posting market: ', JSON.stringify(promotedMarket, null, 2));
+        // this.log.debug('execute(), posting market: ', JSON.stringify(promotedMarket, null, 2));
 
         // first post the Market
         const smsgSendResponse: SmsgSendResponse = await this.marketAddActionService.post(marketAddRequest);

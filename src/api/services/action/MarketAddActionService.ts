@@ -150,7 +150,7 @@ export class MarketAddActionService extends BaseActionService {
                 }
             }
 
-            this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
+            // this.log.debug('processMessage(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
             const market: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
             for (const existingImage of existingImages) {

@@ -20,7 +20,8 @@ import {
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 import { CtRpc } from 'omp-lib/dist/abstract/rpc';
-import {VerifiableMessage} from '../factories/message/ListingItemAddMessageFactory';
+import { VerifiableMessage } from '../factories/message/ListingItemAddMessageFactory';
+import { AuthOptions, RequestOptions, Headers} from 'web-request';
 
 
 decorate(injectable(), Rpc);
@@ -960,25 +961,24 @@ export class CoreRpcService extends CtRpc {
 
     }
 
-    private getOptions(): any {
+    private getOptions(): RequestOptions {
 
         const auth = {
             user: (process.env.RPCUSER ? process.env.RPCUSER : this.coreCookieService.getCoreRpcUsername()),
             pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.coreCookieService.getCoreRpcPassword()),
             sendImmediately: false
-        };
+        } as AuthOptions;
 
         const headers = {
             'User-Agent': 'Marketplace RPC client',
             'Content-Type': 'application/json',
             'Accept': 'application/json'
-        };
-        const rpcOpts = {
+        } as Headers;
+
+        return {
             auth,
             headers
-        };
-
-        return rpcOpts;
+        } as RequestOptions;
     }
 
     private getUrl(wallet: string | undefined): string {

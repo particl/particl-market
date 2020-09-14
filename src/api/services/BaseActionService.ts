@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
+import * as WebRequest from 'web-request';
 import { ActionServiceInterface } from './ActionServiceInterface';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
@@ -27,6 +28,10 @@ import { MessageSize } from '../responses/MessageSize';
 import { CoreMessageVersion } from '../enums/CoreMessageVersion';
 import { MessageVersions } from '../messages/MessageVersions';
 import { MessageSizeException } from '../exceptions/MessageSizeException';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { MessageWebhooks } from '../messages/MessageWebhooks';
+import { AuthOptions, RequestOptions, Headers} from 'web-request';
+
 
 export abstract class BaseActionService implements ActionServiceInterface {
 
@@ -103,7 +108,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public async post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse> {
 
         // create the marketplaceMessage, extending class should implement
-        let marketplaceMessage = await this.createMarketplaceMessage(actionRequest);
+        let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
 
         const messageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
         if (!messageSize.fits) {
@@ -161,6 +166,10 @@ export abstract class BaseActionService implements ActionServiceInterface {
         // finally send the message
         let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(actionRequest.sendParams.wallet, marketplaceMessage,
             actionRequest.sendParams);
+
+        if (smsgSendResponse.result === 'Sent.') {
+            await this.callWebHooks(marketplaceMessage.action, ActionDirection.OUTGOING);
+        }
 
         // save the outgoing message to database as SmsgMessage
         let smsgMessage: resources.SmsgMessage = await this.saveOutgoingMessage(smsgSendResponse.msgid!);
@@ -261,4 +270,52 @@ export abstract class BaseActionService implements ActionServiceInterface {
             });
     }
 
+    /**
+     * call the configured webhooks
+     *
+     * @param actionMessage
+     * @param actionDirection
+     */
+    private async callWebHooks(actionMessage: ActionMessageInterface, actionDirection: ActionDirection): Promise<void> {
+        const webhookUrl = MessageWebhooks.get(actionMessage.type);
+        this.log.debug('webhookUrl: ' + webhookUrl);
+
+        if (!_.isNil(webhookUrl)) {
+
+            const options = this.getOptions();
+            const postData = JSON.stringify({
+                type: actionMessage.type,
+                message: actionMessage,
+                direction: actionDirection
+            });
+            await WebRequest.post(webhookUrl, options, postData)
+                .catch(reason => {
+                    this.log.warn('reason: ' + reason);
+                });
+        }
+        return;
+    }
+
+    private getOptions(): RequestOptions {
+
+        let auth;
+        if (!_.isNil(process.env.WEBHOOK_USER) && !_.isNil(process.env.WEBHOOK_PASSWORD)) {
+            auth = {
+                user: (process.env.WEBHOOK_USER ? process.env.WEBHOOK_USER : undefined),
+                pass: (process.env.WEBHOOK_PASSWORD ? process.env.WEBHOOK_PASSWORD : undefined),
+                sendImmediately: false
+            } as AuthOptions;
+        }
+
+        const headers = {
+            'User-Agent': 'Marketplace Webhook client',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        } as Headers;
+
+        return {
+            auth,
+            headers
+        } as RequestOptions;
+    }
 }

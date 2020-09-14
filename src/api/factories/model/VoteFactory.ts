@@ -34,7 +34,7 @@ export class VoteFactory implements ModelFactoryInterface {
     public async get(params: VoteCreateParams): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
         const actionMessage: VoteMessage = params.actionMessage;
-        const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
+        const smsgMessage: resources.SmsgMessage = params.smsgMessage;
 
         const voteRequest = {
             msgid: params.msgid,

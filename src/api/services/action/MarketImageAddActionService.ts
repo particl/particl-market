@@ -159,7 +159,7 @@ export class MarketImageAddActionService extends BaseActionService {
                     smsgMessage
                 } as ImageCreateParams);
                 await this.imageService.create(createRequest).then(value => {
-                    this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
+                    // this.log.debug('created: ', JSON.stringify(value.toJSON(), null, 2));
                 });
             }
         }
