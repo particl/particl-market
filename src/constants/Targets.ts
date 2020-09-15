@@ -261,6 +261,7 @@ export const Targets = {
         },
         image: {
             ImageAddCommand: 'ImageAddCommand',
+            ImageCompressCommand: 'ImageCompressCommand',
             ImageListCommand: 'ImageListCommand',
             ImageRemoveCommand: 'ImageRemoveCommand',
             ImageRootCommand: 'ImageRootCommand'

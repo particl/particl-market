@@ -31,9 +31,10 @@ describe('ImageAddCommand', () => {
 
     let profile: resources.Profile;
     let market: resources.Market;
-    let image: resources.Image;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let image: resources.Image;
+
 
     beforeAll(async () => {
         await testUtil.cleanDb();

@@ -31,6 +31,11 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
                 name: 'listingItemTemplateId',
                 required: true,
                 type: 'number'
+            }, {
+                name: 'paid',
+                required: false,
+                type: 'boolean',
+                defaultValue: false
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -38,6 +43,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: paid, default=false
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -45,22 +51,21 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        return this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+        const paid: boolean = data.params[1];
+        return this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, paid);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
+     *  [1]: paid, optional, default=false
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        // make sure required data exists and fetch it
         data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
-
         return data;
     }
 
@@ -74,7 +79,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     }
 
     public description(): string {
-        return 'Compress the ListingItemTemplate images so that they will fit in a single SmsgMessage.';
+        return 'Compress the ListingItemTemplate Images so that they will fit in a SmsgMessage.';
     }
 
     public example(): string {

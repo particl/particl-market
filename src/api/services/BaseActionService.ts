@@ -67,20 +67,17 @@ export abstract class BaseActionService implements ActionServiceInterface {
      */
     public async getMarketplaceMessageSize(marketplaceMessage: MarketplaceMessage): Promise<MessageSize> {
 
-        // const marketplaceMessage = await this.createMarketplaceMessage(actionRequest);
         const messageVersion: CoreMessageVersion = MessageVersions.get(marketplaceMessage.action.type);
-        const maxMessageSize = messageVersion === CoreMessageVersion.FREE
-            ? process.env.SMSG_MAX_MSG_BYTES            // 24000
-            : process.env.SMSG_MAX_MSG_BYTES_PAID;      // 512 * 1024
+        const maxSize = MessageVersions.maxSize(messageVersion);
 
         const messageSize = JSON.stringify(marketplaceMessage).length;
-        const spaceLeft = maxMessageSize - messageSize;
+        const spaceLeft = maxSize - messageSize;
         const fits = spaceLeft > 0;
 
         return {
             messageVersion,
             size: messageSize,
-            maxSize: maxMessageSize,
+            maxSize,
             spaceLeft,
             fits
         } as MessageSize;
@@ -250,6 +247,33 @@ export abstract class BaseActionService implements ActionServiceInterface {
                                              actionDirection: ActionDirection,
                                              smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined>;
 
+
+    /**
+     * call the configured webhooks
+     *
+     * @param actionMessage
+     * @param actionDirection
+     */
+    public async callWebHooks(actionMessage: ActionMessageInterface, actionDirection: ActionDirection): Promise<void> {
+        const webhookUrl = MessageWebhooks.get(actionMessage.type);
+        this.log.debug('webhookUrl: ' + webhookUrl);
+
+        if (!_.isNil(webhookUrl)) {
+
+            const options = this.getOptions();
+            const postData = JSON.stringify({
+                type: actionMessage.type,
+                message: actionMessage,
+                direction: actionDirection
+            });
+            await WebRequest.post(webhookUrl, options, postData)
+                .catch(reason => {
+                    this.log.warn('reason: ' + reason);
+                });
+        }
+        return;
+    }
+
     /**
      * finds the CoreSmsgMessage and saves it into the database as SmsgMessage
      *
@@ -268,32 +292,6 @@ export abstract class BaseActionService implements ActionServiceInterface {
                         return await this.smsgMessageService.create(createRequest).then(value => value.toJSON());
                     });
             });
-    }
-
-    /**
-     * call the configured webhooks
-     *
-     * @param actionMessage
-     * @param actionDirection
-     */
-    private async callWebHooks(actionMessage: ActionMessageInterface, actionDirection: ActionDirection): Promise<void> {
-        const webhookUrl = MessageWebhooks.get(actionMessage.type);
-        this.log.debug('webhookUrl: ' + webhookUrl);
-
-        if (!_.isNil(webhookUrl)) {
-
-            const options = this.getOptions();
-            const postData = JSON.stringify({
-                type: actionMessage.type,
-                message: actionMessage,
-                direction: actionDirection
-            });
-            await WebRequest.post(webhookUrl, options, postData)
-                .catch(reason => {
-                    this.log.warn('reason: ' + reason);
-                });
-        }
-        return;
     }
 
     private getOptions(): RequestOptions {

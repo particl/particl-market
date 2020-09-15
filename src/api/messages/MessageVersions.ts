@@ -35,4 +35,10 @@ export class MessageVersions {
                 return CoreMessageVersion.PAID;
         }
     }
+
+    public static maxSize(messageVersion: CoreMessageVersion): number {
+        return messageVersion === CoreMessageVersion.FREE
+            ? process.env.SMSG_MAX_MSG_BYTES            // 24000
+            : process.env.SMSG_MAX_MSG_BYTES_PAID;      // 512 * 1024
+    }
 }

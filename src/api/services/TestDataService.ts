@@ -1402,10 +1402,20 @@ export class TestDataService {
         } as ItemLocationCreateRequest;
     }
 
-    private async generateImagesData(amount: number): Promise<ImageCreateRequest[]> {
+    private async generateImagesData(amount: number, largeImages: boolean = false): Promise<ImageCreateRequest[]> {
+        let height = 20;
+        let width = 20;
+        if (largeImages) {
+            height = 1600;
+            width = 800;
+        }
+
         const createRequests: ImageCreateRequest[] = [];
         for (let i = amount; i > 0; i--) {
-            const data = await this.generateRandomImage(20, 20);
+            const data = await this.generateRandomImage(width, height);
+            this.log.debug('image.height: ', height);
+            this.log.debug('image.width: ', width);
+            this.log.debug('image.size: ', data.length);
 
             const createRequest: ImageCreateRequest = await this.imageFactory.get({
                 actionMessage: {
@@ -1430,7 +1440,7 @@ export class TestDataService {
             : [];
 
         const images = generateParams.generateImages
-            ? await this.generateImagesData(_.random(1, 2))
+            ? await this.generateImagesData(_.random(1, 2), generateParams.largeImages)
             : [];
 
         const itemLocation = generateParams.generateItemLocation

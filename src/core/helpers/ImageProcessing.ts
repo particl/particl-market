@@ -3,8 +3,9 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Jimp from 'jimp';
-import { ImageVersion } from './ImageVersion';
-import { Logger } from '../Logger';
+import {ImageVersion} from './ImageVersion';
+import {Logger} from '../Logger';
+import {MessageException} from '../../api/exceptions/MessageException';
 
 export class ImageProcessing {
 
@@ -743,12 +744,12 @@ export class ImageProcessing {
         const buf = Buffer.from(imageRaw, 'base64');
         const image = await Jimp.read(buf);
         if (image.getMIME() !== 'image/jpeg') {
-          const retval: any = image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-            return buffer.toString('base64');
-          });
-          return retval;
+            const retval: any = image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+                return buffer.toString('base64');
+            });
+            return retval;
         } else {
-          return imageRaw;
+            return imageRaw;
         }
     }
 
@@ -760,17 +761,10 @@ export class ImageProcessing {
      * @returns {Promise<Map<ImageVersion, string>>}
      */
     public static async resizeImageData(imageRaw: string, toVersions: ImageVersion[]): Promise<Map<string, string>> {
-
         const imageDatas = new Map<string, string>();
         for (const version of toVersions) {
             const resizedImageData = await ImageProcessing.resizeImageToVersion(imageRaw, version);
-            /* if (version.propName === ImageVersions.ORIGINAL.propName) {
-               // For the ORIGNAL image we want to decrease quality enough that it fits in a message.
-               const imageData = await this.compressOriginalImage(imageRaw, 100000);
-               imageDatas.set(version.propName, imageData);
-             } else {*/
             imageDatas.set(version.propName, resizedImageData);
-            // }
         }
         return imageDatas;
     }
@@ -787,19 +781,19 @@ export class ImageProcessing {
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
         if (version.imageWidth > 0 && version.imageHeight > 0) {
-          if (imageBuffer.getMIME() !== 'image/jpeg') {
-            imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
-            const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-              return buffer.toString('base64');
-            });
-            return resizedImage;
-          } else {
-            imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
-            const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
-              return buffer.toString('base64');
-            });
-            return resizedImage;
-          }
+            if (imageBuffer.getMIME() !== 'image/jpeg') {
+                imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
+                const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+                    return buffer.toString('base64');
+                });
+                return resizedImage;
+            } else {
+                imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
+                const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+                    return buffer.toString('base64');
+                });
+                return resizedImage;
+            }
         }
         return imageRaw;
     }
@@ -815,7 +809,7 @@ export class ImageProcessing {
     public static async resizeImageToFit(imageRaw: string, maxWidth: number, maxHeight: number): Promise<string> {
         const dataBuffer = Buffer.from(imageRaw, 'base64');
         const imageBuffer: any = await Jimp.read(dataBuffer);
-        if (maxWidth > 0 && maxHeight > 0 && ( (imageBuffer.bitmap.width > maxWidth) || (imageBuffer.bitmap.height > maxHeight))) {
+        if (maxWidth > 0 && maxHeight > 0 && ((imageBuffer.bitmap.width > maxWidth) || (imageBuffer.bitmap.height > maxHeight))) {
             imageBuffer.scaleToFit(maxWidth, maxHeight);
             const mimeType = imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg';
             const resizedImage = await imageBuffer.getBuffer(mimeType, (err, buffer) => {
@@ -832,36 +826,111 @@ export class ImageProcessing {
         const imageBuffer: any = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
         if (fraction !== 1.0) {
-          imageBuffer.scale(fraction);
-          if (imageBuffer.getMIME() !== 'image/jpeg') {
-            const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-              return buffer.toString('base64');
+            imageBuffer.scale(fraction);
+            const resizedImage = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+                return buffer.toString('base64');
             });
             return resizedImage;
-          } else {
-            const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
-              return buffer.toString('base64');
-            });
-            return resizedImage;
-          }
+/*
+            if (imageBuffer.getMIME() !== 'image/jpeg') {
+                const resizedImage = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+                    return buffer.toString('base64');
+                });
+                return resizedImage;
+            } else {
+                const resizedImage = await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+                    return buffer.toString('base64');
+                });
+                return resizedImage;
+            }
+*/
         }
         this.log.debug('ImageProcessing.resizeImageToFraction: ' + (Date.now() - startTime) + 'ms');
         return imageRaw;
     }
 
     public static async downgradeQuality(imageRaw: string, quality: number): Promise<string> {
-      const dataBuffer = Buffer.from(imageRaw, 'base64');
-      let imageBuffer: any = await Jimp.read(dataBuffer);
-      imageBuffer = imageBuffer.quality(quality);
-      if (imageBuffer.getMIME() !== 'image/jpeg') {
-        return await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-          return buffer.toString('base64');
-        });
-      } else {
-        return await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
-          return buffer.toString('base64');
-        });
-      }
+        const dataBuffer = Buffer.from(imageRaw, 'base64');
+        let imageBuffer: any = await Jimp.read(dataBuffer);
+        imageBuffer = imageBuffer.quality(quality);
 
+        const resizedImage = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+            return buffer.toString('base64');
+        });
+        return resizedImage;
+
+/*
+        if (imageBuffer.getMIME() !== 'image/jpeg') {
+            return await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+                return buffer.toString('base64');
+            });
+        } else {
+            return await imageBuffer.getBuffer('image/jpeg', (err, buffer) => {
+                return buffer.toString('base64');
+            });
+        }
+*/
+    }
+
+    public static async resizeImageToSize(imageRaw: string, byteLimit: number, scaleFraction: number = 0.9, qualityFraction: number = 0.95,
+                                          maxIterations: number = this.MAX_COMPRESSION_ITERATIONS): Promise<string> {
+        let quality = 100;
+        let iteration = 0;
+
+        this.log.debug('maxIterations: ' + maxIterations);
+        this.log.debug('byteLimit: ' + byteLimit);
+        this.log.debug('imageRaw.length: ' + imageRaw.length);
+
+        const dataBuffer = Buffer.from(imageRaw, 'base64');
+        let imageBuffer: any = await Jimp.read(dataBuffer);
+        let resizedImage;
+        let skipQuality = false;
+
+        do {
+            ++iteration;
+            const startTime = Date.now();
+
+            if (imageBuffer.length <= byteLimit) {
+                return imageBuffer;
+            }
+
+            if (iteration > maxIterations) {
+                throw new MessageException(`Couldn't compress Image enough within ${maxIterations}`);
+            }
+
+            imageBuffer = imageBuffer.scale(scaleFraction);
+            resizedImage = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+                return buffer.toString('base64');
+            });
+
+            this.log.debug('result (' + iteration + '), resize (' + scaleFraction + '): ' + resizedImage.length
+                + ', took: ' + (Date.now() - startTime) + 'ms');
+
+            if (resizedImage.length <= byteLimit) {
+                return resizedImage;
+            }
+
+            if (!skipQuality) {
+                quality = quality * qualityFraction;
+
+                imageBuffer = imageBuffer.quality(quality);
+
+                const resizedImage2 = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+                    return buffer.toString('base64');
+                });
+
+                skipQuality = resizedImage.length === resizedImage2.length;
+                resizedImage = resizedImage2;
+
+                this.log.debug('result (' + iteration + '), quality (' + quality.toFixed(1) + '): ' + resizedImage.length
+                    + ', took: ' + (Date.now() - startTime) + 'ms');
+
+                if (resizedImage.length <= byteLimit) {
+                    return resizedImage;
+                }
+            }
+        } while (imageRaw.length >= byteLimit);
+
+        return imageRaw;
     }
 }

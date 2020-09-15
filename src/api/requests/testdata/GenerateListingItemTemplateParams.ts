@@ -46,6 +46,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateListingItem = false;
     public soldOnMarketId: number;          // Market on which the ListingItem is sold on (for payment address)
     public categoryId: number;
+    public largeImages = false;
 
     /**
      * generateParams[]:
@@ -63,6 +64,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [11]: generateListingItem
      * [12]: soldOnMarketId
      * [13]: categoryId
+     * [14]: largeImages
      *
      * @param generateParams
      */
@@ -83,6 +85,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateListingItem            = generateParams[11] ? true : false;
             this.soldOnMarketId                 = generateParams[12] ? generateParams[12] : undefined;
             this.categoryId                     = generateParams[13] ? generateParams[13] : undefined;
+            this.largeImages                    = generateParams[14] ? generateParams[14] : false;
         }
     }
 
@@ -101,7 +104,8 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.profileId,
             this.generateListingItem,
             this.soldOnMarketId,
-            this.categoryId
+            this.categoryId,
+            this.largeImages
         ];
     }
 

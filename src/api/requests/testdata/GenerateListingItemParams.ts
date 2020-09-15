@@ -38,6 +38,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     public seller: string;
     public categoryId: number;
     public soldOnMarketId: number;
+    public largeImages = false;
 
     /**
      * generateParams[]:
@@ -55,6 +56,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [11]: seller
      * [12]: categoryId
      * [13]: soldOnMarketId
+     * [14]: largeImages
      *
      * TODO: add proposal generation
      *
@@ -77,6 +79,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.seller                         = generateParams[11] ? generateParams[11] : undefined;
             this.categoryId                     = generateParams[12] ? generateParams[12] : undefined;
             this.soldOnMarketId                 = generateParams[13] ? generateParams[13] : undefined;
+            this.largeImages                    = generateParams[14] ? generateParams[14] : false;
         }
     }
 
@@ -95,7 +98,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.listingItemTemplateHash,
             this.seller,
             this.categoryId,
-            this.soldOnMarketId
+            this.soldOnMarketId,
+            this.largeImages
         ];
     }
 

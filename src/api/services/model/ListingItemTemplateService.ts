@@ -379,16 +379,23 @@ export class ListingItemTemplateService {
     /**
      * creates resized versions of the ListingItemTemplate Images, so that all of them fit in one smsgmessage
      *
-     * @param {"resources".ListingItemTemplate} listingItemTemplate
-     * @returns {Promise<"resources".ListingItemTemplate>}
+     * message sizes:
+     *  SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,
+     *  SMSG_MAX_AMSG_BYTES: 512,
+     *  SMSG_MAX_MSG_BYTES: 24000
+     *
+     * @param listingItemTemplate
+     * @param paid, paid message
+     * @returns {Promise<ListingItemTemplate>}
      */
-    public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
-        const startTime = new Date().getTime();
+    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, paid: boolean = false): Promise<ListingItemTemplate> {
+        const startTime = Date.now();
 
         // ItemInformation has Images, which is an array.
         const images = listingItemTemplate.ItemInformation.Images;
         const originalImageDatas: resources.ImageData[] = [];
 
+        // get all the original/resized versions
         for (const image of images) {
             const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
                 return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
@@ -399,11 +406,11 @@ export class ListingItemTemplateService {
 
             if (!imageDataOriginal) {
                 // there's something wrong with the Image if original image doesnt have data
-                throw new MessageException('Error while resizing: Original image data not found.');
+                throw new MessageException('Error while resizing: Original Image not found.');
             }
 
             // TODO: right now ORIGINAL is resized once and saved as RESIZED
-            // TODO: if RESIZED exists, should we resize it again?
+            // TODO: if RESIZED exists, should we resize it again? YES
             if (!imageDataResized) {
                 // Only need to process if the resized image does not exist
                 originalImageDatas.push(imageDataOriginal);

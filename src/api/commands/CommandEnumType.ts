@@ -74,11 +74,12 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMLOCATION_ROOT: Command       = new Command('itemlocation', 'location', true,
         [this.ITEMLOCATION_ADD, this.ITEMLOCATION_UPDATE, this.ITEMLOCATION_REMOVE], EnvironmentType.ALL);
 
-    public IMAGE_ADD: Command           = new Command('imageadd', 'add', false);
-    public IMAGE_LIST: Command          = new Command('imagelist', 'list', false);
-    public IMAGE_REMOVE: Command        = new Command('imageremove', 'remove', false);
-    public IMAGE_ROOT: Command          = new Command('image', 'image', true,
-        [this.IMAGE_LIST, this.IMAGE_ADD, this.IMAGE_REMOVE], EnvironmentType.ALL);
+    public IMAGE_ADD: Command               = new Command('imageadd', 'add', false);
+    public IMAGE_COMPRESS: Command          = new Command('imagecompress', 'compress', false);
+    public IMAGE_LIST: Command              = new Command('imagelist', 'list', false);
+    public IMAGE_REMOVE: Command            = new Command('imageremove', 'remove', false);
+    public IMAGE_ROOT: Command              = new Command('image', 'image', true,
+        [this.IMAGE_ADD, this.IMAGE_COMPRESS, this.IMAGE_LIST, this.IMAGE_REMOVE], EnvironmentType.ALL);
 
     public ITEMINFORMATION_GET: Command     = new Command('iteminformationget', 'get', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);

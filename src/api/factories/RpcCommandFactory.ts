@@ -46,8 +46,9 @@ import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategory
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
 import { ImageRootCommand } from '../commands/image/ImageRootCommand';
-import { ImageListCommand } from '../commands/image/ImageListCommand';
 import { ImageAddCommand } from '../commands/image/ImageAddCommand';
+import { ImageCompressCommand } from '../commands/image/ImageCompressCommand';
+import { ImageListCommand } from '../commands/image/ImageListCommand';
 import { ImageRemoveCommand } from '../commands/image/ImageRemoveCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
@@ -194,10 +195,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.image.ImageListCommand) private itemImageListCommand: ImageListCommand,
-        @inject(Types.Command) @named(Targets.Command.image.ImageAddCommand) private itemImageAddCommand: ImageAddCommand,
-        @inject(Types.Command) @named(Targets.Command.image.ImageRemoveCommand) private itemImageRemoveCommand: ImageRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.image.ImageRootCommand) private itemImageRootCommand: ImageRootCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageAddCommand) private imageAddCommand: ImageAddCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageCompressCommand) private imageCompressCommand: ImageCompressCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageListCommand) private imageListCommand: ImageListCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageRemoveCommand) private imageRemoveCommand: ImageRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.image.ImageRootCommand) private imageRootCommand: ImageRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
@@ -367,11 +369,11 @@ export class RpcCommandFactory {
         this.commands.push(itemCategoryUpdateCommand);
         this.commands.push(itemCategoryRootCommand);
 
-        this.commands.push(itemImageRootCommand);
-        this.commands.push(itemImageListCommand);
-        this.commands.push(itemImageAddCommand);
-        this.commands.push(itemImageRemoveCommand);
-        this.commands.push(listingItemTemplateFeatureImageCommand);
+        this.commands.push(imageRootCommand);
+        this.commands.push(imageAddCommand);
+        this.commands.push(imageCompressCommand);
+        this.commands.push(imageListCommand);
+        this.commands.push(imageRemoveCommand);
 
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
@@ -393,6 +395,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateSizeCommand);
         this.commands.push(listingItemTemplateCompressCommand);
         this.commands.push(listingItemTemplateCloneCommand);
+        this.commands.push(listingItemTemplateFeatureImageCommand);
         this.commands.push(listingItemTemplateRootCommand);
 
         this.commands.push(marketAddCommand);

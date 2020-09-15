@@ -26,6 +26,10 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { MessageVersions } from '../../messages/MessageVersions';
+import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
 
 
 export class ImageService {
@@ -33,11 +37,14 @@ export class ImageService {
     public log: LoggerType;
 
     constructor(
+        // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ImageRepository) public imageRepository: ImageRepository,
         @inject(Types.Repository) @named(Targets.Repository.ImageDataRepository) public imageDataRepository: ImageDataRepository,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) public imageDataFactory: ImageDataFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) public listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        // tslint:enable:max-line-length
     ) {
         this.log = new Logger(__filename);
     }
@@ -192,6 +199,34 @@ export class ImageService {
         return imageDatas;
     }
 
+    public async createResizedVersion(id: number, messageVersionToFit: CoreMessageVersion, scalingFraction: number = 0.9, qualityFraction: number = 0.95,
+                                      maxIterations: number = 10): Promise<resources.ImageData[]> {
+
+        const image: resources.Image = await this.findOne(id).then(value => value.toJSON());
+        const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+
+        if (_.isNil(imageDataOriginal)) {
+            throw new ModelNotFoundException('ImageData');
+        }
+
+        imageDataOriginal.data = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
+
+        const rawImage = imageDataOriginal.data;
+        const maxSize = MessageVersions.maxSize(messageVersionToFit);
+        const resizedImage = await ImageProcessing.resizeImageToSize(rawImage, maxSize, scalingFraction, qualityFraction, maxIterations);
+
+        const versionCreateRequest = {
+            image_id: image.id,
+            protocol: imageDataOriginal.protocol,
+            imageVersion: ImageVersions.RESIZED.propName,
+            imageHash: image.hash,
+            encoding: imageDataOriginal.encoding,
+            data: resizedImage
+        } as ImageDataCreateRequest;
+        return await this.imageDataService.create(versionCreateRequest).then(value => value.toJSON());
+    }
 
     @validate()
     public async update(id: number, @request(ImageUpdateRequest) data: ImageUpdateRequest): Promise<Image> {
@@ -233,11 +268,11 @@ export class ImageService {
     }
 
 
-    public async updateFeatured(imageId: number, featured: boolean): Promise<Image> {
+    public async updateFeatured(id: number, featured: boolean): Promise<Image> {
         const data = {
             featured
         } as ImageUpdateRequest;
-        return await this.imageRepository.update(imageId, data);
+        return await this.imageRepository.update(id, data);
     }
 
 

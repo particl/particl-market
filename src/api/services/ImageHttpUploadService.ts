@@ -55,7 +55,7 @@ export class ImageHttpUploadService {
 
             // after upload reload and create also the resized template images
             listingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId).then(value => value.toJSON());
-            await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+            await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate);
         } else {
             // TODO: handle market image uploads
             throw new NotImplementedException();

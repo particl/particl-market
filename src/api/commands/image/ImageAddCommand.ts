@@ -115,7 +115,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         if (!skipResize && typeSpecifier === 'template') {
-            await this.listingItemTemplateService.createResizedTemplateImages(type as resources.ListingItemTemplate);
+            await this.listingItemTemplateService.resizeTemplateImages(type as resources.ListingItemTemplate);
         }
 
         if (typeSpecifier === 'market') {
