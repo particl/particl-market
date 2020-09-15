@@ -232,6 +232,133 @@ describe('BidSendCommand', () => {
     }, 600000); // timeout to 600s
 
 
+    test('Should fail because missing listingItemId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
+    });
+
+
+    test('Should fail because missing identityId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
+    });
+
+
+    test('Should fail because missing address|addressId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('address|addressId').getMessage());
+    });
+
+
+    test('Should fail because invalid listingItemId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            true,
+            buyerMarket.Identity.id,
+            buyerProfile.ShippingAddresses[0].id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
+    });
+
+
+    test('Should fail because invalid identityId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            true,
+            buyerProfile.ShippingAddresses[0].id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
+    });
+
+
+    test('Should fail to post Bid because invalid address', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('address', 'false|number').getMessage());
+    });
+
+
+    test('Should fail to post Bid because Identity not found', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            0,
+            buyerProfile.ShippingAddresses[0].id,
+            'colour',
+            'black',
+            'size',
+            'xl'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
+    });
+
+
+    test('Should fail to post Bid with address from bidData without addressLine1', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            false,
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, 'Melbourne, FL 32904',
+            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
+            BidDataValue.SHIPPING_ADDRESS_STATE, 'Mel State',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1).getMessage());
+    });
+
+    test('Should fail to post Bid with address from bidData without state', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            false,
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, 'Melbourne, FL 32904',
+            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException(BidDataValue.SHIPPING_ADDRESS_STATE).getMessage());
+    });
+
+
     test('Should post Bid for a ListingItem using Profiles existing ShippingAddress', async () => {
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
@@ -280,68 +407,16 @@ describe('BidSendCommand', () => {
     });
 
 
-    test('Should fail to post Bid with address from bidData without addressLine1', async () => {
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
-            listingItemReceivedOnBuyerNode.id,
-            buyerMarket.Identity.id,
-            false,
-            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
-            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
-            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, 'Melbourne, FL 32904',
-            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
-            BidDataValue.SHIPPING_ADDRESS_STATE, 'Mel State',
-            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
-            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1).getMessage());
-    });
-
-
-    test('Should fail to post Bid because invalid profileId', async () => {
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
-            listingItemReceivedOnBuyerNode.id,
-            true,
-            buyerProfile.ShippingAddresses[0].id,
-            'colour',
-            'black',
-            'size',
-            'xl'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
-    });
-
-
-    test('Should fail to post Bid because Profile not found', async () => {
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
-            listingItemReceivedOnBuyerNode.id,
-            0,
-            buyerProfile.ShippingAddresses[0].id,
-            'colour',
-            'black',
-            'size',
-            'xl'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
-    });
-
-
     test('Should find two Bids after posting', async () => {
 
         await testUtilBuyerNode.waitFor(5);
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            buyerMarket.Identity.Profile.id,            // profileId
+            buyerMarket.Identity.id,                    // identityId
             listingItemReceivedOnBuyerNode.id,          // listingItemId
-            MPAction.MPA_BID,                           // type
+            MPAction.MPA_BID                            // type
             // '*',                                     // search string
             // '*',                                     // market
             // buyerMarket.Identity.address             // bidder

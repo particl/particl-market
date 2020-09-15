@@ -12,7 +12,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/action/BidActionService';
 import { AddressService } from '../../services/model/AddressService';
@@ -32,8 +32,6 @@ import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgService } from '../../services/SmsgService';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     private REQUIRED_ADDRESS_KEYS: string[] = [
         BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
@@ -68,6 +66,38 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     ) {
         super(Commands.BID_SEND);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [{
+                name: 'listingItemId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'identityId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'address|addressId',
+                required: true,
+                type: undefined,
+                customValidate: (value, index, allValues) => {
+                    if (typeof value === 'boolean' && value === false) {
+                        // make sure that required keys are there
+                        for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
+                            if (!_.includes(allValues, addressKey.toString()) ) {
+                                throw new MissingParamException(addressKey);
+                            }
+                        }
+                    } else if (typeof value !== 'number') {
+                        // anything other than number should fail then
+                        throw new InvalidParamException('address', 'false|number');
+                    }
+                    return true;
+                }
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -149,23 +179,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('identityId');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('address or addressId');
-        }
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+/*
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('identityId', 'number');
-        }
-
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
             // make sure that required keys are there
             for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
@@ -176,7 +192,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         } else if (typeof data.params[2] !== 'number') {
             throw new InvalidParamException('addressId', 'number');
         }
-
+*/
         // make sure required data exists and fetch it
         const listingItemId = data.params.shift();
         const identityId = data.params.shift();

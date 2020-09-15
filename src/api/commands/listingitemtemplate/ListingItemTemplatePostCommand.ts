@@ -64,7 +64,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             }, {
                 name: 'daysRetention',
                 required: true,
-                type: 'number'
+                type: 'number',
+                customValidate: (value, index, allValues) => {
+                    return value <= parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+                }
             }, {
                 name: 'estimateFee',
                 required: false,
