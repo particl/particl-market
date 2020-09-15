@@ -27,7 +27,7 @@ export class ItemPriceService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) private cryptocurrencyAddressService: CryptocurrencyAddressService,
-        @inject(Types.Service) @named(Targets.Service.model.ShippingPriceService) private shippingpriceService: ShippingPriceService,
+        @inject(Types.Service) @named(Targets.Service.model.ShippingPriceService) private shippingPriceService: ShippingPriceService,
         @inject(Types.Repository) @named(Targets.Repository.ItemPriceRepository) public itemPriceRepo: ItemPriceRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -74,7 +74,10 @@ export class ItemPriceService {
         // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
             shippingPrice.item_price_id = itemPrice.id;
-            await this.shippingpriceService.create(shippingPrice as ShippingPriceCreateRequest);
+            const result: resources.ShippingPrice = await this.shippingPriceService.create(shippingPrice as ShippingPriceCreateRequest)
+                .then(value => value.toJSON());
+            // this.log.debug('ShippingPrice, result:', JSON.stringify(result, null, 2));
+
         }
         // finally find and return the created itemPrice
         return await this.findOne(itemPrice.id);
@@ -101,11 +104,11 @@ export class ItemPriceService {
             const shippingPriceId = relatedShippingPrice.id;
             relatedShippingPrice = body.shippingPrice;
             relatedShippingPrice.item_price_id = id;
-            await this.shippingpriceService.update(shippingPriceId, relatedShippingPrice as ShippingPriceUpdateRequest);
+            await this.shippingPriceService.update(shippingPriceId, relatedShippingPrice as ShippingPriceUpdateRequest);
         } else {
             relatedShippingPrice = body.shippingPrice;
             relatedShippingPrice.item_price_id = id;
-            await this.shippingpriceService.create(relatedShippingPrice as ShippingPriceCreateRequest);
+            await this.shippingPriceService.create(relatedShippingPrice as ShippingPriceCreateRequest);
         }
 
         // find related CryptocurrencyAddress

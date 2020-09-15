@@ -82,97 +82,6 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
 
-/*
-    these are optional now...
-
-    test('Should fail to add because missing categoryId', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description'              // [3]: long description
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('categoryId').getMessage());
-    });
-
-    test('Should fail to add because missing saleType', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            rootCategory.id                 // [4]: categoryID
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('saleType').getMessage());
-    });
-
-    test('Should fail to add because missing currency', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            rootCategory.id,                // [4]: categoryID
-            SaleType.SALE                   // [5]: sale type
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('currency').getMessage());
-    });
-
-    test('Should fail to add because missing basePrice', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            rootCategory.id,                // [4]: categoryID
-            SaleType.SALE,                  // [5]: sale type
-            Cryptocurrency.PART             // [6]: currency
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('basePrice').getMessage());
-    });
-
-    test('Should fail to add because missing domesticShippingPrice', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            rootCategory.id,                // [4]: categoryID
-            SaleType.SALE,                  // [5]: sale type
-            Cryptocurrency.PART,            // [6]: currency
-            10                              // [7]: base price
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('domesticShippingPrice').getMessage());
-    });
-
-    test('Should fail to add because missing internationalShippingPrice', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
-            profile.id,              // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            rootCategory.id,                // [4]: categoryID
-            SaleType.SALE,                  // [5]: sale type
-            Cryptocurrency.PART,            // [6]: currency
-            10,                             // [7]: base price
-            20                              // [8]: domestic shipping price
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('internationalShippingPrice').getMessage());
-    });
-*/
-
     test('Should fail to add because invalid profileId', async () => {
 
         const res = await testUtil.rpc(templateCommand, [templateAddCommand,
@@ -474,43 +383,32 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should create a new ListingItemTemplate with minimum params', async () => {
 
-        const testData = [
-            templateAddCommand,
-            profile.id,                     // [0]: profile_id
-            'Test Title',                   // [1]: title
-            'test short description',       // [2]: short description
-            'Long description',             // [3]: long description
-            // rootCategory.id,                // [4]: categoryID
-            // SaleType.SALE,                  // [5]: sale type
-            // Cryptocurrency.PART,            // [6]: currency
-            // 10,                             // [7]: base price
-            // 20,                             // [8]: domestic shipping price
-            // 30                              // [9]: international shipping price
-        ];
+        const title = 'Test Title';
+        const shortDescription = 'Short description';
+        const longDescription = 'Long description';
 
-        const res = await testUtil.rpc(templateCommand, testData);
+        const res = await testUtil.rpc(templateCommand, [templateAddCommand,
+            profile.id,                         // [0]: profile_id
+            title,                              // [1]: title
+            shortDescription,                   // [2]: short description
+            longDescription                     // [3]: long description
+            // rootCategory.id,                 // [4]: categoryID
+            // SaleType.SALE,                   // [5]: sale type
+            // Cryptocurrency.PART,             // [6]: currency
+            // 10,                              // [7]: base price
+            // 20,                              // [8]: domestic shipping price
+            // 30                               // [9]: international shipping price
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
 
         // log.debug('result: ', JSON.stringify(result, null, 2));
-        expect(result).hasOwnProperty('Profile');
-        expect(result).hasOwnProperty('ItemInformation');
-        expect(result).hasOwnProperty('PaymentInformation');
-        expect(result).hasOwnProperty('MessagingInformation');
-        expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItems');
-        expect(result.Profile.id).toBe(testData[1]);
-        expect(result.ItemInformation.title).toBe(testData[2]);
-        expect(result.ItemInformation.shortDescription).toBe(testData[3]);
-        expect(result.ItemInformation.longDescription).toBe(testData[4]);
-        // expect(result.ItemInformation.ItemCategory.id).toBe(testData[5]);
-        // expect(result.PaymentInformation.type).toBe(testData[6]);
-        // expect(result.PaymentInformation.ItemPrice.currency).toBe(testData[7]);
-        // expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[8]);
-        // expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[9]);
-        // expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[10]);
+        expect(result.Profile.id).toBe(profile.id);
+        expect(result.ItemInformation.title).toBe(title);
+        expect(result.ItemInformation.shortDescription).toBe(shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(longDescription);
 
     });
 

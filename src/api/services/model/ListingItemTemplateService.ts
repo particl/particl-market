@@ -142,8 +142,8 @@ export class ListingItemTemplateService {
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
-        // this.log.debug('listingItemTemplate, data:', JSON.stringify(data, null, 2));
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create(), body:', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;

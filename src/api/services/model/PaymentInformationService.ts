@@ -51,7 +51,7 @@ export class PaymentInformationService {
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+        if (_.isNil(body.listing_item_id) && _.isNil(body.listing_item_template_id)) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 

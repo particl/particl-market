@@ -40,16 +40,6 @@ import {
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    private MPA_BID_REQUIRED_ADDRESS_KEYS: string[] = [
-        BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
-        BidDataValue.SHIPPING_ADDRESS_LAST_NAME.toString(),
-        BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1.toString(),
-        BidDataValue.SHIPPING_ADDRESS_CITY.toString(),
-        BidDataValue.SHIPPING_ADDRESS_STATE.toString(),
-        BidDataValue.SHIPPING_ADDRESS_ZIP_CODE.toString(),
-        BidDataValue.SHIPPING_ADDRESS_COUNTRY.toString()
-    ];
-
     private PARAMS_ADDRESS_KEYS: string[] = [
         BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
         BidDataValue.SHIPPING_ADDRESS_LAST_NAME.toString(),

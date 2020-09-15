@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { request, validate } from '../../../core/api/Validate';
@@ -13,16 +14,31 @@ import { ListingItemTemplateCreateRequest } from '../../requests/model/ListingIt
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
-import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { BaseCommand } from '../BaseCommand';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
+import {
+    BasePriceValidationRule,
+    BuyerRatioValidationRule,
+    CategoryIdValidationRule,
+    CommandParamValidationRules,
+    CryptocurrencyValidationRule,
+    DomesticShippingPriceValidationRule,
+    EscrowReleaseTypeValidationRule,
+    EscrowTypeValidationRule,
+    InternationalShippingPriceValidationRule,
+    LongDescriptionValidationRule,
+    ParamValidationRule,
+    ProfileIdValidationRule,
+    SaleTypeValidationRule,
+    SellerRatioValidationRule,
+    ShortDescriptionValidationRule,
+    TitleValidationRule
+} from '../CommandParamValidation';
 
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -40,69 +56,28 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'title',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'shortDescription',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'longDescription',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'categoryId',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'saleType',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'currency',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'basePrice',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'domesticShippingPrice',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'internationalShippingPrice',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'escrowType',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'buyerRatio',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'sellerRatio',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'escrowReleaseType',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new ProfileIdValidationRule(true),
+                new TitleValidationRule(true),
+                new ShortDescriptionValidationRule(true),
+                new LongDescriptionValidationRule(true),
+                new CategoryIdValidationRule(false),
+                new SaleTypeValidationRule(false),
+                new CryptocurrencyValidationRule(false),
+                new BasePriceValidationRule(false),
+                new DomesticShippingPriceValidationRule(false),
+                new InternationalShippingPriceValidationRule(false),
+                new EscrowTypeValidationRule(false),
+                new BuyerRatioValidationRule(false),
+                new SellerRatioValidationRule(false),
+                new EscrowReleaseTypeValidationRule(false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
     /**
      * data.params[]:
-     *  [0]: profile: resources.Profile
+     *  [0]: profileId
      *
      *  itemInformation
      *  [1]: title
@@ -126,8 +101,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-
-        const profile: resources.Profile = data.params[0];
 
 /*
     TODO: omp-lib will generate cryptoAddress for now as this will require unlocked wallet
@@ -153,7 +126,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         }
 */
         const createRequest: ListingItemTemplateCreateRequest = await this.listingItemTemplateFactory.get({
-                profileId: profile.id,
+                profileId: data.params[0],
                 title: data.params[1],
                 shortDescription: data.params[2],
                 longDescription: data.params[3],
@@ -201,21 +174,23 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        data.params = this.setDefaultsForMissingParams(data.params);
-        this.validateParamTypes(data.params);
+        const profileId = data.params[0];
+        const categoryId = data.params[4];
+
+        // data.params = this.setDefaultsForMissingParams(data.params);
+        // this.validateParamTypes(data.params);
 
         // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+        await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
-        data.params[0] = profile;
 
         // validate that given category exists
         // for now, when creating a template, its category can only be a default one
-        if (+data.params[4]) {
-            await this.itemCategoryService.findOne(data.params[4]).then(value => {
+        if (!_.isNil(categoryId)) {
+            await this.itemCategoryService.findOne(categoryId).then(value => {
                 const category: resources.ItemCategory = value.toJSON();
                 // validate that given category is a default one -> market should not be defined
                 if (category.market) {
@@ -249,7 +224,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '    <buyerRatio>                   - number - optional, default: 100 \n'
             + '    <sellerRatio>                  - number - optional, default: 100 \n'
             + '    <escrowReleaseType>            - string - optional, default: ANON. ANON/BLIND \n';
-
     }
 
     public description(): string {
@@ -265,46 +239,4 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         + ' 16 SALE PART 0.1848 0.1922 0.1945 ';
     }
 
-    private validateParamTypes(params: any[]): void {
-        const validSaleTypeTypes = [SaleType.SALE];
-        if (validSaleTypeTypes.indexOf(params[5]) === -1) {
-            throw new InvalidParamException('saleType', 'SaleType');
-        }
-
-        const validCryptocurrencyTypes = [Cryptocurrency.PART];
-        if (validCryptocurrencyTypes.indexOf(params[6]) === -1) {
-            throw new InvalidParamException('currency', 'Cryptocurrency');
-        }
-
-        const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];
-        if (validEscrowTypes.indexOf(params[10]) === -1) {
-            throw new InvalidParamException('escrowType', 'EscrowType');
-        }
-
-        const validEscrowReleaseTypes = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
-        if (validEscrowReleaseTypes.indexOf(params[13]) === -1) {
-            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-        }
-    }
-
-    /**
-     * set default values for the optional params which dont exist
-     * set the values which are not yet optional
-     *
-     * @param params
-     */
-    private setDefaultsForMissingParams(params: any[]): any[] {
-
-        params[5] = SaleType.SALE;
-        params[6] = Cryptocurrency.PART;
-        params[7] = params[7] ? params[7] : 0;      // basePrice
-        params[8] = params[8] ? params[8] : 0;      // domesticShippingPrice
-        params[9] = params[9] ? params[9] : 0;      // internationalShippingPrice
-        params[10] = params[10] ? params[10] : EscrowType.MAD_CT;
-        params[11] = 100;                           // buyerRatio
-        params[12] = 100;                           // sellerRatio
-        params[13] = params[13] ? params[13] : EscrowReleaseType.ANON;
-
-        return params;
-    }
 }
