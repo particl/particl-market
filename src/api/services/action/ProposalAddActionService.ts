@@ -78,6 +78,7 @@ export class ProposalAddActionService extends BaseActionService {
      * @param marketplaceMessage
      */
     public async beforePost(actionRequest: ProposalAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        this.log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
         return marketplaceMessage;
     }
 
