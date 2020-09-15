@@ -117,7 +117,7 @@ describe('Happy Vote Flow', () => {
         expect(result.result).toEqual('Sent.');
     });
 
-
+/*
     test('Should have created Proposal on BUYER node', async () => {
 
         expect(sent).toBeTruthy();
@@ -680,5 +680,5 @@ describe('Happy Vote Flow', () => {
         proposalResultOnSellerNode = result;
 
     }, 600000); // timeout to 600s
-
+*/
 });

@@ -34,7 +34,6 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
-import {MessageSizeException} from '../../exceptions/MessageSizeException';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -70,7 +69,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             }, {
                 name: 'estimateFee',
                 required: false,
-                type: 'boolean'
+                type: 'boolean',
+                defaultValue: false
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -164,21 +164,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         const listingItemTemplateId = data.params[0];
         const daysRetention = data.params[1];
-        let estimateFee = data.params[2];
 
         if (daysRetention > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
         }
-
-        if (estimateFee !== undefined) {
-            if (typeof estimateFee !== 'boolean') {
-                throw new InvalidParamException('estimateFee', 'boolean');
-            }
-        } else {
-            estimateFee = false;
-        }
-
-        // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         // make sure required data exists and fetch it
         let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)

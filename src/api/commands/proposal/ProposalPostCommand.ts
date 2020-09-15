@@ -11,7 +11,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
+import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { MarketService } from '../../services/model/MarketService';
@@ -27,8 +27,6 @@ import { IdentityService } from '../../services/model/IdentityService';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
@@ -37,6 +35,40 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     ) {
         super(Commands.PROPOSAL_POST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [{
+                name: 'marketId',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'proposalTitle',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'proposalDescription',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'daysRetention',
+                required: true,
+                type: 'number'
+            }, {
+                name: 'estimateFee',
+                required: true,
+                type: 'boolean'
+            }, {
+                name: 'option1Description',
+                required: true,
+                type: 'string'
+            }, {
+                name: 'option2Description',
+                required: true,
+                type: 'string'
+            }] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -96,41 +128,10 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('proposalTitle');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('proposalDescription');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('daysRetention');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('estimateFee');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('option1Description');
-        } else if (data.params.length < 7) {
-            throw new MissingParamException('option2Description');
-        }
-
-        if (data.params[0] !== undefined && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('proposalTitle', 'string');
-        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('proposalDescription', 'string');
-        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'number') {
-            throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'boolean') {
-            throw new InvalidParamException('estimateFee', 'boolean');
-        } else if (data.params[5] !== undefined && typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('option1Description', 'string');
-        } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('option2Description', 'string');
-        }
 
         if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
             throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
