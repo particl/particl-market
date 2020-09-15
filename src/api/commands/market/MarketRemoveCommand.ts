@@ -9,7 +9,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { MarketService } from '../../services/model/MarketService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -17,6 +17,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { DefaultProfileService } from '../../services/DefaultProfileService';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {

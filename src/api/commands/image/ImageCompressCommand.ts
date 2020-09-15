@@ -12,13 +12,14 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { Image } from '../../models/Image';
 import { ImageService } from '../../services/model/ImageService';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ImageCompressCommand extends BaseCommand implements RpcCommandInterface<Image> {

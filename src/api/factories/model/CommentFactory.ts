@@ -37,12 +37,12 @@ export class CommentFactory implements ModelFactoryInterface {
         const actionMessage: CommentAddMessage = params.actionMessage;
         const smsgMessage: resources.SmsgMessage = params.smsgMessage;
 
-        const commentRequest = {
-            sender: params.sender,
-            receiver: params.receiver,
-            type: params.type,
-            target: params.target,
-            message: params.message,
+        const createRequest = {
+            sender: actionMessage.sender,
+            receiver: actionMessage.receiver,
+            type: actionMessage.commentType,
+            target: actionMessage.target,
+            message: actionMessage.message,
             parent_comment_id: params.parentCommentId,
             generatedAt: actionMessage.generated,
 
@@ -52,6 +52,9 @@ export class CommentFactory implements ModelFactoryInterface {
             receivedAt: smsgMessage ? smsgMessage.received : undefined
         } as CommentCreateRequest || CommentUpdateRequest;
 
+        createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableCommentCreateRequestConfig());
+
+/*
         commentRequest.hash = ConfigurableHasher.hash({
             ...commentRequest,
             parentCommentHash: actionMessage.parentCommentHash
@@ -63,7 +66,7 @@ export class CommentFactory implements ModelFactoryInterface {
             this.log.error(error.getMessage());
             throw error;
         }
-
-        return commentRequest;
+*/
+        return createRequest;
     }
 }

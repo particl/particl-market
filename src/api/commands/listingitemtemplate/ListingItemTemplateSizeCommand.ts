@@ -12,7 +12,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
@@ -22,6 +22,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {

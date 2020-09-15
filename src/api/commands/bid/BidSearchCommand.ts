@@ -25,10 +25,10 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { IdentityService } from '../../services/model/IdentityService';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {

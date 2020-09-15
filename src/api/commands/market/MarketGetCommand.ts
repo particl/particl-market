@@ -11,10 +11,11 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { Market } from '../../models/Market';
 import { MarketService } from '../../services/model/MarketService';
 import { ImageDataService } from '../../services/model/ImageDataService';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketGetCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {

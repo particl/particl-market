@@ -26,10 +26,10 @@ export class HashableCommentAddMessageConfig extends BaseHashableConfig {
     }, {
         from: 'commentType',
         to: HashableCommentAddField.COMMENT_TYPE
-    }, {
+    }/*, {
         from: 'parentCommentHash',
         to: HashableCommentAddField.COMMENT_PARENT_COMMENT_HASH
-    }] as HashableFieldConfig[];
+    }*/] as HashableFieldConfig[];
 
     constructor(values?: HashableFieldValueConfig[]) {
         super(values);

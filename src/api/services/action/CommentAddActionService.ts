@@ -126,12 +126,6 @@ export class CommentAddActionService extends BaseActionService {
                 const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
                     actionMessage: commentAddMessage,
                     smsgMessage,
-                    msgid: smsgMessage.msgid,
-                    sender: commentAddMessage.sender,
-                    receiver: commentAddMessage.receiver,
-                    type: commentAddMessage.commentType,
-                    target: commentAddMessage.target,
-                    message: commentAddMessage.message,
                     parentCommentId
                 } as CommentCreateParams) as CommentCreateRequest;
 

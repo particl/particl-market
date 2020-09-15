@@ -13,7 +13,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
@@ -22,6 +22,7 @@ import { SettingService } from '../../services/model/SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { MessageException } from '../../exceptions/MessageException';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {

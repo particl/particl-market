@@ -15,7 +15,7 @@ import { Image } from '../../models/Image';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
@@ -24,7 +24,8 @@ import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
-import {CoreMessageVersion} from '../../enums/CoreMessageVersion';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {

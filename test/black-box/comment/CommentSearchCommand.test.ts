@@ -101,13 +101,13 @@ describe('CommentSearchCommand', () => {
     });
 
 
-    test('Should fail because missing type', async () => {
+    test('Should fail because missing commentType', async () => {
         const response = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
         ]);
         response.expectJson();
         response.expectStatusCode(404);
-        expect(response.error.error.message).toBe(new MissingParamException('type').getMessage());
+        expect(response.error.error.message).toBe(new MissingParamException('commentType').getMessage());
     });
 
 
@@ -122,7 +122,7 @@ describe('CommentSearchCommand', () => {
     });
 
 
-    test('Should fail because invalid type', async () => {
+    test('Should fail because invalid commentType', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             true,
@@ -130,7 +130,7 @@ describe('CommentSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('commentType', 'string').getMessage());
     });
 
 
@@ -174,9 +174,9 @@ describe('CommentSearchCommand', () => {
     test('Should fail because type not supported', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.MARKETPLACE_COMMENT,
+            CommentType.MARKETPLACE_COMMENT,    // <--
             market.receiveAddress,
-            listingItem.hash + 'NOTFOUND'
+            listingItem.hash
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -184,7 +184,7 @@ describe('CommentSearchCommand', () => {
     });
 
 
-    test('Should search for a Comments by type and receiver', async () => {
+    test('Should search for a Comments by commentType and receiver', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,

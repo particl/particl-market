@@ -179,7 +179,7 @@ export abstract class BaseCommand {
                 if (!_.isNil(rules.params[i])
                     && !_.isNil(rules.params[i].customValidate)
                     && typeof rules.params[i].customValidate === 'function'
-                    && !rules.params[i].customValidate!(data.params[i], i, data.params)) {
+                    && !(await rules.params[i].customValidate!(data.params[i], i, data.params))) {
 
                     if (this.debug) {
                         this.log.debug('validateValues(): ' + rules.params[i].name

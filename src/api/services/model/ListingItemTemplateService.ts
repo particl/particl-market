@@ -26,7 +26,6 @@ import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
-import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
 import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
 import { Image } from '../../models/Image';
@@ -52,14 +51,15 @@ import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import {CoreMessageVersion} from '../../enums/CoreMessageVersion';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { ModelServiceInterface } from '../ModelServiceInterface';
 
 
-export class ListingItemTemplateService {
+export class ListingItemTemplateService implements ModelServiceInterface<ListingItemTemplate> {
 
+    // todo: move elsewhere?
     private static IMG_BOUNDING_WIDTH = 600;
     private static IMG_BOUNDING_HEIGHT = 600;
-    private static FRACTION_LOWEST_COMPRESSION = 0.8;
 
     public log: LoggerType;
 

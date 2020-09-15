@@ -57,7 +57,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new ProfileIdValidationRule(true),
+                new ProfileIdValidationRule(true, this.profileService),
                 new TitleValidationRule(true),
                 new ShortDescriptionValidationRule(true),
                 new LongDescriptionValidationRule(true),
@@ -174,18 +174,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const profileId = data.params[0];
         const categoryId = data.params[4];
-
-        // data.params = this.setDefaultsForMissingParams(data.params);
-        // this.validateParamTypes(data.params);
-
-        // make sure Profile with the id exists
-        await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
 
         // validate that given category exists
         // for now, when creating a template, its category can only be a default one

@@ -15,10 +15,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     public generateListingItemTemplate = true;
     public generateListingItem = true;
     public generatePastComment = false;
-    public type = undefined;
-    public sender = undefined;
-    public receiver = undefined;
-    public target = undefined;
+    public type: string;
+    public sender: string;
+    public receiver: string;
+    public target: string;
 
     /**
      * generateParams[]:

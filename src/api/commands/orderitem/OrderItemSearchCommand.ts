@@ -24,7 +24,8 @@ import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchPara
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules } from '../BaseCommand';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
 

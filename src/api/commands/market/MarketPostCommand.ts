@@ -11,7 +11,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
@@ -28,6 +28,7 @@ import { MarketAddActionService } from '../../services/action/MarketAddActionSer
 import { MarketImageAddActionService } from '../../services/action/MarketImageAddActionService';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {

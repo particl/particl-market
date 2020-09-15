@@ -12,6 +12,7 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 
+
 export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;

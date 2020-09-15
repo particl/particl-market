@@ -12,7 +12,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
 import { MessageException } from '../../exceptions/MessageException';
@@ -33,6 +33,7 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {

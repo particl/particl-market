@@ -109,11 +109,13 @@ export interface SmsgMessageCreateParams extends ModelCreateParams {
 export interface CommentCreateParams extends ModelCreateParams {
     actionMessage: CommentAddMessage;
     smsgMessage: resources.SmsgMessage;
+/*
     msgid: string;
     sender: string;
     receiver: string;
     type: string;
     target: string;
     message: string;
+ */
     parentCommentId: number;
 }

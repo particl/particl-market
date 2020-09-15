@@ -13,8 +13,9 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
 

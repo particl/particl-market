@@ -24,7 +24,8 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { CommandParamValidationRules } from '../BaseCommand';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 

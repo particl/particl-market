@@ -12,7 +12,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProfileService } from '../../services/model/ProfileService';
@@ -27,6 +27,7 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { VoteActionService } from '../../services/action/VoteActionService';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {

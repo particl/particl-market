@@ -80,7 +80,7 @@ import { ListingItemObjectCreateRequest } from '../requests/model/ListingItemObj
 import { ListingItemObjectDataCreateRequest } from '../requests/model/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
-import { ImageCreateParams, OrderCreateParams } from '../factories/ModelCreateParams';
+import {CommentCreateParams, ImageCreateParams, OrderCreateParams} from '../factories/ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
@@ -123,6 +123,10 @@ import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { ImageFactory } from '../factories/model/ImageFactory';
 import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
 import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
+import { CommentFactory } from '../factories/model/CommentFactory';
+import {CommentAddMessage} from '../messages/action/CommentAddMessage';
+import {MessageBody} from '../../core/api/MessageBody';
+import {IsEnum, IsNotEmpty} from 'class-validator';
 
 
 export class TestDataService {
@@ -161,6 +165,7 @@ export class TestDataService {
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
         @inject(Types.Listener) @named(Targets.Listener.ServerStartedListener) private serverStartedListener: ServerStartedListener,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -1170,27 +1175,30 @@ export class TestDataService {
             : _.random(currentTime + 1001, currentTime + 2000, false);
 
 
-        // TODO: parent comment create?
-
-        const smsgData: any = {
-            postedAt: timeStart,
-            receivedAt: timeStart,
-            expiredAt: timeEnd
-        };
-
-        const commentCreateRequest = {
-            sender: generateParams.sender,
-            receiver: generateParams.receiver,
-            type: generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            target: generateParams.target,
-            message: Faker.lorem.lines(1),
-            parentCommentId: null,
-            generatedAt: timeStart,
-            ...smsgData
-        } as CommentCreateRequest;
+        const commentCreateRequest: CommentCreateRequest = await this.commentFactory.get({
+            actionMessage: {
+                type: CommentAction.MPA_COMMENT_ADD,
+                sender: generateParams.sender,
+                receiver: generateParams.receiver,
+                commentType: generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                target: generateParams.target,
+                message: Faker.lorem.lines(1),
+                // parentCommentHash,
+                signature: Faker.random.uuid(),
+                // hash: Faker.random.uuid(),
+                generated: timeStart
+            } as CommentAddMessage,
+            smsgMessage: {
+                msgid: Faker.random.uuid(),
+                sent: timeStart,
+                received: timeStart,
+                expiration: timeEnd
+            } as resources.SmsgMessage
+        } as CommentCreateParams) as CommentCreateRequest;
 
         commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
 
+        this.log.debug('commentCreateRequest: ', JSON.stringify(commentCreateRequest, null, 2));
         return commentCreateRequest;
     }
 

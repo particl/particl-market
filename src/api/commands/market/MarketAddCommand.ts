@@ -14,7 +14,7 @@ import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { MarketType } from '../../enums/MarketType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
@@ -28,6 +28,7 @@ import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketRegion } from '../../enums/MarketRegion';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {

@@ -5,10 +5,11 @@
 import * as _ from 'lodash';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from './BaseCommand';
+import { BaseCommand } from './BaseCommand';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
+import { CommandParamValidationRules, ParamValidationRule } from './CommandParamValidation';
 
 
 export abstract class BaseSearchCommand extends BaseCommand {

@@ -21,7 +21,7 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { IdentityService } from '../../services/model/IdentityService';
-import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {

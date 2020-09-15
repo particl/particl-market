@@ -26,7 +26,20 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MarketService} from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandParamValidationRules } from '../BaseCommand';
+import {
+    BasePriceValidationRule, BuyerRatioValidationRule,
+    CategoryIdValidationRule,
+    CommandParamValidationRules, CommentTypeValidationRule,
+    CryptocurrencyValidationRule,
+    DomesticShippingPriceValidationRule, EscrowReleaseTypeValidationRule, EscrowTypeValidationRule,
+    InternationalShippingPriceValidationRule,
+    LongDescriptionValidationRule,
+    ParamValidationRule,
+    ProfileIdValidationRule,
+    SaleTypeValidationRule, SellerRatioValidationRule,
+    ShortDescriptionValidationRule, StringValidationRule,
+    TitleValidationRule
+} from '../CommandParamValidation';
 
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
@@ -43,17 +56,14 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
-        return {} as CommandParamValidationRules;
-        // TODO: implement
-        /*
         return {
-            parameters: [{
-                name: 'listingItemId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new CommentTypeValidationRule(true),
+                new StringValidationRule('receiver', true),
+                new StringValidationRule('target', false),              // todo: HashValidationRule
+                new StringValidationRule('parentCommentHash', false)    // todo: HashValidationRule
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
-        */
     }
 
     public getAllowedSearchOrderFields(): string[] {
@@ -110,13 +120,6 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        // type && receiver is not optional
-        if (data.params.length < 5) {
-            throw new MissingParamException('type');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('receiver');
-        }
 
         const type = data.params[4];
         const receiver = data.params[5];

@@ -19,12 +19,12 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { MarketType } from '../../enums/MarketType';
 import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
 import { Market } from '../../models/Market';
 import { MarketRegion } from '../../enums/MarketRegion';
 import { SearchOrder } from '../../enums/SearchOrder';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {

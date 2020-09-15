@@ -9,8 +9,12 @@ import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { BidDataValue } from '../enums/BidDataValue';
 import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
+import { ModelServiceInterface } from '../services/ModelServiceInterface';
+import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
+import {CommentType} from '../enums/CommentType';
+import {EnumHelper} from '../../core/helpers/EnumHelper';
 
-export type ValidationFunction = (value: any, index: number, allValues: any[]) => boolean;
+export type ValidationFunction = (value: any, index: number, allValues: any[]) => Promise<boolean>;
 
 export interface CommandParamValidationRules {
     params: ParamValidationRule[];
@@ -35,17 +39,33 @@ export abstract class BaseParamValidationRule implements ParamValidationRule {
         this.required = required;
     }
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         return true;
     }
 }
 
 export class BaseIdValidationRule extends BaseParamValidationRule {
     public type = 'number';
+    public modelService?: ModelServiceInterface<any>;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
-        if (!_.isNil(value) || this.required) {
-            return value >= 0;
+    constructor(required: boolean = false, modelService?: ModelServiceInterface<any>) {
+        super(required);
+        this.modelService = modelService;
+    }
+
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
+        if ((!_.isNil(value) || this.required) && value < 0) {
+            throw new InvalidParamException(this.name, 'value < 0');
+        }
+
+        // if modelService is set, make sure we can find something with the id
+        if (!_.isNil(value) && this.modelService) {
+
+           await this.modelService.findOne(value, false)
+               .catch(reason => {
+                   const modelName = this.name.charAt(0).toUpperCase() + this.name.slice(1, -2);
+                   throw new ModelNotFoundException(modelName);
+               });
         }
         return true;
     }
@@ -56,13 +76,23 @@ export class BaseEnumValidationRule extends BaseParamValidationRule {
     public validEnumType: string;
     public validEnumValues: any[];
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (this.validEnumValues.indexOf(value) === -1) {
             throw new InvalidParamException(this.name, this.validEnumType);
         }
         return true;
     }
 }
+
+export class StringValidationRule extends BaseParamValidationRule {
+    public type = 'string';
+
+    constructor(name: string, required: boolean = false) {
+        super(required);
+        this.name = name;
+    }
+}
+
 
 // Ids
 
@@ -76,11 +106,16 @@ export class IdentityIdValidationRule extends BaseIdValidationRule {
 
 export class ProfileIdValidationRule extends BaseIdValidationRule {
     public name = 'profileId';
+
+    constructor(required: boolean = false, modelService?: ModelServiceInterface<any>) {
+        super(required, modelService);
+    }
 }
 
 export class CategoryIdValidationRule extends BaseIdValidationRule {
     public name = 'categoryId';
 }
+
 
 // Misc
 
@@ -99,7 +134,7 @@ export class AddressOrAddressIdValidationRule extends BaseParamValidationRule {
         BidDataValue.SHIPPING_ADDRESS_COUNTRY.toString()
     ];
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (typeof value === 'boolean' && value === false) {
             // make sure that required keys are there
             for (const addressKey of this.MPA_BID_REQUIRED_ADDRESS_KEYS) {
@@ -121,7 +156,7 @@ export class TitleValidationRule extends BaseParamValidationRule {
     public name = 'title';
     public type = 'string';
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         return true;
     }
 }
@@ -130,7 +165,7 @@ export class ShortDescriptionValidationRule extends BaseParamValidationRule {
     public name = 'shortDescription';
     public type = 'string';
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         return true;
     }
 }
@@ -139,10 +174,11 @@ export class LongDescriptionValidationRule extends BaseParamValidationRule {
     public name = 'longDescription';
     public type = 'string';
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         return true;
     }
 }
+
 
 // Numeric
 
@@ -151,7 +187,7 @@ export class BasePriceValidationRule extends BaseParamValidationRule {
     public type = 'number';
     public defaultValue = 0;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             // why couldn't we sell free shit?
             return value >= 0;
@@ -165,7 +201,7 @@ export class DomesticShippingPriceValidationRule extends BaseParamValidationRule
     public type = 'number';
     public defaultValue = 0;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             return value >= 0;
         }
@@ -178,7 +214,7 @@ export class InternationalShippingPriceValidationRule extends BaseParamValidatio
     public type = 'number';
     public defaultValue = 0;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             return value >= 0;
         }
@@ -191,7 +227,7 @@ export class BuyerRatioValidationRule extends BaseParamValidationRule {
     public type = 'number';
     public defaultValue = 100;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             return value >= 0;
         }
@@ -204,7 +240,7 @@ export class SellerRatioValidationRule extends BaseParamValidationRule {
     public type = 'number';
     public defaultValue = 100;
 
-    public customValidate(value: any, index: number, allValues: any[]): boolean {
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             return value >= 0;
         }
@@ -241,6 +277,12 @@ export class EscrowReleaseTypeValidationRule extends BaseEnumValidationRule {
     public validEnumType: 'EscrowReleaseType';
     public validEnumValues = [EscrowReleaseType.ANON, EscrowReleaseType.BLIND];
     public defaultValue = EscrowReleaseType.ANON;
+}
+
+export class CommentTypeValidationRule extends BaseEnumValidationRule {
+    public name = 'commentType';
+    public validEnumType: 'CommentType';
+    public validEnumValues = EnumHelper.getValues(CommentType);
 }
 
 

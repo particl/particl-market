@@ -12,10 +12,12 @@ import { ImageService } from '../../services/model/ImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 

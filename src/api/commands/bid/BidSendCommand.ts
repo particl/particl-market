@@ -38,6 +38,7 @@ import {
     ParamValidationRule
 } from '../CommandParamValidation';
 
+
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     private PARAMS_ADDRESS_KEYS: string[] = [

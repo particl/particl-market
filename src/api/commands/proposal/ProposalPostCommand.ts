@@ -11,19 +11,19 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import {BaseCommand, CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
