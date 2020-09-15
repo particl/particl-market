@@ -62,7 +62,9 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
      * @returns {Promise<void>}
      */
     public async process(event: MarketplaceMessageEvent): Promise<void> {
-        this.log.info('Received event: ', event.smsgMessage.type);
+
+        // set process.env.MPMESSAGE_DEBUG=true to enable this
+        this.actionService.marketplaceMessageDebug(ActionDirection.INCOMING, event.marketplaceMessage.action);
 
         const validContent = await this.validator.validateMessage(event.marketplaceMessage, ActionDirection.INCOMING, event.smsgMessage)
             .then(value => value)

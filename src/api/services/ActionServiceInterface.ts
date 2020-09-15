@@ -99,5 +99,6 @@ export interface ActionServiceInterface {
 
     sendNotification(notification: MarketplaceNotification): Promise<void>;
     callWebHooks(action: ActionMessageInterface, direction: ActionDirection): Promise<void>;
+    marketplaceMessageDebug(direction: ActionDirection, actionRequest: ActionMessageInterface): void;
 
 }

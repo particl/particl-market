@@ -53,8 +53,11 @@ export class EnvConfig {
 
         // APP_DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
         // APP_DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
+
+        // https://github.com/tecnovert/particl-core/blob/f66e893f276e68fa8ece0054b443db61bbc9b5e7/src/smsg/smessage.cpp#L95
         PAID_MESSAGE_RETENTION_DAYS: 7,
         FREE_MESSAGE_RETENTION_DAYS: 7,
+
         LISTING_ITEMS_EXPIRED_INTERVAL: 10,             // minutes
         LISTING_ITEM_REMOVE_PERCENTAGE: 0.1,
         PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30,     // minutes
@@ -62,7 +65,9 @@ export class EnvConfig {
         // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
         SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,
         SMSG_MAX_AMSG_BYTES: 512,
-        SMSG_MAX_MSG_BYTES: 24000
+        SMSG_MAX_MSG_BYTES: 24000,
+
+        MPMESSAGE_DEBUG: false
 };
 
     /**

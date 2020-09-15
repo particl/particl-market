@@ -237,6 +237,11 @@ export class SmsgService {
      * "error": "Message is too long, 5392 > 4096"
      * }
      *
+     * https://github.com/tecnovert/particl-core/blob/f66e893f276e68fa8ece0054b443db61bbc9b5e7/src/smsg/smessage.cpp#L95
+     * uint32_t SMSG_MAX_FREE_TTL      = SMSG_SECONDS_IN_DAY * 14;
+     * uint32_t SMSG_MAX_PAID_TTL      = SMSG_SECONDS_IN_DAY * 31;
+     * uint32_t SMSG_RETENTION         = SMSG_MAX_PAID_TTL;
+     *
      * @param wallet
      * @param {string} fromAddress
      * @param {string} toAddress

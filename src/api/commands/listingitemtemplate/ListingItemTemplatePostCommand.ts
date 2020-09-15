@@ -18,7 +18,6 @@ import { ListingItemAddActionService } from '../../services/action/ListingItemAd
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';

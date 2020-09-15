@@ -31,6 +31,7 @@ import { MessageSizeException } from '../exceptions/MessageSizeException';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MessageWebhooks } from '../messages/MessageWebhooks';
 import { AuthOptions, RequestOptions, Headers} from 'web-request';
+import {Environment} from '../../core/helpers/Environment';
 
 
 export abstract class BaseActionService implements ActionServiceInterface {
@@ -119,6 +120,9 @@ export abstract class BaseActionService implements ActionServiceInterface {
             marketplaceMessage.action.objects.push(...(actionRequest.objects ? actionRequest.objects : []));
         }
 
+        // set process.env.MPMESSAGE_DEBUG=true to enable this
+        this.marketplaceMessageDebug(ActionDirection.OUTGOING, marketplaceMessage.action);
+
         // validate message with the messageValidator
         const validContent = await this.validator.validateMessage(marketplaceMessage, ActionDirection.OUTGOING)
             .catch(reason => {
@@ -199,7 +203,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * called before post is executed (and )message is sent)
      *
      * if you need to add something to MarketplaceMessage, this is the place to do it.
-     * @param params
+     * @param actionRequest
      * @param message
      */
     public abstract async beforePost(actionRequest: ActionRequestInterface, message: MarketplaceMessage): Promise<MarketplaceMessage>;
@@ -272,6 +276,12 @@ export abstract class BaseActionService implements ActionServiceInterface {
                 });
         }
         return;
+    }
+
+    public marketplaceMessageDebug(direction: ActionDirection, actionRequest: ActionMessageInterface): void {
+        if (Environment.isTruthy(process.env.MPMESSAGE_DEBUG)) {
+            this.log.debug(direction + ': ', JSON.stringify(actionRequest, null, 2));
+        }
     }
 
     /**
