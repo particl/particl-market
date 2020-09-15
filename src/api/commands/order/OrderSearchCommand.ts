@@ -43,7 +43,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
             params: [{
                 name: 'listingItemId',
                 required: false,
-                type: 'number'
+                type: undefined // TODO: 'number'
             }, {
                 name: 'status',
                 required: false,

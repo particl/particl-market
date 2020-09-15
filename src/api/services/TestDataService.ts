@@ -181,7 +181,6 @@ export class TestDataService {
                 this.log.debug('failed cleaning the db: ' + reason);
             });
 
-
         if (seed) {
             this.log.debug('seeding default data after cleaning');
 
@@ -189,11 +188,9 @@ export class TestDataService {
                 .catch(reason => {
                     this.log.error('ERROR: marketplace bootstrap failed: ', reason);
                 });
-
         }
 
         this.log.info('cleanup & default seeds done.');
-
         return;
     }
 
