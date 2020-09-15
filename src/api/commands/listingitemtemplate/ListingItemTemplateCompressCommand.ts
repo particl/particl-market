@@ -13,6 +13,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -32,10 +34,25 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
                 required: true,
                 type: 'number'
             }, {
-                name: 'paid',
+                name: 'messageVersionToFit',
                 required: false,
-                type: 'boolean',
-                defaultValue: false
+                type: 'string',
+                defaultValue: CoreMessageVersion.FREE
+            }, {
+                name: 'scalingFraction',
+                required: false,
+                type: 'number',
+                defaultValue: 0.9
+            }, {
+                name: 'qualityFraction',
+                required: false,
+                type: 'number',
+                defaultValue: 0.9
+            }, {
+                name: 'maxIterations',
+                required: false,
+                type: 'number',
+                defaultValue: 10
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -43,7 +60,10 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: paid, default=false
+     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [2]: scalingFraction, default: 0.9
+     *  [3]: qualityFraction, default: 0.9
+     *  [4]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -51,31 +71,46 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const paid: boolean = data.params[1];
-        return this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, paid);
+        const messageVersionToFit: CoreMessageVersion = data.params[1];
+        const scalingFraction: number = data.params[2];
+        const qualityFraction: number = data.params[3];
+        const maxIterations: number = data.params[4];
+        return await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+            qualityFraction, maxIterations);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: paid, optional, default=false
+     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [2]: scalingFraction, default: 0.9
+     *  [3]: qualityFraction, default: 0.9
+     *  [4]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItemTemplate');
+            });
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> ';
+        return this.getName() + ' <listingTemplateId> [messageVersionToFit] [scalingFraction] [qualityFraction] [maxIterations]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. ';
+            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. '
+            + '    <messageVersionToFit>    - [optional] string, CoreMessageVersion to fit. '
+            + '    <scalingFraction>        - [optional] number used to scale the Image size. '
+            + '    <qualityFraction>        - [optional] number used to scale the Image quality. '
+            + '    <maxIterations>          - [optional] number of max iterations run. ';
     }
 
     public description(): string {

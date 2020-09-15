@@ -52,6 +52,7 @@ import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import {CoreMessageVersion} from '../../enums/CoreMessageVersion';
 
 
 export class ListingItemTemplateService {
@@ -385,47 +386,21 @@ export class ListingItemTemplateService {
      *  SMSG_MAX_MSG_BYTES: 24000
      *
      * @param listingItemTemplate
-     * @param paid, paid message
+     * @param messageVersionToFit
+     * @param scalingFraction
+     * @param qualityFraction
+     * @param maxIterations
      * @returns {Promise<ListingItemTemplate>}
      */
-    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, paid: boolean = false): Promise<ListingItemTemplate> {
-        const startTime = Date.now();
+    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
+                                      scalingFraction: number = 0.9, qualityFraction: number = 0.95,
+                                      maxIterations: number = 10): Promise<ListingItemTemplate> {
 
-        // ItemInformation has Images, which is an array.
         const images = listingItemTemplate.ItemInformation.Images;
-        const originalImageDatas: resources.ImageData[] = [];
-
-        // get all the original/resized versions
         for (const image of images) {
-            const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
-            });
-            const imageDataResized: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.RESIZED.propName;
-            });
-
-            if (!imageDataOriginal) {
-                // there's something wrong with the Image if original image doesnt have data
-                throw new MessageException('Error while resizing: Original Image not found.');
-            }
-
-            // TODO: right now ORIGINAL is resized once and saved as RESIZED
-            // TODO: if RESIZED exists, should we resize it again? YES
-            if (!imageDataResized) {
-                // Only need to process if the resized image does not exist
-                originalImageDatas.push(imageDataOriginal);
-            }
+            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
+            this.log.debug('compressed image.hash: ' + image.hash);
         }
-
-        for (const originalImageData of originalImageDatas) {
-            const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
-            const imageDataCreateRequest: ImageDataCreateRequest = await this.imageDataFactory.getImageDataCreateRequest(
-                originalImageData.imageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
-                originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
-            await this.itemDataService.create(imageDataCreateRequest);
-        }
-
-        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (Date.now() - startTime) + 'ms');
 
         return await this.findOne(listingItemTemplate.id);
     }

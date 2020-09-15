@@ -12,6 +12,7 @@ import { ListingItemTemplateService } from './model/ListingItemTemplateService';
 import { ImageService } from './model/ImageService';
 import { ImageUploadRequest } from '../requests/action/ImageUploadRequest';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import {CoreMessageVersion} from '../enums/CoreMessageVersion';
 
 export class ImageHttpUploadService {
 
@@ -55,7 +56,14 @@ export class ImageHttpUploadService {
 
             // after upload reload and create also the resized template images
             listingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId).then(value => value.toJSON());
-            await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate);
+
+            const messageVersionToFit = CoreMessageVersion.PAID;
+            const scalingFraction = 0.9;
+            const qualityFraction = 0.9;
+            const maxIterations = 10;
+
+            await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+                qualityFraction, maxIterations);
         } else {
             // TODO: handle market image uploads
             throw new NotImplementedException();

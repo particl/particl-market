@@ -24,6 +24,7 @@ import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
+import {CoreMessageVersion} from '../../enums/CoreMessageVersion';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
@@ -65,6 +66,26 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
                 name: 'skipResize',
                 required: false,
                 type: 'boolean'
+            }, {
+                name: 'messageVersionToFit',
+                required: false,
+                type: 'string',
+                defaultValue: CoreMessageVersion.FREE
+            }, {
+                name: 'scalingFraction',
+                required: false,
+                type: 'number',
+                defaultValue: 0.9
+            }, {
+                name: 'qualityFraction',
+                required: false,
+                type: 'number',
+                defaultValue: 0.9
+            }, {
+                name: 'maxIterations',
+                required: false,
+                type: 'number',
+                defaultValue: 10
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -77,6 +98,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
      *  [3]: data|uri
      *  [4]: featured, optional, default: false
      *  [5]: skipResize, optional, default: false
+     *  [6]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [7]: scalingFraction, default: 0.9
+     *  [8]: qualityFraction, default: 0.9
+     *  [9]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<Image>}
@@ -89,6 +114,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         const dataOrUri: string = data.params[3];
         const featured: boolean = data.params[4];
         const skipResize: boolean = data.params[5];
+        const messageVersionToFit: CoreMessageVersion = data.params[6];
+        const scalingFraction: number = data.params[7];
+        const qualityFraction: number = data.params[8];
+        const maxIterations: number = data.params[9];
 
         // this.log.debug('typeSpecifier:', JSON.stringify(typeSpecifier, null, 2));
         // this.log.debug('type:', JSON.stringify(type, null, 2));
@@ -114,14 +143,18 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             await this.imageService.updateFeatured(image.id, true);
         }
 
-        if (!skipResize && typeSpecifier === 'template') {
-            await this.listingItemTemplateService.resizeTemplateImages(type as resources.ListingItemTemplate);
-        }
-
         if (typeSpecifier === 'market') {
             await this.marketService.updateImage(type.id, image.id);
         }
-        return image;
+
+        if (!skipResize && typeSpecifier === 'template') {
+            await this.listingItemTemplateService.resizeTemplateImages(type as resources.ListingItemTemplate, messageVersionToFit, scalingFraction,
+                qualityFraction, maxIterations);
+        } else if (!skipResize && typeSpecifier === 'market') {
+            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
+        }
+
+        return await this.imageService.findOne(image.id);
     }
 
     /**
@@ -132,6 +165,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
      *  [3]: data|uri
      *  [4]: featured, optional, default: false
      *  [5]: skipResize, optional, default: false
+     *  [6]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [7]: scalingFraction, default: 0.9
+     *  [8]: qualityFraction, default: 0.9
+     *  [9]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<RpcRequest>}
@@ -199,7 +236,8 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public usage(): string {
-        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [featured] [skipResize]';
+        return this.getName() + ' <template|market> <id> <protocol> <data|uri> [featured] [skipResize] [messageVersionToFit] [scalingFraction]'
+            + ' [qualityFraction] [maxIterations]';
     }
 
     public help(): string {
@@ -209,7 +247,11 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             + '    <protocol>                   - ProtocolDSN - REQUEST, SMSG, FILE, ...} - The protocol used to load the image. \n'
             + '    <data>                       - string - data/uri, depending on the ProtocolDSN. '
             + '    <featured>                   - boolean - set Image as featured. '
-            + '    <skipResize>                 - boolean - skip Image resize. ';
+            + '    <skipResize>                 - boolean - skip Image resize. '
+            + '    <messageVersionToFit>        - [optional] string, CoreMessageVersion to fit. '
+            + '    <scalingFraction>            - [optional] number used to scale the Image size. '
+            + '    <qualityFraction>            - [optional] number used to scale the Image quality. '
+            + '    <maxIterations>              - [optional] number of max iterations run. ';
     }
 
     public description(): string {
