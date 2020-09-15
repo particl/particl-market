@@ -11,21 +11,8 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { CommandParamValidationRules, ParamValidationRule } from './CommandParamValidation';
 
-
-export type ValidationFunction = (value: any, index: number, allValues: any[]) => boolean;
-
-export interface ParamValidationRule {
-    name: string;
-    required: boolean;
-    type: string;
-    defaultValue: any;
-    customValidate: ValidationFunction;
-}
-
-export interface CommandParamValidationRules {
-    params: ParamValidationRule[];
-}
 
 export abstract class BaseCommand {
 
@@ -185,12 +172,14 @@ export abstract class BaseCommand {
     }
 
     public async validateValues(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
-        if (rules && rules.params && rules.params.length > 0) {
+        if (!_.isNil(rules) && !_.isNil(rules.params) && rules.params.length > 0) {
 
             for (let i = 0; i < rules.params.length; i++) {
 
-                if (typeof rules.params[i].customValidate === 'function'
-                    && !rules.params[i].customValidate(data.params[i], i, data.params)) {
+                if (!_.isNil(rules.params[i])
+                    && !_.isNil(rules.params[i].customValidate)
+                    && typeof rules.params[i].customValidate === 'function'
+                    && !rules.params[i].customValidate!(data.params[i], i, data.params)) {
 
                     if (this.debug) {
                         this.log.debug('validateValues(): ' + rules.params[i].name

@@ -12,7 +12,7 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand, CommandParamValidationRules, ParamValidationRule } from '../BaseCommand';
+import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/action/BidActionService';
 import { AddressService } from '../../services/model/AddressService';
@@ -30,10 +30,17 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { MarketService } from '../../services/model/MarketService';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { SmsgService } from '../../services/SmsgService';
+import {
+    AddressOrAddressIdValidationRule,
+    CommandParamValidationRules,
+    IdentityIdValidationRule,
+    ListingItemIdValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    private REQUIRED_ADDRESS_KEYS: string[] = [
+    private MPA_BID_REQUIRED_ADDRESS_KEYS: string[] = [
         BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
         BidDataValue.SHIPPING_ADDRESS_LAST_NAME.toString(),
         BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1.toString(),
@@ -70,33 +77,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'identityId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'address|addressId',
-                required: true,
-                type: undefined,
-                customValidate: (value, index, allValues) => {
-                    if (typeof value === 'boolean' && value === false) {
-                        // make sure that required keys are there
-                        for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
-                            if (!_.includes(allValues, addressKey.toString()) ) {
-                                throw new MissingParamException(addressKey);
-                            }
-                        }
-                    } else if (typeof value !== 'number') {
-                        // anything other than number should fail then
-                        throw new InvalidParamException('address', 'false|number');
-                    }
-                    return true;
-                }
-            }] as ParamValidationRule[]
+            params: [
+                new ListingItemIdValidationRule(true),
+                new IdentityIdValidationRule(true),
+                new AddressOrAddressIdValidationRule(true)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -184,7 +169,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // make sure the params are of correct type
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
             // make sure that required keys are there
-            for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
+            for (const addressKey of this.MPA_BID_REQUIRED_ADDRESS_KEYS) {
                 if (!_.includes(data.params, addressKey.toString()) ) {
                     throw new MissingParamException(addressKey);
                 }
