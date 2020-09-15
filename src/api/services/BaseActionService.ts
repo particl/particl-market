@@ -256,9 +256,9 @@ export abstract class BaseActionService implements ActionServiceInterface {
      */
     public async callWebHooks(actionMessage: ActionMessageInterface, actionDirection: ActionDirection): Promise<void> {
         const webhookUrl = MessageWebhooks.get(actionMessage.type);
-        this.log.debug('webhookUrl: ' + webhookUrl);
 
         if (!_.isNil(webhookUrl)) {
+            this.log.debug('webhookUrl: ' + webhookUrl);
 
             const options = this.getOptions();
             const postData = JSON.stringify({

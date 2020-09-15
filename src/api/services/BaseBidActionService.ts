@@ -77,6 +77,7 @@ export abstract class BaseBidActionService extends BaseActionService {
             smsgMessage,
             listingItem,
             identity: mpaBid.Identity,
+            bidder: mpaBid.bidder,
             parentBid: mpaBid
         } as BidCreateParams;
 

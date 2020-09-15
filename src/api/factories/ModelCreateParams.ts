@@ -70,7 +70,7 @@ export interface BidCreateParams extends ModelCreateParams {
     listingItem: resources.ListingItem;
     identity: resources.Identity;
     address?: AddressCreateRequest;
-    // bidder: string;  // get from identity
+    bidder: string;
     parentBid?: resources.Bid;  // the bid that happened before this
 }
 

@@ -93,7 +93,7 @@ export class BidFactory implements ModelFactoryInterface {
 
             generatedAt: actionMessage.generated,
             type: actionMessage.type,
-            bidder: params.identity.address,
+            bidder: params.bidder,
             address: params.address,
             bidDatas,
             hash: 'recalculateandvalidate',

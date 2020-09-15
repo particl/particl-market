@@ -354,6 +354,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPAction.MPA_BID                            // type
                 // '*',                                     // search string
@@ -465,6 +467,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPAction.MPA_BID                            // type
                 // '*',                                     // search string
@@ -630,6 +634,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPAction.MPA_ACCEPT,                        // type
                 '*',                                        // search string
@@ -745,6 +751,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPAction.MPA_ACCEPT,                        // type
                 '*',                                        // search string
@@ -920,6 +928,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPAction.MPA_LOCK                           // type
                 // '*',                                     // search string
@@ -1056,6 +1066,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPAction.MPA_LOCK                           // type
                 // '*',                                     // search string
@@ -1247,6 +1259,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPActionExtended.MPA_COMPLETE               // type
                 // '*',                                     // search string
@@ -1387,6 +1401,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPActionExtended.MPA_COMPLETE,              // type
                 '*',                                        // search string
@@ -1582,6 +1598,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPActionExtended.MPA_SHIP                   // type
                 // '*',                                     // search string
@@ -1724,6 +1742,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPActionExtended.MPA_SHIP,                  // type
                 '*',                                        // search string
@@ -1925,6 +1945,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerMarket.Identity.Profile.id,            // profileId
+                buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPActionExtended.MPA_RELEASE                // type
                 // '*',                                     // search string
@@ -2066,6 +2088,8 @@ describe('Happy Buy Flow', () => {
 
         let response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerMarket.Identity.Profile.id,           // profileId
+                sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPActionExtended.MPA_RELEASE                // type
                 // '*',                                     // search string

@@ -17,14 +17,14 @@ import { Order } from '../../models/Order';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { OrderSearchOrderField } from '../../enums/SearchOrderField';
+import {ListingItemTemplateSearchOrderField, OrderSearchOrderField} from '../../enums/SearchOrderField';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
 import { OrderStatus } from '../../enums/OrderStatus';
-import { CommandParamValidationRules } from '../BaseCommand';
+import {CommandParamValidationRules, ParamValidationRule} from '../BaseCommand';
 
 export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
@@ -39,17 +39,29 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
-        return {} as CommandParamValidationRules;
-        // TODO: implement
-        /*
         return {
-            parameters: [{
+            params: [{
                 name: 'listingItemId',
                 required: false,
                 type: 'number'
+            }, {
+                name: 'status',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'buyerAddress',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'sellerAddress',
+                required: false,
+                type: 'string'
+            }, {
+                name: 'market',
+                required: false,
+                type: 'string'
             }] as ParamValidationRule[]
         } as CommandParamValidationRules;
-        */
     }
 
     public getAllowedSearchOrderFields(): string[] {
@@ -119,6 +131,8 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
         let buyerAddress = data.params[6];        // optional
         let sellerAddress = data.params[7];       // optional
         let market = data.params[8];              // optional
+
+        // TODO: clean this up
 
         if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
             throw new InvalidParamException('listingItemId', 'number');

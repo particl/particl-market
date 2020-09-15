@@ -173,6 +173,7 @@ export class BidActionService extends BaseActionService {
             actionMessage: marketplaceMessage.action as BidMessage,
             smsgMessage,
             identity,
+            bidder: smsgMessage.from,
             listingItem,
             address
             // parentBid: undefined
@@ -181,7 +182,14 @@ export class BidActionService extends BaseActionService {
         // TODO: currently we support just one OrderItem per Order
 
         const bid: resources.Bid = await this.bidService.create(bidCreateRequest).then(value => value.toJSON());
+
         if (bid.bidder !== smsgMessage.from || bid.ListingItem.seller !== smsgMessage.to) {
+            // bid.bidder should be the address which sent the MPA_BID
+            // bid.ListingItem.seller should be the address the MPA_BID was sent to
+            this.log.debug('createBid(), bid.bidder: ', bid.bidder);
+            this.log.debug('createBid(), smsgMessage.from: ', smsgMessage.from);
+            this.log.debug('createBid(), bid.ListingItem.seller: ', bid.ListingItem.seller);
+            this.log.debug('createBid(), smsgMessage.to: ', smsgMessage.to);
             throw new MessageException('Something funny going on with the seller/buyer addresses.');
         }
 
