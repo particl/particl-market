@@ -8,14 +8,12 @@ import * as resources from 'resources';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { BidDataValue } from '../enums/BidDataValue';
-import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
-import { CommentType } from '../enums/CommentType';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
-import { OrderItemStatus } from '../enums/OrderItemStatus';
-import {SearchOrder} from '../enums/SearchOrder';
+import { SearchOrder } from '../enums/SearchOrder';
 
 /**
  * used as custom validation function for params.
@@ -54,9 +52,10 @@ export abstract class BaseParamValidationRule implements ParamValidationRule {
     public type?: string;
     public defaultValue?: any;
 
-    constructor(name: string, required: boolean = false) {
+    constructor(name: string, required: boolean = false, defaultValue?: any) {
         this.name = name;
         this.required = required;
+        this.defaultValue = defaultValue;
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
@@ -96,24 +95,6 @@ export class IdValidationRule extends BaseParamValidationRule {
     }
 }
 
-export class BaseEnumValidationRule extends BaseParamValidationRule {
-    public type = 'string';
-    public validEnumType: string;
-    public validEnumValues: string[];
-
-    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[]) {
-        super(name, required);
-        this.validEnumType = validEnumType;
-        this.validEnumValues = validEnumValues;
-    }
-
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        if (this.validEnumValues.indexOf(value) === -1) {
-            return false;
-        }
-        return true;
-    }
-}
 
 
 // Misc
@@ -166,12 +147,11 @@ export class StringValidationRule extends BaseParamValidationRule {
 
 // Numeric
 
-export class PriceValidationRule extends BaseParamValidationRule {
+export class NumberValidationRule extends BaseParamValidationRule {
     public type = 'number';
-    public defaultValue = 0;
 
-    constructor(name: string, required: boolean = false) {
-        super(name, required);
+    constructor(name: string, required: boolean = false, defaultValue?: any) {
+        super(name, required, defaultValue);
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
@@ -183,26 +163,54 @@ export class PriceValidationRule extends BaseParamValidationRule {
     }
 }
 
-export class EscrowRatioValidationRule extends BaseParamValidationRule {
-    public type = 'number';
-    public defaultValue = 100;
-
-    constructor(name: string, required: boolean = false) {
-        super(name, required);
+export class ScalingValueValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false, defaultValue?: any) {
+        super(name, required, defaultValue);
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
-            return value >= 0;
+            return value >= 0 && value <= 1;
         }
         return true;
+    }
+}
+
+export class PriceValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false) {
+        super(name, required, 0);
+    }
+}
+
+export class EscrowRatioValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false) {
+        super(name, required, 100);
     }
 }
 
 
 // Enums
 
-export class SaleTypeValidationRule extends BaseEnumValidationRule {
+export class EnumValidationRule extends BaseParamValidationRule {
+    public type = 'string';
+    public validEnumType: string;
+    public validEnumValues: string[];
+
+    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any) {
+        super(name, required, defaultValue);
+        this.validEnumType = validEnumType;
+        this.validEnumValues = validEnumValues;
+    }
+
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
+        if (this.validEnumValues.indexOf(value) === -1) {
+            return false;
+        }
+        return true;
+    }
+}
+
+export class SaleTypeValidationRule extends EnumValidationRule {
     public defaultValue = SaleType.SALE;
 
     constructor(required: boolean = false) {
@@ -210,7 +218,7 @@ export class SaleTypeValidationRule extends BaseEnumValidationRule {
     }
 }
 
-export class CryptocurrencyValidationRule extends BaseEnumValidationRule {
+export class CryptocurrencyValidationRule extends EnumValidationRule {
     public defaultValue = Cryptocurrency.PART;
 
     constructor(required: boolean = false) {
@@ -218,31 +226,11 @@ export class CryptocurrencyValidationRule extends BaseEnumValidationRule {
     }
 }
 
-export class EscrowTypeValidationRule extends BaseEnumValidationRule {
+export class EscrowTypeValidationRule extends EnumValidationRule {
     public defaultValue = EscrowType.MAD_CT;
 
     constructor(required: boolean = false) {
         super('escrowType', required, 'EscrowType', [EscrowType.MAD_CT, EscrowType.MULTISIG]);
-    }
-}
-
-export class EscrowReleaseTypeValidationRule extends BaseEnumValidationRule {
-    public defaultValue = EscrowReleaseType.ANON;
-
-    constructor(required: boolean = false) {
-        super('escrowReleaseType', required, 'EscrowReleaseType', [EscrowReleaseType.ANON, EscrowReleaseType.BLIND]);
-    }
-}
-
-export class OrderItemStatusValidationRule extends BaseEnumValidationRule {
-    constructor(required: boolean = false) {
-        super('orderItemStatus', required, 'OrderItemStatus', EnumHelper.getValues(OrderItemStatus) as string[]);
-    }
-}
-
-export class CommentTypeValidationRule extends BaseEnumValidationRule {
-    constructor(required: boolean = false) {
-        super('commentType', required, 'CommentType', EnumHelper.getValues(CommentType) as string[]);
     }
 }
 
@@ -262,10 +250,9 @@ export class BooleanValidationRule extends BaseParamValidationRule {
 
 export class SearchPageValidationRule extends BaseParamValidationRule {
     public type = 'number';
-    public defaultValue = 0;
 
     constructor() {
-        super('page', true);
+        super('page', true, 0);
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
@@ -278,10 +265,9 @@ export class SearchPageValidationRule extends BaseParamValidationRule {
 
 export class SearchPageLimitValidationRule extends BaseParamValidationRule {
     public type = 'number';
-    public defaultValue = 10;
 
     constructor() {
-        super('pageLimit', true);
+        super('pageLimit', true, 10);
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
@@ -292,13 +278,13 @@ export class SearchPageLimitValidationRule extends BaseParamValidationRule {
     }
 }
 
-export class SearchOrderValidationRule extends BaseEnumValidationRule {
+export class SearchOrderValidationRule extends EnumValidationRule {
     constructor() {
         super('order', true, 'SearchOrder', EnumHelper.getValues(SearchOrder) as string[]);
     }
 }
 
-export class SearchOrderFieldValidationRule extends BaseEnumValidationRule {
+export class SearchOrderFieldValidationRule extends EnumValidationRule {
     constructor(allowedSearchOrderFields: string[]) {
         super('orderField', true, 'SearchOrderField', allowedSearchOrderFields);
     }

@@ -15,7 +15,16 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    NumberValidationRule,
+    ParamValidationRule,
+    ScalingValueValidationRule
+} from '../CommandParamValidation';
+import {EnumHelper} from '../../../core/helpers/EnumHelper';
+import {EscrowReleaseType} from 'omp-lib/dist/interfaces/omp-enums';
 
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -30,31 +39,14 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'messageVersionToFit',
-                required: false,
-                type: 'string',
-                defaultValue: CoreMessageVersion.FREE
-            }, {
-                name: 'scalingFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'qualityFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'maxIterations',
-                required: false,
-                type: 'number',
-                defaultValue: 10
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new EnumValidationRule('messageVersionToFit', false, 'CoreMessageVersion',
+                    EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
+                new ScalingValueValidationRule('scalingFraction', false, 0.9),
+                new ScalingValueValidationRule('qualityFraction', false, 0.9),
+                new NumberValidationRule('maxIterations', false, 10),
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -93,11 +85,6 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
         return data;
     }
 

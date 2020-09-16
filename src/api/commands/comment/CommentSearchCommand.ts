@@ -24,7 +24,7 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MarketService} from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandParamValidationRules, CommentTypeValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
@@ -43,7 +43,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new CommentTypeValidationRule(true),
+                new EnumValidationRule('commentType', true, 'CommentType', EnumHelper.getValues(CommentType) as string[]),
                 new StringValidationRule('receiver', true),
                 new StringValidationRule('target', false),              // todo: HashValidationRule
                 new StringValidationRule('parentCommentHash', false)    // todo: HashValidationRule

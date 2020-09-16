@@ -24,10 +24,7 @@ import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchPara
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
-import {
-    CommandParamValidationRules, IdValidationRule, OrderItemStatusValidationRule, ParamValidationRule,
-    StringValidationRule
-} from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
@@ -46,7 +43,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
         return {
             params: [
                 new IdValidationRule('listingItemId', false),
-                new OrderItemStatusValidationRule(false),
+                new EnumValidationRule('orderItemStatus', false, 'OrderItemStatus', EnumHelper.getValues(OrderItemStatus) as string[]),
                 new StringValidationRule('buyerAddress', false),
                 new StringValidationRule('sellerAddress', false),
                 new StringValidationRule('market', false)

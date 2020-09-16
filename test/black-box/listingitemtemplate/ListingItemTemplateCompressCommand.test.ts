@@ -14,7 +14,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 
-describe('ImageCompressCommand', () => {
+describe('ListingItemTemplateCompressCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -23,8 +23,8 @@ describe('ImageCompressCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const imageCommand = Commands.IMAGE_ROOT.commandName;
-    const imageCompressCommand = Commands.IMAGE_COMPRESS.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateCompressCommand = Commands.TEMPLATE_COMPRESS.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -63,27 +63,33 @@ describe('ImageCompressCommand', () => {
         ) as resources.ListingItemTemplate[];
 
         listingItemTemplate = listingItemTemplates[0];
+
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        for (const image of listingItemTemplate.ItemInformation.Images) {
+            expect(image.ImageDatas).toHaveLength(4);
+        }
+
     });
 
 
-    test('Should fail because missing imageId', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand]);
+    test('Should fail because missing listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('imageId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail because invalid imageId', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
+    test('Should fail because invalid listingItemTemplateId', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('imageId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
     test('Should fail because invalid messageVersionToFit', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.ItemInformation.Images[0].id,
             false
         ]);
@@ -93,7 +99,7 @@ describe('ImageCompressCommand', () => {
     });
 
     test('Should fail because invalid scalingFraction', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.ItemInformation.Images[0].id,
             CoreMessageVersion.FREE,
             false
@@ -104,7 +110,7 @@ describe('ImageCompressCommand', () => {
     });
 
     test('Should fail because invalid qualityFraction', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.ItemInformation.Images[0].id,
             CoreMessageVersion.FREE,
             0.9,
@@ -116,7 +122,7 @@ describe('ImageCompressCommand', () => {
     });
 
     test('Should fail because invalid maxIterations', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.ItemInformation.Images[0].id,
             CoreMessageVersion.FREE,
             0.9,
@@ -128,9 +134,9 @@ describe('ImageCompressCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('maxIterations', 'number').getMessage());
     });
 
-    test('Should compress Image to fit given size in bytes', async () => {
-        const res = await testUtil.rpc(imageCommand, [imageCompressCommand,
-            listingItemTemplate.ItemInformation.Images[0].id,
+    test('Should compress Images to fit given size in bytes', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
+            listingItemTemplate.id,
             CoreMessageVersion.FREE,
             0.9,
             0.8,
@@ -139,9 +145,10 @@ describe('ImageCompressCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: resources.Image = res.getBody()['result'];
-        // log.debug('result: ', JSON.stringify(result, null, 2));
-        expect(result.ImageDatas).toHaveLength(5);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        for (const image of result.ItemInformation.Images) {
+            expect(image.ImageDatas).toHaveLength(5);
+        }
 
     });
 
