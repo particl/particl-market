@@ -13,9 +13,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import {CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -31,7 +30,7 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }

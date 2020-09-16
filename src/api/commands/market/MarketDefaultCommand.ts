@@ -15,14 +15,13 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { SettingService } from '../../services/model/SettingService';
 import { SettingValue } from '../../enums/SettingValue';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketDefaultCommand extends BaseCommand implements RpcCommandInterface<Market> {
@@ -41,15 +40,10 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'marketId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new IdValidationRule('marketId', false, this.marketService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -66,11 +60,8 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
 
-        this.log.debug('profile: ', profile.id);
-
         if (market) {
-            // if market was given, we are setting...
-            this.log.debug('market: ', market.id);
+            // if market was given, then we are setting...
             await this.settingService.createOrUpdateProfileSetting(SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID, market.id + '', profile.id);
         }
 
@@ -90,30 +81,12 @@ export class MarketDefaultCommand extends BaseCommand implements RpcCommandInter
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const profileId = data.params[0];
-        const marketId = data.params[1];
+        const profile: resources.Profile = data.params[0];
+        const market: resources.Market = data.params[1];
 
-        // make sure Profile with the id exists
-        data.params[0] = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        if (!_.isNil(marketId)) {
-            // make sure Market with the id exists
-            const market: resources.Market = await this.marketService.findOne(marketId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Market');
-                });
-
-            // Market should also belong to the given Profile
-            if (market.Profile.id !== profileId) {
-                throw new MessageException('Given Market does not belong to the Profile.');
-            }
-
-            data.params[1] = market;
+        // Market should also belong to the given Profile
+        if (!_.isNil(market) && market.Profile.id !== profile.id) {
+            throw new MessageException('Given Market does not belong to the Profile.');
         }
 
         return data;

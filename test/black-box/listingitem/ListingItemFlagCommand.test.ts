@@ -190,14 +190,14 @@ describe('ListingItemFlagCommand', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Should fail to flag because missing listingItemId', async () => {
+    test('Should fail because missing listingItemId', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should fail to flag because missing identityId', async () => {
+    test('Should fail because missing identityId', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             listingItemReceivedOnBuyerNode.id
         ]);
@@ -206,7 +206,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
     });
 
-    test('Should fail to flag because invalid listingItemId', async () => {
+    test('Should fail because invalid listingItemId', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             'INVALID',
             buyerProfile.id
@@ -216,7 +216,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
 
-    test('Should fail to flag because invalid identityId (string)', async () => {
+    test('Should fail because invalid identityId (string)', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             listingItemReceivedOnBuyerNode.id,
             'INVALID-PROFILE-ID'
@@ -226,7 +226,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
     });
 
-    test('Should fail to flag because Identity not found', async () => {
+    test('Should fail because Identity not found', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             listingItemReceivedOnBuyerNode.id,
             0
@@ -236,7 +236,7 @@ describe('ListingItemFlagCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
     });
 
-    test('Should fail to flag because ListingItem not found', async () => {
+    test('Should fail because ListingItem not found', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             0,
             buyerProfile.id

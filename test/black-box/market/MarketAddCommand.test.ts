@@ -265,7 +265,6 @@ describe('MarketAddCommand', () => {
         const result: resources.Market = res.getBody()['result'];
         expect(result.name).toBe(marketName);
         expect(result.receiveKey).toBe(result.publishKey);
-
     });
 
     test('Should create a new market (STOREFRONT_ADMIN)', async () => {

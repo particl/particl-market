@@ -22,7 +22,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import {CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
@@ -40,7 +40,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }

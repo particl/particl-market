@@ -9,6 +9,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
+import {MarketRegion} from '../../../src/api/enums/MarketRegion';
+import {MessageException} from '../../../src/api/exceptions/MessageException';
 
 describe('MarketFlagCommand', () => {
 
@@ -21,9 +25,11 @@ describe('MarketFlagCommand', () => {
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
     const marketFlagCommand = Commands.MARKET_FLAG.commandName;
+    const marketAddCommand = Commands.MARKET_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
+    let newMarket: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -35,13 +41,77 @@ describe('MarketFlagCommand', () => {
 
     });
 
-    test('Should fail to flag Market because of missing marketId', async () => {
+    test('Should fail because of missing marketId', async () => {
         const res = await testUtil.rpc(marketCommand, [marketFlagCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
 
-    // TODO: add tests
+    test('Should fail because invalid marketId', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketFlagCommand,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
+    test('Should fail because Market not found', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketFlagCommand,
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
+    });
+
+    test('Should fail because cannot flag the default Market', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketFlagCommand,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Cannot flag the default Market.').getMessage());
+    });
+
+    test('Should create a new market (MARKETPLACE) with just a name and identityId', async () => {
+        const marketName = 'TEST-5';
+        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            marketName,
+            null,
+            null,
+            null,
+            market.Identity.id,
+            'marketData.description',
+            MarketRegion.WORLDWIDE,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Market = res.getBody()['result'];
+        expect(result.name).toBe(marketName);
+        expect(result.receiveKey).toBe(result.publishKey);
+
+        newMarket = result;
+    });
+
+    test('Should flag the Market', async () => {
+        const response = await testUtil.rpc(marketCommand, [marketFlagCommand,
+            newMarket.id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const result: any = response.getBody()['result'];
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==> PROPOSAL SENT.');
+
+    }, 600000); // timeout to 600s
+
+    // TODO: check that we send/receive the proposal from/to the newMarket address
+
 
 });

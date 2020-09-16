@@ -22,7 +22,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { IdentityService } from '../../services/model/IdentityService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class MarketFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -39,15 +39,10 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'marketId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'reason',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new StringValidationRule('reason', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -99,19 +94,18 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const marketId = data.params[0];
+        const market: resources.Market = data.params[0];
         const reason = data.params[1];
-
-        const market: resources.Market = await this.marketService.findOne(marketId)
-            .then(value => value.toJSON())
-            .catch(ex => {
-                throw new ModelNotFoundException('Market');
-            });
 
         // check if item is already flagged
         if (!_.isEmpty(market.FlaggedItem)) {
             this.log.error('Market is already flagged.');
             throw new MessageException('Market is already flagged.');
+        }
+
+        if (market.receiveKey === process.env.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY) {
+            this.log.error('Cannot flag the default Market.');
+            throw new MessageException('Cannot flag the default Market.');
         }
 
         // make sure identity exists
@@ -148,5 +142,4 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
     public example(): string {
         return 'market ' + this.getName() + ' 1 \'reason\'';
     }
-
 }

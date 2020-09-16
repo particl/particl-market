@@ -18,7 +18,6 @@ import { BaseCommand } from '../BaseCommand';
 import { MarketType } from '../../enums/MarketType';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../../services/CoreRpcService';
@@ -28,7 +27,14 @@ import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketRegion } from '../../enums/MarketRegion';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -48,43 +54,19 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'name',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'type',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'receiveKey',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'publishKey',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'identityId',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'description',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'region',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'skipJoin',
-                required: false,
-                type: 'boolean'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('name', true),
+                new EnumValidationRule('type', false, 'MarketType',
+                    EnumHelper.getValues(MarketType) as string[], MarketType.MARKETPLACE),
+                new StringValidationRule('receiveKey', false),
+                new StringValidationRule('publishKey', false),
+                new IdValidationRule('identityId', false, this.identityService),
+                new StringValidationRule('description', false),
+                new EnumValidationRule('region', false, 'MarketRegion',
+                    EnumHelper.getValues(MarketRegion) as string[], MarketRegion.WORLDWIDE),
+                new BooleanValidationRule('skipJoin', false, false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -115,7 +97,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         const region: string = data.params[7];
         const skipJoin: boolean = data.params[8];
 
-        // create market identity if one wasnt given
+        // create market identity if one wasn't given
         if (_.isNil(identity) && !skipJoin) {
             identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
         }
@@ -193,31 +175,17 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
 
-        const profileId = data.params[0];
+        const profile: resources.Profile = data.params[0];
         const name = data.params[1];
         let type = data.params[2];
         const receiveKey = data.params[3];
         const publishKey = data.params[4];
-        const identityId = data.params[5];
+        const identity: resources.Identity = data.params[5];
         const description = data.params[6];
-        let region = data.params[7];
-        let skipJoin = data.params[8];
-
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
+        const region = data.params[7];
+        const skipJoin = data.params[8];
 
         await this.checkForDuplicateMarketName(profile.id, name);
-
-        if (_.isNil(type)) {
-            // default market type to MARKETPLACE if not set
-            type = MarketType.MARKETPLACE;
-        } else if (!EnumHelper.containsName(MarketType, type)) {
-            // invalid MarketType
-            throw new InvalidParamException('type', 'MarketType');
-        }
 
         // type === MARKETPLACE -> receive + publish keys are the same
         // type === STOREFRONT -> receive key is private key, publish key is public key
@@ -230,32 +198,12 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
         }
 
-        // this.log.debug('receiveKey: ', receiveKey);
-
-        let identity: resources.Identity;
-        if (!_.isNil(identityId)) {
-            identity = await this.identityService.findOne(identityId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Identity');
-                });
-
-            // make sure Identity belongs to the given Profile
-            if (identity.Profile.id !== profile.id) {
-                throw new MessageException('Identity does not belong to the Profile.');
-            }
-            data.params[5] = identity;
+        // make sure Identity belongs to the given Profile
+        if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
+            throw new MessageException('Identity does not belong to the Profile.');
         }
 
-        region = !_.isNil(region) ? region : MarketRegion.WORLDWIDE;
-        if (!EnumHelper.containsName(MarketRegion, region)) {
-            // invalid MarketType
-            throw new InvalidParamException('region', 'MarketRegion');
-        }
-
-        skipJoin = _.isNil(skipJoin) ? false : skipJoin;
         type = skipJoin ? MarketType.MARKETPLACE : type;
-
 
         data.params[0] = profile;
         data.params[1] = name;

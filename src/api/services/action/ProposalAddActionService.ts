@@ -222,7 +222,8 @@ export class ProposalAddActionService extends BaseActionService {
         } else if (ProposalCategory.MARKET_VOTE === proposal.category) {
 
             const createdFlaggedItems: resources.FlaggedItem[] = [];
-            markets = await this.marketService.findAllByReceiveAddress(proposal.title).then(value => value.toJSON()[0]);
+            markets = await this.marketService.findAllByReceiveAddress(proposal.title).then(value => value.toJSON());
+            this.log.debug('markets: ', JSON.stringify(markets, null, 2));
 
             // create FlaggedItem for all the Markets
             for (const market of markets) {

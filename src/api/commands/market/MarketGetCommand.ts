@@ -15,7 +15,7 @@ import { BaseCommand } from '../BaseCommand';
 import { Market } from '../../models/Market';
 import { MarketService } from '../../services/model/MarketService';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketGetCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -31,15 +31,10 @@ export class MarketGetCommand extends BaseCommand implements RpcCommandInterface
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'marketId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'returnImageData',
-                required: false,
-                type: 'boolean'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new BooleanValidationRule('returnImageData', false, false)
+             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -62,7 +57,6 @@ export class MarketGetCommand extends BaseCommand implements RpcCommandInterface
                 imageData.data = await this.imageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
             }
         }
-
         return market;
     }
 
@@ -76,16 +70,6 @@ export class MarketGetCommand extends BaseCommand implements RpcCommandInterface
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        const marketId: number = data.params[0];
-        let returnImageData: boolean = data.params[1];
-
-        returnImageData = _.isNil(returnImageData) ? false : returnImageData;
-        const market: resources.Market = await this.marketService.findOne(marketId).then(value => value.toJSON());
-
-        data.params[0] = market;
-        data.params[1] = returnImageData;
-
         return data;
     }
 
