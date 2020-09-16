@@ -100,7 +100,7 @@ describe('ListingItemTemplateSearchCommand', () => {
 
     });
 
-
+    // TODO: test the search params in separate suite
     test('Should fail because missing order', async () => {
         const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand,
             0,

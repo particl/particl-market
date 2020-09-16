@@ -23,7 +23,12 @@ import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules, IdValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
 
 export class ListingItemTemplateSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
@@ -40,31 +45,18 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'searchString',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'categories',
-                required: false,
-                type: undefined // todo: number[]|string[]'
-            }, {
-                name: 'isBaseTemplate',
-                required: false,
-                type: 'boolean'
-            }, {
-                name: 'marketReceiveAddress',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'hasItems',
-                required: false,
-                type: 'boolean'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('searchString', false),
+                {
+                    name: 'categories',
+                    required: false,
+                    type: undefined // todo: number[]|string[]'
+                },
+                new BooleanValidationRule('isBaseTemplate', false),
+                new StringValidationRule('marketReceiveAddress', false),
+                new BooleanValidationRule('hasItems', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -78,7 +70,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profile, resources.Profile, optional
+     *  [4]: profile, resources.Profile, required
      *  [5]: searchString, string, optional
      *  [6]: categories, optional, number[]|string[], if string -> find using key
      *  [7]: isBaseTemplate, boolean, optional, default true
@@ -115,7 +107,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profileId, number, required
+     *  [4]: profileId: number, required -> profile: resources.Profile
      *  [5]: searchString, string, * for all, optional
      *  [6]: categories, optional, number[]|string[], if string -> find using key
      *  [7]: isBaseTemplate, boolean, optional, default true
@@ -127,19 +119,14 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const profileId = data.params[4];               // required
-        const searchString = data.params[5];            // optional
-        const categories = data.params[6];              // optional
-        const isBaseTemplate = data.params[7];          // optional
-        let marketReceiveAddress = data.params[8];    // optional
-        const hasItems = data.params[9];                // optional
+        const profile: resources.Profile = data.params[4];  // required
+        const searchString = data.params[5];                // optional
+        const categories = data.params[6];                  // optional
+        const isBaseTemplate = data.params[7];              // optional
+        let marketReceiveAddress = data.params[8];          // optional
+        const hasItems = data.params[9];                    // optional
 
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
+        this.log.debug('profileId: ', JSON.stringify(profile.id, null, 2));
 
         if (categories) {
             // categories needs to be an array
@@ -158,7 +145,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
 
         marketReceiveAddress = (marketReceiveAddress !== '*') ? marketReceiveAddress : undefined;
         if (marketReceiveAddress) {
-            const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, marketReceiveAddress)
+            const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, marketReceiveAddress)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     throw new ModelNotFoundException('Market');
@@ -166,7 +153,7 @@ export class ListingItemTemplateSearchCommand extends BaseSearchCommand implemen
             data.params[8] = market;
         }
 
-        data.params[4] = profile;
+        // data.params[4] = profile;
         data.params[5] = searchString !== '*' ? searchString : undefined;
         data.params[6] = (categories && categories.length) > 0 ? categories : undefined;
         // data.params[7] = !_.isNil(isBaseTemplate) ? isBaseTemplate : false;

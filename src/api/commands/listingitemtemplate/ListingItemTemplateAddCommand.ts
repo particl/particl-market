@@ -20,8 +20,9 @@ import { ListingItemTemplateCreateParams } from '../../factories/ModelCreatePara
 import { ProfileService } from '../../services/model/ProfileService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CategoryIdValidationRule, CommandParamValidationRules, CryptocurrencyValidationRule, EscrowRatioValidationRule, EscrowReleaseTypeValidationRule,
-    EscrowTypeValidationRule, ParamValidationRule, PriceValidationRule, ProfileIdValidationRule, SaleTypeValidationRule, StringValidationRule
+import {
+    CommandParamValidationRules, CryptocurrencyValidationRule, EscrowRatioValidationRule, EscrowReleaseTypeValidationRule,
+    EscrowTypeValidationRule, IdValidationRule, ParamValidationRule, PriceValidationRule, SaleTypeValidationRule, StringValidationRule
 } from '../CommandParamValidation';
 
 
@@ -41,11 +42,11 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new ProfileIdValidationRule(true, this.profileService),
+                new IdValidationRule('profileId', true, this.profileService),
                 new StringValidationRule('title', true),
                 new StringValidationRule('shortDescription', true),
                 new StringValidationRule('longDescription', true),
-                new CategoryIdValidationRule(false),
+                new IdValidationRule('categoryId', false),
                 new SaleTypeValidationRule(false),
                 new CryptocurrencyValidationRule(false),
                 new PriceValidationRule('basePrice', false),
@@ -61,7 +62,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: profileId
+     *  [0]: profile: resources.Profile
      *
      *  itemInformation
      *  [1]: title
@@ -86,6 +87,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
 
+        const profile: resources.Profile = data.params[0];
 /*
     TODO: omp-lib will generate cryptoAddress for now as this will require unlocked wallet
 
@@ -110,7 +112,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         }
 */
         const createRequest: ListingItemTemplateCreateRequest = await this.listingItemTemplateFactory.get({
-                profileId: data.params[0],
+                profileId: profile.id,
                 title: data.params[1],
                 shortDescription: data.params[2],
                 longDescription: data.params[3],
@@ -133,7 +135,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: profile_id
+     *  [0]: profile_id -> profile: resources.Profile
      *
      *  itemInformation
      *  [1]: title

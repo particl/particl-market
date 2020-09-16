@@ -25,18 +25,8 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
 import {
-    BasePriceValidationRule, BuyerRatioValidationRule,
-    CategoryIdValidationRule,
-    CommandParamValidationRules,
-    CryptocurrencyValidationRule,
-    DomesticShippingPriceValidationRule, EscrowReleaseTypeValidationRule, EscrowTypeValidationRule,
-    InternationalShippingPriceValidationRule, ListingItemIdValidationRule,
-    LongDescriptionValidationRule, OrderItemStatusValidationRule,
-    ParamValidationRule,
-    ProfileIdValidationRule,
-    SaleTypeValidationRule, SellerRatioValidationRule,
-    ShortDescriptionValidationRule, StringValidationRule,
-    TitleValidationRule
+    CommandParamValidationRules, IdValidationRule, OrderItemStatusValidationRule, ParamValidationRule,
+    StringValidationRule
 } from '../CommandParamValidation';
 
 
@@ -55,7 +45,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new ListingItemIdValidationRule(false),
+                new IdValidationRule('listingItemId', false),
                 new OrderItemStatusValidationRule(false),
                 new StringValidationRule('buyerAddress', false),
                 new StringValidationRule('sellerAddress', false),

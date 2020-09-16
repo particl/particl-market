@@ -75,7 +75,7 @@ export abstract class BaseCommand {
         await this.setDefaults(data, rules);
         await this.validateRequiredParamsExist(data, rules);
         await this.validateRequiredTypes(data, rules);
-        await this.validateValues(data, rules);
+        await this.validateAndConvertValues(data, rules);
         return data;
     }
 
@@ -105,17 +105,17 @@ export abstract class BaseCommand {
 
             for (let i = 0; i < rules.params.length; i++) {
 
-                if (rules.params[i]) {
+                if (rules.params[i]
+                    && !_.isNil(rules.params[i].defaultValue)
+                    && _.isNil(data.params[i])) {
+
+                    // defaultValue exists and currentParamValue doesnt
                     if (this.debug) {
                         this.log.debug('setDefaults(): ' + rules.params[i].name
-                            + ', defaultValue: ' + rules.params[i].defaultValue
-                            + ', value: ' + data.params[i]);
+                            + ', setting defaultValue: ' + rules.params[i].defaultValue);
                     }
 
-                    if (!_.isNil(rules.params[i].defaultValue) && _.isNil(data.params[i])) {
-                        // defaultValue exists and currentParamValue doesnt
-                        data.params[i] = rules.params[i].defaultValue;
-                    }
+                    data.params[i] = rules.params[i].defaultValue;
                 }
             }
         }
@@ -133,8 +133,8 @@ export abstract class BaseCommand {
             for (let i = 0; i < rules.params.length; i++) {
                 if (this.debug) {
                     this.log.debug('validateRequiredParamsExist(): ' + rules.params[i].name
-                        + ', required: ' + rules.params[i].required);
-                    // + ', value: ' + data.params[i]);
+                        + ', required: ' + rules.params[i].required
+                        + ', exists: ' + !_.isNil(data.params[i]));
                 }
                 if (rules.params[i].required && _.isNil(data.params[i])) {
                     throw new MissingParamException(rules.params[i].name);
@@ -154,7 +154,7 @@ export abstract class BaseCommand {
 
             for (let i = 0; i < rules.params.length; i++) {
 
-                if (this.debug) {
+                if (this.debug && !_.isNil(data.params[i])) {
                     this.log.debug('validateRequiredTypes(): ' + rules.params[i].name
                         + ', requiredType: ' + rules.params[i].type
                         + ', matches: ' + (typeof data.params[i] === rules.params[i].type));
@@ -171,22 +171,33 @@ export abstract class BaseCommand {
         return data;
     }
 
-    public async validateValues(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
+    public async validateAndConvertValues(data: RpcRequest, rules: CommandParamValidationRules): Promise<RpcRequest> {
         if (!_.isNil(rules) && !_.isNil(rules.params) && rules.params.length > 0) {
 
             for (let i = 0; i < rules.params.length; i++) {
 
                 if (!_.isNil(rules.params[i])
                     && !_.isNil(rules.params[i].customValidate)
-                    && typeof rules.params[i].customValidate === 'function'
-                    && !(await rules.params[i].customValidate!(data.params[i], i, data.params))) {
+                    && typeof rules.params[i].customValidate === 'function') {
 
+                    const result = await rules.params[i].customValidate(data.params[i], i, data.params);
                     if (this.debug) {
-                        this.log.debug('validateValues(): ' + rules.params[i].name
-                            + ', the computer says no.');
+                        this.log.debug('validateAndConvertValues(): ' + rules.params[i].name
+                            + ', valid: ' + (_.isBoolean(result) ? result : 'valid and converted'));
                     }
 
-                    throw new InvalidParamException(rules.params[i].name);
+                    if (!_.isNil(result) && _.isBoolean(result) && !result) {
+                        // when returning boolean false -> the custom validation has failed
+                        throw new InvalidParamException(rules.params[i].name,
+                            !_.isNil(rules.params[i]['validEnumType']) ? rules.params[i]['validEnumType'] : undefined);
+
+                    } else if (!_.isNil(result) && !_.isBoolean(result)) {
+                        // not boolean result -> the custom validation changed the param value
+                        // most likely id -> entity conversion
+                        data.params[i] = result;
+                    } else {
+                        // param value validated
+                    }
                 }
             }
         }

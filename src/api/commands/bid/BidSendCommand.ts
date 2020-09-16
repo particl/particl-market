@@ -33,8 +33,7 @@ import { SmsgService } from '../../services/SmsgService';
 import {
     AddressOrAddressIdValidationRule,
     CommandParamValidationRules,
-    IdentityIdValidationRule,
-    ListingItemIdValidationRule,
+    IdValidationRule,
     ParamValidationRule
 } from '../CommandParamValidation';
 
@@ -69,8 +68,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new ListingItemIdValidationRule(true),
-                new IdentityIdValidationRule(true),
+                new IdValidationRule('listingItemId', true, this.listingItemService),
+                new IdValidationRule('identityId', true, this.identityService),
                 new AddressOrAddressIdValidationRule(true)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
@@ -135,8 +134,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * data.params[]:
-     * [0]: listingItemId, number
-     * [1]: identityId, number
+     * [0]: listingItemId: number -> listingItem: resources.ListingItem
+     * [1]: identityId: number -> identity: resources.Identity
      * [2]: addressId (from profile shipping addresses), number|false
      *                if false, the address must be passed as bidData id/value pairs
      *                         in following format:
@@ -170,24 +169,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         }
 */
         // make sure required data exists and fetch it
-        const listingItemId = data.params.shift();
-        const identityId = data.params.shift();
+        const listingItem: resources.ListingItem = data.params.shift();
+        const identity: resources.Identity = data.params.shift();
         const addressId = data.params.shift();
 
         // now the rest of data.params are either address values or biddatas
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItem');
-            });
-
-        const identity: resources.Identity = await this.identityService.findOne(identityId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Identity');
-            });
-
         const profile: resources.Profile = await this.profileService.findOne(identity.Profile.id)
             .then(value => value.toJSON())
             .catch(reason => {

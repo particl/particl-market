@@ -9,10 +9,18 @@ import { BaseCommand } from './BaseCommand';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
-import { CommandParamValidationRules, ParamValidationRule } from './CommandParamValidation';
+import {
+    CommandParamValidationRules,
+    ParamValidationRule, SearchOrderFieldValidationRule, SearchOrderValidationRule,
+    SearchPageLimitValidationRule,
+    SearchPageValidationRule,
+    StringValidationRule
+} from './CommandParamValidation';
 
 
 export abstract class BaseSearchCommand extends BaseCommand {
+
+    public debug = true;
 
     constructor(command: Command) {
         super(command);
@@ -39,6 +47,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
                 const order = value.params[2];
                 const orderField = value.params[3];
 
+                /*
                 // valid SearchOrder?
                 if (!EnumHelper.containsName(SearchOrder, order)) {
                     throw new InvalidParamException('order', 'SearchOrder');
@@ -48,6 +57,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
                 if (!_.includes(this.getAllowedSearchOrderFields(), orderField)) {
                     throw new InvalidParamException('orderField',  '' + this.getAllowedSearchOrderFields());
                 }
+                */
                 return data;
             }); // validates the basic params, see: BaseCommand.validate()
     }
@@ -57,23 +67,12 @@ export abstract class BaseSearchCommand extends BaseCommand {
             params: [] as ParamValidationRule[]
         } as CommandParamValidationRules;
 
-        const searchParameters = [{
-            name: 'page',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'pageLimit',
-            required: true,
-            type: 'number'
-        }, {
-            name: 'order',
-            required: true,
-            type: 'string'
-        }, {
-            name: 'orderField',
-            required: true,
-            type: 'string'
-        }] as ParamValidationRule[];
+        const searchParameters = [
+            new SearchPageValidationRule(),
+            new SearchPageLimitValidationRule(),
+            new SearchOrderValidationRule(),
+            new SearchOrderFieldValidationRule(this.getAllowedSearchOrderFields())
+        ] as ParamValidationRule[];
 
         const commandRules = this.getCommandParamValidationRules();
         rules.params = searchParameters.concat(commandRules.params);
