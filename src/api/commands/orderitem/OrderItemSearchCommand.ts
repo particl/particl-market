@@ -24,7 +24,20 @@ import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchPara
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BasePriceValidationRule, BuyerRatioValidationRule,
+    CategoryIdValidationRule,
+    CommandParamValidationRules,
+    CryptocurrencyValidationRule,
+    DomesticShippingPriceValidationRule, EscrowReleaseTypeValidationRule, EscrowTypeValidationRule,
+    InternationalShippingPriceValidationRule,
+    LongDescriptionValidationRule,
+    ParamValidationRule,
+    ProfileIdValidationRule,
+    SaleTypeValidationRule, SellerRatioValidationRule,
+    ShortDescriptionValidationRule,
+    TitleValidationRule
+} from '../CommandParamValidation';
 
 
 export class OrderItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<OrderItem>> {
@@ -52,6 +65,28 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
         } as CommandParamValidationRules;
         */
     }
+/*
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new ProfileIdValidationRule(true, this.profileService),
+                new TitleValidationRule(true),
+                new ShortDescriptionValidationRule(true),
+                new LongDescriptionValidationRule(true),
+                new CategoryIdValidationRule(false),
+                new SaleTypeValidationRule(false),
+                new CryptocurrencyValidationRule(false),
+                new BasePriceValidationRule(false),
+                new DomesticShippingPriceValidationRule(false),
+                new InternationalShippingPriceValidationRule(false),
+                new EscrowTypeValidationRule(false),
+                new BuyerRatioValidationRule(false),
+                new SellerRatioValidationRule(false),
+                new EscrowReleaseTypeValidationRule(false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+*/
 
     public getAllowedSearchOrderFields(): string[] {
         return EnumHelper.getValues(OrderItemSearchOrderField) as string[];

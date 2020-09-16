@@ -13,7 +13,6 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Comment } from '../../models/Comment';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
 import { CommentType } from '../../enums/CommentType';
@@ -22,24 +21,10 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { CommentSearchOrderField } from '../../enums/SearchOrderField';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { MarketService} from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { MessageException } from '../../exceptions/MessageException';
-import {
-    BasePriceValidationRule, BuyerRatioValidationRule,
-    CategoryIdValidationRule,
-    CommandParamValidationRules, CommentTypeValidationRule,
-    CryptocurrencyValidationRule,
-    DomesticShippingPriceValidationRule, EscrowReleaseTypeValidationRule, EscrowTypeValidationRule,
-    InternationalShippingPriceValidationRule,
-    LongDescriptionValidationRule,
-    ParamValidationRule,
-    ProfileIdValidationRule,
-    SaleTypeValidationRule, SellerRatioValidationRule,
-    ShortDescriptionValidationRule, StringValidationRule,
-    TitleValidationRule
-} from '../CommandParamValidation';
+import { CommandParamValidationRules, CommentTypeValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class CommentSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Comment>> {
@@ -126,17 +111,6 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         const target = data.params[6];              // optional
         const parentCommentHash = data.params[7];   // optional
 
-        if (!EnumHelper.containsName(CommentType, type)) {
-            throw new InvalidParamException('type', 'CommentType');
-        } else if (typeof receiver !== 'string') {
-            throw new InvalidParamException('receiver', 'string');
-        }
-
-        // target, string
-        if (data.params.length >= 7 && typeof target !== 'string') {
-            throw new InvalidParamException('target', 'string');
-        }
-
         if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
 
             // make sure given the receiver (Market), exists
@@ -164,20 +138,13 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
         }
 
-        // parentCommentHash, string
-        if (data.params.length >= 8) {
-            if (parentCommentHash && typeof parentCommentHash !== 'string') {
-                throw new InvalidParamException('parentCommentHash', 'string');
-            }
-
-            if (parentCommentHash && parentCommentHash.length > 0) {
-                // make sure the parent Comment exists
-                data.params[7] = await this.commentService.findOneByHash(parentCommentHash)
-                    .then(value => value.toJSON())
-                    .catch(() => {
-                        throw new ModelNotFoundException('Comment');
-                    });
-            }
+        if (!_.isNil(parentCommentHash) && parentCommentHash.length > 0) {
+            // make sure the parent Comment exists
+            data.params[7] = await this.commentService.findOneByHash(parentCommentHash)
+                .then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Comment');
+                });
         }
 
         return data;
