@@ -13,6 +13,7 @@ import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
 import {CommentType} from '../enums/CommentType';
 import {EnumHelper} from '../../core/helpers/EnumHelper';
+import {OrderItemStatus} from '../enums/OrderItemStatus';
 
 export type ValidationFunction = (value: any, index: number, allValues: any[]) => Promise<boolean>;
 
@@ -84,15 +85,6 @@ export class BaseEnumValidationRule extends BaseParamValidationRule {
     }
 }
 
-export class StringValidationRule extends BaseParamValidationRule {
-    public type = 'string';
-
-    constructor(name: string, required: boolean = false) {
-        super(required);
-        this.name = name;
-    }
-}
-
 
 // Ids
 
@@ -150,42 +142,29 @@ export class AddressOrAddressIdValidationRule extends BaseParamValidationRule {
     }
 }
 
+
 // Strings
 
-export class TitleValidationRule extends BaseParamValidationRule {
-    public name = 'title';
+export class StringValidationRule extends BaseParamValidationRule {
     public type = 'string';
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        return true;
-    }
-}
-
-export class ShortDescriptionValidationRule extends BaseParamValidationRule {
-    public name = 'shortDescription';
-    public type = 'string';
-
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        return true;
-    }
-}
-
-export class LongDescriptionValidationRule extends BaseParamValidationRule {
-    public name = 'longDescription';
-    public type = 'string';
-
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        return true;
+    constructor(name: string, required: boolean = false) {
+        super(required);
+        this.name = name;
     }
 }
 
 
 // Numeric
 
-export class BasePriceValidationRule extends BaseParamValidationRule {
-    public name = 'basePrice';
+export class PriceValidationRule extends BaseParamValidationRule {
     public type = 'number';
     public defaultValue = 0;
+
+    constructor(name: string, required: boolean = false) {
+        super(required);
+        this.name = name;
+    }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
@@ -196,49 +175,15 @@ export class BasePriceValidationRule extends BaseParamValidationRule {
     }
 }
 
-export class DomesticShippingPriceValidationRule extends BaseParamValidationRule {
-    public name = 'domesticShippingPrice';
-    public type = 'number';
-    public defaultValue = 0;
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        if (!_.isNil(value)) {
-            return value >= 0;
-        }
-        return true;
-    }
-}
-
-export class InternationalShippingPriceValidationRule extends BaseParamValidationRule {
-    public name = 'internationalShippingPrice';
-    public type = 'number';
-    public defaultValue = 0;
-
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        if (!_.isNil(value)) {
-            return value >= 0;
-        }
-        return true;
-    }
-}
-
-export class BuyerRatioValidationRule extends BaseParamValidationRule {
-    public name = 'buyerRatio';
+export class EscrowRatioValidationRule extends BaseParamValidationRule {
     public type = 'number';
     public defaultValue = 100;
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        if (!_.isNil(value)) {
-            return value >= 0;
-        }
-        return true;
+    constructor(name: string, required: boolean = false) {
+        super(required);
+        this.name = name;
     }
-}
-
-export class SellerRatioValidationRule extends BaseParamValidationRule {
-    public name = 'sellerRatio';
-    public type = 'number';
-    public defaultValue = 100;
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
@@ -279,11 +224,16 @@ export class EscrowReleaseTypeValidationRule extends BaseEnumValidationRule {
     public defaultValue = EscrowReleaseType.ANON;
 }
 
+export class OrderItemStatusValidationRule extends BaseEnumValidationRule {
+    public name = 'orderItemStatus';
+    public validEnumType: 'OrderItemStatus';
+    public validEnumValues = EnumHelper.getValues(OrderItemStatus);
+}
+
 export class CommentTypeValidationRule extends BaseEnumValidationRule {
     public name = 'commentType';
     public validEnumType: 'CommentType';
     public validEnumValues = EnumHelper.getValues(CommentType);
 }
-
 
 // tslint:enable:max-classes-per-file

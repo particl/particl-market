@@ -15,29 +15,13 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
 import { ListingItemTemplateCreateParams } from '../../factories/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
-import {
-    BasePriceValidationRule,
-    BuyerRatioValidationRule,
-    CategoryIdValidationRule,
-    CommandParamValidationRules,
-    CryptocurrencyValidationRule,
-    DomesticShippingPriceValidationRule,
-    EscrowReleaseTypeValidationRule,
-    EscrowTypeValidationRule,
-    InternationalShippingPriceValidationRule,
-    LongDescriptionValidationRule,
-    ParamValidationRule,
-    ProfileIdValidationRule,
-    SaleTypeValidationRule,
-    SellerRatioValidationRule,
-    ShortDescriptionValidationRule,
-    TitleValidationRule
+import { CategoryIdValidationRule, CommandParamValidationRules, CryptocurrencyValidationRule, EscrowRatioValidationRule, EscrowReleaseTypeValidationRule,
+    EscrowTypeValidationRule, ParamValidationRule, PriceValidationRule, ProfileIdValidationRule, SaleTypeValidationRule, StringValidationRule
 } from '../CommandParamValidation';
 
 
@@ -58,18 +42,18 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         return {
             params: [
                 new ProfileIdValidationRule(true, this.profileService),
-                new TitleValidationRule(true),
-                new ShortDescriptionValidationRule(true),
-                new LongDescriptionValidationRule(true),
+                new StringValidationRule('title', true),
+                new StringValidationRule('shortDescription', true),
+                new StringValidationRule('longDescription', true),
                 new CategoryIdValidationRule(false),
                 new SaleTypeValidationRule(false),
                 new CryptocurrencyValidationRule(false),
-                new BasePriceValidationRule(false),
-                new DomesticShippingPriceValidationRule(false),
-                new InternationalShippingPriceValidationRule(false),
+                new PriceValidationRule('basePrice', false),
+                new PriceValidationRule('domesticShippingPrice', false),
+                new PriceValidationRule('internationalShippingPrice', false),
                 new EscrowTypeValidationRule(false),
-                new BuyerRatioValidationRule(false),
-                new SellerRatioValidationRule(false),
+                new EscrowRatioValidationRule('buyerRatio', false),
+                new EscrowRatioValidationRule('sellerRatio', false),
                 new EscrowReleaseTypeValidationRule(false)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;

@@ -30,12 +30,12 @@ import {
     CommandParamValidationRules,
     CryptocurrencyValidationRule,
     DomesticShippingPriceValidationRule, EscrowReleaseTypeValidationRule, EscrowTypeValidationRule,
-    InternationalShippingPriceValidationRule,
-    LongDescriptionValidationRule,
+    InternationalShippingPriceValidationRule, ListingItemIdValidationRule,
+    LongDescriptionValidationRule, OrderItemStatusValidationRule,
     ParamValidationRule,
     ProfileIdValidationRule,
     SaleTypeValidationRule, SellerRatioValidationRule,
-    ShortDescriptionValidationRule,
+    ShortDescriptionValidationRule, StringValidationRule,
     TitleValidationRule
 } from '../CommandParamValidation';
 
@@ -53,40 +53,17 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
-        return {} as CommandParamValidationRules;
-        // TODO: implement
-        /*
-        return {
-            parameters: [{
-                name: 'listingItemId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
-        } as CommandParamValidationRules;
-        */
-    }
-/*
-    public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new ProfileIdValidationRule(true, this.profileService),
-                new TitleValidationRule(true),
-                new ShortDescriptionValidationRule(true),
-                new LongDescriptionValidationRule(true),
-                new CategoryIdValidationRule(false),
-                new SaleTypeValidationRule(false),
-                new CryptocurrencyValidationRule(false),
-                new BasePriceValidationRule(false),
-                new DomesticShippingPriceValidationRule(false),
-                new InternationalShippingPriceValidationRule(false),
-                new EscrowTypeValidationRule(false),
-                new BuyerRatioValidationRule(false),
-                new SellerRatioValidationRule(false),
-                new EscrowReleaseTypeValidationRule(false)
+                new ListingItemIdValidationRule(false),
+                new OrderItemStatusValidationRule(false),
+                new StringValidationRule('buyerAddress', false),
+                new StringValidationRule('sellerAddress', false),
+                new StringValidationRule('market', false)
+
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
-*/
 
     public getAllowedSearchOrderFields(): string[] {
         return EnumHelper.getValues(OrderItemSearchOrderField) as string[];
@@ -155,18 +132,6 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
         let buyerAddress = data.params[6];        // optional
         let sellerAddress = data.params[7];       // optional
         let market = data.params[8];              // optional
-
-        if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (!_.isNil(status) && typeof status !== 'string') {
-            throw new InvalidParamException('status', 'string');
-        } else if (!_.isNil(buyerAddress) && typeof buyerAddress !== 'string') {
-            throw new InvalidParamException('buyerAddress', 'string');
-        } else if (!_.isNil(sellerAddress) && typeof sellerAddress !== 'string') {
-            throw new InvalidParamException('sellerAddress', 'string');
-        } else if (!_.isNil(market) && typeof market !== 'string') {
-            throw new InvalidParamException('market', 'string');
-        }
 
         // * -> undefined
         listingItemId = listingItemId !== '*' ? listingItemId : undefined;
