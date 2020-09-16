@@ -22,7 +22,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
 
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
@@ -39,11 +39,9 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -106,12 +104,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // todo: pretty much the same validations as in template post
         // ListingItemTemplate should be a market template
@@ -129,14 +122,14 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         }
 
         // make sure the Market exists for the Profile
-        const profileId = listingItemTemplate.Profile.id;
-        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, listingItemTemplate.market)
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(listingItemTemplate.Profile.id,
+            listingItemTemplate.market)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
             });
 
-        this.log.debug('market:', JSON.stringify(market, null, 2));
+        // this.log.debug('market:', JSON.stringify(market, null, 2));
 
         data.params[0] = listingItemTemplate;
         data.params[1] = market;

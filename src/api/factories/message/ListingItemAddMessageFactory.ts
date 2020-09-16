@@ -21,14 +21,13 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { BaseMessageFactory } from './BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import {HashableListingItemTemplateConfig} from '../hashableconfig/model/HashableListingItemTemplateConfig';
+import { HashableListingItemTemplateConfig } from '../hashableconfig/model/HashableListingItemTemplateConfig';
 
 
 // todo: move

@@ -15,7 +15,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
 
 
 export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -30,11 +30,9 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -62,14 +60,7 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
         const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);

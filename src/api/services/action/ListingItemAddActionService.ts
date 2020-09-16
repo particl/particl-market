@@ -34,8 +34,6 @@ import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
-import { MessageSize } from '../../responses/MessageSize';
-import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ImageService } from '../model/ImageService';
 
 
