@@ -240,8 +240,8 @@ export class EscrowTypeValidationRule extends EnumValidationRule {
 export class BooleanValidationRule extends BaseParamValidationRule {
     public type = 'boolean';
 
-    constructor(name: string, required: boolean = false) {
-        super(name, required);
+    constructor(name: string, required: boolean = false, defaultValue?: boolean) {
+        super(name, required, defaultValue);
     }
 }
 

@@ -14,7 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
 
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
@@ -30,16 +30,10 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'returnImageData',
-                required: false,
-                type: 'boolean',
-                defaultValue: false
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new BooleanValidationRule('returnImageData', false, false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -78,16 +72,6 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        const listingItemTemplateId: number = data.params[0];
-        const returnImageData: boolean = data.params[1];
-
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => value.toJSON());
-
-        data.params[0] = listingItemTemplate;
-        data.params[1] = returnImageData;
-
         return data;
     }
 
