@@ -17,7 +17,7 @@ import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { Image } from '../../models/Image';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
@@ -33,15 +33,10 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'imageId',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new IdValidationRule('imageId', true, this.imageService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -63,30 +58,23 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: imageId
+     *  [0]: listingItemTemplateId: number -> listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: imageId: number -> image: resources.Image
      * @param data
      * @returns {Promise<Image>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
 
-        const listingItemTemplateId = data.params[0];
-        const imageId = data.params[1];
-
-        // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => value.toJSON());
-
-        const itemImage: resources.Image = await this.imageService.findOne(imageId, true)
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const image: resources.Image = data.params[1];
 
         // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
-        // make sure the given image is assigned to the template
+        // make sure the given image belongs to the template
         const foundImage: resources.Image | undefined = _.find(listingItemTemplate.ItemInformation.Images, img => {
-            this.log.debug(img.id + ' === ' + itemImage.id + ' = ' + (img.id === itemImage.id));
-            return img.id === itemImage.id;
+            this.log.debug(img.id + ' === ' + image.id + ' = ' + (img.id === image.id));
+            return img.id === image.id;
         });
         if (_.isEmpty(foundImage)) {
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
