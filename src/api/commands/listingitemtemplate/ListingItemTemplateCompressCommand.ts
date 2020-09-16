@@ -14,7 +14,6 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import {
     CommandParamValidationRules,
     EnumValidationRule,
@@ -23,8 +22,7 @@ import {
     ParamValidationRule,
     ScalingValueValidationRule
 } from '../CommandParamValidation';
-import {EnumHelper} from '../../../core/helpers/EnumHelper';
-import {EscrowReleaseType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -45,7 +43,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
                     EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
                 new ScalingValueValidationRule('scalingFraction', false, 0.9),
                 new ScalingValueValidationRule('qualityFraction', false, 0.9),
-                new NumberValidationRule('maxIterations', false, 10),
+                new NumberValidationRule('maxIterations', false, 10)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }

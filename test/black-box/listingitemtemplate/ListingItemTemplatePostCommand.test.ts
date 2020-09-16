@@ -45,6 +45,7 @@ describe('ListingItemTemplatePostCommand', () => {
     let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
     let randomCategory: resources.ItemCategory;
+    let secondListingItemTemplate: resources.ListingItemTemplate;
 
     let sent = false;
     const PAGE = 0;
@@ -179,7 +180,7 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should post a ListingItem in to the default market', async () => {
+    test('Should post a ListingItem to the default market', async () => {
 
         expect(listingItemTemplate.id).toBeDefined();
         const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
@@ -287,16 +288,16 @@ describe('ListingItemTemplatePostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        listingItemTemplate = res.getBody()['result'];
+        secondListingItemTemplate = res.getBody()['result'];
 
-        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('secondListingItemTemplate: ', JSON.stringify(secondListingItemTemplate, null, 2));
 
-        expect(listingItemTemplate.id).toBeGreaterThan(0);
+        expect(secondListingItemTemplate.id).toBeGreaterThan(0);
 
         // update template location
         let country = 'AU';
         res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
-            listingItemTemplate.id,
+            secondListingItemTemplate.id,
             country
         ]);
         res.expectJson();
@@ -308,7 +309,7 @@ describe('ListingItemTemplatePostCommand', () => {
         // add some shipping destinations
         country = 'AU';
         res = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationAddCommand,
-            listingItemTemplate.id,
+            secondListingItemTemplate.id,
             country,
             ShippingAvailability.SHIPS
         ]);
@@ -319,18 +320,18 @@ describe('ListingItemTemplatePostCommand', () => {
 
         // create market template from the base template
         res = await testUtil.rpc(templateCommand, [templateCloneCommand,
-            listingItemTemplate.id,
+            secondListingItemTemplate.id,
             market.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        listingItemTemplate = res.getBody()['result'];
-        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        secondListingItemTemplate = res.getBody()['result'];
+        // log.debug('secondListingItemTemplate: ', JSON.stringify(secondListingItemTemplate, null, 2));
 
         // do a fee estimation (via a post)
-        expect(listingItemTemplate.id).toBeDefined();
+        expect(secondListingItemTemplate.id).toBeDefined();
         res = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplate.id,
+            secondListingItemTemplate.id,
             DAYS_RETENTION,
             true
         ]);
@@ -340,10 +341,10 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('result:', JSON.stringify(estimateResult, null, 2));
 
         expect(estimateResult.result).toBe('Not Sent.');
-
+/*
         // post the item
         res = await testUtil.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplate.id,
+            secondListingItemTemplate.id,
             DAYS_RETENTION
         ]);
         res.expectJson();
@@ -355,6 +356,33 @@ describe('ListingItemTemplatePostCommand', () => {
             log.debug(JSON.stringify(postResult, null, 2));
         }
         expect(postResult.result).toBe('Sent.');
+*/
+    });
+
+    test('Should post the second ListingItem to the default market', async () => {
+
+        expect(secondListingItemTemplate.id).toBeDefined();
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            secondListingItemTemplate.id,
+            DAYS_RETENTION
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        // log.debug('result:', JSON.stringify(result, null, 2));
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ POSTED ITEM ]=============================================================================');
+        log.debug('id: ' + secondListingItemTemplate.id + ', ' + secondListingItemTemplate.ItemInformation.title);
+        log.debug('desc: ' + secondListingItemTemplate.ItemInformation.shortDescription);
+        log.debug('category: ' + secondListingItemTemplate.ItemInformation.ItemCategory.id + ', '
+            + secondListingItemTemplate.ItemInformation.ItemCategory.name);
+        log.debug('==============================================================================================');
 
     });
 

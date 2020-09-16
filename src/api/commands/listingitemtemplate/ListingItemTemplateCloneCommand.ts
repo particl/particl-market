@@ -87,7 +87,7 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
         if (!_.isNil(market)) {
 
-            this.log.debug('data: ', JSON.stringify(data, null, 2));
+            // this.log.debug('data: ', JSON.stringify(data, null, 2));
             if (listingItemTemplate.Profile.id !== market.Profile.id) {
                 throw new MessageException('ListingItemTemplate and Market Profiles don\'t match.');
             }

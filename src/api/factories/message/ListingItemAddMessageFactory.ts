@@ -28,6 +28,7 @@ import { ListingItemAddRequest } from '../../requests/action/ListingItemAddReque
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { BaseMessageFactory } from './BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import {HashableListingItemTemplateConfig} from '../hashableconfig/model/HashableListingItemTemplateConfig';
 
 
 // todo: move
@@ -64,7 +65,6 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      * @returns {Promise<MarketplaceMessage>}
      */
     public async get(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
-        // this.log.debug('actionRequest:', JSON.stringify(actionRequest, null, 2));
 
         if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
@@ -75,8 +75,12 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
 
         if (_.isEmpty(actionRequest.listingItem['signature'])) {
             // listingItem already has the signature, so this is a listingItemTemplate being posted
+
+            // signing requires hash, which the listingItemTemplate doesn't have yet...
+            const hash = ConfigurableHasher.hash(actionRequest.listingItem, new HashableListingItemTemplateConfig());
+
             // sign it and add the seller pubkey to the MessagingInformation
-            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, actionRequest.listingItem.hash);
+            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, hash);
             pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
                 .then(value => {
                     if (value.ismine) {
@@ -125,8 +129,8 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
 
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
-        this.log.debug('params.listingItem.hash:', JSON.stringify(actionRequest.listingItem.hash, null, 2));
-        this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
+        // this.log.debug('params.listingItem.hash:', JSON.stringify(actionRequest.listingItem.hash, null, 2));
+        // this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
 
         return await this.getMarketplaceMessage(message);
     }
@@ -140,12 +144,15 @@ export class ListingItemAddMessageFactory extends BaseMessageFactory {
      */
     private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
         if (_.isEmpty(wallet)) {
+            this.log.error('signSellerMessage(), missing wallet.');
             throw new MissingParamException('wallet');
         }
         if (_.isEmpty(address)) {
+            this.log.error('signSellerMessage(), missing address.');
             throw new MissingParamException('address');
         }
         if (_.isEmpty(hash)) {
+            this.log.error('signSellerMessage(), missing hash.');
             throw new MissingParamException('hash');
         }
         const message = {

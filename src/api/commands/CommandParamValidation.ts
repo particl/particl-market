@@ -14,6 +14,7 @@ import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
+import {MessageException} from '../exceptions/MessageException';
 
 /**
  * used as custom validation function for params.
@@ -163,12 +164,22 @@ export class NumberValidationRule extends BaseParamValidationRule {
     }
 }
 
+export class MessageRetentionValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false) {
+        super(name, required);
+    }
+
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
+        return value > 0 && value <= parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+    }
+}
+
 export class ScalingValueValidationRule extends NumberValidationRule {
     constructor(name: string, required: boolean = false, defaultValue?: any) {
         super(name, required, defaultValue);
     }
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             return value >= 0 && value <= 1;
         }

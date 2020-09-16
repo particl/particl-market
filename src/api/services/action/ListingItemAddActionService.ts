@@ -71,45 +71,6 @@ export class ListingItemAddActionService extends BaseActionService {
     }
 
     /**
-     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
-     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
-     *
-     * @param listingItemTemplate
-     * @param market
-     */
-/*
-    public async calculateMarketplaceMessageSize2(listingItemTemplate: resources.ListingItemTemplate, market: resources.Market): Promise<MessageSize> {
-
-        const marketplaceMessage = await this.createMarketplaceMessage({
-            sendParams: {
-                wallet: market.Identity.wallet
-            } as SmsgSendParams,
-            listingItem: listingItemTemplate,
-            sellerAddress: market.Identity.address
-        } as ListingItemAddRequest);
-
-        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-
-        // let imageDataSize = 0;
-        // if (action.item.information.images) {
-        //     for (const image of action.item.information.images) {
-        //         imageDataSize = imageDataSize + image.data[0].data.length;
-        //         this.log.debug('imageDataSize: ', image.data[0].data.length);
-        //     }
-        // }
-        const messageDataSize = JSON.stringify(marketplaceMessage).length; // - imageDataSize;
-        const spaceLeft = process.env.SMSG_MAX_MSG_BYTES_PAID - messageDataSize; // - imageDataSize;
-        const fits = spaceLeft > 0;
-
-        return {
-            messageData: messageDataSize,
-            imageData: 0, // imageDataSize,
-            spaceLeft,
-            fits
-        } as MessageSize;
-    }
-*/
-    /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
      * @param actionRequest

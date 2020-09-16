@@ -33,7 +33,13 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    IdValidationRule,
+    MessageRetentionValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -58,23 +64,11 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'daysRetention',
-                required: true,
-                type: 'number',
-                customValidate: (value, index, allValues) => {
-                    return value <= parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-                }
-            }, {
-                name: 'estimateFee',
-                required: false,
-                type: 'boolean',
-                defaultValue: false
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new MessageRetentionValidationRule('daysRetention', true),
+                new BooleanValidationRule('estimateFee', false, false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -127,9 +121,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             imagesWithData: false
         } as ListingItemAddRequest;
 
-        // TODO: run estimation only for paid messages
-        // sendParams.paidMessage unnecessary, maybe rename ???
-
         this.log.debug('execute(), posting...');
 
         // first post the ListingItem
@@ -140,8 +131,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         if (!estimateFee && smsgSendResponse.result === 'Sent.') {
             // note!! hash should not be saved unless ListingItemTemplate is actually posted.
             // ...because ListingItemTemplates with hash can't be modified anymore.
+
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
+                .then(value => value.toJSON());
         }
 
         // then post the Images related to the ListingItem one by one
@@ -155,7 +148,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: estimateFee (optional, default: false)
      *
@@ -165,19 +158,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const listingItemTemplateId = data.params[0];
-        const daysRetention = data.params[1];
-
-        if (daysRetention > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
-        }
-
-        // make sure required data exists and fetch it
-        let listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
+        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // ListingItemTemplate should be a market template
         if (_.isEmpty(listingItemTemplate.market)) {
@@ -197,8 +178,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         // make sure the Market exists for the Profile
-        const profileId = listingItemTemplate.Profile.id;
-        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, listingItemTemplate.market)
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(listingItemTemplate.Profile.id,
+            listingItemTemplate.market)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Market');
@@ -213,13 +194,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         }
 
         // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
-
-        // check size limit
-        // we need listingItemTemplate.hash, otherwise this fails
-        // note!! hash should not be saved until just before the ListingItemTemplate is actually posted.
-        // since ListingItemTemplates with hash should not (CANT) be modified anymore.
-        const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-        listingItemTemplate.hash = hash;
 
         data.params[0] = listingItemTemplate;
         data.params[3] = market;

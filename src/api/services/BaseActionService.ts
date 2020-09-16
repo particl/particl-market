@@ -107,12 +107,14 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
+        // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
 
         const messageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
         if (!messageSize.fits) {
             this.log.error('messageDataSize:', JSON.stringify(messageSize, null, 2));
             throw new MessageSizeException(marketplaceMessage.action.type);
         }
+        // this.log.debug('post(), messageSize:', JSON.stringify(messageSize, null, 2));
 
         // each message has objects?: KVS[] for extending messages, add those to the message here
         if (!_.isEmpty(actionRequest.objects)) {
