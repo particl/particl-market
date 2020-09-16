@@ -17,11 +17,12 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
+
+    public debug = true;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -34,15 +35,10 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemTemplateId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'marketId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new IdValidationRule('marketId', false, this.marketService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -68,8 +64,8 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: marketId, optional, when set, create a new market template else new base template
+     *  [0]: listingItemTemplateId -> resources.ListingItemTemplate
+     *  [1]: marketId, optional, when set, create a new market template else new base template -> resources.Market
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -77,16 +73,9 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
 
-        const listingItemTemplateId = data.params[0];
-        const marketId = data.params[1];
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const market: resources.Market = data.params[1];
         let targetParentId;
-
-        // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
 
         // template clone 1         - creates new base template based on template id 1
         // template clone 1 2       - creates new market template based on template id 1 for market id 2
@@ -96,14 +85,9 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
         //                                  - fail if latest version of market template is not published (you should be modifying that)
         //                              - create a market template
 
-        if (!_.isNil(marketId)) {
-            // creating new market template based on given templateId for marketId
-            const market: resources.Market = await this.marketService.findOne(marketId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Market');
-                });
+        if (!_.isNil(market)) {
 
+            this.log.debug('data: ', JSON.stringify(data, null, 2));
             if (listingItemTemplate.Profile.id !== market.Profile.id) {
                 throw new MessageException('ListingItemTemplate and Market Profiles don\'t match.');
             }
@@ -129,12 +113,9 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
                 targetParentId = baseTemplate.id;
             }
 
-            data.params[1] = market;
             data.params[2] = targetParentId;
 
         } // creating new base template based on given templateId, anything goes
-
-        data.params[0] = listingItemTemplate;
 
         return data;
     }
@@ -150,14 +131,13 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> [isMarketTemplate] [marketId]';
+        return this.getName() + ' <listingItemTemplateId> [marketId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>          - number - The ID of the ListingItemTemplate to be cloned.\n'
-            + '    <isMarketTemplate>               - boolean - Clone is a market ListingItemTemplate, optional. default: false.\n'
-            + '    <marketId>                       - number - Market ID, optional. Can be set only if isMarketTemplate=true.';
+            + '    <marketId>                       - number - Market ID, optional.';
     }
 
     public description(): string {

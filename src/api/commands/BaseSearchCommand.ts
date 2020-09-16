@@ -6,15 +6,9 @@ import * as _ from 'lodash';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { BaseCommand } from './BaseCommand';
-import { InvalidParamException } from '../exceptions/InvalidParamException';
-import { EnumHelper } from '../../core/helpers/EnumHelper';
-import { SearchOrder } from '../enums/SearchOrder';
 import {
-    CommandParamValidationRules,
-    ParamValidationRule, SearchOrderFieldValidationRule, SearchOrderValidationRule,
-    SearchPageLimitValidationRule,
-    SearchPageValidationRule,
-    StringValidationRule
+    CommandParamValidationRules, ParamValidationRule, SearchOrderFieldValidationRule, SearchOrderValidationRule,
+    SearchPageLimitValidationRule, SearchPageValidationRule
 } from './CommandParamValidation';
 
 
@@ -38,28 +32,7 @@ export abstract class BaseSearchCommand extends BaseCommand {
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         const rules = this.getSearchCommandParamValidationRules();
-        return await super.validate(data, rules)
-            .then(async value => {
-
-                // validate checks the searchparams based on paramValidationRules
-                const page = value.params[0];
-                const pageLimit = value.params[1];
-                const order = value.params[2];
-                const orderField = value.params[3];
-
-                /*
-                // valid SearchOrder?
-                if (!EnumHelper.containsName(SearchOrder, order)) {
-                    throw new InvalidParamException('order', 'SearchOrder');
-                }
-
-                // valid orderField?
-                if (!_.includes(this.getAllowedSearchOrderFields(), orderField)) {
-                    throw new InvalidParamException('orderField',  '' + this.getAllowedSearchOrderFields());
-                }
-                */
-                return data;
-            }); // validates the basic params, see: BaseCommand.validate()
+        return await super.validate(data, rules); // validates the basic params, see: BaseCommand.validate()
     }
 
     public getSearchCommandParamValidationRules(): CommandParamValidationRules {

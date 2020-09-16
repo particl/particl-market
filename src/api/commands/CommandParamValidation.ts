@@ -85,7 +85,7 @@ export class IdValidationRule extends BaseParamValidationRule {
 
         // if modelService is set, make sure we can find something with the id and return that
         if (!_.isNil(value) && this.modelService) {
-            result = await this.modelService.findOne(value, false)
+            result = await this.modelService.findOne(value, true)
                 .then(model => model.toJSON())
                 .catch(reason => {
                     const modelName = this.name.charAt(0).toUpperCase() + this.name.slice(1, -2);
