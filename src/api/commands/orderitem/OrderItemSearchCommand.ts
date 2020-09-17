@@ -42,12 +42,11 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new IdValidationRule('listingItemId', false),
+                new IdValidationRule('listingItemId', false, this.listingItemService),
                 new EnumValidationRule('orderItemStatus', false, 'OrderItemStatus', EnumHelper.getValues(OrderItemStatus) as string[]),
                 new StringValidationRule('buyerAddress', false),
                 new StringValidationRule('sellerAddress', false),
                 new StringValidationRule('market', false)
-
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -86,7 +85,7 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
 
         const orderSearchParams = {
             page, pageLimit, order, orderField,
-            listingItemId: listingItem.id,
+            listingItemId: !_.isNil(listingItem) ? listingItem.id : undefined,
             status,
             buyerAddress,
             sellerAddress,
@@ -114,34 +113,23 @@ export class OrderItemSearchCommand extends BaseSearchCommand implements RpcComm
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        let listingItemId = data.params[4];       // optional
-        let status = data.params[5];              // optional
-        let buyerAddress = data.params[6];        // optional
-        let sellerAddress = data.params[7];       // optional
-        let market = data.params[8];              // optional
+        const listingItem: resources.ListingItem = data.params[4];
+        const status = data.params[5];              // optional
+        const buyerAddress = data.params[6];        // optional
+        const sellerAddress = data.params[7];       // optional
+        const market = data.params[8];              // optional
 
-        // * -> undefined
-        listingItemId = listingItemId !== '*' ? listingItemId : undefined;
-
+/*
         if (status === '*') {
             status = undefined;
         }
         if (status && !EnumHelper.containsName(OrderItemStatus, status)) {
             throw new InvalidParamException('status', 'OrderItemStatus');
         }
-
         buyerAddress = buyerAddress !== '*' ? buyerAddress : undefined;
         sellerAddress = sellerAddress !== '*' ? sellerAddress : undefined;
         market = market !== '*' ? market : undefined;
-
-        if (!_.isNil(listingItemId)) {
-            // make sure ListingItemTemplate with the id exists
-            data.params[4] = await this.listingItemService.findOne(listingItemId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        }
+*/
 
         if (!_.isNil(market)) {
             await this.marketService.findAllByReceiveAddress(market)

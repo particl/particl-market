@@ -364,7 +364,9 @@ describe('OrderItemStatus', () => {
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItemReceivedOnBuyerNode.id             // listingItemId
+            buyerProfile.id,
+            buyerMarket.Identity.id,
+            listingItemReceivedOnBuyerNode.id           // listingItemId
             // MPAction.MPA_BID,                        // type
             // '*',                                     // search string
             // '*',                                     // market
@@ -411,6 +413,8 @@ describe('OrderItemStatus', () => {
 
         const response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerProfile.id,
+                sellerMarket.Identity.id,
                 listingItemReceivedOnSellerNode.id,
                 MPAction.MPA_BID                            // type
                 // '*',                                     // search string
@@ -554,6 +558,8 @@ describe('OrderItemStatus', () => {
 
         const response: any = await testUtilSellerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                sellerProfile.id,
+                sellerMarket.Identity.id,
                 listingItemReceivedOnSellerNode.id,
                 MPAction.MPA_ACCEPT                         // type
                 // '*',                                     // search string
@@ -631,9 +637,9 @@ describe('OrderItemStatus', () => {
         await testUtilSellerNode.waitFor(5);
 
         const orderItemStatusRes = await testUtilSellerNode.rpc(orderItemCommand, [orderItemStatusCommand,
-            '*',        // itemHash
-            '*',        // buyer
-            '*'         // seller
+            null,        // itemHash
+            null,        // buyer
+            null         // seller
         ]);
         orderItemStatusRes.expectJson();
         orderItemStatusRes.expectStatusCode(200);
@@ -662,6 +668,8 @@ describe('OrderItemStatus', () => {
 
         const response: any = await testUtilBuyerNode.rpcWaitFor(bidCommand, [bidSearchCommand,
                 PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+                buyerProfile.id,
+                buyerMarket.Identity.id,
                 listingItemReceivedOnBuyerNode.id,
                 MPAction.MPA_ACCEPT                        // type
                 // '*',                                     // search string

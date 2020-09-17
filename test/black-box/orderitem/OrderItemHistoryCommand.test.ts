@@ -17,6 +17,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
+
 describe('OrderItemHistory', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -270,7 +271,9 @@ describe('OrderItemHistory', () => {
 
         const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
-            listingItemReceivedOnBuyerNode.id             // listingItemId
+            buyerProfile.id,
+            buyerMarket.Identity.id,
+            listingItemReceivedOnBuyerNode.id           // listingItemId
             // MPAction.MPA_BID,                        // type
             // '*',                                     // search string
             // '*',                                     // market

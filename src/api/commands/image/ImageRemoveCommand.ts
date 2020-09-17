@@ -34,7 +34,7 @@ export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterfa
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new IdValidationRule('imageId', true, this.imageService),
+                new IdValidationRule('imageId', true, this.imageService)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }

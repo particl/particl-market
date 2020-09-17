@@ -76,7 +76,7 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit,
-                debug: true
+                debug: false
             });
 
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);

@@ -91,7 +91,7 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid ListingItemId', async () => {
+    test('Should fail because invalid ListingItemId', async () => {
         const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             true
@@ -102,7 +102,7 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because ListingItem not found', async () => {
+    test('Should fail because ListingItem not found', async () => {
         const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             0
@@ -110,6 +110,87 @@ describe('OrderItemSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
+    });
+
+
+    test('Should fail because invalid status', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('orderItemStatus', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid status', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('orderItemStatus', 'OrderItemStatus').getMessage());
+    });
+
+
+    test('Should fail because invalid buyerAddress', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderItemStatus.BIDDED,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('buyerAddress', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid sellerAddress', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderItemStatus.BIDDED,
+            buyerMarket.Identity.address,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('sellerAddress', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid market', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderItemStatus.BIDDED,
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
+    });
+
+
+    test('Should fail because Market not found', async () => {
+        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
+            listingItem.id,
+            OrderItemStatus.BIDDED,
+            buyerMarket.Identity.address,
+            sellerMarket.Identity.address,
+            'ADDRESS_NOT_FOUND'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
 
@@ -175,36 +256,6 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid status', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('status', 'string').getMessage());
-    });
-
-
-    test('Should fail to search because invalid status', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            'INVALID'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('status', 'OrderItemStatus').getMessage());
-    });
-
-
     test('Should return one OrderItem when searching by listingItemId and status (OrderItemStatus) ', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
@@ -226,30 +277,14 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid buyerAddress', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            OrderItemStatus.BIDDED,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('buyerAddress', 'string').getMessage());
-    });
-
-
     test('Should return one OrderItem when searching by buyerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            null,
+            null,
             buyerMarket.Identity.address
         ]);
         res.expectJson();
@@ -264,31 +299,14 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid sellerAddress', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            OrderItemStatus.BIDDED,
-            buyerMarket.Identity.address,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('sellerAddress', 'string').getMessage());
-    });
-
-
     test('Should return one OrderItem when searching by buyerAddress and sellerAddress', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            null,
+            null,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address
         ]);
@@ -304,47 +322,14 @@ describe('OrderItemSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid market', async () => {
-        expect(bid).toBeDefined();
-        expect(order).toBeDefined();
-
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            OrderItemStatus.BIDDED,
-            buyerMarket.Identity.address,
-            sellerMarket.Identity.address,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
-    });
-
-
-    test('Should fail to search because Market not found', async () => {
-        const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            listingItem.id,
-            OrderItemStatus.BIDDED,
-            buyerMarket.Identity.address,
-            sellerMarket.Identity.address,
-            'ADDRESS_NOT_FOUND'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
-    });
-
-
     test('Should return one OrderItem when searching by buyerAddress and sellerAddress and market', async () => {
         expect(bid).toBeDefined();
         expect(order).toBeDefined();
 
         const res: any = await testUtilSellerNode.rpc(orderItemCommand, [orderItemSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            null,
+            null,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address,
             sellerMarket.address

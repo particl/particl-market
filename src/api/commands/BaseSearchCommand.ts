@@ -14,7 +14,7 @@ import {
 
 export abstract class BaseSearchCommand extends BaseCommand {
 
-    public debug = true;
+    public debug = false;
 
     constructor(command: Command) {
         super(command);

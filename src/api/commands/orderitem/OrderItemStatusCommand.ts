@@ -22,10 +22,9 @@ import { BidSearchOrderField } from '../../enums/SearchOrderField';
 import { BidSearchParams } from '../../requests/search/BidSearchParams';
 import { BidService } from '../../services/model/BidService';
 import { OrderItemService } from '../../services/model/OrderItemService';
+import { CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatusResponse[]> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,6 +34,16 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
     ) {
         super(Commands.ORDERITEM_STATUS);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('itemhash', false),
+                new StringValidationRule('buyer', false),
+                new StringValidationRule('seller', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -59,25 +68,19 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             // todo: add sellers + itemHash
         } as BidSearchParams;
 
-        this.log.debug('execute(), BidSearchParams: ', BidSearchParams);
-
         let mpaBids: resources.Bid[] = await this.bidService.search(searchParams).then(value => value.toJSON());
-        this.log.debug('execute(), mpaBids.length: ', mpaBids.length);
 
         if (!_.isNil(seller)) {
             mpaBids = _.filter(mpaBids, bid => {
                 return bid.ListingItem.seller === seller;
             });
         }
-        this.log.debug('execute(), mpaBids.length: ', mpaBids.length);
 
         if (!_.isNil(itemHash)) {
             mpaBids = _.filter(mpaBids, bid => {
                 return bid.ListingItem.hash === itemHash;
             });
         }
-
-        this.log.debug('execute(), mpaBids.length: ', mpaBids.length);
 
         const orderItemStatuses: OrderItemStatusResponse[] = [];
 
@@ -101,31 +104,21 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
     }
 
     /**
-     *  [0]: itemhash, string
-     *  [1]: buyer, string
-     *  [2]: seller, string
+     *  [0]: itemhash, string, optional
+     *  [1]: buyer, string, optional
+     *  [2]: seller, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('itemHash', 'string');
-        } else if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('buyer', 'string');
-        } else if (!_.isNil(data.params[2]) && typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('seller', 'string');
-        }
-        data.params[0] = data.params[0] !== '*' ? data.params[0] : undefined;
-        data.params[1] = data.params[1] !== '*' ? data.params[1] : undefined;
-        data.params[2] = data.params[2] !== '*' ? data.params[2] : undefined;
-
+        await super.validate(data);
         return data;
     }
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' [itemhash|*] [buyer|*] [seller|*]';
+        return this.getName() + ' [itemhash] [buyer] [seller]';
     }
 
     public help(): string {

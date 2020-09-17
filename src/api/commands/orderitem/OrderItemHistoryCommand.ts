@@ -13,16 +13,14 @@ import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { ListingItemService } from '../../services/model/ListingItemService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandInterface<resources.SmsgMessage[]> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -32,6 +30,14 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     ) {
         super(Commands.ORDERITEM_HISTORY);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('orderItemId', true, this.orderItemService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -46,8 +52,6 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
 
         const orderItem: resources.OrderItem = data.params[0];
         const smsgMessages: resources.SmsgMessage[] = [];
-
-        this.log.debug('orderItem:', JSON.stringify(orderItem));
 
         // get MPA_LISTING_ADD
         const listingItemSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.ListingItem.msgid)
@@ -79,28 +83,15 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     }
 
     /**
-     *  [0]: id, number
+     *  [0]: orderItemId, number
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('orderItemId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('orderItemId', 'number');
-        }
-
-        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0], true)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('OrderItem');
-            });
-        data.params[0] = orderItem;
+        const orderItem: resources.OrderItem = data.params[0];
 
         if (_.isEmpty(orderItem.Bid)) {
             throw new ModelNotFoundException('Bid');
@@ -114,12 +105,12 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' <id>';
+        return this.getName() + ' <orderItemId>';
     }
 
     public help(): string {
-        return this.usage() + ' -  ' + this.description() + ' \n'
-            + '<id>         - The id of the OrderItem we want history of. \n';
+        return this.usage() + ' - ' + this.description() + ' \n'
+            + '<orderItemId>         - The ID of the OrderItem we want history of. \n';
     }
 
     public description(): string {
