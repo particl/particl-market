@@ -24,7 +24,13 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
 import { OrderStatus } from '../../enums/OrderStatus';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    CommandParamValidationRules,
+    IdValidationRule,
+    OrderStatusOrOrderItemStatusValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
 
 export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
@@ -41,27 +47,13 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemId',
-                required: false,
-                type: undefined // TODO: 'number'
-            }, {
-                name: 'status',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'buyerAddress',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'sellerAddress',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'market',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemId', false, this.listingItemService),
+                new OrderStatusOrOrderItemStatusValidationRule(false),
+                new StringValidationRule('buyerAddress', false),
+                new StringValidationRule('sellerAddress', false),
+                new StringValidationRule('market', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -76,7 +68,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: listingItem, resources.ListingItem, optional
-     *  [5]: status, OrderItemStatus, optional
+     *  [5]: status, OrderStatus or OrderItemStatus, optional
      *  [6]: buyerAddress, string, optional
      *  [7]: sellerAddress, string, optional
      *  [8]: market, string, optional
@@ -99,7 +91,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
 
         const orderSearchParams = {
             page, pageLimit, order, orderField,
-            listingItemId: listingItem.id,
+            listingItemId: !_.isNil(listingItem) ? listingItem.id : undefined,
             status,
             buyerAddress,
             sellerAddress,
@@ -127,48 +119,7 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        let listingItemId = data.params[4];       // optional
-        let status = data.params[5];              // optional
-        let buyerAddress = data.params[6];        // optional
-        let sellerAddress = data.params[7];       // optional
-        let market = data.params[8];              // optional
-
-        // TODO: clean this up
-
-        if (!_.isNil(listingItemId) && listingItemId !== '*' && typeof listingItemId !== 'number') {
-            throw new InvalidParamException('listingItemId', 'number');
-        } else if (!_.isNil(status) && typeof status !== 'string') {
-            throw new InvalidParamException('status', 'string');
-        } else if (!_.isNil(buyerAddress) && typeof buyerAddress !== 'string') {
-            throw new InvalidParamException('buyerAddress', 'string');
-        } else if (!_.isNil(sellerAddress) && typeof sellerAddress !== 'string') {
-            throw new InvalidParamException('sellerAddress', 'string');
-        } else if (!_.isNil(market) && typeof market !== 'string') {
-            throw new InvalidParamException('market', 'string');
-        }
-
-        // * -> undefined
-        listingItemId = listingItemId !== '*' ? listingItemId : undefined;
-
-        if (status === '*') {
-            status = undefined;
-        }
-        if (status && (!EnumHelper.containsName(OrderStatus, status) && !EnumHelper.containsName(OrderItemStatus, status))) {
-            throw new InvalidParamException('status', 'OrderStatus|OrderItemStatus');
-        }
-
-        buyerAddress = buyerAddress !== '*' ? buyerAddress : undefined;
-        sellerAddress = sellerAddress !== '*' ? sellerAddress : undefined;
-        market = market !== '*' ? market : undefined;
-
-        if (!_.isNil(listingItemId)) {
-            // make sure ListingItemTemplate with the id exists
-            data.params[4] = await this.listingItemService.findOne(listingItemId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        }
+        const market = data.params[8];                                  // optional
 
         if (!_.isNil(market)) {
             await this.marketService.findAllByReceiveAddress(market)
@@ -179,11 +130,6 @@ export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandI
                     }
                 });
         }
-
-        data.params[5] = status;
-        data.params[6] = buyerAddress;
-        data.params[7] = sellerAddress;
-        data.params[8] = market;
 
         return data;
     }

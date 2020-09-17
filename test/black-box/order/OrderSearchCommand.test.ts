@@ -49,6 +49,7 @@ describe('OrderSearchCommand', () => {
 
     beforeAll(async () => {
         await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
 
         sellerProfile = await testUtilSellerNode.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
@@ -320,8 +321,8 @@ describe('OrderSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            null,
+            null,
             buyerMarket.Identity.address
         ]);
         res.expectJson();
@@ -346,8 +347,8 @@ describe('OrderSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            null,
+            undefined,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address
         ]);
@@ -373,8 +374,8 @@ describe('OrderSearchCommand', () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
-            '*',
-            '*',
+            undefined,
+            null,
             buyerMarket.Identity.address,
             sellerMarket.Identity.address,
             sellerMarket.address

@@ -14,7 +14,8 @@ import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
 import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
-import {MessageException} from '../exceptions/MessageException';
+import { OrderItemStatus } from '../enums/OrderItemStatus';
+import { OrderStatus } from '../enums/OrderStatus';
 
 /**
  * used as custom validation function for params.
@@ -213,11 +214,18 @@ export class EnumValidationRule extends BaseParamValidationRule {
         this.validEnumValues = validEnumValues;
     }
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
-        if (this.validEnumValues.indexOf(value) === -1) {
+    public async customValidate(value: string, index: number, allValues: string[]): Promise<boolean> {
+        if (!_.isNil(value) && this.validEnumValues.indexOf(value) === -1) {
             return false;
         }
         return true;
+    }
+}
+
+export class OrderStatusOrOrderItemStatusValidationRule extends EnumValidationRule {
+    constructor(required: boolean = false) {
+        super('status', required, 'OrderStatus|OrderItemStatus',
+            (EnumHelper.getValues(OrderStatus) as string[]).concat(EnumHelper.getValues(OrderItemStatus) as string[]));
     }
 }
 
