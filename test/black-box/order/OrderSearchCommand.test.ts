@@ -92,7 +92,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid ListingItemId', async () => {
+    test('Should fail because invalid ListingItemId', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             true
@@ -103,7 +103,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because ListingItem not found', async () => {
+    test('Should fail because ListingItem not found', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             0
@@ -114,7 +114,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid status', async () => {
+    test('Should fail because invalid status', async () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -127,7 +127,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid status', async () => {
+    test('Should fail because invalid status', async () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -140,7 +140,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid buyerAddress', async () => {
+    test('Should fail because invalid buyerAddress', async () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -154,7 +154,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid sellerAddress', async () => {
+    test('Should fail because invalid sellerAddress', async () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -169,7 +169,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because invalid market', async () => {
+    test('Should fail because invalid market', async () => {
 
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
@@ -185,7 +185,7 @@ describe('OrderSearchCommand', () => {
     });
 
 
-    test('Should fail to search because Market not found', async () => {
+    test('Should fail because Market not found', async () => {
         const res: any = await testUtilSellerNode.rpc(orderCommand, [orderSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, ORDER_SEARCHORDERFIELD,
             listingItem.id,

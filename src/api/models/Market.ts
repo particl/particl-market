@@ -103,7 +103,7 @@ export class Market extends Bookshelf.Model<Market> {
                 }
 
                 if (options.searchString) {
-                    qb.where('markets.title', 'LIKE', '%' + options.searchString + '%');
+                    qb.where('markets.name', 'LIKE', '%' + options.searchString + '%');
                     qb.orWhere('markets.description', 'LIKE', '%' + options.searchString + '%');
                     qb.orWhere('markets.hash', '=', options.searchString);
                 }

@@ -14,7 +14,6 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { ListingItemTemplateSearchOrderField, SearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
@@ -24,7 +23,7 @@ import { MarketSearchParams } from '../../requests/search/MarketSearchParams';
 import { Market } from '../../models/Market';
 import { MarketRegion } from '../../enums/MarketRegion';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class MarketSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
@@ -40,19 +39,13 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'searchString',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'type',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'region',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new StringValidationRule('searchString', false),
+                new EnumValidationRule('type', false, 'MarketType',
+                    EnumHelper.getValues(MarketType) as string[]),
+                new EnumValidationRule('region', false, 'MarketRegion',
+                    EnumHelper.getValues(MarketRegion) as string[])
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -68,6 +61,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: searchString, string, optional, * for all
      *  [5]: type, MarketType, optional
+     *  [6]: region, MarketRegion, optional
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -113,19 +107,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const searchString = data.params[4];            // optional
-        const type = data.params[5];                    // optional
-        const region = data.params[6];                  // optional
-
-        if (!EnumHelper.containsName(MarketType, type)) {
-            throw new InvalidParamException('type', 'MarketType');
-        }
-
-        if (!EnumHelper.containsName(MarketRegion, region)) {
-            throw new InvalidParamException('region', 'MarketRegion');
-        }
-
         data.params[4] = searchString !== '*' ? data.params[4] : undefined;
-
         return data;
     }
 

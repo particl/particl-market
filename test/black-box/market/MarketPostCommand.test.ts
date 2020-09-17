@@ -47,7 +47,7 @@ describe('MarketPostCommand', () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('promotedMarketId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
 
 
@@ -68,7 +68,7 @@ describe('MarketPostCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('promotedMarketId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
     });
 
 

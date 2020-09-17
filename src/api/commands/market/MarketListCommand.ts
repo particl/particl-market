@@ -15,9 +15,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
@@ -33,11 +32,9 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', false, this.profileService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -63,17 +60,6 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
-
-        const profileId = data.params[0];
-
-        if (!_.isNil(profileId)) {
-            data.params[0] = await this.profileService.findOne(profileId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        }
-
         return data;
     }
 

@@ -12,12 +12,11 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { MarketService } from '../../services/model/MarketService';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { DefaultMarketService } from '../../services/DefaultMarketService';
 import { DefaultProfileService } from '../../services/DefaultProfileService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -35,11 +34,9 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'marketId',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('marketId', true, this.marketService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -68,21 +65,12 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const marketId = data.params[0];
-
-        // make sure Market with the id exists
-        const market: resources.Market = await this.marketService.findOne(marketId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
+        const market: resources.Market = data.params[0];
 
         const defaultProfile: resources.Profile = await this.defaultProfileService.getDefault();
         const defaultMarket: resources.Market = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id, false)
             .then(value => value.toJSON());
 
-        this.log.debug('market.id', market.id);
-        this.log.debug('defaultMarket.id', defaultMarket.id);
         if (market.id === defaultMarket.id) {
             throw new MessageException('Default Market cannot be removed.');
         }

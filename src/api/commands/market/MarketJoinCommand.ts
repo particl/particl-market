@@ -15,7 +15,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CoreRpcService } from '../../services/CoreRpcService';
@@ -25,7 +24,7 @@ import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
 import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class MarketJoinCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -45,19 +44,11 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'marketId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'identityId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new IdValidationRule('marketId', true, this.marketService),
+                new IdValidationRule('identityId', false, this.identityService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -135,45 +126,20 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const profileId = data.params[0];
-        const marketId = data.params[1];
-        const identityId = data.params[2];
+        const profile: resources.Profile = data.params[0];
+        const market: resources.Market = data.params[1];
+        const identity: resources.Identity = data.params[2];
 
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        // make sure Market with the id exists
-        const market: resources.Market = await this.marketService.findOne(marketId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
-
-        let identity: resources.Identity | undefined;
-
-        if (!_.isNil(identityId)) {
-            // make sure Identity with the id exists
-            identity = await this.identityService.findOne(identityId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Identity');
-                });
-
-            // make sure Identity belongs to the given Profile
-            if (identity!.Profile.id !== profile.id) {
-                throw new MessageException('Identity does not belong to the Profile.');
-            }
+        // make sure Identity belongs to the given Profile
+        if (!_.isNil(identity) && identity!.Profile.id !== profile.id) {
+            throw new MessageException('Identity does not belong to the Profile.');
         }
 
         if (!_.isNil(market.Profile)) {
             throw new MessageException('Market has already been joined.');
         }
 
-        await this.marketService.findOneByProfileIdAndReceiveAddress(profileId, market.receiveAddress)
+        await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, market.receiveAddress)
             .then(value => {
                 throw new MessageException('You have already joined this Market.');
             })
@@ -194,8 +160,8 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - number - The ID of the Profile for which the Market is added. \n'
-            + '    <marketId>               - string - The unique name of the Market being created. \n'
+            + '    <profileId>              - number - The ID of the Profile joining the Market. \n'
+            + '    <marketId>               - number - The ID of the Market being joined. \n'
             + '    <identityId>             - [optional] number, The Identity to be used with the Market. \n';
     }
 
@@ -204,7 +170,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'market ' + this.getName() + ' market add 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
+        return 'market ' + this.getName() + ' 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
             '\'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ';
     }
 }

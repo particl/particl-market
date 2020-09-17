@@ -28,7 +28,13 @@ import { MarketAddActionService } from '../../services/action/MarketAddActionSer
 import { MarketImageAddActionService } from '../../services/action/MarketImageAddActionService';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    IdValidationRule,
+    MessageRetentionValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
 
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -54,27 +60,17 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'promotedMarketId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'daysRetention',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'estimateFee',
-                required: false,
-                type: 'boolean'
-            }, {
-                name: 'toMarketIdOrAddress',
-                required: false,
-                type: undefined
-            }, {
-                name: 'fromIdentityId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new MessageRetentionValidationRule('daysRetention', true),
+                new BooleanValidationRule('estimateFee', false, false), {
+                    // todo:
+                    name: 'toMarketIdOrAddress',
+                    required: false,
+                    type: undefined
+                },
+                new IdValidationRule('fromIdentityId', false, this.identityService)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -160,45 +156,19 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const promotedMarketId = data.params[0];
+        const promotedMarket: resources.Market = data.params[0];
         const daysRetention = data.params[1];
-        let estimateFee = data.params[2];
+        const estimateFee = data.params[2];
         const toMarketIdOrAddress: number | string = data.params[3];
-        const fromIdentityId: number = data.params[4];
+        const fromIdentity: resources.Identity = data.params[4];
 
         let toMarket: resources.Market | undefined;
         let toAddress: string | undefined;
 
         let fromMarket: resources.Market | undefined;
-        let fromIdentity: resources.Identity | undefined;
+        // let fromIdentity: resources.Identity | undefined;
 
-        // make sure the params are of correct type
-        // if (typeof marketId !== 'number') {
-        //     throw new InvalidParamException('marketId', 'number');
-        // } else if (typeof daysRetention !== 'number') {
-        //     throw new InvalidParamException('daysRetention', 'number');
-        // } else if (!_.isNil(identityId) && typeof identityId !== 'number') {
-        //     throw new InvalidParamException('identityId', 'number');
-        // } else if (!_.isNil(smsgAddress) && typeof identityId !== 'string') {
-        //     throw new InvalidParamException('smsgAddress', 'string');
-        // }
-
-        if (daysRetention > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
-        }
-
-        if (_.isNil(estimateFee)) {
-            estimateFee = false;
-        }
-
-        // make sure required data exists and fetch it
-        const promotedMarket: resources.Market = await this.marketService.findOne(promotedMarketId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
-
-        if (_.isNil(toMarketIdOrAddress) && _.isNil(fromIdentityId)) {
+        if (_.isNil(toMarketIdOrAddress) && _.isNil(fromIdentity)) {
             // toMarketIdOrAddress === undefined && fromIdentityId === undefined:
             //  -> send from default Market publishAddress to default Market receiveAddress.
             const defaultProfile: resources.Profile = await this.profileService.getDefault()
@@ -213,7 +183,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 });
             fromMarket = toMarket;
 
-        } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'number' && _.isNil(fromIdentityId)) {
+        } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'number' && _.isNil(fromIdentity)) {
             // toMarketIdOrAddress === number && fromIdentityId === undefined:
             //  -> send from Market publishAddress to receiveAddress.
             toMarket = await this.marketService.findOne(toMarketIdOrAddress)
@@ -224,7 +194,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
             fromMarket = toMarket;
 
         } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'number'
-            && !_.isNil(fromIdentityId) && typeof fromIdentityId === 'number') {
+            && !_.isNil(fromIdentity)) {
             // toMarketIdOrAddress === number && fromIdentityId === number:
             //  -> send from fromIdentity.address to Market receiveAddress.
             toMarket = await this.marketService.findOne(toMarketIdOrAddress)
@@ -232,22 +202,12 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 .catch(reason => {
                     throw new ModelNotFoundException('Market');
                 });
-            fromIdentity = await this.identityService.findOne(fromIdentityId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Identity');
-                });
 
         } else if (!_.isNil(toMarketIdOrAddress) && typeof toMarketIdOrAddress === 'string'
-            && !_.isNil(fromIdentityId) && typeof fromIdentityId === 'number') {
+            && !_.isNil(fromIdentity)) {
             // toMarketIdOrAddress === string && fromIdentityId === number:
             //  -> send from fromIdentity.address to receiveAddress.
             toAddress = toMarketIdOrAddress;
-            fromIdentity = await this.identityService.findOne(fromIdentityId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Identity');
-                });
 
         } else {
             throw new MessageException('Invalid parameters.');

@@ -84,7 +84,7 @@ describe('MarketFlagCommand', () => {
             null,
             null,
             market.Identity.id,
-            'marketData.description',
+            marketData.description,
             MarketRegion.WORLDWIDE,
             false
         ]);
