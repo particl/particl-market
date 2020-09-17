@@ -17,7 +17,7 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class ImageListCommand extends BaseCommand implements RpcCommandInterface<resources.Image[]> {
@@ -34,15 +34,10 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'template|item|market',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'id',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new StringValidationRule('template|item|market', true),
+                new NumberValidationRule('id', true)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -65,7 +60,6 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
             default:
                 throw new InvalidParamException('typeSpecifier', 'template|item|market');
         }
-
     }
 
     /**

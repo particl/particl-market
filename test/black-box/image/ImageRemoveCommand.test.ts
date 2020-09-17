@@ -70,20 +70,20 @@ describe('ImageRemoveCommand', () => {
 
     });
 
-    test('Should fail to remove because missing id', async () => {
+    test('Should fail to remove because missing imageId', async () => {
         const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(new MissingParamException('id').getMessage());
+        expect(result.error.error.message).toBe(new MissingParamException('imageId').getMessage());
     });
 
-    test('Should fail to remove because invalid id', async () => {
+    test('Should fail to remove because invalid imageId', async () => {
         const result: any = await testUtil.rpc(imageCommand, [imageRemoveCommand,
             true
         ]);
         result.expectJson();
         result.expectStatusCode(400);
-        expect(result.error.error.message).toBe(new InvalidParamException('id', 'number').getMessage());
+        expect(result.error.error.message).toBe(new InvalidParamException('imageId', 'number').getMessage());
     });
 
     test('Should remove Image', async () => {

@@ -87,7 +87,8 @@ describe('ImageAddCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('id').getMessage());
     });
 
-
+/*
+    ProtocolDSN.REQUEST set as default for now...
     test('Should fail because missing protocol', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             'template',
@@ -97,7 +98,7 @@ describe('ImageAddCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
     });
-
+*/
 
     test('Should fail because missing data', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,

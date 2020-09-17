@@ -25,7 +25,15 @@ import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    EnumValidationRule,
+    NumberValidationRule,
+    ParamValidationRule, ScalingValueValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
 export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<Image> {
@@ -43,51 +51,20 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'template|market',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'id',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'protocol',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'data',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'featured',
-                required: false,
-                type: 'boolean'
-            }, {
-                name: 'skipResize',
-                required: false,
-                type: 'boolean'
-            }, {
-                name: 'messageVersionToFit',
-                required: false,
-                type: 'string',
-                defaultValue: CoreMessageVersion.FREE
-            }, {
-                name: 'scalingFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'qualityFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'maxIterations',
-                required: false,
-                type: 'number',
-                defaultValue: 10
-            }] as ParamValidationRule[]
+            params: [
+                new StringValidationRule('template|market', true),
+                new NumberValidationRule('id', true),
+                new EnumValidationRule('protocol', true, 'ProtocolDSN',
+                    EnumHelper.getValues(ProtocolDSN) as string[], ProtocolDSN.REQUEST),
+                new StringValidationRule('data', true),
+                new BooleanValidationRule('featured', false, false),
+                new BooleanValidationRule('skipResize', false, false),
+                new EnumValidationRule('messageVersionToFit', false, 'CoreMessageVersion',
+                    EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
+                new ScalingValueValidationRule('scalingFraction', false, 0.9),
+                new ScalingValueValidationRule('qualityFraction', false, 0.9),
+                new NumberValidationRule('maxIterations', false, 10)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -179,10 +156,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
 
         const typeSpecifier = data.params[0];
         const id = data.params[1];
-        let protocol = data.params[2];
+        const protocol = data.params[2];
         const dataOrUri = data.params[3];
-        let featured = data.params[4];
-        let skipResize = data.params[5];
+        const featured = data.params[4];
+        const skipResize = data.params[5];
 
         switch (typeSpecifier) {
             case 'template':
@@ -216,23 +193,10 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
                 throw new InvalidParamException('typeSpecifier', 'template|item|market');
         }
 
-        const validProtocolTypes = [ProtocolDSN.REQUEST, ProtocolDSN.FILE, ProtocolDSN.SMSG];
-        // hardcoded for now
-        protocol = ProtocolDSN.REQUEST;
-        if (validProtocolTypes.indexOf(protocol) === -1) {
-            throw new InvalidParamException('protocol', 'ProtocolDSN');
-        }
-
-        featured = !_.isNil(featured) ? featured : false;
-        skipResize = !_.isNil(skipResize) ? skipResize : false;
-
         data.params[2] = protocol;
         data.params[3] = dataOrUri;
         data.params[4] = featured;
         data.params[5] = skipResize;
-
-        // this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
-
         return data;
     }
 

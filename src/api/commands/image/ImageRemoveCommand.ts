@@ -16,7 +16,7 @@ import { BaseCommand } from '../BaseCommand';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -33,36 +33,33 @@ export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterfa
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'id',
-                required: true,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('imageId', true, this.imageService),
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
     /**
      * data.params[]:
-     *  [0]: imageId
+     *  [0]: image: resources.Image
      *
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.imageService.destroy(data.params[0]);
+        const image: resources.Image = data.params[0];
+        return this.imageService.destroy(image.id);
     }
 
     /**
      * data.params[]:
-     *  [0]: imageId
+     *  [0]: image: resources.Image
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data);
 
-        const id = data.params[0];
-
-        const image: resources.Image = await this.imageService.findOne(id).then(value => value.toJSON());
+        const image: resources.Image = data.params[0];
 
         // if Image has a relation to ItemInformation and ListingItemTemplate, it cannot be deleted
         if (!_.isEmpty(image.ItemInformation) && !_.isEmpty(image.ItemInformation.ListingItemTemplate)) {
@@ -87,12 +84,12 @@ export class ImageRemoveCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' <id> ';
+        return this.getName() + ' <imageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <id>                 - number - The ID of the Image to be removed.';
+            + '    <imageId>                 - number - The ID of the Image to be removed.';
     }
 
     public description(): string {

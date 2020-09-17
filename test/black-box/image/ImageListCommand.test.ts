@@ -169,7 +169,7 @@ describe('ImageListCommand', () => {
 
     test('Should list all Market Images', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
-            'item',
+            'market',
             market.id
         ]);
         res.expectJson();

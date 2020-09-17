@@ -19,7 +19,15 @@ import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    NumberValidationRule,
+    ParamValidationRule,
+    ScalingValueValidationRule
+} from '../CommandParamValidation';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
 export class ImageCompressCommand extends BaseCommand implements RpcCommandInterface<Image> {
@@ -36,31 +44,14 @@ export class ImageCompressCommand extends BaseCommand implements RpcCommandInter
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'imageId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'messageVersionToFit',
-                required: false,
-                type: 'string',
-                defaultValue: CoreMessageVersion.FREE
-            }, {
-                name: 'scalingFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'qualityFraction',
-                required: false,
-                type: 'number',
-                defaultValue: 0.9
-            }, {
-                name: 'maxIterations',
-                required: false,
-                type: 'number',
-                defaultValue: 10
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('imageId', true, this.imageService),
+                new EnumValidationRule('messageVersionToFit', false, 'CoreMessageVersion',
+                    EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
+                new ScalingValueValidationRule('scalingFraction', false, 0.9),
+                new ScalingValueValidationRule('qualityFraction', false, 0.9),
+                new NumberValidationRule('maxIterations', false, 10)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -83,12 +74,7 @@ export class ImageCompressCommand extends BaseCommand implements RpcCommandInter
         const qualityFraction: number = data.params[3];
         const maxIterations: number = data.params[4];
 
-        this.log.debug('process.env.SMSG_MAX_MSG_BYTES:' + process.env.SMSG_MAX_MSG_BYTES);
-        this.log.debug('process.env.SMSG_MAX_MSG_BYTES_PAID:' + process.env.SMSG_MAX_MSG_BYTES_PAID);
-
         await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-        this.log.debug('compressed image.hash: ' + image.hash);
-
         return this.imageService.findOne(image.id);
     }
 
@@ -106,8 +92,7 @@ export class ImageCompressCommand extends BaseCommand implements RpcCommandInter
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const imageId = data.params[0];
-        const image: resources.Image = await this.imageService.findOne(imageId).then(value => value.toJSON());
+        const image: resources.Image = data.params[0];
 
         const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
