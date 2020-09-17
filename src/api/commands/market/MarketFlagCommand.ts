@@ -41,7 +41,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
         return {
             params: [
                 new IdValidationRule('marketId', true, this.marketService),
-                new StringValidationRule('reason', false)
+                new StringValidationRule('reason', false, 'This Market should be removed.')
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -119,7 +119,7 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
 
         data.params[0] = market;
         data.params[1] = identity;
-        data.params[2] = reason ? reason : 'This Market should be removed.';
+        data.params[2] = reason;
         data.params[3] = daysRetention;
 
         return data;

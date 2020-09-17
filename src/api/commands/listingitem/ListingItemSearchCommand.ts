@@ -21,7 +21,7 @@ import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { ListingItemSearchOrderField } from '../../enums/SearchOrderField';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { IdentityService } from '../../services/model/IdentityService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, ParamValidationRule, PriceValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
@@ -37,75 +37,52 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'market',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'categories',
-                required: false,
-                type: undefined     // todo: number[]|string>[]
-            }, {
-                name: 'seller',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'minPrice',
-                required: false,
-                type: 'number',
-                customValidate: (value, index, allValues) => {
-                    if (!_.isNil(value)) {
-                        const maxPrice = allValues[index + 1];
-                        // if set, must be >= 0
-                        // if maxPrice set, must be < maxPrice
-                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
-                        const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
-                        this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
-                        return largerThanZero && smallerThanMaxPrice;
+            params: [
+                new StringValidationRule('market', true), {
+                    name: 'categories',
+                    required: false,
+                    type: undefined     // todo: number[]|string[], template search has this too
+                },
+                new StringValidationRule('seller', false), {
+                    name: 'minPrice',
+                    required: false,
+                    type: 'number',
+                    customValidate: (value, index, allValues) => {
+                        if (!_.isNil(value)) {
+                            const maxPrice = allValues[index + 1];
+                            // if set, must be >= 0
+                            // if maxPrice set, must be < maxPrice
+                            const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                            const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
+                            this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
+                            return largerThanZero && smallerThanMaxPrice;
+                        }
+                        return true;
                     }
-                    return true;
-                }
-            }, {
-                name: 'maxPrice',
-                required: false,
-                type: 'number',
-                customValidate: (value, index, allValues) => {
-                    if (!_.isNil(value)) {
-                        const minPrice = allValues[index - 1];
-                        // if set, must be >= 0
-                        // if minPrice set, must be > minPrice
-                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
-                        const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
-                        this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
-                        return largerThanZero && largerThanMinPrice;
+                }, {
+                    name: 'maxPrice',
+                    required: false,
+                    type: 'number',
+                    customValidate: (value, index, allValues) => {
+                        if (!_.isNil(value)) {
+                            const minPrice = allValues[index - 1];
+                            // if set, must be >= 0
+                            // if minPrice set, must be > minPrice
+                            const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                            const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
+                            this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
+                            return largerThanZero && largerThanMinPrice;
+                        }
+                        return true;
                     }
-                    return true;
-                }
-            }, {
-                name: 'country',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'shippingDestination',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'searchString',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'flagged',
-                required: false,
-                type: 'boolean'
-            }, {
-                name: 'listingItemHash',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'msgid',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+                },
+                new StringValidationRule('country', false),             // todo: validate&convert
+                new StringValidationRule('shippingDestination', false), // todo: validate&convert
+                new StringValidationRule('searchString', false),
+                new BooleanValidationRule('flagged', false),
+                new StringValidationRule('listingItemHash', false),
+                new StringValidationRule('msgid', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -120,7 +97,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: market, string, the market receiveAddress
-     *  [5]: categories, optional, number[]|string>[], if string -> find using key
+     *  [5]: categories, optional, number[]|string[], if string -> find using key
      *  [6]: seller, optional, string, address
      *  [7]: minPrice, optional, number, listingItem basePrice minimum
      *  [8]: maxPrice, optional, number, listingItem basePrice maximum
@@ -165,7 +142,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
      *  [4]: market, string, the market receiveAddress
-     *  [5]: categories, optional, number[]|string>[], if string -> find using key
+     *  [5]: categories, optional, number[]|string[], if string -> find using key
      *  [6]: seller, optional, string, address
      *  [7]: minPrice, optional, number, listingItem basePrice minimum
      *  [8]: maxPrice, optional, number, listingItem basePrice maximum

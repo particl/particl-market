@@ -15,7 +15,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
 
@@ -30,16 +30,10 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'returnImageData',
-                required: false,
-                type: 'boolean',
-                defaultValue: false
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemId', true, this.listingItemService),
+                new BooleanValidationRule('returnImageData', false, false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -78,15 +72,6 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        const listingItemId: number = data.params[0];
-        const returnImageData: boolean = data.params[1];
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId).then(value => value.toJSON());
-
-        data.params[0] = listingItem;
-        data.params[1] = returnImageData;
-
         return data;
     }
 

@@ -19,7 +19,6 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalAddActionService } from '../../services/action/ProposalAddActionService';
 import { ItemVote } from '../../enums/ItemVote';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
@@ -27,7 +26,7 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { VoteActionService } from '../../services/action/VoteActionService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -48,20 +47,11 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'listingItemId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'identityId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'reason',
-                required: false,
-                type: 'string',
-                defaultValue: 'This ListingItem should be removed.'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('listingItemId', true, this.listingItemService),
+                new IdValidationRule('identityId', true, this.identityService),
+                new StringValidationRule('reason', false, 'This ListingItem should be removed.')
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -83,9 +73,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const description = data.params[2];
         const daysRetention = data.params[3];
 
-        const title = listingItem.hash;
-        const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
-
         // get the ListingItem market
         const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, listingItem.market)
             .then(value => value.toJSON()); // throws if not found
@@ -98,9 +85,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             sender: identity,
             market,
             category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
-            title,
+            title: listingItem.hash,
             description,
-            options,
+            options: [ItemVote.KEEP, ItemVote.REMOVE] as string[],
             target: listingItem.hash
         } as ProposalAddRequest;
 
@@ -157,30 +144,15 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const listingItemId: number = data.params[0];
-        const identityId: number = data.params[1];
+        const listingItem: resources.ListingItem = data.params[0];
+        const identity: resources.Identity = data.params[1];
         const reason: string = data.params[2];
-
-        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
-            .then(value => value.toJSON())
-            .catch(ex => {
-                throw new ModelNotFoundException('ListingItem');
-            });
 
         // check if item is already flagged
         if (!_.isEmpty(listingItem.FlaggedItem)) {
             this.log.error('ListingItem is already flagged.');
             throw new MessageException('ListingItem is already flagged.');
         }
-
-        // make sure identity with the id exists
-        const identity: resources.Identity = await this.identityService.findOne(identityId)
-            .then(value => value.toJSON())
-            .catch(ex => {
-                throw new ModelNotFoundException('Identity');
-            });
 
         // check whether the identity is used on the ListingItems Market
         const foundMarket = _.find(identity.Markets, market => {

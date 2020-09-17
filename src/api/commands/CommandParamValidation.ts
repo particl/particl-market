@@ -141,8 +141,8 @@ export class AddressOrAddressIdValidationRule extends BaseParamValidationRule {
 export class StringValidationRule extends BaseParamValidationRule {
     public type = 'string';
 
-    constructor(name: string, required: boolean = false) {
-        super(name, required);
+    constructor(name: string, required: boolean = false, defaultValue?: string) {
+        super(name, required, defaultValue);
     }
 }
 
@@ -152,11 +152,11 @@ export class StringValidationRule extends BaseParamValidationRule {
 export class NumberValidationRule extends BaseParamValidationRule {
     public type = 'number';
 
-    constructor(name: string, required: boolean = false, defaultValue?: any) {
+    constructor(name: string, required: boolean = false, defaultValue?: number) {
         super(name, required, defaultValue);
     }
 
-    public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             // why couldn't we sell free shit?
             return value >= 0;
