@@ -123,6 +123,143 @@ describe('SmsgSearchCommand', () => {
     });
 
 
+    test('Should fail because invalid types', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('types', 'ActionMessageTypes[]').getMessage());
+    });
+
+
+    test('Should fail because invalid types', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            ['INVALID']
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('types', 'ActionMessageTypes[]').getMessage());
+    });
+
+
+    test('Should fail because invalid types', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            ['INVALID']
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('types', 'ActionMessageTypes[]').getMessage());
+    });
+
+
+    test('Should fail because invalid types', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [0]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('types', 'ActionMessageTypes[]').getMessage());
+    });
+
+
+    test('Should fail because invalid status', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('status', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid status', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('status', 'SmsgMessageStatus').getMessage());
+    });
+
+
+    test('Should fail because invalid direction', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            SmsgMessageStatus.PROCESSED,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('direction', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid direction', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            SmsgMessageStatus.PROCESSED,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('direction', 'ActionDirection').getMessage());
+    });
+
+
+    test('Should fail because invalid age', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            SmsgMessageStatus.PROCESSED,
+            ActionDirection.INCOMING,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('age', 'number').getMessage());
+    });
+
+
+    test('Should fail because invalid age', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            SmsgMessageStatus.PROCESSED,
+            ActionDirection.INCOMING,
+            -1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('age', 'greater than 0').getMessage());
+    });
+
+
+    test('Should fail because invalid msgid', async () => {
+        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
+            SmsgMessageStatus.PROCESSED,
+            ActionDirection.INCOMING,
+            1,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
+    });
+
+
     test('Should search SmsgMessages without any params', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
@@ -132,17 +269,6 @@ describe('SmsgSearchCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
-    });
-
-
-    test('Should fail because invalid type', async () => {
-        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('type', 'ActionMessageTypes[]').getMessage());
     });
 
 
@@ -172,28 +298,16 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should search SmsgMessages using * as type', async () => {
+    test('Should search SmsgMessages using null as type', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            '*'
+            null
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
-    });
-
-
-    test('Should fail because invalid status', async () => {
-        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('status', 'SmsgMessageStatus').getMessage());
     });
 
 
@@ -211,30 +325,17 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should search SmsgMessages using type and * as status', async () => {
+    test('Should search SmsgMessages using type and null as status', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
-            '*'
+            null
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
-    });
-
-
-    test('Should fail because invalid direction', async () => {
-        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
-            SmsgMessageStatus.PROCESSED,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('direction', 'ActionDirection').getMessage());
     });
 
 
@@ -253,32 +354,18 @@ describe('SmsgSearchCommand', () => {
     });
 
 
-    test('Should search SmsgMessages using type and status and * as direction', async () => {
+    test('Should search SmsgMessages using type and status and null as direction', async () => {
         const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
             SmsgMessageStatus.PROCESSED,
-            '*'
+            null
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
-    });
-
-
-    test('Should fail because invalid age', async () => {
-        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
-            SmsgMessageStatus.PROCESSED,
-            ActionDirection.INCOMING,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('age', 'number').getMessage());
     });
 
 
@@ -311,21 +398,6 @@ describe('SmsgSearchCommand', () => {
 
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
-    });
-
-
-    test('Should fail because invalid msgid', async () => {
-        const res: any = await testUtil.rpc(smsgCommand, [smsgSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            [MPAction.MPA_LISTING_ADD, MPAction.MPA_BID],
-            SmsgMessageStatus.PROCESSED,
-            ActionDirection.INCOMING,
-            1,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
     });
 
 

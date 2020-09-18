@@ -24,10 +24,19 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    ActionMessageTypesValidationRule,
+    CommandParamValidationRules,
+    EnumValidationRule, NumberValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
+import {CommentType} from '../../enums/CommentType';
 
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
+
+    public debug = true;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -38,18 +47,24 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
-        return {} as CommandParamValidationRules;
-        // TODO: implement
-        /*
         return {
-            parameters: [{
-                name: 'listingItemId',
-                required: false,
-                type: 'number'
-            }] as ParamValidationRule[]
+            params: [
+                new ActionMessageTypesValidationRule(false),
+                new EnumValidationRule('status', false, 'SmsgMessageStatus', EnumHelper.getValues(SmsgMessageStatus) as string[]),
+                new EnumValidationRule('direction', false, 'ActionDirection', EnumHelper.getValues(ActionDirection) as string[]),
+                new NumberValidationRule('age', false, 2 * 60 * 1000),
+                new StringValidationRule('msgid', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
-        */
     }
+/*
+     *  [4]: types, ActionMessageTypes[], * for all, optional
+     *  [5]: status, SmsgMessageStatus, ENUM{NEW, PARSING_FAILED, PROCESSING, PROCESSED, PROCESSING_FAILED, WAITING}, * for all
+     *  [6]: direction, ActionDirection, ENUM{INCOMING, OUTGOING, BOTH}, * for all
+     *  [7]: age, number, SmsgMessage SmsgMessage minimum message age in ms, default 2 min
+     *  [8]: msgid, string, * for all, optional
+
+ */
 
     public getAllowedSearchOrderFields(): string[] {
         return EnumHelper.getValues(SmsgMessageSearchOrderField) as string[];
@@ -96,58 +111,19 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
      * data.params[]:
      *  [0]: page, number
      *  [1]: pageLimit, number, default=10
-     *  [2]: order, SearchOrder, ENUM{ASC/DESC}
+     *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: types, ActionMessageTypes[], * for all, optional
-     *  [5]: status, SmsgMessageStatus, ENUM{NEW, PARSING_FAILED, PROCESSING, PROCESSED, PROCESSING_FAILED, WAITING}, * for all
-     *  [6]: direction, ActionDirection, ENUM{INCOMING, OUTGOING, BOTH}, * for all
+     *  [4]: types, ActionMessageTypes[], optional
+     *  [5]: status, SmsgMessageStatus
+     *  [6]: direction, ActionDirection
      *  [7]: age, number, SmsgMessage SmsgMessage minimum message age in ms, default 2 min
-     *  [8]: msgid, string, * for all, optional
+     *  [8]: msgid, string, optional
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        let types = data.params[4];                 // optional
-        let status = data.params[5];                // optional
-        let direction = data.params[6];             // optional
-        const age = data.params[7];                   // optional
-        let msgid = data.params[8];                 // optional
-
-        types = types === '*' ? undefined : types;
-        status = status === '*' ? undefined : status;
-        direction = direction === '*' ? undefined : direction;
-        msgid = msgid === '*' ? undefined : msgid;
-
-        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
-
-        if (!_.isNil(types) && (!Array.isArray(types)
-            || data.params[4].every(type => {
-                return typeof type !== 'string'
-                    || (!EnumHelper.containsValue(MPAction, type)
-                        && !EnumHelper.containsValue(MPActionExtended, type)
-                        && !EnumHelper.containsValue(GovernanceAction, type)
-                        && !EnumHelper.containsValue(CommentAction, type));
-            }))) {
-            throw new InvalidParamException('type', 'ActionMessageTypes[]');
-        } else if (!_.isNil(status) && (typeof status !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, status))) {
-            throw new InvalidParamException('status', 'SmsgMessageStatus');
-        } else if (!_.isNil(direction) && (typeof direction !== 'string' || !EnumHelper.containsValue(ActionDirection, direction))) {
-            throw new InvalidParamException('direction', 'ActionDirection');
-        } else if (!_.isNil(age) && !_.isNumber(age)) {
-            throw new InvalidParamException('age', 'number');
-        } else if (!_.isNil(msgid) && typeof msgid !== 'string') {
-            throw new InvalidParamException('msgid', 'string');
-        }
-
-        data.params[4] = types;                 // optional
-        data.params[5] = status;                // optional
-        data.params[6] = direction;             // optional
-        data.params[7] = age === undefined ? 2 * 60 * 1000 : age;
-        data.params[8] = msgid;                 // optional
-
         return data;
     }
 

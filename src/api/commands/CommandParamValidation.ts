@@ -18,6 +18,8 @@ import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { OrderStatus } from '../enums/OrderStatus';
 import { MPActionExtended } from '../enums/MPActionExtended';
 import { MessageException } from '../exceptions/MessageException';
+import { GovernanceAction } from '../enums/GovernanceAction';
+import { CommentAction } from '../enums/CommentAction';
 
 /**
  * used as custom validation function for params.
@@ -195,10 +197,12 @@ export class NumberValidationRule extends BaseParamValidationRule {
 
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
-            // why couldn't we sell free shit?
-            return value >= 0;
+            if (value < 0) {
+                throw new InvalidParamException('age', 'greater than 0');
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 }
 
@@ -248,7 +252,7 @@ export class EscrowRatioValidationRule extends NumberValidationRule {
 // Enums
 
 export class EnumValidationRule extends BaseParamValidationRule {
-    public type = 'string';
+    public type? = 'string';
     public validEnumType: string;
     public validEnumValues: string[];
 
@@ -280,6 +284,30 @@ export class MPActionAndExtendedMessageValidationRule extends EnumValidationRule
     }
 }
 
+export class ActionMessageTypesValidationRule extends EnumValidationRule {
+    public type = undefined;
+
+    constructor(required: boolean = false) {
+        super('types', required, 'ActionMessages',
+            (EnumHelper.getValues(MPAction) as string[])
+                .concat(EnumHelper.getValues(MPActionExtended) as string[])
+                .concat(EnumHelper.getValues(GovernanceAction) as string[])
+                .concat(EnumHelper.getValues(CommentAction) as string[])
+        );
+    }
+
+    public async customValidate(value: any, index: number, allValues: string[]): Promise<boolean> {
+        if (!_.isNil(value)
+            && (!Array.isArray(value)
+                || value.every(type => {
+                    return typeof type !== 'string' || this.validEnumValues.indexOf(type) === -1;
+                })
+            )) {
+            throw new InvalidParamException('types', 'ActionMessageTypes[]');
+        }
+        return true;
+    }
+}
 
 export class SaleTypeValidationRule extends EnumValidationRule {
     public defaultValue = SaleType.SALE;
