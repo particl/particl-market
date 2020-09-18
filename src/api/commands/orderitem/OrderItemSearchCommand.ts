@@ -17,7 +17,6 @@ import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { OrderItemSearchOrderField } from '../../enums/SearchOrderField';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { OrderItem } from '../../models/OrderItem';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { OrderItemSearchParams } from '../../requests/search/OrderItemSearchParams';

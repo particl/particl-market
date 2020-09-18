@@ -17,15 +17,18 @@ import { BaseCommand } from '../BaseCommand';
 import { EscrowUpdateRequest } from '../../requests/model/EscrowUpdateRequest';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { EscrowRatioUpdateRequest } from '../../requests/model/EscrowRatioUpdateRequest';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import {
+    CommandParamValidationRules, EnumValidationRule,
+    EscrowRatioValidationRule,
+    IdValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,6 +37,20 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
     ) {
         super(Commands.ESCROW_UPDATE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new EnumValidationRule('escrowType', false, 'EscrowType',
+                    [EscrowType.MAD_CT] as string[], EscrowType.MAD_CT),
+                new EscrowRatioValidationRule('buyerRatio', false, 100),
+                new EscrowRatioValidationRule('sellerRatio', false, 100),
+                new EnumValidationRule('escrowReleaseType', false, 'EscrowReleaseType',
+                    EnumHelper.getValues(EscrowReleaseType) as string[], EscrowReleaseType.ANON)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -76,50 +93,8 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('escrowType');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('buyerRatio');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('sellerRatio');
-        }
 
-        // this.log.debug('data.params: ' + data.params);
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('escrowType', 'string');
-        } else if (typeof data.params[2] !== 'number') {
-            throw new InvalidParamException('buyerRatio', 'number');
-        } else if (typeof data.params[3] !== 'number') {
-            throw new InvalidParamException('sellerRatio', 'number');
-        } else if (!_.isNil(data.params[4]) && typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('escrowReleaseType', 'EscrowReleaseType');
-        }
-
-        const validEscrowTypes = [EscrowType.MAD_CT/*, EscrowType.MULTISIG, EscrowType.MAD, EscrowType.FE*/];
-        if (validEscrowTypes.indexOf(data.params[1]) === -1) {
-            throw new InvalidParamException('escrowType');
-        }
-
-        // force escrows to 100% for now
-        data.params[2] = 100;
-        data.params[3] = 100;
-        data.params[4] = _.isNil(data.params[4]) ? EscrowReleaseType.ANON : data.params[4];
-
-        const escrowReleaseTypes = [EscrowReleaseType.ANON/*, EscrowReleaseType.BLIND*/];
-        if (escrowReleaseTypes.indexOf(data.params[4]) === -1) {
-            throw new InvalidParamException('escrowReleaseType');
-        }
-
-        // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 
         // make sure PaymentInformation exists
         if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
@@ -141,7 +116,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> [escrowReleaseType] ';
+        return this.getName() + ' <listingItemTemplateId> [escrowType] [buyerRatio] [sellerRatio] [escrowReleaseType] ';
     }
 
     public help(): string {

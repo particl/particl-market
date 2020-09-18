@@ -16,7 +16,7 @@ import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNo
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('IdentityAddCommand', () => {
 

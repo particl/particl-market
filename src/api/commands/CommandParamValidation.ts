@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { BidDataValue } from '../enums/BidDataValue';
-import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
@@ -195,8 +195,8 @@ export class PriceValidationRule extends NumberValidationRule {
 }
 
 export class EscrowRatioValidationRule extends NumberValidationRule {
-    constructor(name: string, required: boolean = false) {
-        super(name, required, 100);
+    constructor(name: string, required: boolean = false, defaultValue?: number) {
+        super(name, required, defaultValue ? defaultValue : 100);
     }
 }
 
@@ -233,7 +233,7 @@ export class SaleTypeValidationRule extends EnumValidationRule {
     public defaultValue = SaleType.SALE;
 
     constructor(required: boolean = false) {
-        super('saleType', required, 'SaleType', [SaleType.SALE]);
+        super('saleType', required, 'SaleType', [SaleType.SALE] as string[]);
     }
 }
 
@@ -241,15 +241,7 @@ export class CryptocurrencyValidationRule extends EnumValidationRule {
     public defaultValue = Cryptocurrency.PART;
 
     constructor(required: boolean = false) {
-        super('currency', required, 'Cryptocurrency', [Cryptocurrency.PART]);
-    }
-}
-
-export class EscrowTypeValidationRule extends EnumValidationRule {
-    public defaultValue = EscrowType.MAD_CT;
-
-    constructor(required: boolean = false) {
-        super('escrowType', required, 'EscrowType', [EscrowType.MAD_CT, EscrowType.MULTISIG]);
+        super('currency', required, 'Cryptocurrency', [Cryptocurrency.PART] as string[]);
     }
 }
 

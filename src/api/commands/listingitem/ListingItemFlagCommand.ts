@@ -142,7 +142,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+        await super.validate(data);
 
         const listingItem: resources.ListingItem = data.params[0];
         const identity: resources.Identity = data.params[1];

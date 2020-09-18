@@ -15,8 +15,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Identity } from '../../models/Identity';
 import { ProfileService } from '../../services/model/ProfileService';
 import { IdentityService } from '../../services/model/IdentityService';
-import { Collection } from 'bookshelf';
-import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 
 export class IdentityAddCommand extends BaseCommand implements RpcCommandInterface<Identity> {
@@ -29,14 +28,15 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
         super(Commands.IDENTITY_ADD);
         this.log = new Logger(__filename);
     }
+
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new IdValidationRule('profileId', true, this.profileService)
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('name', true)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
-
 
     /**
      * command description
@@ -76,12 +76,13 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId>';
+        return this.getName() + ' <profileId> <name>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>                 - number - Id of the Profile. \n';
+            + '    <profileId>                  - number, id of the Profile. \n'
+            + '    <name>                       - string, name of the Identity';
     }
 
     public description(): string {

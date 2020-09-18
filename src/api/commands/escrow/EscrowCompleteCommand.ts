@@ -16,8 +16,6 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
@@ -25,10 +23,9 @@ import { BidService } from '../../services/model/BidService';
 import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteRequest';
 import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -39,6 +36,15 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
     ) {
         super(Commands.ESCROW_COMPLETE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('orderItemId', true, this.orderItemService),
+                new StringValidationRule('memo', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -100,31 +106,19 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
      * [1]: memo
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('orderItemId');
-        }
+        const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
 
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('orderItemId', 'number');
-        }
-
-        // make sure required data exists and fetch it
-        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('OrderItem');
-            });
-
-        // TODO: check these
+        // TODO: check that we are the seller
+        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
+        // TODO: check
         const validOrderItemStatuses = [
             OrderItemStatus.ESCROW_LOCKED
-            // OrderItemStatus.SHIPPING
         ];
 
         // check if in the right state.
@@ -141,21 +135,17 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
 
         data.params[0] = orderItem;
         data.params[2] = identity;
-
-        // TODO: check that we are the seller
-        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
-
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [<orderItemId> [<memo>]]] ';
+        return this.getName() + ' <orderItemId> [memo] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to complete the Escrow.\n'
-            + '    <memo>                   - String - The memo of the Escrow ';
+            + '    <orderItemId>            - number, the id of the OrderItem for which we want to complete the Escrow.\n'
+            + '    <memo>                   - [optional] string - the memo for the Escrow ';
     }
 
     public description(): string {

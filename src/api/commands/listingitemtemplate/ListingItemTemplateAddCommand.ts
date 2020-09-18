@@ -22,10 +22,10 @@ import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { MessageException } from '../../exceptions/MessageException';
 import {
     CommandParamValidationRules, CryptocurrencyValidationRule, EnumValidationRule, EscrowRatioValidationRule,
-    EscrowTypeValidationRule, IdValidationRule, ParamValidationRule, PriceValidationRule, SaleTypeValidationRule, StringValidationRule
+    IdValidationRule, ParamValidationRule, PriceValidationRule, SaleTypeValidationRule, StringValidationRule
 } from '../CommandParamValidation';
 import {EnumHelper} from '../../../core/helpers/EnumHelper';
-import {EscrowReleaseType} from 'omp-lib/dist/interfaces/omp-enums';
+import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
 
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -54,10 +54,12 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 new PriceValidationRule('basePrice', false),
                 new PriceValidationRule('domesticShippingPrice', false),
                 new PriceValidationRule('internationalShippingPrice', false),
-                new EscrowTypeValidationRule(false),
+                new EnumValidationRule('escrowType', false, 'EscrowType',
+                    [EscrowType.MAD_CT] as string[], EscrowType.MAD_CT),
                 new EscrowRatioValidationRule('buyerRatio', false),
                 new EscrowRatioValidationRule('sellerRatio', false),
-                new EnumValidationRule('escrowReleaseType', false, 'EscrowReleaseType', EnumHelper.getValues(EscrowReleaseType) as string[])
+                new EnumValidationRule('escrowReleaseType', false, 'EscrowReleaseType',
+                    EnumHelper.getValues(EscrowReleaseType) as string[], EscrowReleaseType.ANON)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }

@@ -16,8 +16,6 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { EscrowLockActionService } from '../../services/action/EscrowLockActionService';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
@@ -28,6 +26,7 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -44,10 +43,17 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) private orderItemService: OrderItemService
-
     ) {
         super(Commands.ESCROW_LOCK);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('orderItemId', true, this.orderItemService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -65,7 +71,6 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const orderItem: resources.OrderItem = data.params[0];
         const options: KVS[] = data.params[1];
         const identity: resources.Identity = data.params[2];
-
 
         const bid: resources.Bid = await this.bidService.findOne(orderItem.Bid.id).then(value => value.toJSON());
         const childBid: resources.Bid | undefined = _.find(bid.ChildBids, (child) => {
@@ -103,22 +108,9 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('orderItemId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('orderItemId', 'number');
-        }
-
-        // make sure required data exists and fetch it
-        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0]).then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('OrderItem');
-            });
+        const orderItem: resources.OrderItem = data.params[0];
 
         if (orderItem.status !== OrderItemStatus.AWAITING_ESCROW) {
             throw new MessageException('Order is in invalid state');
@@ -159,12 +151,12 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' [<orderItemId>] ';
+        return this.getName() + ' <orderItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to lock the Escrow.\n';
+            + '    <orderItemId>            - number, the id of the OrderItem for which we want to lock the Escrow.\n';
     }
 
     public description(): string {

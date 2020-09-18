@@ -16,7 +16,6 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatusResponse } from '../../../core/helpers/OrderItemStatusResponse';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidSearchOrderField } from '../../enums/SearchOrderField';
 import { BidSearchParams } from '../../requests/search/BidSearchParams';

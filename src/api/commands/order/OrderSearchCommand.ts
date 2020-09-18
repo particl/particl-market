@@ -18,12 +18,9 @@ import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { OrderSearchOrderField } from '../../enums/SearchOrderField';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
-import { OrderStatus } from '../../enums/OrderStatus';
 import {
     CommandParamValidationRules,
     IdValidationRule,
