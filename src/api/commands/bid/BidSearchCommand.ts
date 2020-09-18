@@ -16,19 +16,22 @@ import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/search/BidSearchParams';
 import { Commands } from '../CommandEnumType';
-import { OrderItemStatus } from '../../enums/OrderItemStatus';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BidSearchOrderField } from '../../enums/SearchOrderField';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    CommandParamValidationRules,
+    IdValidationRule,
+    MPActionAndExtendedMessageValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
+import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
 
 
 export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
@@ -47,35 +50,15 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'profileId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'identityId',
-                required: false,
-                type: 'number'
-            }, {
-                name: 'listingItemId',
-                required: false,
-                type: undefined     // 'number|string'
-            }, {
-                name: 'type',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'searchString',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'market',
-                required: false,
-                type: 'string'
-            }, {
-                name: 'bidder',
-                required: false,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new IdValidationRule('identityId', false, this.identityService),
+                new IdValidationRule('listingItemId', false, this.listingItemService),
+                new MPActionAndExtendedMessageValidationRule(false),
+                new StringValidationRule('searchString', false),
+                new StringValidationRule('market', false),
+                new StringValidationRule('bidder', false)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -161,58 +144,19 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const profileId = data.params[4];
-        let identityId = data.params[5];        // optional
-        let listingItemId = data.params[6];     // optional
-        let type = data.params[7];              // optional
-        let searchString = data.params[8];      // optional
-        let market = data.params[9];            // optional
-
-        let profile: resources.Profile;
-        let identity: resources.Identity | undefined;
-        let listingItem: resources.ListingItem | undefined;
-
-        if (!_.isNil(type)) {
-            type = this.validateStatus(type);
-        }
+        const profile: resources.Profile = data.params[4];
+        const identity: resources.Identity = data.params[5];            // optional
+        const listingItem: resources.ListingItem = data.params[6];      // optional
+        const type: ActionMessageTypes = data.params[7];                // optional
+        const searchString: string = data.params[8];                    // optional
+        const market: string = data.params[9];                          // optional
 
         // todo: validate that market exists
         // todo: do we really need the searchString?
 
-        // * -> undefined
-        identityId = identityId !== '*' ? identityId : undefined;
-        listingItemId = listingItemId !== '*' ? listingItemId : undefined;
-        searchString = searchString !== '*' ? searchString : undefined;
-        market = market !== '*' ? market : undefined;
-
-        // make sure Identity with the id exists
-        profile = await this.profileService.findOne(profileId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        if (!_.isNil(identityId)) {
-            // make sure Identity with the id exists
-            identity = await this.identityService.findOne(identityId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Identity');
-                });
-
-            // make sure Identity belongs to the given Profile
-            if (identity!.Profile.id !== profile.id) {
-                throw new MessageException('Identity does not belong to the Profile.');
-            }
-        }
-
-        if (!_.isNil(listingItemId)) {
-            // make sure ListingItem with the id exists
-            listingItem = await this.listingItemService.findOne(listingItemId)
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
+        // make sure Identity belongs to the given Profile
+        if (!_.isNil(identity) && identity!.Profile.id !== profile.id) {
+            throw new MessageException('Identity does not belong to the Profile.');
         }
 
         if (!_.isNil(market)) {
@@ -227,20 +171,19 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
                 });
         }
 
-        // * -> undefined
         data.params[4] = profile;
         data.params[5] = identity;
         data.params[6] = listingItem;
         data.params[7] = type;
-        data.params[8] = searchString !== '*' ? searchString : undefined;
-        data.params[9] = market !== '*' ? market : undefined;
+        data.params[8] = searchString;
+        data.params[9] = market;
 
         return data;
     }
 
     public usage(): string {
         return this.getName()
-            + ' <page> <pageLimit> <order> <orderField> <profileId> <identityId> [listingItemId] [type] [searchString] [market] [bidderAddress...] ';
+            + ' <page> <pageLimit> <order> <orderField> <profileId> [identityId] [listingItemId] [type] [searchString] [market] [bidderAddress...] ';
     }
 
     public help(): string {
@@ -266,45 +209,5 @@ export class BidSearchCommand extends BaseSearchCommand implements RpcCommandInt
     public example(): string {
         return 'bid ' + this.getName() + ' 0 10 \'ASC\' \'FIELD\' 1'
             + ' MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
-    }
-
-    private validateStatus(status: string): MPAction | MPActionExtended | OrderItemStatus | undefined {
-        switch (status) {
-            case MPAction.MPA_BID.toString():
-                return MPAction.MPA_BID;
-            case MPAction.MPA_ACCEPT.toString():
-                return MPAction.MPA_ACCEPT;
-            case MPAction.MPA_REJECT.toString():
-                return MPAction.MPA_REJECT;
-            case MPAction.MPA_LOCK.toString():
-                return MPAction.MPA_LOCK;
-            case MPAction.MPA_CANCEL.toString():
-                return MPAction.MPA_CANCEL;
-            case MPActionExtended.MPA_COMPLETE.toString():
-                return MPActionExtended.MPA_COMPLETE;
-            case MPActionExtended.MPA_REFUND.toString():
-                return MPActionExtended.MPA_REFUND;
-            case MPActionExtended.MPA_RELEASE.toString():
-                return MPActionExtended.MPA_RELEASE;
-            case MPActionExtended.MPA_SHIP.toString():
-                return MPActionExtended.MPA_SHIP;
-/*
-            case 'AWAITING_ESCROW':
-                return OrderItemStatus.AWAITING_ESCROW;
-            case 'ESCROW_LOCKED':
-                return OrderItemStatus.ESCROW_LOCKED;
-            case 'ESCROW_COMPLETED':
-                return OrderItemStatus.ESCROW_COMPLETED;
-            case 'SHIPPING':
-                return OrderItemStatus.SHIPPING;
-            case 'COMPLETE':
-                return OrderItemStatus.COMPLETE;
-*/
-            case '*':
-                return undefined;
-            default:
-                throw new InvalidParamException('type', 'MPAction');
-
-        }
     }
 }

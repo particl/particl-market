@@ -93,6 +93,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
 

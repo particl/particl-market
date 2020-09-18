@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { BidDataValue } from '../enums/BidDataValue';
-import { SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import {MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
@@ -16,6 +16,7 @@ import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { OrderStatus } from '../enums/OrderStatus';
+import {MPActionExtended} from '../enums/MPActionExtended';
 
 /**
  * used as custom validation function for params.
@@ -228,6 +229,14 @@ export class OrderStatusOrOrderItemStatusValidationRule extends EnumValidationRu
             (EnumHelper.getValues(OrderStatus) as string[]).concat(EnumHelper.getValues(OrderItemStatus) as string[]));
     }
 }
+
+export class MPActionAndExtendedMessageValidationRule extends EnumValidationRule {
+    constructor(required: boolean = false) {
+        super('type', required, 'MPAction|MPActionExtended',
+            (EnumHelper.getValues(MPAction) as string[]).concat(EnumHelper.getValues(MPActionExtended) as string[]));
+    }
+}
+
 
 export class SaleTypeValidationRule extends EnumValidationRule {
     public defaultValue = SaleType.SALE;

@@ -11,15 +11,11 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { Bid } from '../../models/Bid';
 import { BidService } from '../../services/model/BidService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
-export class BidGetCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
-    public log: LoggerType;
+export class BidGetCommand extends BaseCommand implements RpcCommandInterface<resources.Bid> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -29,19 +25,24 @@ export class BidGetCommand extends BaseCommand implements RpcCommandInterface<Bi
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('bidId', true, this.bidService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
-     *  [1]: id
+     *  [1]: bid: resources.Bid
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bid> {
-        return await this.bidService.findOne(data.params[0])
-            .catch(reason => {
-                throw new ModelNotFoundException('Bid');
-            });
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Bid> {
+        return data.params[0];
     }
 
     /**
@@ -52,24 +53,18 @@ export class BidGetCommand extends BaseCommand implements RpcCommandInterface<Bi
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('bidId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('bidId', 'number');
-        }
-
+        await super.validate(data);
         return data;
+
     }
 
     public usage(): string {
-        return this.getName() + ' <categoryId> ';
+        return this.getName() + ' <bidId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID belonging to the Bid we want to retrive. \n';
+            + '    <bidId>                  - number, the ID belonging to the Bid we want to retrieve. \n';
     }
 
     public description(): string {
@@ -77,6 +72,6 @@ export class BidGetCommand extends BaseCommand implements RpcCommandInterface<Bi
     }
 
     public example(): string {
-        return 'category ' + this.getName() + ' 6 ';
+        return 'bid ' + this.getName() + ' 6 ';
     }
 }

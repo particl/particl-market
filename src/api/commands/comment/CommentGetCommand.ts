@@ -20,8 +20,6 @@ import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException'
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService

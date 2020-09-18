@@ -30,9 +30,8 @@ import { IdentityService } from '../../services/model/IdentityService';
 import { IdentityType } from '../../enums/IdentityType';
 import { ProposalService } from '../../services/model/ProposalService';
 
-export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
-    public log: LoggerType;
+export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
