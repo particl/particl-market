@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,6 +16,7 @@ import { SmsgMessageUpdateRequest } from '../../requests/model/SmsgMessageUpdate
 import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class SmsgMessageService {
 
@@ -38,6 +39,16 @@ export class SmsgMessageService {
         return this.smsgMessageRepo.findAll();
     }
 
+    public async findLast(): Promise<SmsgMessage> {
+        const smsgMessage = await this.smsgMessageRepo.findLast();
+        // this.log.debug('findLast(), smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+        if (!smsgMessage) {
+            this.log.warn(`SmsgMessage not found!`);
+            throw new MessageException('SmsgMessage not found.');
+        }
+        return smsgMessage;
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<SmsgMessage> {
         const smsgMessage = await this.smsgMessageRepo.findOne(id, withRelated);
         if (smsgMessage === null) {
@@ -47,7 +58,8 @@ export class SmsgMessageService {
         return smsgMessage;
     }
 
-    public async findOneByMsgId(msgId: string, direction: ActionDirection = ActionDirection.BOTH, withRelated: boolean = true): Promise<SmsgMessage> {
+    public async findOneByMsgIdAndDirection(msgId: string, direction: ActionDirection = ActionDirection.BOTH,
+                                            withRelated: boolean = true): Promise<SmsgMessage> {
         let smsgMessage;
         if (direction === ActionDirection.BOTH) {
             smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, ActionDirection.INCOMING, withRelated);
@@ -70,16 +82,9 @@ export class SmsgMessageService {
 
     @validate()
     public async create( @request(SmsgMessageCreateRequest) data: SmsgMessageCreateRequest): Promise<SmsgMessage> {
-
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
-
-        // If the request body was valid we will create the smsgMessage
         const smsgMessage = await this.smsgMessageRepo.create(body);
-
-        // finally find and return the created smsgMessage
-        const newSmsgMessage = await this.findOne(smsgMessage.id);
-        return newSmsgMessage;
+        return await this.findOne(smsgMessage.id);
     }
 
     public async createAll(datas: SmsgMessageCreateRequest[]): Promise<string[]> {
@@ -89,10 +94,8 @@ export class SmsgMessageService {
     @validate()
     public async update(id: number, @request(SmsgMessageUpdateRequest) body: SmsgMessageUpdateRequest): Promise<SmsgMessage> {
 
-        // find the existing one without related
         const smsgMessage = await this.findOne(id, false);
 
-        // set new values
         smsgMessage.Type = body.type;
         smsgMessage.Status = body.status;
         smsgMessage.Direction = body.direction;
@@ -109,24 +112,35 @@ export class SmsgMessageService {
         smsgMessage.From = body.from;
         smsgMessage.To = body.to;
         smsgMessage.Text = body.text;
+        smsgMessage.ProcessedCount = body.processedCount;
+        smsgMessage.ProcessedAt = body.processedAt;
 
-        // update smsgMessage record
-        const updatedSmsgMessage = await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
-
-        // const newSmsgMessage = await this.findOne(id);
-        // return newSmsgMessage;
-
-        return updatedSmsgMessage;
+        return await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
     }
 
     /**
-     * update the status of the processed message, clean the text field if processing was successfull
+     * update the processed count and time
      *
      * @param id
      * @param {SmsgMessageStatus} status
      * @returns {Promise<module:resources.SmsgMessage>}
      */
-    public async updateSmsgMessageStatus(id: number, status: SmsgMessageStatus): Promise<SmsgMessage> {
+    public async updateProcessedCount(id: number): Promise<SmsgMessage> {
+        const smsgMessage = await this.findOne(id, false);
+        smsgMessage.set('processed_at', Date.now());
+        smsgMessage.set('processed_count', smsgMessage.ProcessedCount + 1);
+        await this.smsgMessageRepo.update(id, smsgMessage.toJSON());
+        return await this.findOne(id);
+    }
+
+    /**
+     * update the status of the message
+     *
+     * @param id
+     * @param {SmsgMessageStatus} status
+     * @returns {Promise<module:resources.SmsgMessage>}
+     */
+    public async updateStatus(id: number, status: SmsgMessageStatus): Promise<SmsgMessage> {
         const smsgMessage = await this.findOne(id, false);
         smsgMessage.set('status', status);
         await this.smsgMessageRepo.update(id, smsgMessage.toJSON());

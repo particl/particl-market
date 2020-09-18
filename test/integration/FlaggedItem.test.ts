@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -23,6 +23,7 @@ import { FlaggedItemCreateRequest } from '../../src/api/requests/model/FlaggedIt
 import { FlaggedItem } from '../../src/api/models/FlaggedItem';
 import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedItemUpdateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('FlaggedItem', () => {
 
@@ -32,6 +33,7 @@ describe('FlaggedItem', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let flaggedItemService: FlaggedItemService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -49,23 +51,21 @@ describe('FlaggedItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         flaggedItemService = app.IoC.getNamed<FlaggedItemService>(Types.Service, Targets.Service.model.FlaggedItemService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const generateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             false,      // generatePaymentInformation
             false,      // generateEscrow
             false,      // generateItemPrice
@@ -91,6 +91,7 @@ describe('FlaggedItem', () => {
             listingItem.hash,                    // listingItemHash,
             false,                                      // generatePastProposal,
             0,                                          // voteCount
+            // TODO: there is no profile.address anymore, use identity.adress
             profile.address                      // submitter
         ]).toParamsArray();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -26,7 +26,7 @@ export class ProposalRepository {
 
     /**
      *
-     * @param {ListingItemSearchParams} options
+     * @param {ProposalSearchParams} options
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
@@ -36,8 +36,19 @@ export class ProposalRepository {
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
-            timeStart: '*',
-            timeEnd: '*',
+            order: SearchOrder.ASC,
+            category: ProposalCategory.PUBLIC_VOTE
+        } as ProposalSearchParams;
+        return await this.search(searchParams, withRelated);
+    }
+
+    public async findAllExpired(): Promise<Bookshelf.Collection<Proposal>> {
+        return this.ProposalModel.fetchExpired();
+    }
+
+    public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        const searchParams = {
+            market,
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -48,8 +59,8 @@ export class ProposalRepository {
         return this.ProposalModel.fetchByHash(hash, withRelated);
     }
 
-    public async findOneByItemHash(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
-        return this.ProposalModel.fetchByItemHash(itemHash, withRelated);
+    public async findOneByTarget(itemHash: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByTarget(itemHash, withRelated);
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Proposal> {
@@ -64,7 +75,7 @@ export class ProposalRepository {
         const proposal = this.ProposalModel.forge<Proposal>(data);
         try {
             const proposalCreated = await proposal.save();
-            return this.ProposalModel.fetchById(proposalCreated.id);
+            return await this.ProposalModel.fetchById(proposalCreated.id);
         } catch (error) {
             this.log.error('error:', error);
             throw new DatabaseException('Could not create the proposal!' + error, error);

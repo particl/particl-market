@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,82 +8,73 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ItemImageService } from '../../services/model/ItemImageService';
+import { ImageService } from '../../services/model/ImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ItemImage } from '../../models/ItemImage';
-import {ModelNotModifiableException} from '../../exceptions/ModelNotModifiableException';
+import { Image } from '../../models/Image';
+import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
-export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
-    public log: LoggerType;
+export class ListingItemTemplateFeatureImageCommand extends BaseCommand implements RpcCommandInterface<Image> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) private imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_FEATURED_IMAGE);
         this.log = new Logger(__filename);
     }
 
-    /**
-     * data.params[]:
-     *  [0]: listingItemTemplate: resources.ListingItemTemplate
-     *  [1]: itemImage: resources.ItemImage
-     * @param data
-     * @returns {Promise<ItemImage>}
-     */
-    @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
-
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const itemImage: resources.ItemImage = data.params[1];
-
-        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, itemImage.id);
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new IdValidationRule('imageId', true, this.imageService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: itemImageId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: itemImage: resources.Image
      * @param data
-     * @returns {Promise<ItemImage>}
+     * @returns {Promise<Image>}
+     */
+    @validate()
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Image> {
+
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const image: resources.Image = data.params[1];
+
+        return await this.listingItemTemplateService.setFeaturedImage(listingItemTemplate, image.id);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId: number -> listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: imageId: number -> image: resources.Image
+     * @param data
+     * @returns {Promise<Image>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // check if we got all the params
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('itemImageId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('itemImageId', 'number');
-        }
-
-        // make sure required data exists and fetch it
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON());
-
-        const itemImage: resources.ItemImage = await this.itemImageService.findOne(data.params[1], true)
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const image: resources.Image = data.params[1];
 
         // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
-        // make sure the given image is assigned to the template
-        const foundImage: resources.ItemImage | undefined = _.find(listingItemTemplate.ItemInformation.ItemImages, img => {
-            this.log.debug(img.id + ' === ' + itemImage.id + ' = ' + (img.id === itemImage.id));
-            return img.id === itemImage.id;
+        // make sure the given image belongs to the template
+        const foundImage: resources.Image | undefined = _.find(listingItemTemplate.ItemInformation.Images, img => {
+            this.log.debug(img.id + ' === ' + image.id + ' = ' + (img.id === image.id));
+            return img.id === image.id;
         });
         if (_.isEmpty(foundImage)) {
             this.log.error('IMAGE ID DOESNT EXIST ON TEMPLATE');
@@ -102,13 +93,13 @@ export class ListingItemTemplateFeatureImageCommand extends BaseCommand implemen
     }
 
     public usage(): string {
-        return this.getName() + ' <templateId> <itemImageId> ';
+        return this.getName() + ' <listingItemTemplateId> <imageId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '   <templateId>                 - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
-            + '   <itemImageId>                - Numeric - The Id of the Image we want to remove.';
+            + '   <listingItemTemplateId>       - Numeric - The Id of the ListingItemTemplate the Image belongs to.' + ' \n'
+            + '   <imageId>                     - Numeric - The Id of the Image we want to set as featured.';
     }
 
     public description(): string {

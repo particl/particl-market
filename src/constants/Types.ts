@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -21,6 +21,7 @@ export const Types = {
     Command: Symbol('Command'),
     Factory: Symbol('Factory'),
     MessageProcessor: Symbol('MessageProcessor'),
+    MessageValidator: Symbol('MessageValidator'),
     Listener: Symbol('Listener'),
     Repository: Symbol('Repository'),
     Middleware: Symbol('Middleware')

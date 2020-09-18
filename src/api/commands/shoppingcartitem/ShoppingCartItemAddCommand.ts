@@ -1,7 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -14,6 +16,10 @@ import { ShoppingCartItemCreateRequest } from '../../requests/model/ShoppingCart
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
 import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
 import { ListingItemService } from '../../services/model/ListingItemService';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 import { MessageException } from '../../exceptions/MessageException';
 
 export class ShoppingCartItemAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCartItem> {
@@ -21,6 +27,7 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -31,31 +38,69 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
 
     /**
      * data.params[]:
-     *  [0]: cartId
-     *  [1]: itemId | hash
+     *  [0]: cart, resources.ShoppingCart
+     *  [1]: listingItem, resources.ListingItem
      *
      * @param data
      * @returns {Promise<ShoppingCartItem>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCartItem> {
-        if (data.params[0] && data.params[1]) {
-            // check if listingItem hash then get Id and pass as parameter
-            let listingItemId = data.params[1];
-            if (typeof data.params[1] !== 'number') {
-                const listingItem = await this.listingItemService.findOneByHash(listingItemId);
-                listingItemId = listingItem.id;
-            }
-            return this.shoppingCartItemService.create({
-                shopping_cart_id: data.params[0],
-                listing_item_id: listingItemId
-            } as ShoppingCartItemCreateRequest);
-        } else {
-            throw new MessageException('cartId and listingItemId can\'t be blank');
-        }
+        const shoppingCart: resources.ShoppingCart = data.params[0];
+        const listingItem: resources.ListingItem = data.params[1];
+
+        return this.shoppingCartItemService.create({
+            shopping_cart_id: shoppingCart.id,
+            listing_item_id: listingItem.id
+        } as ShoppingCartItemCreateRequest);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: cartId, number
+     *  [1]: listingItemId, number
+     *
+     * @param data
+     * @returns {Promise<ShoppingCartItem>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MissingParamException('cartId');
+        } else if (data.params.length < 2) {
+            throw new MissingParamException('listingItemId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('cartId', 'number');
+        } else if (typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
+        }
+
+        const cartId: number = data.params[0];
+        const listingItemId: number = data.params[1];
+
+        // make sure ShoppingCart exists
+        data.params[0] = await this.shoppingCartService.findOne(cartId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ShoppingCart');
+            });
+
+        // make sure ListingItem exists
+        data.params[1] = await this.listingItemService.findOne(listingItemId)
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
+        const shoppingCartItem: resources.ShoppingCartItem = await this.shoppingCartItemService.findOneByCartIdAndListingItemId(cartId, listingItemId)
+            .then(value => value.toJSON())
+            .catch(reason => undefined);
+
+        if (!_.isNil(shoppingCartItem)) {
+            this.log.warn(`ListingItem already added to ShoppingCart`);
+            throw new MessageException(`ListingItem already added to ShoppingCart`);
+        }
+
         return data;
     }
 
@@ -74,6 +119,6 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
     }
 
     public example(): string {
-        return 'cartitem ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+        return 'cartitem ' + this.getName() + ' 1 1';
     }
 }

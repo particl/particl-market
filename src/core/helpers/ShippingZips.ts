@@ -1,21 +1,18 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
-import { NotFoundException } from '../../api/exceptions/NotFoundException';
-import { Logger as LoggerType } from '../../core/Logger';
 
 import postalCodes from 'postal-codes-js';
 
 export class ShippingZips {
-    public static isCountryCodeSupported( countryCode: string ): boolean {
-        if ( !countryCode ) {
+    public static isCountryCodeSupported(countryCode: string): boolean {
+        if (!countryCode) {
             return false;
         }
         countryCode = countryCode.toString().toUpperCase();
 
         // Countries not supported by the lib but should be.
-        switch ( countryCode ) {
+        switch (countryCode) {
             case 'AQ':
             case 'GS':
             case 'IO':
@@ -82,13 +79,17 @@ export class ShippingZips {
             case 'YE':
             case 'ZW':
                 return true;
+            default:
+                //
+                break;
+
         }
 
         try {
             const retval = postalCodes.validate(countryCode, '___SOMETHINGTHATISNTAPOSTCODE___');
             const regex = new RegExp('^(Missing country code.|Unknown alpha2/alpha3 country code: )');
-            return ( regex.test(retval) === false );
-        } catch ( ex ) {
+            return (regex.test(retval) === false);
+        } catch (ex) {
             return false;
         }
     }

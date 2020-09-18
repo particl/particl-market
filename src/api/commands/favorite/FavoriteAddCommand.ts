@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -61,7 +61,7 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * validate that profile and item exists, replace possible hash with id
+     * validate that profile and item exists
      *
      * data.params[]:
      *  [0]: profileId
@@ -78,31 +78,27 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
             throw new MissingParamException('listingItemId');
         }
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
+        const profileId = data.params[0];
+        const listingItemId = data.params[1];
+
+        if (profileId && typeof profileId !== 'number') {
             throw new InvalidParamException('profileId', 'number');
+        } else if (listingItemId && typeof listingItemId !== 'number') {
+            throw new InvalidParamException('listingItemId', 'number');
         }
 
-        // make sure required data exists and fetch it
-        let listingItem: resources.ListingItem;
-
-        if (typeof data.params[1] === 'string') {
-            listingItem = await this.listingItemService.findOneByHash(data.params[1])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        } else {
-            listingItem = await this.listingItemService.findOne(data.params[1])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        }
-
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
+        // make sure Profile exists
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
+            });
+
+        // make sure ListingItem exists
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(listingItemId)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
             });
 
         await this.favoriteItemService.findOneByProfileIdAndListingItemId(profile.id, listingItem.id)
@@ -125,10 +121,8 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <profileId>                   - Numeric - The ID of the profile we \n'
-            + '                                     want to associate this favorite with. \n'
-            + '    <listingItemId>               - Numeric - The ID of the listing item you want to \n'
-            + '                                     add to your favorites. \n';
+            + '    <profileId>                   - number - The Id of the Profile. \n'
+            + '    <listingItemId>               - number - The Id of the ListingItem. \n';
     }
 
     public description(): string {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,63 +8,112 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
-import {
-    EscrowConfig, EscrowRatio,
-    Item, ItemInfo, ItemObject,
-    Location,
-    MessagingInfo, MessagingOption,
-    MPA,
-    PaymentInfo, PaymentInfoEscrow, PaymentOption,
-    ShippingPrice
-} from 'omp-lib/dist/interfaces/omp';
-import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { ItemCategoryFactory } from '../ItemCategoryFactory';
+import { EscrowConfig, EscrowRatio, Item, ItemInfo, ItemObject, Location, LocationMarker,
+    MessagingInfo, MessagingOption, PaymentInfo, PaymentInfoEscrow, PaymentOption, SellerInfo,
+    ShippingPrice } from 'omp-lib/dist/interfaces/omp';
+import { MessagingProtocol, MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
+import { ItemCategoryFactory } from '../model/ItemCategoryFactory';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CryptoAddress } from 'omp-lib/dist/interfaces/crypto';
 import { KVS } from 'omp-lib/dist/interfaces/common';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ListingItemAddMessage } from '../../messages/action/ListingItemAddMessage';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingMessageConfig } from 'omp-lib/dist/hasher/config/listingitemadd';
-import { HashMismatchException } from '../../exceptions/HashMismatchException';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { HashableListingItemTemplateConfig } from '../hashableconfig/model/HashableListingItemTemplateConfig';
 
-export class ListingItemAddMessageFactory implements MessageFactoryInterface {
+
+// todo: move
+export interface VerifiableMessage {
+    // not empty
+}
+
+// todo: move
+export interface SellerMessage extends VerifiableMessage {
+    hash: string;               // item hash being added
+    address: string;            // seller address
+}
+
+export class ListingItemAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        // tslint:disable:max-line-length
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        // tslint:enable:max-line-length
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      * Creates a ListingItemAddMessage from given parameters
      *
-     * @param params
-     * @returns {Promise<MPA>}
+     * @param actionRequest
+     * @returns {Promise<MarketplaceMessage>}
      */
+    public async get(actionRequest: ListingItemAddRequest): Promise<MarketplaceMessage> {
 
-    public async get(params: ListingItemAddMessageCreateParams): Promise<ListingItemAddMessage> {
-
-        if (!params.listingItem) {
+        if (!actionRequest.listingItem) {
             throw new MissingParamException('listingItem');
         }
-        const information = await this.getMessageItemInfo(params.listingItem.ItemInformation);
-        const payment = await this.getMessagePayment(params.listingItem.PaymentInformation, params.cryptoAddress);
-        const messaging = await this.getMessageMessaging(params.listingItem.MessagingInformation);
-        const objects = await this.getMessageObjects(params.listingItem.ListingItemObjects);
+
+        let signature;
+        let pubkey;
+
+        if (_.isEmpty(actionRequest.listingItem['signature'])) {
+            // listingItem already has the signature, so this is a listingItemTemplate being posted
+
+            // signing requires hash, which the listingItemTemplate doesn't have yet...
+            const hash = ConfigurableHasher.hash(actionRequest.listingItem, new HashableListingItemTemplateConfig());
+
+            // sign it and add the seller pubkey to the MessagingInformation
+            signature = await this.signSellerMessage(actionRequest.sendParams.wallet, actionRequest.sellerAddress, hash);
+            pubkey = await this.coreRpcService.getAddressInfo(actionRequest.sendParams.wallet, actionRequest.sellerAddress)
+                .then(value => {
+                    if (value.ismine) {
+                        return value.pubkey;
+                    } else {
+                        throw new MessageException('Seller address is not yours.');
+                    }
+                });
+            // not saving the pubkey as part of the ListingItemTemplate because we can use multiple identities to post those,
+            // it will be stored as part of the ListingItem once its received.
+            actionRequest.listingItem.MessagingInformation.push({
+                protocol: MessagingProtocol.SMSG,
+                publicKey: pubkey
+            } as resources.MessagingInformation);
+
+        } else {
+            signature = (actionRequest.listingItem as resources.ListingItem).signature;
+        }
+
+        const information = await this.getMessageItemInfo(actionRequest);
+        const payment = await this.getMessagePayment(actionRequest);
+        const messaging = await this.getMessageMessaging(actionRequest);
+        const objects = await this.getMessageObjects(actionRequest);
+
+        if (_.isEmpty(actionRequest.sellerAddress)) {
+            throw new MessageException('Cannot create a ListingItemAddMessage without seller information.');
+        }
 
         const item = {
             information,
+            seller: {
+                address: actionRequest.sellerAddress,
+                signature
+            } as SellerInfo,
             payment,
             messaging,
             objects
@@ -72,25 +121,58 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
 
         const message = {
             type: MPAction.MPA_LISTING_ADD,
-            generated: params.listingItem.generatedAt, // generated needs to come from the template as its used in hash generation, so that we can match them
+            generated: actionRequest.listingItem.generatedAt, // generated should come from the template as its used in hash generation
             item,
             hash: 'recalculateandvalidate'
         } as ListingItemAddMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableListingMessageConfig());
 
-        // the listingItemTemplate.hash should have a matching hash with the outgoing message, if the listingItemTemplate has a hash
-        if (params.listingItem.hash && params.listingItem.hash !== message.hash) {
-            throw new HashMismatchException('ListingItemAddMessage', params.listingItem.hash, message.hash);
-        }
-        return message;
+        // this.log.debug('params.listingItem.hash:', JSON.stringify(actionRequest.listingItem.hash, null, 2));
+        // this.log.debug('message.hash:', JSON.stringify(message.hash, null, 2));
+
+        return await this.getMarketplaceMessage(message);
     }
 
-    private async getMessageItemInfo(itemInformation: resources.ItemInformation): Promise<ItemInfo> {
-        const category = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
-        const location = await this.getMessageItemInfoLocation(itemInformation.ItemLocation);
-        const shippingDestinations = await this.getMessageItemInfoShippingDestinations(itemInformation.ShippingDestinations);
-        const images = await this.getMessageInformationImages(itemInformation.ItemImages);
+    /**
+     * signs message containing sellers address and ListingItem hash, proving the message is sent by the seller and with intended contents
+     *
+     * @param wallet
+     * @param address
+     * @param hash
+     */
+    private async signSellerMessage(wallet: string, address: string, hash: string): Promise<string> {
+        if (_.isEmpty(wallet)) {
+            this.log.error('signSellerMessage(), missing wallet.');
+            throw new MissingParamException('wallet');
+        }
+        if (_.isEmpty(address)) {
+            this.log.error('signSellerMessage(), missing address.');
+            throw new MissingParamException('address');
+        }
+        if (_.isEmpty(hash)) {
+            this.log.error('signSellerMessage(), missing hash.');
+            throw new MissingParamException('hash');
+        }
+        const message = {
+            address,        // seller address
+            hash            // item hash
+        } as SellerMessage;
+
+        this.log.debug('signSellerMessage(), message: ', JSON.stringify(message, null, 2));
+        this.log.debug('signSellerMessage(), address: ', address);
+        this.log.debug('signSellerMessage(), hash: ', hash);
+
+        return await this.coreRpcService.signMessage(wallet, address, message);
+    }
+
+    private async getMessageItemInfo(actionRequest: ListingItemAddRequest): Promise<ItemInfo> {
+        const itemInformation = actionRequest.listingItem.ItemInformation;
+
+        const category: string[] = this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
+        const location: Location = await this.getMessageItemInfoLocation(actionRequest);
+        const shippingDestinations: string[] | undefined = await this.getMessageItemInfoShippingDestinations(actionRequest);
+        const images: ContentReference[] = await this.getMessageInformationImages(actionRequest);
 
         return {
             title: itemInformation.title,
@@ -99,24 +181,24 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
             category,
             location,
             shippingDestinations,
-            images
+            images: images.length > 0 ? images : undefined
         } as ItemInfo;
     }
 
-    private async getMessageItemInfoLocation(itemLocation: resources.ItemLocation): Promise<Location> {
+    private async getMessageItemInfoLocation(actionRequest: ListingItemAddRequest): Promise<Location> {
+        const itemLocation: resources.ItemLocation = actionRequest.listingItem.ItemInformation.ItemLocation;
+
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        const informationLocation: any = {};
-        if (itemLocation.country) {
-            informationLocation.country = itemLocation.country;
-        }
-        if (itemLocation.address) {
-            informationLocation.address = itemLocation.address;
-        }
+        const informationLocation = {
+            country: itemLocation.country,
+            address: itemLocation.address
+        } as Location;
+
         if (!_.isEmpty(locationMarker)) {
             informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
-            };
+            } as LocationMarker;
 
             if (locationMarker.title) {
                 informationLocation.gps.title = locationMarker.title;
@@ -128,7 +210,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return informationLocation;
     }
 
-    private async getMessageItemInfoShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[] | undefined> {
+    private async getMessageItemInfoShippingDestinations(actionRequest: ListingItemAddRequest): Promise<string[] | undefined> {
+        const shippingDestinations: resources.ShippingDestination[] = actionRequest.listingItem.ItemInformation.ShippingDestinations;
+
         const shippingDesArray: string[] = [];
         for (const destination of shippingDestinations) {
             switch (destination.shippingAvailability) {
@@ -137,6 +221,15 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                     break;
                 case ShippingAvailability.DOES_NOT_SHIP:
                     shippingDesArray.push('-' + destination.country);
+                    break;
+                case ShippingAvailability.ASK:
+                    //
+                    break;
+                case ShippingAvailability.UNKNOWN:
+                    //
+                    break;
+                default:
+                    //
                     break;
             }
         }
@@ -147,11 +240,24 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return shippingDesArray;
     }
 
-    private async getMessageInformationImages(images: resources.ItemImage[]): Promise<ContentReference[]> {
+    /**
+     * create message.item.information.images: ContentReference[]
+     * we are now sending the images as separate messages, so skip the image data...
+     *
+     * ContentReference (an image)
+     *   - hash: string, the image hash
+     *   - data: DSN[], image data sources, currently we support just one per image
+     *   - featured: boolean, whether the image is the featured one or not
+     *
+     * @param actionRequest
+     */
+    private async getMessageInformationImages(actionRequest: ListingItemAddRequest): Promise<ContentReference[]> {
+        const images: resources.Image[] = actionRequest.listingItem.ItemInformation.Images;
+        const withData: boolean = actionRequest.imagesWithData;
         const contentReferences: ContentReference[] = [];
 
         for (const image of images) {
-            const imageData = await this.getMessageItemInfoImageData(image.ItemImageDatas);
+            const imageData: DSN[] = await this.listingItemImageAddMessageFactory.getDSNs(image.ImageDatas, withData);
             contentReferences.push({
                 hash: image.hash,
                 data: imageData,
@@ -161,41 +267,23 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return contentReferences;
     }
 
-    private async getMessageItemInfoImageData(itemImageDatas: resources.ItemImageData[]): Promise<DSN[]> {
-        const dsns: DSN[] = [];
+    private async getMessagePayment(actionRequest: ListingItemAddRequest): Promise<PaymentInfo> {
+        const paymentInformation: resources.PaymentInformation = actionRequest.listingItem.PaymentInformation;
+        const cryptoAddress: CryptoAddress = actionRequest.cryptoAddress;
 
-        let selectedImageData = _.find(itemImageDatas, (imageData) => {
-            return imageData.imageVersion === ImageVersions.RESIZED.propName;
-        });
-
-        if (!selectedImageData) {
-            // if theres no resized version, then ORIGINAL can be used
-            selectedImageData = _.find(itemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
-            });
-
-            if (!selectedImageData) {
-                // there's something wrong with the ItemImage if original image doesnt have data
-                throw new MessageException('Original image data not found.');
-            }
+        if (_.isEmpty(paymentInformation)) {
+            throw new MessageException('Missing PaymentInformation.');
+        }
+        if (_.isEmpty(paymentInformation.Escrow)) {
+            throw new MessageException('Missing Escrow.');
+        }
+        if (_.isEmpty(paymentInformation.ItemPrice)) {
+            throw new MessageException('Missing ItemPrice.');
         }
 
-        // load the actual image data
-        const data = await this.itemImageDataService.loadImageFile(selectedImageData.imageHash, selectedImageData.imageVersion);
-        dsns.push({
-            protocol: selectedImageData.protocol,
-            encoding: selectedImageData.encoding,
-            data,
-            dataId: selectedImageData.dataId
-        } as DSN);
+        const escrow: EscrowConfig = await this.getMessageEscrow(paymentInformation.Escrow);
+        const options: PaymentOption[] = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
 
-        return dsns;
-    }
-
-
-    private async getMessagePayment(paymentInformation: resources.PaymentInformation, cryptoAddress: CryptoAddress): Promise<PaymentInfo> {
-        const escrow = await this.getMessageEscrow(paymentInformation.Escrow);
-        const options = await this.getMessagePaymentOptions(paymentInformation.ItemPrice, cryptoAddress);
         switch (paymentInformation.type) {
             case SaleType.SALE:
                 return {
@@ -221,7 +309,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
                 buyer: escrow.Ratio.buyer,
                 seller: escrow.Ratio.seller
             } as EscrowRatio,
-            secondsToLock: escrow.secondsToLock
+            secondsToLock: escrow.secondsToLock,
+            releaseType: escrow.releaseType // mp 0.3/omp-lib 0.1.129
         } as EscrowConfig;
     }
 
@@ -255,7 +344,8 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         }] as PaymentOption[];
     }
 
-    private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<MessagingInfo | undefined> {
+    private async getMessageMessaging(actionRequest: ListingItemAddRequest): Promise<MessagingInfo | undefined> {
+        const messagingInformations: resources.MessagingInformation[] = actionRequest.listingItem.MessagingInformation;
 
         const options: MessagingOption[] = [];
         for (const info of messagingInformations) {
@@ -277,7 +367,9 @@ export class ListingItemAddMessageFactory implements MessageFactoryInterface {
         return messagingInfo;
     }
 
-    private async getMessageObjects(listingItemObjects: resources.ListingItemObject[]): Promise<ItemObject[]> {
+    private async getMessageObjects(actionRequest: ListingItemAddRequest): Promise<ItemObject[]> {
+        const listingItemObjects: resources.ListingItemObject[] = actionRequest.listingItem.ListingItemObjects;
+
         const objectArray: ItemObject[] = [];
         for (const lio of listingItemObjects) {
             const objectValue = await this.getItemObject(lio);

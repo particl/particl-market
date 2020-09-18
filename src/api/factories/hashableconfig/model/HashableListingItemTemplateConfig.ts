@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,6 +10,10 @@ export class HashableListingItemTemplateConfig extends BaseHashableConfig {
         from: 'generatedAt',
         to: HashableCommonField.GENERATED
     }, {
+// we can't use seller for the template right now as it would be the selected market identity and theres no relation to that
+//        from: 'seller',
+//        to: HashableItemField.SELLER
+//    }, {
         from: 'ItemInformation.title',
         to: HashableItemField.TITLE
     }, {

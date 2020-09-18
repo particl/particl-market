@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -15,7 +16,8 @@ import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import { Proposal } from './Proposal';
+import { SearchOrder } from '../enums/SearchOrder';
+import { ListingItemSearchOrderField } from '../enums/SearchOrderField';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -30,8 +32,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ItemInformation.ItemLocation',
         'ItemInformation.ItemLocation.LocationMarker',
-        'ItemInformation.ItemImages',
-        'ItemInformation.ItemImages.ItemImageDatas',
+        'ItemInformation.Images',
+        'ItemInformation.Images.ImageDatas',
         'ItemInformation.ShippingDestinations',
         'PaymentInformation',
         'PaymentInformation.Escrow',
@@ -48,10 +50,13 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Bids.BidDatas',
         'Bids.OrderItem',
         'Bids.OrderItem.Order',
+        'FavoriteItems',
+        'FavoriteItems.Profile',
         'FlaggedItem',
         'FlaggedItem.Proposal',
         'FlaggedItem.Proposal.ProposalOptions'
-        // 'FlaggedItem.Proposal.ProposalResults',
+        // 'FlaggedItem.Proposal.ProposalOptions.Votes'
+        // 'FlaggedItem.Proposal.ProposalResults'
     ];
 
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
@@ -61,36 +66,23 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             })
             .orderBy('expiry_time', 'ASC');
 
-        if (withRelated) {
-            return await ListingItemCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItemCollection.fetchAll();
-        }
+        return ListingItemCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ id: value }).fetch();
-        }
+        return ListingItem.where<ListingItem>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<ListingItem> {
-        if (withRelated) {
-            return await ListingItem.where<ListingItem>({ msgid: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItem.where<ListingItem>({ msgid: value }).fetch();
-        }
+        return ListingItem.where<ListingItem>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
+    public static async fetchByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        return ListingItem.where<ListingItem>({ hash, market: marketReceiveAddress }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+/*
+    TODO: remove?
+    public static async fetchAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
@@ -110,8 +102,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             return await listingCollection.fetchAll();
         }
     }
+*/
 
-    public static async fetchExpired(): Promise<Collection<ListingItem>> {
+    public static async fetchAllExpired(): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 qb.joinRaw(`LEFT JOIN (SELECT listing_item_id, COUNT(*) AS bid_totals FROM bids GROUP BY listing_item_id) bid_totals
@@ -124,38 +117,60 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
-        const listingCollection = ListingItem.forge<Model<ListingItem>>()
+
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || ListingItemSearchOrderField.UPDATED_AT;
+
+        // ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+
+        const collection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 // ignore expired items
                 qb.where('expired_at', '>', Date.now());
 
-                // searchBy by itemHash
-                if (options.itemHash && typeof options.itemHash === 'string' && options.itemHash !== '*') {
-                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
-                    qb.where('listing_item_templates.hash', '=', options.itemHash);
+                // searchBy by listingItemHash
+                if (options.listingItemHash && options.listingItemHash !== '*') {
+                    // qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
+                    // qb.where('listing_item_templates.hash', '=', options.listingItemHash);
 
-                    ListingItem.log.debug('...searchBy by itemHash: ', options.itemHash);
+                    qb.where('listing_items.hash', '=', options.listingItemHash);
+                }
+
+                if (options.msgid && options.msgid !== '*') {
+                    qb.where('listing_items.msgid', '=', options.msgid);
                 }
 
                 // searchBy by buyer
                 let joinedBids = false;
-                if (options.buyer && typeof options.buyer === 'string' && options.buyer !== '*') {
+                if (options.buyer && options.buyer !== '*') {
                     if (!joinedBids) {
                         qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
                         joinedBids = true;
                     }
                     qb.where('bids.bidder', '=', options.buyer);
-                    ListingItem.log.debug('...searchBy by buyer: ', options.buyer);
                 }
 
                 // searchBy by seller
-                if (options.seller && typeof options.seller === 'string' && options.seller !== '*') {
+                if (options.seller && options.seller !== '*') {
                     qb.where('listing_items.seller', '=', options.seller);
-                    ListingItem.log.debug('...searchBy by seller: ', options.seller);
                 }
 
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
 
+                // searchBy categories
+                if (options.categories && options.categories.length > 0) {
+                    if (typeof options.categories[0] === 'number') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.id', options.categories);
+                    } else if (typeof options.categories[0] === 'string') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.key', options.categories);
+                    }
+                }
+
+                /*
                 if (options.category && typeof options.category === 'number') {
                     qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                     qb.where('item_categories.id', '=', options.category);
@@ -165,8 +180,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('item_categories.key', '=', options.category);
                     ListingItem.log.debug('...searchBy by category.key: ', options.category);
                 }
+                */
 
                 // searchBy by profile
+                /*
                 if (typeof options.profileId === 'number') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
@@ -175,42 +192,45 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 } else if (options.profileId === 'OWN') { // ListingItems belonging to any profile
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
+                */
 
                 // searchBy by item price
-                if (typeof options.minPrice === 'number' && typeof options.maxPrice === 'number') {
+                if (options.minPrice !== undefined && options.minPrice >= 0 && options.maxPrice !== undefined && options.maxPrice >= 0) {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
-                    ListingItem.log.debug('...searchBy by price: ', [options.minPrice, options.maxPrice]);
                 }
 
                 // searchBy by item location (country)
-                if (options.country && typeof options.country === 'string') {
+                if (options.country) {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
                     qb.where('item_locations.country', options.country);
-                    ListingItem.log.debug('...searchBy by location: ', options.country);
                 }
 
                 // searchBy by shipping destination
-                if (options.shippingDestination && typeof options.shippingDestination === 'string') {
+                if (options.shippingDestination) {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
-                    ListingItem.log.debug('...searchBy by shippingDestination: ', options.shippingDestination);
+                    qb.andWhere('shipping_destinations.shipping_availability', 'SHIPS');
                 }
 
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
-                    ListingItem.log.debug('...searchBy by searchString: ', options.searchString);
+                    qb.orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('listing_items.hash', '=', options.searchString);
                 }
 
                 if (options.flagged) {
                     // ListingItems having FlaggedItem
                     qb.innerJoin('flagged_items', 'listing_items.id', 'flagged_items.listing_item_id');
                 } else {
-                    // Show all listingitems, but dont include the ones having ListingItem.removed
                     qb.where('listing_items.removed', '=', false);
                 }
 
+                if (options.market) {
+                    qb.where('listing_items.market', '=', options.market);
+                }
 
                 if (options.withBids && !joinedBids) { // Don't want to join twice or we'll get errors.
                     qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
@@ -224,14 +244,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 offset: options.page * options.pageLimit
             });
 
-        if (withRelated) {
-            return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS
-                // debug: true
-            });
-        } else {
-            return await listingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
 
@@ -252,6 +265,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
+
+    public get Signature(): string { return this.get('signature'); }
+    public set Signature(value: string) { this.set('signature', value); }
 
     public get Market(): string { return this.get('market'); }
     public set Market(value: string) { this.set('market', value); }
@@ -299,10 +315,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
-    }
-
-    public Proposal(): Proposal {
-        return this.belongsTo(Proposal, 'proposal_id', 'id');
     }
 
     public Bids(): Collection<Bid> {

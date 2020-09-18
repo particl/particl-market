@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -15,8 +15,8 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
         'ListingItem.ItemInformation.ItemCategory',
         'ListingItem.ItemInformation.ItemLocation',
         'ListingItem.ItemInformation.ItemLocation.LocationMarker',
-        'ListingItem.ItemInformation.ItemImages',
-        'ListingItem.ItemInformation.ItemImages.ItemImageDatas',
+        'ListingItem.ItemInformation.Images',
+        'ListingItem.ItemInformation.Images.ImageDatas',
         'ListingItem.ItemInformation.ShippingDestinations',
         'ListingItem.PaymentInformation',
         'ListingItem.PaymentInformation.Escrow',

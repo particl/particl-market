@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -27,13 +27,13 @@ export class ListingItemRepository {
         const list = await this.ListingItemModel.fetchAll();
         return list as Bookshelf.Collection<ListingItem>;
     }
-
+/*
     public async findAllByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        return await this.ListingItemModel.fetchByCategory(categoryId, withRelated);
+        return await this.ListingItemModel.fetchAllByCategory(categoryId, withRelated);
     }
-
+*/
     public async findAllExpired(): Promise<Bookshelf.Collection<ListingItem>> {
-        return this.ListingItemModel.fetchExpired();
+        return this.ListingItemModel.fetchAllExpired();
     }
 
     /**
@@ -52,6 +52,10 @@ export class ListingItemRepository {
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
         return this.ListingItemModel.fetchByMsgId(msgId, withRelated);
+    }
+
+    public async findOneByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByHashAndMarketReceiveAddress(hash, marketReceiveAddress, withRelated);
     }
 
     /**

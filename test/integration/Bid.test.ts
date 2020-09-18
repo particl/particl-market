@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Targets, Types } from '../../src/constants';
@@ -15,24 +16,21 @@ import { ListingItemService } from '../../src/api/services/model/ListingItemServ
 import { BidDataService } from '../../src/api/services/model/BidDataService';
 import { BidCreateRequest } from '../../src/api/requests/model/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/model/BidUpdateRequest';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { BidSearchParams } from '../../src/api/requests/search/BidSearchParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
 import { OrderService } from '../../src/api/services/model/OrderService';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MPAction  } from 'omp-lib/dist/interfaces/omp-enums';
-import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
 import { BidDataCreateRequest } from '../../src/api/requests/model/BidDataCreateRequest';
 import { OrderCreateRequest } from '../../src/api/requests/model/OrderCreateRequest';
 import { OrderItemCreateRequest } from '../../src/api/requests/model/OrderItemCreateRequest';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -41,6 +39,7 @@ describe('Bid', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let bidService: BidService;
     let orderService: OrderService;
     let orderItemService: OrderItemService;
@@ -48,12 +47,15 @@ describe('Bid', () => {
     let profileService: ProfileService;
     let bidDataService: BidDataService;
     let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let defaultMarket: resources.Market;
-    let defaultProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let bidderProfile: resources.Profile;
     let sellerProfile: resources.Profile;
-    let createdListingItem1: resources.ListingItem;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let sellerMarket: resources.Market;
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+
     let createdBid1: resources.Bid;
     let createdBid2: resources.Bid;
 
@@ -88,6 +90,7 @@ describe('Bid', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.model.BidService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.model.OrderService);
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
@@ -95,70 +98,23 @@ describe('Bid', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.model.BidDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        sellerProfile = await testDataService.generateProfile();
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
 
-        // generate seller profile
-        const sellerProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
-        const profiles = await testDataService.generate({
-            model: CreatableModel.PROFILE,
-            amount: 1,
-            withRelated: true,
-            generateParams: sellerProfileParams
-        } as TestDataGenerateRequest);
-        sellerProfile = profiles[0];
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
 
-        // generate template
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
-        const listingItemTemplates = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,  // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemTemplateParams // what kind of data to generate
-        } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0];
-        // log.debug('createdListingItemTemplate: ', createdListingItemTemplate.id);
-
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                               // generateItemInformation
-            true,                               // generateItemLocation
-            true,                               // generateShippingDestinations
-            false,                              // generateItemImages
-            true,                               // generatePaymentInformation
-            true,                               // generateEscrow
-            true,                               // generateItemPrice
-            true,                               // generateMessagingInformation
-            true,                               // generateListingItemObjects
-            false,                              // generateObjectDatas
-            createdListingItemTemplate.hash,    // listingItemTemplateHash
-            sellerProfile.address               // seller
-        ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,          // what to generate
-            amount: 2,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-
-        createdListingItem1 = listingItems[0];
-        // createdListingItem2 = listingItems[1];
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('bidderMarket.Identity: ', JSON.stringify(bidderMarket.Identity, null, 2));
+        // log.debug('sellerMarket.Identity: ', JSON.stringify(sellerMarket.Identity, null, 2));
 
     });
 
@@ -175,45 +131,51 @@ describe('Bid', () => {
 
     test('Should not return any Bids for listingItem.id and bidders', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            bidders: [testData.bidder, defaultProfile.address, sellerProfile.address]
+            listingItemId: listingItem.id,
+            bidders: [testData.bidder, bidderMarket.Identity.address, sellerMarket.Identity.address]
         } as BidSearchParams;
 
-        const bids: resources.Bid[] = await bidService.search(bidSearchParams)
-            .then(value => value.toJSON());
+        // log.debug('bidSearchParams:', JSON.stringify(bidSearchParams, null, 2));
+
+        const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
         expect(bids.length).toBe(0);
     });
 
     test('Should create a new Bid for ListingItem', async () => {
 
-        testData.listing_item_id = createdListingItem1.id;
-        testData.address.profile_id = defaultProfile.id;
-        testData.bidder = defaultProfile.address;
+        testData.listing_item_id = listingItem.id;
+        testData.identity_id = bidderMarket.Identity.id;
+        testData.address.profile_id = bidderProfile.id;
+        testData.address.type = AddressType.SHIPPING_OWN;
+        testData.bidder = bidderMarket.Identity.address;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
+        // log.debug('testData:', JSON.stringify(testData, null, 2));
         createdBid1 = await bidService.create(testData).then(value => value.toJSON());
-        log.debug('createdBid1:', JSON.stringify(createdBid1, null, 2));
+        // log.debug('createdBid1:', JSON.stringify(createdBid1, null, 2));
 
         const result: resources.Bid = createdBid1;
         expect(result.type).toBe(testData.type);
         expect(result.bidder).toBe(testData.bidder);
         expect(result.ShippingAddress.type).toBe(testData.address.type);
+        expect(result.Identity.id).toBe(testData.identity_id);
+
     });
 
     test('Should create accept Bid (MPA_ACCEPT) for the ListingItem', async () => {
-        // set listing_item_id to bid
-        testData.listing_item_id = createdListingItem1.id;
-        testData.bidder = defaultProfile.address;
-        testData.address.profile_id = defaultProfile.id;
+
+        testData.listing_item_id = listingItem.id;
+        testData.address.profile_id = sellerProfile.id;
+        testData.address.type = AddressType.SHIPPING_BID;
         testData.type = MPAction.MPA_ACCEPT;
         testData.parent_bid_id = createdBid1.id;
+        testData.bidder = bidderMarket.Identity.address;
 
         delete testData.address;
         delete testData.bidDatas;
 
-        log.debug('testData:', JSON.stringify(testData, null, 2));
+        // log.debug('testData:', JSON.stringify(testData, null, 2));
         createdBid2 = await bidService.create(testData).then(value => value.toJSON());
-        log.debug('createdBid2:', JSON.stringify(createdBid2, null, 2));
+        // log.debug('createdBid2:', JSON.stringify(createdBid2, null, 2));
 
         const result: resources.Bid = createdBid2;
         // test the values
@@ -223,7 +185,7 @@ describe('Bid', () => {
 
     test('Should return two Bids (MPA_BID & MPA_ACCEPT) for listingItem.id', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id
+            listingItemId: listingItem.id
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -232,7 +194,7 @@ describe('Bid', () => {
 
     test('Should return one Bid for listingItem.id and type (MPA_BID)', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
+            listingItemId: listingItem.id,
             type: MPAction.MPA_BID
         } as BidSearchParams;
 
@@ -242,7 +204,7 @@ describe('Bid', () => {
 
     test('Should return one Bid for listingItem.id and status (MPA_ACCEPT)', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
+            listingItemId: listingItem.id,
             type: MPAction.MPA_ACCEPT
         } as BidSearchParams;
 
@@ -258,7 +220,7 @@ describe('Bid', () => {
             hash: 'hash',
             status: OrderStatus.PROCESSING,
             orderItems: [{
-                itemHash: createdListingItem1.hash,
+                itemHash: listingItem.hash,
                 bid_id: createdBid1.id,
                 status: OrderItemStatus.AWAITING_ESCROW
             } as OrderItemCreateRequest],
@@ -267,12 +229,11 @@ describe('Bid', () => {
             generatedAt: +new Date().getTime()
         } as OrderCreateRequest).then(value => value.toJSON());
 
-        log.debug('createdOrder1:', JSON.stringify(createdOrder1, null, 2));
-
+        // log.debug('createdOrder1:', JSON.stringify(createdOrder1, null, 2));
 
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            type: OrderItemStatus.AWAITING_ESCROW
+            listingItemId: listingItem.id,
+            orderItemStatus: OrderItemStatus.AWAITING_ESCROW
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -281,9 +242,9 @@ describe('Bid', () => {
 
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and title', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            type: OrderItemStatus.AWAITING_ESCROW,
-            searchString: createdListingItem1.ItemInformation.title.slice(0, 3)
+            listingItemId: listingItem.id,
+            orderItemStatus: OrderItemStatus.AWAITING_ESCROW,
+            searchString: listingItem.ItemInformation.title.slice(0, 3)
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -292,9 +253,9 @@ describe('Bid', () => {
 
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and shortDescription', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            type: OrderItemStatus.AWAITING_ESCROW,
-            searchString: createdListingItem1.ItemInformation.shortDescription.slice(0, 3)
+            listingItemId: listingItem.id,
+            orderItemStatus: OrderItemStatus.AWAITING_ESCROW,
+            searchString: listingItem.ItemInformation.shortDescription.slice(0, 3)
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -303,9 +264,9 @@ describe('Bid', () => {
 
     test('Should return one Bid for listingItem.id and status (AWAITING_ESCROW) and longDescription', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            type: OrderItemStatus.AWAITING_ESCROW,
-            searchString: createdListingItem1.ItemInformation.longDescription.slice(0, 3)
+            listingItemId: listingItem.id,
+            orderItemStatus: OrderItemStatus.AWAITING_ESCROW,
+            searchString: listingItem.ItemInformation.longDescription.slice(0, 3)
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -314,8 +275,8 @@ describe('Bid', () => {
 
     test('Should not find Bids by listingItem.id and status (AWAITING_ESCROW) and title', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
-            type: OrderItemStatus.AWAITING_ESCROW,
+            listingItemId: listingItem.id,
+            orderItemStatus: OrderItemStatus.AWAITING_ESCROW,
             searchString: 'DOESNOTMATCH'
         } as BidSearchParams;
 
@@ -325,17 +286,8 @@ describe('Bid', () => {
 
     test('Should return two Bids for listingItem.id and bidder', async () => {
         const bidSearchParams = {
-            listingItemId: createdListingItem1.id,
+            listingItemId: listingItem.id,
             bidders: [testData.bidder]
-        } as BidSearchParams;
-
-        const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
-        expect(bids.length).toBe(2);
-    });
-
-    test('Should return two Bids for listingItem.hash', async () => {
-        const bidSearchParams = {
-            listingItemHash: createdListingItem1.hash
         } as BidSearchParams;
 
         const bids: resources.Bid[] = await bidService.search(bidSearchParams).then(value => value.toJSON());
@@ -388,7 +340,7 @@ describe('Bid', () => {
 
     test('Should update the Bid', async () => {
         const testDataUpdated = {
-            listing_item_id: createdListingItem1.id,
+            listing_item_id: listingItem.id,
             type: MPAction.MPA_CANCEL,
             bidder: 'bidderaddress',
             hash: 'hash',
@@ -410,4 +362,6 @@ describe('Bid', () => {
             expect(e).toEqual(new NotFoundException(createdBid2.id))
         );
     });
+
 });
+

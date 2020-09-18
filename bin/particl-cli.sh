@@ -7,12 +7,12 @@ if (( $# == 0 )); then
 elif (( $# == 1 )); then
     SERVICE="$1"
     shift
-    echo ">>> docker-compose exec $SERVICE /opt/particl/bin/particl-cli help"
-    docker-compose exec "$SERVICE" /opt/particl/bin/particl-cli help
+    echo ">>> docker-compose exec $SERVICE /opt/particl/bin/particl-cli -rpcwallet=particl-market help"
+    docker-compose exec "$SERVICE" /opt/particl/bin/particl-cli -rpcwallet=profiles/DEFAULT/particl-market help
 else
     SERVICE="$1"
     shift
-    echo ">>> docker-compose exec $SERVICE /opt/particl/bin/particl-cli $@"
-    docker-compose exec "$SERVICE" /opt/particl/bin/particl-cli "$@"
+    echo ">>> docker-compose exec $SERVICE /opt/particl/bin/particl-cli -rpcwallet=particl-market $@"
+    docker-compose exec "$SERVICE" /opt/particl/bin/particl-cli -rpcwallet=profiles/DEFAULT/particl-market "$@"
 fi
 

@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,14 +14,12 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProposalResult } from '../../models/ProposalResult';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProposalService } from '../../services/model/ProposalService';
+import { CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+
 
 export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<ProposalResult> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
@@ -31,9 +30,17 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('proposalHash', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * command description
-     * [0] proposalHash
+     * [0] proposal: resources.Proposal
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -41,21 +48,22 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ProposalResult> {
-        const proposalHash = data.params[0];
-        return await this.proposalResultService.findLatestByProposalHash(proposalHash, true);
+        const proposal: resources.Proposal = data.params[0];
+        return await this.proposalResultService.findLatestByProposalHash(proposal.hash, true);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: proposalHash
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('proposalHash');
-        }
+        await super.validate(data);
 
-        if (data.params[0] && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('proposalHash', 'string');
-        }
-
-        // make sure proposal with the hash exists
-        await this.proposalService.findOneByHash(data.params[0])
+        data.params[0] = await this.proposalService.findOneByHash(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);
                 throw new ModelNotFoundException('Proposal');
@@ -74,7 +82,7 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
     }
 
     public description(): string {
-        return ' Command for checking the results of a Proposal.';
+        return ' Command for fetching ProposalResults.';
     }
 
     public example(): string {

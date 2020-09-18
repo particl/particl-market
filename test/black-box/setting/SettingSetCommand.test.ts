@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,7 +16,9 @@ describe('SettingSetCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const settingCommand = Commands.SETTING_ROOT.commandName;
     const settingSetCommand = Commands.SETTING_SET.commandName;
@@ -37,9 +39,10 @@ describe('SettingSetCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
         profile = await testUtil.getDefaultProfile();
-        market = await testUtil.getDefaultMarket();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
     });
 
@@ -71,7 +74,7 @@ describe('SettingSetCommand', () => {
 
     test('Should fail to set Setting because invalid key', async () => {
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
-            0,
+            false,
             testData.value,
             profile.id
         ]);
@@ -83,7 +86,7 @@ describe('SettingSetCommand', () => {
     test('Should fail to set Setting because invalid value', async () => {
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
-            0,
+            false,
             profile.id
         ]);
         res.expectJson();
@@ -95,7 +98,7 @@ describe('SettingSetCommand', () => {
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -107,7 +110,7 @@ describe('SettingSetCommand', () => {
             testData.key,
             testData.value,
             1,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -119,7 +122,7 @@ describe('SettingSetCommand', () => {
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
-            missingProfileId
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -127,19 +130,18 @@ describe('SettingSetCommand', () => {
     });
 
     test('Should fail to set Setting because missing Market model', async () => {
-        const missingMarketId = 0;
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
             profile.id,
-            missingMarketId
+            0
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
     });
 
-    test('Should set a Setting', async () => {
+    test('Should set a Setting for Profile', async () => {
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
@@ -151,6 +153,7 @@ describe('SettingSetCommand', () => {
         const result: resources.Setting = res.getBody()['result'];
         expect(result.Profile).toBeDefined();
         expect(result.Profile.id).toBe(profile.id);
+        expect(result.Market).toBeUndefined();
         expect(result.key).toBe(testData.key);
         expect(result.value).toBe(testData.value);
     });
@@ -171,5 +174,23 @@ describe('SettingSetCommand', () => {
         expect(result.value).toBe(testDataUpdated.value);
     });
 
+    test('Should set a Setting for Profile and Market', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            testData.key,
+            testData.value,
+            profile.id,
+            market.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Setting = res.getBody()['result'];
+        expect(result.Profile).toBeDefined();
+        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Market).toBeDefined();
+        expect(result.Market.id).toBe(market.id);
+        expect(result.key).toBe(testData.key);
+        expect(result.value).toBe(testData.value);
+    });
 
 });

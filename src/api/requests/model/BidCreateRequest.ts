@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,6 +16,9 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
 
     @IsNotEmpty()
     public listing_item_id: number;
+    @IsNotEmpty()
+    public identity_id: number;
+
     public parent_bid_id: number;
 
     public msgid: string;
@@ -33,6 +36,11 @@ export class BidCreateRequest extends RequestBody implements ModelRequestInterfa
     public hash: string;
     @IsNotEmpty()
     public generatedAt: number;
+
+    public expiryTime: number;
+    public receivedAt: number;
+    public postedAt: number;
+    public expiredAt: number;
 
     public bidDatas: BidDataCreateRequest[];
 }

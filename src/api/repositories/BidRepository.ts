@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,7 +10,6 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { BidSearchParams } from '../requests/search/BidSearchParams';
-import {ListingItem} from '../models/ListingItem';
 
 export class BidRepository {
 
@@ -21,6 +20,14 @@ export class BidRepository {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async findAllByProfileId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.BidModel.fetchAllByProfileId(id, withRelated);
+    }
+
+    public async findAllByIdentityId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.BidModel.fetchAllByIdentityId(id, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Bid>> {
@@ -43,10 +50,11 @@ export class BidRepository {
     /**
      *
      * @param options, BidSearchParams
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async search(options: BidSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Bid>> {
-        return this.BidModel.search(options, withRelated);
+        return this.BidModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Bid> {

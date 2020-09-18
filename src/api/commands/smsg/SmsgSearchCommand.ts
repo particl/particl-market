@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -17,17 +17,20 @@ import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearch
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MPActionExtended } from '../../enums/MPActionExtended';
-import { GovernanceAction } from '../../enums/GovernanceAction';
-import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import {
+    ActionMessageTypesValidationRule,
+    CommandParamValidationRules,
+    EnumValidationRule, NumberValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
+
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 
-    public log: LoggerType;
+    public debug = true;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,6 +38,18 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
     ) {
         super(Commands.SMSG_SEARCH);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new ActionMessageTypesValidationRule(false),
+                new EnumValidationRule('status', false, 'SmsgMessageStatus', EnumHelper.getValues(SmsgMessageStatus) as string[]),
+                new EnumValidationRule('direction', false, 'ActionDirection', EnumHelper.getValues(ActionDirection) as string[]),
+                new NumberValidationRule('age', false, 2 * 60 * 1000),
+                new StringValidationRule('msgid', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     public getAllowedSearchOrderFields(): string[] {
@@ -68,11 +83,11 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
             types: data.params[4],
             status: data.params[5],
             direction: data.params[6],
-            age: data.params[7] ? data.params[7] : 0,
+            age: data.params[7],
             msgid: data.params[8]
         } as SmsgMessageSearchParams;
 
-        // this.log.debug('data.params: ', JSON.stringify(data.params, null, 2));
+        this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
 
         return await this.smsgMessageService.searchBy(searchParams);
     }
@@ -82,70 +97,19 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
      * data.params[]:
      *  [0]: page, number
      *  [1]: pageLimit, number, default=10
-     *  [2]: order, SearchOrder, ENUM{ASC/DESC}
+     *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: types, ActionMessageTypes[], * for all, optional
-     *  [5]: status, SmsgMessageStatus, ENUM{NEW, PARSING_FAILED, PROCESSING, PROCESSED, PROCESSING_FAILED, WAITING}, * for all
-     *  [6]: direction, ActionDirection, ENUM{INCOMING, OUTGOING, BOTH}, * for all
+     *  [4]: types, ActionMessageTypes[], optional
+     *  [5]: status, SmsgMessageStatus
+     *  [6]: direction, ActionDirection
      *  [7]: age, number, SmsgMessage SmsgMessage minimum message age in ms, default 2 min
-     *  [8]: msgid, string, * for all, optional
+     *  [8]: msgid, string, optional
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
-        // types, ActionMessageTypes[]
-        if (data.params.length >= 5) {
-            if (data.params[4] === '*') {
-                data.params[4] = undefined; // search for all
-            } else if (!Array.isArray(data.params[4]) || data.params[4].every(type => {
-                return typeof type !== 'string'
-                    || (!EnumHelper.containsValue(MPAction, type)
-                        && !EnumHelper.containsValue(MPActionExtended, type)
-                        && !EnumHelper.containsValue(GovernanceAction, type)
-                        && !EnumHelper.containsValue(CommentAction, type));
-            })) {
-                throw new InvalidParamException('type', 'ActionMessageTypes[]');
-            }
-        }
-
-        if (data.params.length >= 6) {
-            if (data.params[5] === '*') {
-                data.params[5] = undefined; // search for all
-
-            } else if (typeof data.params[5] !== 'string' || !EnumHelper.containsValue(SmsgMessageStatus, data.params[5])) {
-                throw new InvalidParamException('status', 'SmsgMessageStatus');
-            }
-        }
-
-        if (data.params.length >= 7) {
-            if (data.params[6] === '*') {
-                data.params[6] = undefined; // search for all
-
-            } else if (typeof data.params[6] !== 'string' || !EnumHelper.containsValue(ActionDirection, data.params[6])) {
-                throw new InvalidParamException('direction', 'ActionDirection');
-            }
-        }
-
-        if (data.params.length >= 8) {
-            if (!_.isNil(data.params[7]) && !_.isFinite(data.params[7])) {
-                throw new InvalidParamException('age', 'number');
-            } else {
-                data.params[7] = data.params[7] ? data.params[7] : 0;
-            }
-        }
-
-        if (data.params.length >= 9) {
-            if (data.params[8] === '*') {
-                data.params[8] = undefined; // search for all
-
-            } else if (typeof data.params[8] !== 'string') {
-                throw new InvalidParamException('msgid', 'string');
-            }
-        }
-
+        await super.validate(data);
         return data;
     }
 

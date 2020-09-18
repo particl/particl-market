@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -33,6 +33,10 @@ export class CommentRepository {
 
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
         return this.CommentModel.fetchByHash(hash, withRelated);
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<Comment> {
+        return this.CommentModel.fetchByMsgId(msgId, withRelated);
     }
 
     public async findAllByTypeAndTarget(type: string, target: string): Promise<Bookshelf.Collection<Comment>> {

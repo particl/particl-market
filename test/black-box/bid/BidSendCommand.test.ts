@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,10 +9,13 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { BidDataValue } from '../../../src/api/enums/BidDataValue';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { BidSearchOrderField, ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
 
 describe('BidSendCommand', () => {
@@ -28,228 +31,405 @@ describe('BidSendCommand', () => {
     const bidCommand =  Commands.BID_ROOT.commandName;
     const bidSendCommand =  Commands.BID_SEND.commandName;
     const bidSearchCommand =  Commands.BID_SEARCH.commandName;
-    const itemCommand = Commands.ITEM_ROOT.commandName;
-    const itemGetCommand = Commands.ITEM_GET.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
-    // let sellerMarket: resources.Market;
     let sellerProfile: resources.Profile;
-    let market: resources.Market;
-    let profile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let buyerProfile: resources.Profile;
+    let buyerMarket: resources.Market;
 
-    // let listingItemTemplate: resources.ListingItemTemplate;
-    let listingItem: resources.ListingItem;
+    let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
+    let listingItemReceivedOnBuyerNode: resources.ListingItem;
+    let randomCategoryOnSellerNode: resources.ItemCategory;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
-    const ORDERING = SearchOrder.ASC;
+    const SEARCHORDER = SearchOrder.ASC;
+    const BID_SEARCHORDERFIELD = BidSearchOrderField.CREATED_AT;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
+
+    const DAYS_RETENTION = 2;
+    let sent = false;
+
 
     beforeAll(async () => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
         await testUtilSellerNode.cleanDb();
         await testUtilBuyerNode.cleanDb();
 
-        // get default profile and market
-        // sellerMarket = await testUtilSellerNode.getDefaultMarket();
-        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        log.debug('SELLER IS NODE' + (randomBoolean ? 1 : 2));
+        log.debug('BUYER IS NODE' + (randomBoolean ? 2 : 1));
 
-        market = await testUtilBuyerNode.getDefaultMarket();
-        profile = await testUtilBuyerNode.getDefaultProfile();
-/*
-        // generate ListingItemTemplate with ListingItem
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        expect(buyerProfile.id).toBeDefined();
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
+        expect(buyerMarket.id).toBeDefined();
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
+
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
+
+        // generate ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            sellerProfile.id, // profileId
-            true,   // generateListingItem
-            sellerMarket.id  // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            false,                          // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            sellerProfile.id,               // profileId
+            false,                          // generateListingItem
+            sellerMarket.id,                // soldOnMarketId
+            randomCategoryOnSellerNode.id   // categoryId
         ]).toParamsArray();
 
-        const listingItemTemplates = await testUtilSellerNode.generateData(
+        const listingItemTemplatesSellerNode = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
+        ) as resources.ListingItemTemplate[];
 
-        listingItemTemplate = listingItemTemplates[0];
-        listingItem = listingItemTemplates[0].ListingItems[0];
+        listingItemTemplateOnSellerNode = listingItemTemplatesSellerNode[0];
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        // expect template is related to correct Profile and ListingItem posted to correct Market
-        expect(listingItemTemplate.Profile.id).toBe(sellerProfile.id);
-        expect(listingItemTemplate.ListingItems[0].Market.id).toBe(sellerMarket.id);
+        // we should be also able to get the ListingItemTemplate
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        log.debug('listingItemTemplate.id:', listingItemTemplateOnSellerNode.id);
+        log.debug('result.id:', result.id);
+        expect(result.id).toBe(listingItemTemplatesSellerNode[0].id);
 
-        // expect the item hash generated at the same time as template, matches with the templates one
-        expect(listingItemTemplate.hash).toBe(listingItem.hash);
-*/
+        log.debug('==> Setup DONE.');
+    });
 
-        // create ListingItem
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                               // generateItemInformation
-            true,                               // generateItemLocation
-            true,                               // generateShippingDestinations
-            false,                              // generateItemImages
-            true,                               // generatePaymentInformation
-            true,                               // generateEscrow
-            true,                               // generateItemPrice
-            true,                               // generateMessagingInformation
-            false,                              // generateListingItemObjects
-            false,                              // generateObjectDatas
-            undefined,                          // listingItemTemplateHash
-            sellerProfile.address               // seller
-        ]).toParamsArray();
 
-        const listingItems: resources.ListingItem[] = await testUtilBuyerNode.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateListingItemParams           // what kind of data to generate
+    test('Should unlock the possibly locked outputs left from other tests', async () => {
+        await testUtilSellerNode.unlockLockedOutputs(sellerMarket.Identity.wallet);
+        await testUtilBuyerNode.unlockLockedOutputs(buyerMarket.Identity.wallet);
+    }, 600000); // timeout to 600s
+
+
+    test('Should post ListingItem from SELLER node', async () => {
+
+        log.debug('========================================================================================');
+        log.debug('SELLER POSTS MPA_LISTING_ADD');
+        log.debug('========================================================================================');
+
+        await testUtilSellerNode.waitFor(5);
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
+        // Post ListingItemTemplate to create ListingItem
+        const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplateOnSellerNode.id,
+            DAYS_RETENTION
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+        // expect(result.txid).toBeDefined();
+        // expect(result.fee).toBeGreaterThan(0);
+
+        log.debug('==> ListingItemTemplate posted.');
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should get the updated ListingItemTemplate with the hash', async () => {
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateOnSellerNode = res.getBody()['result'];
+
+        expect(listingItemTemplateOnSellerNode.hash).toBeDefined();
+        log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
+    });
+
+
+    test('Should have received ListingItem (MPA_LISTING_ADD) on BUYER node, ListingItem is created', async () => {
+
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
+        log.debug('========================================================================================');
+        log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
+        log.debug('========================================================================================');
+
+        let response: any = await testUtilBuyerNode.rpcWaitFor(
+            listingItemCommand,
+            [listingItemSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+                buyerMarket.receiveAddress,
+                [],
+                '*',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                listingItemTemplateOnSellerNode.hash
+            ],
+            15 * 60,
+            200,
+            '[0].hash',
+            listingItemTemplateOnSellerNode.hash
         );
-        listingItem = listingItems[0];
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        log.debug('listingItem: ', JSON.stringify(listingItem, null, 2));
+        const results: resources.ListingItem[] = response.getBody()['result'];
+        expect(results.length).toBe(1);
+        expect(results[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
 
+        // seller node already received this, but wait a while, and refetch, just in case
+        await testUtilBuyerNode.waitFor(5);
+
+        response = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
+            results[0].id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const result: resources.ListingItem = response.getBody()['result'];
+        expect(result).toBeDefined();
+        expect(result.hash).toBe(listingItemTemplateOnSellerNode.hash);
+
+        // store ListingItem for later tests
+        listingItemReceivedOnBuyerNode = result;
+
+        log.debug('==> BUYER received MPA_LISTING_ADD.');
+    }, 600000); // timeout to 600s
+
+
+    test('Should fail because missing listingItemId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should post Bid for a ListingItem using Profiles existing ShippingAddress', async () => {
 
-        const bidSendCommandParams = [bidSendCommand,
-            listingItem.hash,
-            profile.id,
-            profile.ShippingAddresses[0].id,
+    test('Should fail because missing identityId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
+    });
+
+
+    test('Should fail because missing address|addressId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('address|addressId').getMessage());
+    });
+
+
+    test('Should fail because invalid listingItemId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            true,
+            buyerMarket.Identity.id,
+            buyerProfile.ShippingAddresses[0].id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
+    });
+
+
+    test('Should fail because invalid identityId', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            true,
+            buyerProfile.ShippingAddresses[0].id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
+    });
+
+
+    test('Should fail to post Bid because invalid address', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('address', 'false|number').getMessage());
+    });
+
+
+    test('Should fail to post Bid because Identity not found', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            0,
+            buyerProfile.ShippingAddresses[0].id,
             'colour',
             'black',
             'size',
             'xl'
-        ];
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
+        ]);
         res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        log.debug('result', result);
-        expect(result.result).toBe('Sent.');
-
-        // TODO: expect Bid with Order and OrderItems to have been created
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
     });
-/*
-    test('Should post Bid with address from bidData without addressId', async () => {
 
-        const bidSendCommandParams = [bidSendCommand,
-            listingItem.hash,
-            profile.id,
-            false,
-            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
-            'Johnny',
-            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
-            'Depp',
-            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1,
-            '123 6th St',
-            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
-            'Melbourne, FL 32904',
-            BidDataValue.SHIPPING_ADDRESS_CITY,
-            'Melbourne',
-            BidDataValue.SHIPPING_ADDRESS_STATE,
-            'Mel State',
-            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
-            'Finland',
-            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
-            '85001',
-            'colour',
-            'black',
-            'size',
-            'xl'
-
-        ];
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        log.debug('result', result);
-        expect(result.result).toBe('Sent.');
-
-        // TODO: expect Bid with Order and OrderItems to have been created
-    });
 
     test('Should fail to post Bid with address from bidData without addressLine1', async () => {
 
-        const bidSendCommandParams = [bidSendCommand,
-            listingItem.hash,
-            profile.id,
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
             false,
-            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME,
-            'Johnny',
-            BidDataValue.SHIPPING_ADDRESS_LAST_NAME,
-            'Depp',
-            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2,
-            'Melbourne, FL 32904',
-            BidDataValue.SHIPPING_ADDRESS_CITY,
-            'Melbourne',
-            BidDataValue.SHIPPING_ADDRESS_STATE,
-            'Mel State',
-            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE,
-            'Finland',
-            BidDataValue.SHIPPING_ADDRESS_COUNTRY,
-            '85001'
-        ];
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, 'Melbourne, FL 32904',
+            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
+            BidDataValue.SHIPPING_ADDRESS_STATE, 'Mel State',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland'
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException(BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1).getMessage());
     });
 
-    test('Should fail to post Bid because invalid profileId', async () => {
-        const invalidProfileId = 0;
-        const bidSendCommandParams = [
-            bidSendCommand,
-            listingItem.hash,
-            invalidProfileId,
-            profile.ShippingAddresses[0].id,
+    test('Should fail to post Bid with address from bidData without state', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            false,
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, 'Melbourne, FL 32904',
+            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException(BidDataValue.SHIPPING_ADDRESS_STATE).getMessage());
+    });
+
+
+    test('Should post Bid for a ListingItem using Profiles existing ShippingAddress', async () => {
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            buyerProfile.ShippingAddresses[0].id,
             'colour',
             'black',
             'size',
             'xl'
-        ];
-
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSendCommandParams);
+        ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Profile not found.');
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
     });
 
-    test('Should find Bid after posting', async () => {
 
-        await testUtilSellerNode.waitFor(5);
+    test('Should post Bid with address from bidData without addressId', async () => {
 
-        const bidSearchCommandParams = [
-            bidSearchCommand,
-            PAGE, PAGE_LIMIT, ORDERING,
-            listingItem.hash,
-            MPAction.MPA_BID,
-            '*',
-            profile.address
-        ];
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSendCommand,
+            listingItemReceivedOnBuyerNode.id,
+            buyerMarket.Identity.id,
+            false,
+            BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, 'Johnny',
+            BidDataValue.SHIPPING_ADDRESS_LAST_NAME, 'Depp',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, '123 6th St',
+            BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, 'Melbourne, FL 32904',
+            BidDataValue.SHIPPING_ADDRESS_CITY, 'Melbourne',
+            BidDataValue.SHIPPING_ADDRESS_STATE, 'Mel State',
+            BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, '85001',
+            BidDataValue.SHIPPING_ADDRESS_COUNTRY, 'Finland',
+            'colour',
+            'black',
+            'size',
+            'xl'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
 
-        const res: any = await testUtilBuyerNode.rpc(bidCommand, bidSearchCommandParams);
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+    });
+
+
+    test('Should find two Bids after posting', async () => {
+
+        await testUtilBuyerNode.waitFor(5);
+
+        const res: any = await testUtilBuyerNode.rpc(bidCommand, [bidSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, BID_SEARCHORDERFIELD,
+            buyerMarket.Identity.Profile.id,            // profileId
+            buyerMarket.Identity.id,                    // identityId
+            listingItemReceivedOnBuyerNode.id,          // listingItemId
+            MPAction.MPA_BID                            // type
+            // '*',                                     // search string
+            // '*',                                     // market
+            // buyerMarket.Identity.address             // bidder
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         log.debug('bid searchBy result:', JSON.stringify(result, null, 2));
-        expect(result[0].ListingItem.hash).toBe(listingItem.hash);
+        expect(result.length).toBe(2);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedOnBuyerNode.hash);
         expect(result[0].type).toBe(MPAction.MPA_BID);
-        expect(result[0].bidder).toBe(profile.address);
+        expect(result[0].bidder).toBe(buyerMarket.Identity.address);
     });
-*/
+
 });

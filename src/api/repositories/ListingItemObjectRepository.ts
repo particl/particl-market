@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -44,7 +44,7 @@ export class ListingItemObjectRepository {
         const listingItemObject = this.ListingItemObjectModel.forge<ListingItemObject>(data);
         try {
             const listingItemObjectCreated = await listingItemObject.save();
-            return this.ListingItemObjectModel.fetchById(listingItemObjectCreated.id);
+            return await this.ListingItemObjectModel.fetchById(listingItemObjectCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the listingItemObject!', error);
         }
@@ -54,7 +54,7 @@ export class ListingItemObjectRepository {
         const listingItemObject = this.ListingItemObjectModel.forge<ListingItemObject>({ id });
         try {
             const listingItemObjectUpdated = await listingItemObject.save(data, { patch: true });
-            return this.ListingItemObjectModel.fetchById(listingItemObjectUpdated.id);
+            return await this.ListingItemObjectModel.fetchById(listingItemObjectUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the listingItemObject!', error);
         }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -37,27 +37,25 @@ export class DataDir {
 
         let dir = '';
         const appName = 'particl-market';
+        const checkpoint = '03';
 
         switch (process.platform) {
-            case 'linux': {
+            case 'linux':
                 dir = path.join(homeDir, '.' + appName);
                 break;
-            }
-
-            case 'darwin': {
+            case 'darwin':
                 dir = path.join(homeDir, 'Library', 'Application Support', appName);
                 break;
-            }
-
-            case 'win32': {
+            case 'win32':
                 dir = path.join(process.env['APPDATA'], appName);
                 break;
-            }
+            default:
+                throw new Error('process.platform not supported: ' + process.platform);
         }
 
         // return path to datadir (mainnet vs testnet)
         // and set the main datadir variable.
-        const dataDir = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ));
+        const dataDir = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ), checkpoint);
         return dataDir;
     }
 
@@ -118,12 +116,19 @@ export class DataDir {
 
         // may also be the particl-market/testnet
         // so check if upper directory exists.
-        // TODO: what is this tesnet?!
-        if (this.datadir.endsWith('testnet') || this.datadir.endsWith('tesnet/') || this.datadir.endsWith('regtest')) {
-            const dir = path.dirname(this.datadir); // pop the 'testnet' folder name
-            if (!this.checkIfExists(dir, true)) {
-                fs.mkdirSync(dir);
-            }
+
+        const parentPath = path.dirname(this.datadir);
+        let baseDir = parentPath;
+        if (parentPath.endsWith('testnet') || parentPath.endsWith('regtest')) {
+            baseDir = path.dirname(parentPath); // pop the 'testnet' folder name
+        }
+        if (!this.checkIfExists(baseDir, true)) {
+            fs.mkdirSync(baseDir);
+        }
+
+        if (!this.checkIfExists(parentPath, true)) {
+            // the network path, eg: the 'testnet' sub-dir (should already exist for mainnet, as there is no network sub-dir)
+            fs.mkdirSync(parentPath);
         }
 
         if (!this.checkIfExists(this.datadir, true)) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,6 +7,7 @@ declare module 'resources' {
     interface ListingItemTemplate {
         id: number;
         hash: string;
+        market: string;
         generatedAt: number;
         ItemInformation: ItemInformation;
         PaymentInformation: PaymentInformation;
@@ -15,7 +16,7 @@ declare module 'resources' {
         ListingItems: ListingItem[];
         Profile: Profile;
         ParentListingItemTemplate: ListingItemTemplate;
-        ChildListingItemTemplate: ListingItemTemplate;
+        ChildListingItemTemplates: ListingItemTemplate[];
 
         createdAt: Date;
         updatedAt: Date;

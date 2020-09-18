@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -36,6 +36,10 @@ export class SmsgMessageRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<SmsgMessage> {
         return this.SmsgMessageModel.fetchById(id, withRelated);
+    }
+
+    public async findLast(): Promise<SmsgMessage> {
+        return await this.SmsgMessageModel.fetchLast();
     }
 
     public async findOneByMsgIdAndDirection(msgId: string,

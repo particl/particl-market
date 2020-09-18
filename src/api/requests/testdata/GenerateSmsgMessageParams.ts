@@ -1,13 +1,13 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import {ActionMessageTypes} from '../../enums/ActionMessageTypes';
-import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
-import {ActionDirection} from '../../enums/ActionDirection';
-import {MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import {MessageCreateParamsInterface} from '../message/MessageCreateParamsInterface';
+import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { ListingItemAddRequest } from '../action/ListingItemAddRequest';
 
 // todo: extends GenerateCommonParamsInterface
 export interface GenerateSmsgMessageParamsInterface {
@@ -29,7 +29,7 @@ export class GenerateSmsgMessageParams implements GenerateSmsgMessageParamsInter
     public from: string;
     public to: string;
 
-    public messageParams: MessageCreateParamsInterface;
+    public messageParams: ListingItemAddRequest;
     public text: string;
 
     /**
@@ -39,19 +39,19 @@ export class GenerateSmsgMessageParams implements GenerateSmsgMessageParamsInter
      */
     constructor(generateParams: any[] = []) {
         if (!_.isEmpty(generateParams) ) {
-            this.type = generateParams[0] ? generateParams[0] : MPAction.MPA_LISTING_ADD;
-            this.status = generateParams[1] ? generateParams[1] : SmsgMessageStatus.NEW;
-            this.direction = generateParams[2] ? generateParams[2] : ActionDirection.INCOMING;
-            this.read = generateParams[3] ? generateParams[3] : false;
-            this.paid = generateParams[4] ? generateParams[4] : true;
-            this.received = generateParams[5] ? generateParams[5] : Date.now();
-            this.sent = generateParams[6] ? generateParams[6] : Date.now() - (24 * 60 * 60 * 1000);
-            this.expiration = generateParams[7] ? generateParams[7] : Date.now() + (5 * 24 * 60 * 60 * 1000);
-            this.daysretention = generateParams[8] ? generateParams[8] : 7;
-            this.from = generateParams[9] ? generateParams[9] : undefined;
-            this.to = generateParams[10] ? generateParams[10] : undefined;
-            this.messageParams = generateParams[11] ? generateParams[11] : undefined;
-            this.text = generateParams[12] ? generateParams[12] : undefined;
+            this.type           = generateParams[0] ? generateParams[0] : MPAction.MPA_LISTING_ADD;
+            this.status         = generateParams[1] ? generateParams[1] : SmsgMessageStatus.NEW;
+            this.direction      = generateParams[2] ? generateParams[2] : ActionDirection.INCOMING;
+            this.read           = generateParams[3] ? generateParams[3] : false;
+            this.paid           = generateParams[4] ? generateParams[4] : true;
+            this.received       = generateParams[5] ? generateParams[5] : Date.now();
+            this.sent           = generateParams[6] ? generateParams[6] : Date.now() - (24 * 60 * 60 * 1000);
+            this.expiration     = generateParams[7] ? generateParams[7] : Date.now() + (5 * 24 * 60 * 60 * 1000);
+            this.daysretention  = generateParams[8] ? generateParams[8] : 7;
+            this.from           = generateParams[9] ? generateParams[9] : undefined;
+            this.to             = generateParams[10] ? generateParams[10] : undefined;
+            this.messageParams  = generateParams[11] ? generateParams[11] : undefined;
+            this.text           = generateParams[12] ? generateParams[12] : undefined;
         }
     }
 

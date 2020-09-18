@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,12 +14,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class ProposalGetCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -28,6 +26,14 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('proposalHash', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * Return a Proposal by its hash
      *
@@ -35,7 +41,7 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
-     * @returns {Promise<any>}
+     * @returns {Promise<Proposal>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Proposal> {
@@ -43,15 +49,15 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
         return await this.proposalService.findOneByHash(proposalHash, true);
     }
 
+    /**
+     * data.params[]:
+     * [0] proposalHash
+     *
+     * @param data, RpcRequest
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('proposalHash');
-        }
-
-        if (data.params[0] && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('proposalHash', 'string');
-        }
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
     }
 

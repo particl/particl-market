@@ -1,45 +1,46 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidMessageConfig';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
-import { BidCancelMessageCreateParams } from '../../requests/message/BidCancelMessageCreateParams';
+import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
+import { BaseMessageFactory } from './BaseMessageFactory';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
-export class BidCancelMessageFactory implements MessageFactoryInterface {
+export class BidCancelMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
-     * @param params
-     *      bidHash: string
-     * @returns {Promise<BidCancelMessage>}
+     * @param actionRequest
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(params: BidCancelMessageCreateParams): Promise<BidCancelMessage> {
+    public async get(actionRequest: BidCancelRequest): Promise<MarketplaceMessage> {
         const message = {
             type: MPAction.MPA_CANCEL,
-            generated: +new Date().getTime(),
+            generated: +Date.now(),
             hash: 'recalculateandvalidate',
-            bid: params.bidHash,                // hash of MPA_BID
+            bid: actionRequest.bid.hash,                // hash of MPA_BID
             objects: [] as KVS[]
         } as BidCancelMessage;
 
         message.hash = ConfigurableHasher.hash(message, new HashableBidMessageConfig());
-        return message;
-    }
 
+        return await this.getMarketplaceMessage(message);
+    }
 }

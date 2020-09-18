@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -6,18 +6,24 @@ import * as resources from 'resources';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
+import { request, validate } from '../../../core/api/Validate';
+import { Core, Targets, Types } from '../../../constants';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MessageException } from '../../exceptions/MessageException';
+import { MarketService } from '../../services/model/MarketService';
+import { MarketType } from '../../enums/MarketType';
+import { hash } from 'omp-lib/dist/hasher/hash';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -26,7 +32,9 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.CATEGORY_UPDATE);
@@ -53,22 +61,25 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         const description = data.params[2];
         const parentItemCategory: resources.ItemCategory = data.params[3];
 
+        let path: string[] = this.itemCategoryFactory.getArray(parentItemCategory);
+        path = [...path, name];
+        this.log.debug('path: ', JSON.stringify(path, null, 2));
+
         return await this.itemCategoryService.update(category.id, {
             name,
             description,
+            key: hash(path.toString()),
+            market: category.market,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryUpdateRequest);
+
     }
 
     /**
      *  [0]: categoryId
      *  [1]: categoryName
      *  [2]: description
-     *  [3]: parentCategoryId
-     *
-     * - should have 4 params
-     * - if category has key, it cant be edited
-     * - ...
+     *  [3]: parentCategoryId, default: root
      *
      * @param {RpcRequest} data
      * @returns {Promise<void>}
@@ -100,27 +111,39 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             }
             data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
         } else {
-            data.params[3] = await this.itemCategoryService.findRoot().then(value => value.toJSON());
+            // if parent wasnt given, use the root
+            data.params[3] = await this.itemCategoryService.findRoot(itemCategory.market).then(value => value.toJSON());
+        }
+
+        // default categories cannot be edited
+        if (!itemCategory.market) {
+            throw new MessageException('Default ItemCategories cannot be modified.');
+        }
+
+        // custom categories can only be modified if market.type = MarketType.STOREFRONT_ADMIN
+        // todo: fix when auth is added
+        const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(itemCategory.market).then(value => value.toJSON());
+        const adminMarket = _.find(markets, market => {
+            return market.type === MarketType.STOREFRONT_ADMIN;
+        });
+
+        if (_.isEmpty(adminMarket)) {
+            throw new MessageException('You cannot modify this ItemCategory.');
         }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>] ';
+        return this.getName() + ' <categoryId> <categoryName> <description> [parentItemCategoryId] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID of the category we want to \n'
-            + '                                     update. \n'
-            + '    <categoryName>                - String - The new name of the category we want \n'
-            + '                                     to update. \n'
-            + '    <description>                 - String - The new description of the category \n'
-            + '                                     we want to update. \n'
-            + '    <parentItemCategoryId>        - [optional] Numeric - The ID that identifies the \n'
-            + '                                     new parent category of the category we want to \n'
-            + '                                     update; default is the root category. ';
+            + '    <categoryId>                  - Numeric - The ID of the ItemCategory. \n'
+            + '    <categoryName>                - String - The new name for the ItemCategory. \n'
+            + '    <description>                 - String - The new description for the ItemCategory. \n'
+            + '    <parentItemCategoryId>        - [optional] Numeric - The ID of the new parent ItemCategory; default is the market root category. ';
     }
 
     public description(): string {
@@ -130,6 +153,5 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     public example(): string {
         return 'category ' + this.getName() + ' 81 updatedCategory \'Updated category description\' 80 ';
     }
-
 
 }

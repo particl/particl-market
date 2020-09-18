@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,6 +14,21 @@ export class ProposalUpdateRequest extends RequestBody implements ModelRequestIn
     @IsNotEmpty()
     public submitter: string;
 
+    public market: string;
+
+    @IsNotEmpty()
+    @IsEnum(ProposalCategory)
+    public category: ProposalCategory;
+    public target: string;
+
+    @IsNotEmpty()
+    public title: string;
+    public description: string;
+
+    public hash: string;
+
+    public options: ProposalOptionCreateRequest[];
+
     @IsNotEmpty()
     public timeStart: number;
     // @IsNotEmpty()
@@ -23,17 +38,6 @@ export class ProposalUpdateRequest extends RequestBody implements ModelRequestIn
     // @IsNotEmpty()
     public receivedAt: number;
 
-    public hash: string;
-    public item: string;
-
-    @IsNotEmpty()
-    @IsEnum(ProposalCategory)
-    public category: ProposalCategory;
-
-    @IsNotEmpty()
-    public title: string;
-    public description: string;
-    public options: ProposalOptionCreateRequest[];
 
 }
 // tslint:enable:variable-name

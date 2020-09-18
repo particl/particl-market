@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -18,146 +18,179 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ListingItemService } from '../model/ListingItemService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { ItemVote } from '../../enums/ItemVote';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { VoteActionService } from './VoteActionService';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
-import { ompVersion } from 'omp-lib/dist/omp';
-import { ProposalCreateParams } from '../../factories/model/ModelCreateParams';
-import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
-import { BaseActionService } from './BaseActionService';
+import { ProposalCreateParams } from '../../factories/ModelCreateParams';
+import { BaseActionService } from '../BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
-import { ProposalAddValidator } from '../../messages/validator/ProposalAddValidator';
-import { VoteRequest } from '../../requests/action/VoteRequest';
+import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
+import { MarketService } from '../model/MarketService';
+import { GovernanceAction } from '../../enums/GovernanceAction';
+import { NotificationService } from '../NotificationService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { ProposalNotification } from '../../messages/notification/ProposalNotification';
 
 export class ProposalAddActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalMessageFactory: ProposalAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private proposalAddMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private actionMessageFactory: ProposalAddMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
-        this.log = new Logger(__filename);
+        super(GovernanceAction.MPA_PROPOSAL_ADD,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger);
     }
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMessage(params: ProposalAddRequest): Promise<MarketplaceMessage> {
-
-        const actionMessage: ProposalAddMessage = await this.proposalAddMessageFactory.get({
-            title: params.title,
-            description: params.description,
-            options: params.options,
-            sender: params.sender,
-            category: params.category,
-            itemHash: params.itemHash
-        } as ProposalAddMessageCreateParams);
-
-        return {
-            version: ompVersion(),
-            action: actionMessage
-        } as MarketplaceMessage;
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        return ProposalAddValidator.isValid(marketplaceMessage);
+    public async createMarketplaceMessage(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
      * called before post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      */
-    public async beforePost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+    public async beforePost(actionRequest: ProposalAddRequest, marketplaceMessage: MarketplaceMessage): Promise<MarketplaceMessage> {
+        // this.log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
         return marketplaceMessage;
     }
 
     /**
      * called after post is executed and message is sent
      *
-     * @param params
+     * @param actionRequest
      * @param marketplaceMessage
      * @param smsgMessage
      * @param smsgSendResponse
      */
-    public async afterPost(params: ProposalAddRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
+    public async afterPost(actionRequest: ProposalAddRequest,
+                           marketplaceMessage: MarketplaceMessage,
+                           smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
-        // processProposal "processes" the Proposal, creating or updating the Proposal.
-        // called from both beforePost() and onEvent()
-        // TODO: currently do not pass smsgMessage to the processProposal here as that would set the values from smsgMessage
-        // TODO: add received or similar flag instead of this
-        await this.processProposal(marketplaceMessage.action as ProposalAddMessage);
+        // this.log.debug('afterPost(), smsgSendResponse:', JSON.stringify(smsgSendResponse, null, 2));
+        return smsgSendResponse;
+    }
 
-        // TODO: what is this supposed to test?
-        if (smsgSendResponse.msgid) {
+    /**
+     * called after posting a message and after receiving it
+     *
+     * processMessage "processes" the Message (ListingItemAdd/Bid/ProposalAdd/Vote/etc), often creating and/or updating
+     * the whatever we're "processing" here.
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     * @param actionRequest
+     */
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: ProposalAddRequest): Promise<resources.SmsgMessage> {
 
-            // TODO: msgid update should be unnecessary now?
-            const proposal: resources.Proposal = await this.proposalService.updateMsgId(marketplaceMessage.action.hash, smsgSendResponse.msgid)
-                .then(value => value.toJSON());
+        this.log.debug('processMessage(), actionDirection: ', actionDirection);
 
-            // this.log.debug('afterPost(), proposal: ', JSON.stringify(proposal, null, 2));
+        const proposalAddMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
 
-            // if the Proposal is of category ITEM_VOTE, we also need to send votes for the ListingItems removal
-            if (ProposalCategory.ITEM_VOTE === proposal.category) {
+        // this.log.debug('processProposal(), proposalAddMessage:', JSON.stringify(proposalAddMessage, null, 2));
 
-                const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-                    return o.description === ItemVote.REMOVE;
-                });
-                if (!proposalOption) {
-                    const error = new MessageException('ProposalOption ' + ItemVote.REMOVE + ' not found.');
-                    this.log.error(error.getMessage());
-                    throw error;
+        // if Proposal doesnt exist yet, create it
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalAddMessage.hash)
+            .then(value => value.toJSON())
+            .catch(async reason => {
+
+                const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({
+                    actionMessage: proposalAddMessage,
+                    smsgMessage
+                } as ProposalCreateParams);
+
+                const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
+
+                // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
+                if (ProposalCategory.ITEM_VOTE === createdProposal.category || ProposalCategory.MARKET_VOTE === createdProposal.category) {
+                    await this.createFlaggedItemForProposal(createdProposal);
+                    this.log.debug('processProposal(), created FlaggedItem');
                 }
 
-                // prepare the VoteRequest for sending votes
-                const postRequest = {
-                    sendParams: params.sendParams,
-                    sender: params.sender,
-                    market: params.market,
-                    proposal,
-                    proposalOption
-                } as VoteRequest;
+                // also create the first ProposalResult
+                await this.proposalService.createEmptyProposalResult(createdProposal);
+                this.log.debug('processProposal(), created ProposalResult');
 
-                postRequest.sendParams.paidMessage = false; // vote messages should be free, proposal messages not
+                return await this.proposalService.findOne(createdProposal.id).then(value => value.toJSON());
+            });
 
-                this.log.debug('afterPost(), sending votes...');
-
-                // send the VoteMessages from each of senderProfiles addresses
-                const voteSmsgSendResponse = await this.voteActionService.vote(postRequest);
-                smsgSendResponse.msgids = voteSmsgSendResponse.msgids;
-                // ProposalResult will be calculated after each vote has been sent...
-            }
-
+        // in case of INCOMING message, update the times
+        if (ActionDirection.INCOMING === actionDirection) {
+            // means processMessage was called from onEvent() and we should update the Proposal data
+            await this.proposalService.updateTimes(proposal.id, smsgMessage.sent, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
+                .then(value => value.toJSON());
+            this.log.debug('processProposal(), proposal updated');
         } else {
-            throw new MessageException('Failed to set Proposal msgid');
+            // called from send(), we already created the Proposal so nothing else needs to be done
         }
+        return smsgMessage;
+    }
 
-        this.log.debug('afterPost(), smsgSendResponse:', JSON.stringify(smsgSendResponse, null, 2));
-        return smsgSendResponse;
+    /**
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        const proposalAddMessage: ProposalAddMessage = marketplaceMessage.action as ProposalAddMessage;
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection
+            && proposalAddMessage.category === ProposalCategory.ITEM_VOTE) {
+
+            const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
+                proposalAddMessage.target!, smsgMessage.to)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
+
+            const notification: MarketplaceNotification = {
+                event: marketplaceMessage.action.type,
+                payload: {
+                    category: proposalAddMessage.category,
+                    hash: proposalAddMessage.hash,
+                    target: proposalAddMessage.target,
+                    market: listingItem.market
+                } as ProposalNotification
+            };
+            return notification;
+        }
+        return undefined;
     }
 
     /**
@@ -165,92 +198,53 @@ export class ProposalAddActionService extends BaseActionService {
      * @param proposal
      */
     public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(proposal.title).then(value => value.toJSON());
 
-        // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
-        // create if FlaggedItem doesnt already exist
-        if (_.isEmpty(listingItem.FlaggedItem)) {
-            const flaggedItemCreateRequest = {
-                listing_item_id: listingItem.id,
-                proposal_id: proposal.id,
-                reason: proposal.description
-            } as FlaggedItemCreateRequest;
+        let listingItem: resources.ListingItem;
+        let markets: resources.Market[];
 
-            return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-        } else {
-            // else just return the existing
-            return this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
-        }
-    }
+        const flaggedItemCreateRequest = {
+            proposal_id: proposal.id,
+            reason: proposal.description
+        } as FlaggedItemCreateRequest;
 
-    /**
-     * processProposal "processes" the Proposal, creating or updating the Proposal.
-     * called from send() and processProposalReceivedEvent(), meaning before the ProposalAddMessage is sent
-     * and after the ProposalAddMessage is received.
-     *
-     * - private processProposal():
-     *   - save/update proposal locally (update: add the fields from smsgmessage)
-     *   - createEmptyProposalResult(proposal), make sure empty ProposalResult is created/exists
-     *   - if ProposalCategory.ITEM_VOTE:
-     *     - create the FlaggedItem if not created yet
-     *
-     * @param proposalAddMessage
-     * @param smsgMessage
-     */
-    public async processProposal(proposalAddMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<resources.Proposal> {
+        if (ProposalCategory.ITEM_VOTE === proposal.category) {
+            listingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(proposal.title, proposal.market).then(value => value.toJSON());
 
-        // this.log.debug('processProposal(), proposalAddMessage: ', JSON.stringify(proposalAddMessage, null, 2));
+            // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
+            if (_.isEmpty(listingItem.FlaggedItem)) {
+                // only create if FlaggedItem doesnt already exist
+                flaggedItemCreateRequest.listing_item_id = listingItem.id;
+                return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+            } else {
+                // else just return the existing
+                return await this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
+            }
+        } else if (ProposalCategory.MARKET_VOTE === proposal.category) {
 
-        // processProposal "processes" the Proposal, creating or updating the Proposal.
-        // called from both beforePost() and onEvent()
+            const createdFlaggedItems: resources.FlaggedItem[] = [];
+            markets = await this.marketService.findAllByReceiveAddress(proposal.title).then(value => value.toJSON());
+            this.log.debug('markets: ', JSON.stringify(markets, null, 2));
 
-        // when called from beforePost() we create a ProposalCreateRequest with no smsgMessage data.
-        // later, when the smsgMessage for this proposal is received in onEvent(),
-        // we call this again and the relevant smsgMessage data will be updated and included in the model
-        const proposalRequest: ProposalCreateRequest = await this.proposalFactory.get({} as ProposalCreateParams, proposalAddMessage, smsgMessage);
-
-        this.log.debug('processProposal(), proposalAddMessage.hash: ', proposalAddMessage.hash);
-        this.log.debug('processProposal(), proposalRequest.hash: ', proposalRequest.hash);
-
-        let proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalRequest.hash)
-            .then(value => value.toJSON())
-            .catch(async reason => {
-
-                // proposal doesnt exist yet, so we need to create it.
-                const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
-
-                if (ProposalCategory.ITEM_VOTE === createdProposal.category) {
-                    // this.log.debug('processProposal(), creating FlaggedItem for Proposal:', JSON.stringify(createdProposal, null, 2));
-
-                    // in case of ITEM_VOTE, we also need to create the FlaggedItem
-                    const flaggedItem: resources.FlaggedItem = await this.createFlaggedItemForProposal(createdProposal);
-                    // this.log.debug('processProposal(), flaggedItem:', JSON.stringify(flaggedItem, null, 2));
-                    this.log.debug('processProposal(), created FlaggedItem');
+            // create FlaggedItem for all the Markets
+            for (const market of markets) {
+                let flaggedItem: resources.FlaggedItem;
+                if (_.isEmpty(market.FlaggedItem)) {
+                    // only create if FlaggedItem doesnt already exist
+                    flaggedItemCreateRequest.market_id = market.id;
+                    flaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
+                } else {
+                    // else just return the existing
+                    flaggedItem = await this.flaggedItemService.findOne(market.FlaggedItem.id).then(value => value.toJSON());
                 }
+                createdFlaggedItems.push(flaggedItem);
+            }
 
-                // create the first ProposalResult
-                await this.proposalService.createEmptyProposalResult(createdProposal);
-                this.log.debug('processProposal(), created ProposalResult');
+            // the result is not used for anything so just return the [0]
+            return createdFlaggedItems[0];
 
-                return await this.proposalService.findOne(createdProposal.id).then(value => value.toJSON());
-            });
-
-        // this.log.debug('processProposal(), proposal: ', JSON.stringify(proposal, null, 2));
-        // this.log.debug('processProposal(), proposalRequest: ', JSON.stringify(proposalRequest, null, 2));
-        // this.log.debug('processProposal(), Number.MAX_SAFE_INTEGER: ', Number.MAX_SAFE_INTEGER);
-        // this.log.debug('processProposal(), proposalRequest.postedAt: ', proposalRequest.postedAt);
-
-        if (proposalRequest.postedAt !== Number.MAX_SAFE_INTEGER) {
-            // means processProposal was called from onEvent() and we should update the Proposal data
-            proposal = await this.proposalService.updateTimes(proposal.id, proposalRequest.timeStart, proposalRequest.postedAt, proposalRequest.receivedAt,
-                proposalRequest.expiredAt).then(value => value.toJSON());
-            this.log.debug('processProposal(), proposal updated');
         } else {
-            // called from send(), we already created the Proposal so nothing else needs to be done
+            throw new MessageException('Unsupported ProposalCategory.');
         }
-
-        // this.log.debug('processProposal(), proposal:', JSON.stringify(proposal, null, 2));
-        return proposal;
     }
 
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,29 +16,57 @@ import { MarketCreateRequest } from '../../requests/model/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MarketType } from '../../enums/MarketType';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
 import { MessageException } from '../../exceptions/MessageException';
-import { BlockchainInfo, CoreRpcService } from '../../services/CoreRpcService';
-import { WalletService } from '../../services/model/WalletService';
-import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { IdentityService } from '../../services/model/IdentityService';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
+import { MarketCreateParams } from '../../factories/ModelCreateParams';
+import { MarketFactory } from '../../factories/model/MarketFactory';
+import { MarketRegion } from '../../enums/MarketRegion';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
-export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
-    public log: LoggerType;
+export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) private walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService
     ) {
         super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('name', true),
+                new EnumValidationRule('type', false, 'MarketType',
+                    EnumHelper.getValues(MarketType) as string[], MarketType.MARKETPLACE),
+                new StringValidationRule('receiveKey', false),
+                new StringValidationRule('publishKey', false),
+                new IdValidationRule('identityId', false, this.identityService),
+                new StringValidationRule('description', false),
+                new EnumValidationRule('region', false, 'MarketRegion',
+                    EnumHelper.getValues(MarketRegion) as string[], MarketRegion.WORLDWIDE),
+                new BooleanValidationRule('skipJoin', false, false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -46,194 +74,163 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
      *  [0]: profile: resources.Profile
      *  [1]: name
      *  [2]: type: MarketType
-     *  [3]: receiveKey
-     *  [4]: receiveAddress
-     *  [5]: publishKey
-     *  [6]: publishAddress
-     *  [7]: wallet: resources.Wallet;
+     *  [3]: receiveKey: private key in wif format
+     *  [4]: publishKey: private key in wif format or public key as DER hex encoded string
+     *  [5]: identity: resources.Identity
+     *  [6]: description
+     *  [7]: region
+     *  [8]: skipJoin
      *
      * @param data
      * @returns {Promise<Market>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Market> {
         const profile: resources.Profile = data.params[0];
-        const wallet: resources.Wallet = data.params[7];
+        const name: string = data.params[1];
+        const type: MarketType = data.params[2];
+        const receiveKey: string = data.params[3];
+        const publishKey: string = data.params[4];
+        let identity: resources.Identity = data.params[5];
+        const description: string = data.params[6];
+        const region: string = data.params[7];
+        const skipJoin: boolean = data.params[8];
 
-        /*
-        // if wallet with the name doesnt exists, then create one
-        const exists = await this.coreRpcService.walletExists(data.params[7]);
-        if (!exists) {
-            await this.coreRpcService.createWallet(data.params[7])
-                .then(wallet => {
-                    this.log.debug('created wallet: ', wallet.name);
+        // create market identity if one wasn't given
+        if (_.isNil(identity) && !skipJoin) {
+            identity = await this.identityService.createMarketIdentityForProfile(profile, name).then(value => value.toJSON());
+        }
+
+        const createRequest: MarketCreateRequest = await this.marketFactory.get({
+            actionMessage: {
+                name,
+                description,
+                marketType: type,
+                region,
+                receiveKey,
+                publishKey,
+                // todo: add logo for the default market
+                // image: ContentReference,
+                generated: Date.now()
+            } as MarketAddMessage,
+            identity,   // Identity required to create keys
+            skipJoin
+        } as MarketCreateParams);
+
+        if (skipJoin) {
+            // make sure that unjoined Market with the same hash doesnt exists
+            await this.marketService.findAllByHash(createRequest.hash)
+                .then(value => {
+                    const allMarkets: resources.Market[] = value.toJSON();
+                    for (const market of allMarkets) {
+                        if (_.isNil(market.Profile)) {
+                            // unjoined market exists
+                            throw new MessageException('Market already exists.');
+                        }
+                    }
+                });
+        } else {
+            // make sure joined Market with the same receiveAddress doesnt exists
+            await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, createRequest.receiveAddress)
+                .then(value => {
+                    throw new MessageException('Market with the receiveAddress: ' + createRequest.receiveAddress + ' already exists.');
                 })
                 .catch(reason => {
-                    this.log.debug('wallet: ' + data.params[7] + ' already exists.');
+                    //
                 });
         }
-        */
 
-        return await this.marketService.create({
-            profile_id: profile.id,
-            wallet_id: wallet.id,
-            name: data.params[1],
-            type: data.params[2],
-            receiveKey: data.params[3],
-            receiveAddress: data.params[4],
-            publishKey : data.params[5],
-            publishAddress : data.params[6]
-        } as MarketCreateRequest);
+        // create the market
+        return await this.marketService.create(createRequest).then(async value => {
+            const market: resources.Market = value.toJSON();
+
+            if (!skipJoin && !_.isNil(market.Identity.id) && !_.isNil(market.Identity.Profile.id)) {
+                await this.marketService.joinMarket(market);
+            }
+
+            // create root category for market
+            await this.itemCategoryService.insertRootItemCategoryForMarket(createRequest.receiveAddress);
+
+            return market;
+        });
     }
 
     /**
      * data.params[]:
      *  [0]: profileId
      *  [1]: name
-     *  [2]: type: MarketType, optional
-     *  [3]: receiveKey, optional
-     *  [4]: receiveAddress, optional
-     *  [5]: publishKey, optional
-     *  [6]: publishAddress, optional
-     *  [7]: walletId, optional
+     *  [2]: type: MarketType, optional, default=MARKETPLACE
+     *  [3]: receiveKey, optional, private key in wif format
+     *  [4]: publishKey, optional, if type === STOREFRONT -> public key as DER hex encoded string
+     *                             if type === STOREFRONT_ADMIN -> private key in wif format
+     *  [5]: identityId, optional
+     *  [6]: description, optional
+     *  [7]: region, optional
+     *  [8]: skipJoin, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('name');
-        }
-/*
-        else if (data.params.length < 3) {
-            throw new MissingParamException('type');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('receiveKey');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('receiveAddress');
-        } else if (data.params.length === 6) {
-            throw new MissingParamException('publishAddress');
-        }
-*/
+        await super.validate(data);
 
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('name', 'string');
-        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('type', 'string');
-        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('receiveKey', 'string');
-        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'string') {
-            throw new InvalidParamException('receiveAddress', 'string');
-        } else if (data.params[5] !== undefined && typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('publishKey', 'string');
-        } else if (data.params[6] !== undefined && typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('publishAddress', 'string');
-        } else if (data.params[7] !== undefined && typeof data.params[7] !== 'number') {
-            throw new InvalidParamException('walletId', 'number');
+        const profile: resources.Profile = data.params[0];
+        const name = data.params[1];
+        let type = data.params[2];
+        const receiveKey = data.params[3];
+        const publishKey = data.params[4];
+        const identity: resources.Identity = data.params[5];
+        const description = data.params[6];
+        const region = data.params[7];
+        const skipJoin = data.params[8];
+
+        await this.checkForDuplicateMarketName(profile.id, name);
+
+        // type === MARKETPLACE -> receive + publish keys are the same
+        // type === STOREFRONT -> receive key is private key, publish key is public key
+        //                        when adding a storefront, both keys should be given
+        // type === STOREFRONT_ADMIN -> receive + publish keys are different
+        // the keys which are undefined should be generated
+
+        // for STOREFRONT, both keys should have been given
+        if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
+            throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
         }
 
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        // make sure Market with the same name doesnt exists
-        let market: resources.Market = await this.marketService.findOneByProfileIdAndName(profile.id, data.params[1])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                //
-            });
-
-        if (!_.isEmpty(market)) {
-            throw new MessageException('Market with the name: ' + data.params[1] + ' already exists.');
+        // make sure Identity belongs to the given Profile
+        if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
+            throw new MessageException('Identity does not belong to the Profile.');
         }
 
-        if (_.isEmpty(data.params[2])) {
-            // default market type to MARKETPLACE if not set
-            data.params[2] = MarketType.MARKETPLACE;
-        } else if (!EnumHelper.containsName(MarketType, data.params[2])) {
-            // invalid MarketType
-            throw new InvalidParamException('type', 'MarketType');
-        }
-
-        // create the keys if not given
-        if (_.isEmpty(data.params[3])) {
-            const blockchainInfo: BlockchainInfo = await this.coreRpcService.getBlockchainInfo();
-            const network = blockchainInfo.chain === 'main' ? Networks.mainnet : Networks.testnet;
-
-            const receiveKey = PrivateKey.fromRandom(network);
-            const receiveKeyWif = receiveKey.toWIF();
-            const receivePublicKey = receiveKey.toPublicKey();
-            const receiveAddress = receivePublicKey.toAddress(network).toString();
-
-            /*
-            const publishKey = PrivateKey.fromRandom(network);
-            const publishKeyWif = publishKey.toWIF();
-            const publishPublicKey = publishKey.toPublicKey();
-            const publishAddress = publishPublicKey.toAddress(network);
-            */
-
-            data.params[3] = receiveKeyWif;
-            data.params[4] = receiveAddress;
-            // receiveKey and publishKey are the same for now...
-            data.params[5] = receiveKeyWif;
-            data.params[6] = receiveAddress;
-        }
-
-        let wallet: resources.Wallet;
-        if (!_.isEmpty(data.params[7])) {
-            // make sure Wallet with the id exists
-            wallet = await this.walletService.findOne(data.params[7])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Wallet');
-                });
-
-            if (wallet.Profile.id !== profile.id) {
-                throw new MessageException('Wallet does not belong to the Profile.');
-            }
-        } else {
-            wallet = await this.walletService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-        }
-
-        // make sure Market with the same receiveAddress doesnt exists
-        market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, data.params[4])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                //
-            });
-
-        if (!_.isEmpty(market)) {
-            throw new MessageException('Market with the receiveAddress: ' + data.params[4] + ' already exists.');
-        }
+        type = skipJoin ? MarketType.MARKETPLACE : type;
 
         data.params[0] = profile;
-        data.params[7] = wallet;
+        data.params[1] = name;
+        data.params[2] = type;
+        data.params[3] = receiveKey;
+        data.params[4] = publishKey;
+        data.params[6] = description;
+        data.params[7] = region;
+        data.params[8] = skipJoin;
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <name> [type] [receiveKey] [receiveAddress] [publishKey] [publishAddress] [wallet] ';
+        return this.getName() + ' <profileId> <name> [type] [receiveKey] [publishKey] [identityId] [description] [region] [skipJoin]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - Number - The ID of the Profile for which the Market is added. \n'
-            + '    <name>                   - String - The unique name of the Market being created. \n'
-            + '    <type>                   - MarketType, optional - MARKETPLACE \n'
-            + '    <receiveKey>             - String, optional - The receive private key of the Market. \n'
-            + '    <receiveAddress>         - String, optional - The receive address matching the receive private key. \n'
-            + '    <publishKey>             - String, optional - The publish private key of the Market. \n'
-            + '    <publishAddress>         - String, optional - The publish address matching the receive private key. \n'
-            + '    <wallet>                 - String, optional - The wallet to be used with the Market. \n';
+            + '    <profileId>              - number - The ID of the Profile for which the Market is added. \n'
+            + '    <name>                   - string - The unique name of the Market being created. \n'
+            + '    <type>                   - [optional], MarketType, The type of the Market. \n'
+            + '    <receiveKey>             - [optional], string, The receive private key of the Market. \n'
+            + '    <publishKey>             - [optional], string, The publish private key of the Market. \n'
+            + '    <identityId>             - [optional], number, The identity to be used with the Market. \n'
+            + '    <description>            - [optional], string, Market description. \n'
+            + '    <region>                 - [optional], string, Market region. \n'
+            + '    <skipJoin>               - [optional], string, skip Market join. \n';
     }
 
     public description(): string {
@@ -242,7 +239,21 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
     public example(): string {
         return 'market ' + this.getName() + ' market add 1 \'mymarket\' \'MARKETPLACE\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ' +
-            '\'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' \'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' \'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA\' ' +
-            '\'wallet.dat\' ';
+            '\'2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek\' ';
+    }
+
+    private async checkForDuplicateMarketName(profileId: number, name: string): Promise<void> {
+        // make sure Market with the same name doesn't exists for the Profile
+        // we can't check for the receiveAAddress yet, because we don't know it
+        await this.marketService.findAllByProfileId(profileId)
+            .then(values => {
+                const markets: resources.Market[] = values.toJSON();
+                const found = _.find(markets, market => {
+                    return market.name === name;
+                });
+                if (!_.isNil(found)) {
+                    throw new MessageException('Market with the name: ' + name + ' already exists.');
+                }
+            });
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,11 +14,10 @@ import { Comment } from '../../models/Comment';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CommandParamValidationRules, NumberOrStringValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -26,6 +25,14 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.COMMENT_GET);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new NumberOrStringValidationRule('id|hash', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -40,16 +47,27 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Comment> {
         if (typeof data.params[0] === 'number') {
-            return await this.commentService.findOne(data.params[0]);
+            return await this.commentService.findOne(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Comment');
+                });
         } else {
-            return await this.commentService.findOneByHash(data.params[0]);
+            return await this.commentService.findOneByHash(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Comment');
+                });
         }
     }
 
+    /**
+     * data.params[]:
+     *  [0]: id or hash
+     *
+     * @param data
+     * @returns {Promise<ItemCategory>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('hash');
-        }
+        await super.validate(data);
         return data;
     }
 
@@ -59,11 +77,11 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <hash>              - [optional] String - The hash of the comment we want to retrieve. ';
+            + '    <id|hash>              - String - The id or hash of the Comment we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a comment via hash.';
+        return 'Get a Comment.';
     }
 
     public example(): string {

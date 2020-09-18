@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
@@ -15,17 +15,17 @@
     "pretest": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish './test/unit/**/*.ts'",
     "test": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --testPathPattern=unit",
     "test:pretty": "npm run test -- --verbose",
-    "test:single": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --verbose --testPathPattern=unit/$TEST -i",
+    "test:single": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --verbose --testPathPattern=unit/$TEST",
     "test:coverage": "npm run test -- --coverage",
     "pretest:black-box": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish './test/black-box/**/*.ts'",
-    "test:black-box": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --testPathPattern=black-box -i",
+    "test:black-box": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --testPathPattern=black-box --runInBand",
     "test:black-box:pretty": "npm run test:black-box -- --verbose",
-    "test:black-box:single": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=black-box/$TEST -i",
+    "test:black-box:single": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --detectOpenHandles --verbose --testPathPattern=black-box/$TEST --runInBand",
     "test:black-box:coverage": "npm run test:black-box -- --coverage",
-    "test:ui": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui -i",
+    "test:ui": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui --runInBand",
     "test:ui:pretty": "npm run test:ui -- --verbose",
-    "test:ui:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST -i",
-    "test:runtest": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" -i --forceExit --verbose",
+    "test:ui:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST --runInBand",
+    "test:runtest": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --runInBand --forceExit --detectOpenHandles",
     "test:integration": "npm run test:runtest -- --testPathPattern=integration",
     "test:integration:pretty": "npm run test:integration -- --verbose",
     "test:integration:single": "npm run test:runtest -- --testPathPattern=integration/$TEST",
@@ -106,11 +106,15 @@
     "merge": "1.2.1",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",
-    "omp-lib": "0.1.113",
+    "omp-lib": "^0.1.150",
     "particl-bitcore-lib": "^0.16.0",
+    "particl-zmq": "^1.0.4",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",
+    "pm-delay": "^4.3.0",
+    "pm-forever": "^2.1.2",
+    "pm-queue": "^6.2.4",
     "postal-codes-js": "^1.0.0",
     "prepend": "^1.0.2",
     "reflect-metadata": "^0.1.10",
@@ -118,17 +122,45 @@
     "request-promise": "^4.2.1",
     "serve-favicon": "^2.4.3",
     "socket.io": "^2.0.4",
-    "sqlite3": "https://github.com/particl/sqlite3-offline.git",
+    "sqlite3": "^5.0.0",
     "sshpk": "^1.13.2",
     "stringstream": "0.0.6",
     "sync-fs": "^1.0.1",
     "tar": "^2.2.2",
     "ts-enums": "0.0.6",
-    "tslib": "^1.7.1",
+    "tslib": "^1.9.3",
+    "typescript": "2.4.2",
     "web-request": "^1.0.7",
-    "winston": "^2.4.4"
+    "winston": "^2.4.4",
+    "zeromq": "5"
+  },
+  "optionalDependencies": {
+    "fsevents": "^2.1.3"
+  },
+  "engines": {
+    "node": ">=10.*.*"
   },
   "jest": {
+    "verbose": true,
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/data/"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/data/",
+      "<rootDir>/dist/",
+      "<rootDir>/.idea/",
+      "<rootDir>/docs/",
+      "<rootDir>/docs/"
+    ],
+    "watchPathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/data/"
+    ],
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/data/"
+    ],
     "transform": {
       ".(ts|tsx)": "<rootDir>/test/preprocessor.js"
     },
@@ -143,7 +175,6 @@
     ],
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts",
-    "mapCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.ts"
     ],
@@ -181,20 +212,23 @@
     "@types/request-promise": "^4.1.36",
     "@types/serve-favicon": "^2.2.28",
     "@types/winston": "^2.3.3",
+    "@types/zeromq": "^4.6.2",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.6.0",
+    "babel-preset-env": "^1.7.0",
     "cross-env": "^5.0.1",
-    "jest": "^20.0.4",
-    "jest-cli": "^20.0.4",
+    "jest": "23.6.0",
+    "jest-cli": "23.6.0",
     "jest-sonar-reporter": "^2.0.0",
     "node-slate-lib": "^1.1.9",
     "nodemon": "^1.19.1",
     "sonarqube-scanner": "^2.1.2",
     "trash-cli": "^1.4.0",
-    "ts-jest": "^20.0.7",
+    "ts-jest": "<23.10.0",
     "ts-node": "^3.2.0",
     "tslint": "5.11.0",
     "tslint-clean-code": "^0.2.7",
     "tslint-sonarts": "^1.8.0",
-    "typescript": "^2.4.1",
     "zombie": "^6.1.2"
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,12 +12,14 @@ import { ShoppingCartRepository } from '../../repositories/ShoppingCartRepositor
 import { ShoppingCart } from '../../models/ShoppingCart';
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
 import { ShoppingCartUpdateRequest } from '../../requests/model/ShoppingCartUpdateRequest';
+import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 export class ShoppingCartService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Repository) @named(Targets.Repository.ShoppingCartRepository) public shoppingCartRepo: ShoppingCartRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -28,8 +30,8 @@ export class ShoppingCartService {
         return this.shoppingCartRepo.findAll();
     }
 
-    public async findAllByProfileId(profileId: number): Promise<Bookshelf.Collection<ShoppingCart>> {
-        return await this.shoppingCartRepo.findAllByProfileId(profileId);
+    public async findAllByIdentityId(identityId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ShoppingCart>> {
+        return await this.shoppingCartRepo.findAllByIdentityId(identityId, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCart> {
@@ -43,13 +45,8 @@ export class ShoppingCartService {
 
     @validate()
     public async create( @request(ShoppingCartCreateRequest) body: any): Promise<ShoppingCart> {
-
-        // If the request body was valid we will create the shoppingCart
         const shoppingCart = await this.shoppingCartRepo.create(body);
-
-        // finally find and return the created shoppingCart
-        const newShoppingCart = await this.findOne(shoppingCart.id);
-        return newShoppingCart;
+        return await this.findOne(shoppingCart.id);
     }
 
     @validate()
@@ -63,6 +60,10 @@ export class ShoppingCartService {
 
     public async destroy(id: number): Promise<void> {
         await this.shoppingCartRepo.destroy(id);
+    }
+
+    public async clearCart(cartId: number): Promise<void> {
+        await this.shoppingCartItemService.destroyByCartId(cartId);
     }
 
 }

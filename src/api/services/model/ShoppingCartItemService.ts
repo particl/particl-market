@@ -1,14 +1,15 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import { MessageException } from '../../exceptions/MessageException';
 import { ShoppingCartItemRepository } from '../../repositories/ShoppingCartItemRepository';
 import { ShoppingCartItem } from '../../models/ShoppingCartItem';
 import { ShoppingCartItemCreateRequest } from '../../requests/model/ShoppingCartItemCreateRequest';
@@ -39,7 +40,12 @@ export class ShoppingCartItemService {
     }
 
     public async findOneByCartIdAndListingItemId(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
-        return await this.shoppingCartItemRepo.findOneByCartIdAndListingItemId(cartId, listingItemId);
+        const shoppingCartItem = await this.shoppingCartItemRepo.findOneByCartIdAndListingItemId(cartId, listingItemId);
+        if (shoppingCartItem === null) {
+            this.log.warn(`ShoppingCartItem in the cart=${cartId} with the id=${listingItemId} was not found!`);
+            throw new NotFoundException(cartId + '/' + listingItemId);
+        }
+        return shoppingCartItem;
     }
 
     public async findAllByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
@@ -52,47 +58,22 @@ export class ShoppingCartItemService {
 
     @validate()
     public async create( @request(ShoppingCartItemCreateRequest) body: any): Promise<ShoppingCartItem> {
-
-        // check that listingItems already added or not
-        const isItemExistOnCart = await this.findOneByCartIdAndListingItemId(body.shopping_cart_id, body.listing_item_id);
-
-        if (isItemExistOnCart !== null) {
-            this.log.warn(`ListingItem already exist in ShoppingCart`);
-            throw new MessageException(`ListingItem already exist in ShoppingCart`);
-        }
-
-        // If the request body was valid we will create the shoppingCartItem
-        const shoppingCartItem = await this.shoppingCartItemRepo.create(body);
-
-        // finally find and return the created shoppingCartItem
-        const newShoppingCartItem = await this.findOne(shoppingCartItem.id);
-        return newShoppingCartItem;
+        const shoppingCartItem: resources.ShoppingCartItem = await this.shoppingCartItemRepo.create(body).then(value => value.toJSON());
+        return await this.findOne(shoppingCartItem.id);
     }
 
     @validate()
     public async update(id: number, @request(ShoppingCartItemUpdateRequest) body: any): Promise<ShoppingCartItem> {
-
-        // find the existing one without related
         const shoppingCartItem = await this.findOne(id, false);
-
-        // set new values
-
-        // update shoppingCartItem record
-        const updatedShoppingCartItem = await this.shoppingCartItemRepo.update(id, shoppingCartItem.toJSON());
-
-        // return newShoppingCartItem;
-
-        return updatedShoppingCartItem;
+        return await this.shoppingCartItemRepo.update(id, shoppingCartItem.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {
         await this.shoppingCartItemRepo.destroy(id);
     }
 
-    // TODO: rename to destroyByCartId and add clearCart method to ShoppingCartService, it doesn't make sense to look
-    // TODO: for a method called clearCart in ShoppingCartItemService.
-    public async clearCart(cartId: number): Promise<void> {
-        await this.shoppingCartItemRepo.clearCart(cartId);
+    public async destroyByCartId(cartId: number): Promise<void> {
+        await this.shoppingCartItemRepo.destroyByCartId(cartId);
     }
 
 }

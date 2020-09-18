@@ -1,12 +1,12 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Types, Core, Targets } from '../../../constants';
+import { request, validate } from '../../../core/api/Validate';
+import { Core, Targets, Types } from '../../../constants';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
@@ -17,9 +17,11 @@ import { BaseCommand } from '../BaseCommand';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import {HashableItemCategoryCreateRequestConfig} from '../../factories/hashableconfig/createrequest/HashableItemCategoryCreateRequestConfig';
+import { hash } from 'omp-lib/dist/hasher/hash';
+import { MarketType } from '../../enums/MarketType';
+import { MessageException } from '../../exceptions/MessageException';
+import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -27,6 +29,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.model.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService
     ) {
@@ -58,9 +61,10 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
-        createRequest.key = ConfigurableHasher.hash(createRequest, new HashableItemCategoryCreateRequestConfig());
 
-        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        let path: string[] = this.itemCategoryFactory.getArray(parentItemCategory);
+        path = [...path, data.params[1]];
+        createRequest.key = hash(path.toString());
 
         return await this.itemCategoryService.create(createRequest);
     }
@@ -71,6 +75,9 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      *  [1]: categoryName
      *  [2]: description
      *  [3]: parentItemCategoryId
+     *
+     * parentItemCategoryId is not optional since creating root categories should not be allowed this way.
+     * root category should be created when market is created.
      *
      * @param data
      * @returns {Promise<ItemCategory>}
@@ -83,7 +90,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         } else if (data.params.length < 3) {
             throw new MissingParamException('description');
         } else if (data.params.length < 4) {
-            throw new MissingParamException('parentItemCategoryId|parentItemCategoryKey');
+            throw new MissingParamException('parentItemCategoryId');
         }
 
         if (typeof data.params[0] !== 'number') {
@@ -96,8 +103,19 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             throw new InvalidParamException('parentItemCategoryId', 'number');
         }
 
-        data.params[0] = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[3] = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
+        const market: resources.Market = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
+        const parentCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
+
+        data.params[0] = market;
+        data.params[3] = parentCategory;
+
+        if (market.type !== MarketType.STOREFRONT_ADMIN) {
+            throw new MessageException('You can only add ItemCategories on Storefronts if you have the publish rights.');
+        }
+
+        if (market.receiveAddress !== parentCategory.market) {
+            throw new MessageException('Parent ItemCategory belongs to different Market.');
+        }
 
         return data;
     }
@@ -111,15 +129,14 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             + '    <marketId>                    - number - Market ID. '
             + '    <categoryName>                - String - The name of the category to create. \n'
             + '    <description>                 - String - A description of the category to create. \n'
-            + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the \n'
-            + '                                     category we\'re creating. \n';
+            + '    <parentItemCategoryId>        - Numeric - The ID of the parent category of the category we\'re creating. \n';
     }
 
     public description(): string {
-        return 'Command for adding an item category.';
+        return 'Command for adding an ItemCategory. You can only add ItemCategories on Storefronts if you have the publish rights.';
     }
 
     public example(): string {
-        return 'category ' + this.getName() + ' newCategory \'description of the new category\' cat_wholesale_other ';
+        return 'category ' + this.getName() + ' 100 newCategory \'description of the new category\' 1 ';
     }
 }

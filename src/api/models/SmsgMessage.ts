@@ -1,16 +1,17 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf as Database, Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionDirection } from '../enums/ActionDirection';
 import { SmsgMessageCreateRequest } from '../requests/model/SmsgMessageCreateRequest';
 import { SearchOrder } from '../enums/SearchOrder';
 import { SmsgMessageSearchOrderField } from '../enums/SearchOrderField';
 import { SmsgMessageSearchParams } from '../requests/search/SmsgMessageSearchParams';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -37,63 +38,91 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             options.age = 0;
         }
 
+        const age = Date.now() - options.age;
+
+        // SmsgMessage.log.debug('age: ', age);
+        // SmsgMessage.log.debug('age.toString(): ', new Date(age).toString());
+        // SmsgMessage.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
 
                 if (!_.isEmpty(options.msgid)) {
-                    qb.where('smsg_messages.msgid', '=', options.msgid);
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.msgid', '=', options.msgid);
+                    });
                 }
 
                 if (!_.isEmpty(options.status)) {
-                    qb.where('smsg_messages.status', '=', options.status.toString());
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.status', '=', options.status.toString());
+                    });
                 }
 
                 if (!_.isEmpty(options.direction)) {
-                    qb.where('smsg_messages.direction', '=', options.direction.toString());
+                    qb.andWhere( qbInner => {
+                        return qbInner.where('smsg_messages.direction', '=', options.direction.toString());
+                    });
                 }
 
                 if (!_.isEmpty(options.types)) {
-                    qb.whereIn('smsg_messages.type', options.types);
+                    qb.whereIn('smsg_messages.type', options.types as ActionMessageTypes[]);
                 }
 
-                qb.where('smsg_messages.created_at', '<', Date.now() - options.age);
-                // qb.debug(true);
+                /*
+                                if (options.listingItemId) {
+                                    qb.andWhere( qbInner => {
+                                        return qbInner.where('listing_items.id', '=', options.listingItemId);
+                                    });
+                                }
+                */
+
+                qb.where('smsg_messages.created_at', '<=', new Date(age).toString());
+
+            })
+            .orderBy('smsg_messages.' + options.orderField, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit,
+                debug: false
+            });
+
+        return messageCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchLast(): Promise<SmsgMessage> {
+        const options = {
+            page: 0,
+            pageLimit: 1,
+            order: SearchOrder.DESC.toString(),
+            orderField: SmsgMessageSearchOrderField.ID.toString(),
+            direction: ActionDirection.INCOMING
+        } as SmsgMessageSearchParams;
+
+        const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
+            .query(qb => {
+                qb.where('smsg_messages.direction', '=', options.direction.toString());
             })
             .orderBy('smsg_messages.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
             });
-
-        if (withRelated) {
-            return await messageCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await messageCollection.fetchAll();
-        }
+        const allMessages = await messageCollection.fetchAll({
+            withRelated: this.RELATIONS
+        });
+        // this.log.debug('fetchLast(), allMessages:', JSON.stringify(allMessages, null, 2));
+        return allMessages.first();
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<SmsgMessage> {
-        if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SmsgMessage.where<SmsgMessage>({ id: value }).fetch();
-        }
+        return SmsgMessage.where<SmsgMessage>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgIdAndDirection(value: string,
                                                  direction: ActionDirection = ActionDirection.INCOMING,
                                                  withRelated: boolean = true): Promise<SmsgMessage> {
-        if (withRelated) {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch();
-        }
+        return SmsgMessage.where<SmsgMessage>({ msgid: value, direction }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'smsg_messages'; }
@@ -149,6 +178,12 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public get Text(): string { return this.get('text'); }
     public set Text(value: string) { this.set('text', value); }
+
+    public get ProcessedCount(): number { return this.get('processedCount'); }
+    public set ProcessedCount(value: number) { this.set('processedCount', value); }
+
+    public get ProcessedAt(): number { return this.get('processedAt'); }
+    public set ProcessedAt(value: number) { this.set('processedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

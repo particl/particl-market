@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,140 +9,249 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { CommentType } from '../../../src/api/enums/CommentType';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { CommentSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
-describe('VoteGetCommand', () => {
+describe('CommentSearchCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const commentCommand = Commands.COMMENT_ROOT.commandName;
     const commentSearchCommand = Commands.COMMENT_SEARCH.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
-    let createdListingItemHash;
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
+    let commentsAboutListingItem1: resources.Comment[];
+    let commentsAboutListingItem2: resources.Comment[];
 
-    let createdCommentListingItemQandA;
+    const PAGE = 0;
+    const PAGE_LIMIT = 1000;
+    const ORDER = SearchOrder.ASC;
+    const ORDER_FIELD = CommentSearchOrderField.ID;
 
-    const numPerPage = 10;
-    const numGeneratedComments = 7;
-    const searchResultSize = (numGeneratedComments < numPerPage ? numGeneratedComments : numPerPage);
+    const COMMENT_AMOUNT = 3;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default Profile and Market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        // get default profile and market
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        // create ListingItem
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false   // generateListingItemObjects
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            profile.id,                     // profileId
+            true,                           // generateListingItem
+            market.id,                      // soldOnMarketId
+            undefined                       // categoryId
         ]).toParamsArray();
 
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                              // how many to generate
-            true,                           // return model
-            generateListingItemParams       // what kind of data to generate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            2,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        listingItem1 = listingItemTemplates[0].ListingItems[0];
+        listingItem2 = listingItemTemplates[1].ListingItems[0];
+    });
+
+
+    test('Should generate Comments about ListingItem1', async () => {
+
+        const generateCommentParams = new GenerateCommentParams([
+            false,                                              // generateListingItemTemplate
+            false,                                              // generateListingItem
+            false,                                              // generatePastComment
+            market.Identity.address,                            // sender
+            market.receiveAddress,                              // receiver
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            listingItem1.hash                                   // target
+        ]).toParamsArray();
+
+        commentsAboutListingItem1 = await testUtil.generateData(
+            CreatableModel.COMMENT,     // what to generate
+            COMMENT_AMOUNT,             // how many to generate
+            true,            // return model
+            generateCommentParams       // what kind of data to generate
         );
-        createdListingItemHash = listingItems[0].hash;
+        // log.debug('commentsAboutListingItem1: ', JSON.stringify(commentsAboutListingItem1, null, 2));
+    });
 
-        const generateCommentParamsQandA = new GenerateCommentParams([
-            false,
-            false,
-            false,
-            defaultProfile.address,                         // sender
-            defaultMarket.address,                          // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,   // type
-            createdListingItemHash                          // target
+
+    test('Should generate Comments about ListingItem2', async () => {
+
+        const generateCommentParams = new GenerateCommentParams([
+            false,                                              // generateListingItemTemplate
+            false,                                              // generateListingItem
+            false,                                              // generatePastComment
+            market.Identity.address,                            // sender
+            market.receiveAddress,                              // receiver
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            listingItem2.hash                                   // target
         ]).toParamsArray();
 
-        createdCommentListingItemQandA = await testUtil.generateData(
-            CreatableModel.COMMENT,         // what to generate
-            numGeneratedComments,           // how many to generate
-            true,                           // return model
-            generateCommentParamsQandA      // what kind of data to generate
-        ) as resources.Comment[];
-
+        commentsAboutListingItem2 = await testUtil.generateData(
+            CreatableModel.COMMENT,     // what to generate
+            COMMENT_AMOUNT,             // how many to generate
+            true,            // return model
+            generateCommentParams       // what kind of data to generate
+        );
+        // log.debug('commentsAboutListingItem1: ', JSON.stringify(commentsAboutListingItem1, null, 2));
     });
 
-    // TODO: Negative tests
-    // TODO: More thorough testing (especially with orderField)
 
-    test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS DESC', async () => {
-        createdCommentListingItemQandA.sort((a, b) => {
-            if (a.message <= b.message) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
-
-        const response2: any = await testUtil.rpc(commentCommand, [
-            commentSearchCommand,
-            0,
-            10,
-            SearchOrder.DESC,
-            CommentSearchOrderField.MESSAGE,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            createdListingItemHash,
-            false
+    test('Should fail because missing commentType', async () => {
+        const response = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD
         ]);
-        response2.expectJson();
-        response2.expectStatusCode(200);
-        const result2: any = response2.getBody()['result'];
-        expect(result2.length).toBe(searchResultSize);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new MissingParamException('commentType').getMessage());
+    });
 
-        for (let i = 0; i < searchResultSize; ++i) {
-            expect(result2[i].sender).toBe(createdCommentListingItemQandA[i].sender);
-            expect(result2[i].target).toBe(createdCommentListingItemQandA[i].target);
-            expect(result2[i].receiver).toBe(createdCommentListingItemQandA[i].receiver);
-            expect(result2[i].message).toBe(createdCommentListingItemQandA[i].message);
-            expect(result2[i].type).toBe(createdCommentListingItemQandA[i].type);
-            expect(result2[i].hash).toBe(createdCommentListingItemQandA[i].hash);
+
+    test('Should fail because missing receiver', async () => {
+        const response = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+        expect(response.error.error.message).toBe(new MissingParamException('receiver').getMessage());
+    });
+
+
+    test('Should fail because invalid commentType', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            true,
+            market.receiveAddress
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('commentType', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid receiver', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('receiver', 'string').getMessage());
+    });
+
+
+    test('Should fail because receiver not found', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            market.receiveAddress + 'NOTFOUND'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('Market').getMessage());
+    });
+
+
+    test('Should fail because target not found', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            market.receiveAddress,
+            listingItem1.hash + 'NOTFOUND'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
+    });
+
+
+    test('Should fail because type not supported', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.MARKETPLACE_COMMENT,
+            market.receiveAddress,
+            listingItem1.hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+
+        expect(res.error.error.message).toBe(new MessageException('CommentType not supported.').getMessage());
+    });
+
+
+    test('Should search for a Comments by commentType and receiver', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            market.receiveAddress
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Comment[] = res.getBody()['result'];
+        expect(result.length).toBe(COMMENT_AMOUNT * 2);
+
+        const allComments: resources.Comment = commentsAboutListingItem1.concat(commentsAboutListingItem2);
+
+        for (let i = 0; i < COMMENT_AMOUNT; i++) {
+            expect(result[i].sender).toBe(allComments[i].sender);
+            expect(result[i].receiver).toBe(allComments[i].receiver);
+            expect(result[i].type).toBe(allComments[i].type);
         }
     });
 
-    test('Should search for a comment of type LISTINGITEM_QUESTION_AND_ANSWERS ASC', async () => {
-        const response3: any = await testUtil.rpc(commentCommand, [
-            commentSearchCommand,
-            0,
-            10,
-            SearchOrder.ASC,
-            CommentSearchOrderField.MESSAGE,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-            createdListingItemHash,
-            false
-        ]);
-        response3.expectJson();
-        response3.expectStatusCode(200);
-        const result3: any = response3.getBody()['result'];
-        expect(result3.length).toBe(searchResultSize);
 
-        for (let i = 0; i < searchResultSize; ++i) {
-            const j = createdCommentListingItemQandA.length - i - 1;
-            expect(result3[i].sender).toBe(createdCommentListingItemQandA[j].sender);
-            expect(result3[i].target).toBe(createdCommentListingItemQandA[j].target);
-            expect(result3[i].receiver).toBe(createdCommentListingItemQandA[j].receiver);
-            expect(result3[i].message).toBe(createdCommentListingItemQandA[j].message);
-            expect(result3[i].type).toBe(createdCommentListingItemQandA[j].type);
-            expect(result3[i].hash).toBe(createdCommentListingItemQandA[j].hash);
+    test('Should search for a Comments by type, receiver and target', async () => {
+        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
+            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            market.receiveAddress,
+            listingItem1.hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Comment[] = res.getBody()['result'];
+        expect(result.length).toBe(commentsAboutListingItem1.length);
+
+        for (let i = 0; i < COMMENT_AMOUNT; i++) {
+            expect(result[i].sender).toBe(commentsAboutListingItem1[i].sender);
+            expect(result[i].target).toBe(commentsAboutListingItem1[i].target);
+            expect(result[i].receiver).toBe(commentsAboutListingItem1[i].receiver);
+            expect(result[i].message).toBe(commentsAboutListingItem1[i].message);
+            expect(result[i].type).toBe(commentsAboutListingItem1[i].type);
+            expect(result[i].hash).toBe(commentsAboutListingItem1[i].hash);
         }
     });
+
+    // todo: search by parentCommentHash
 });

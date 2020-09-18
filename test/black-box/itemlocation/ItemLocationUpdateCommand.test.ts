@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -18,44 +18,44 @@ describe('ItemLocationUpdateCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
     const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        market = await testUtil.getDefaultMarket(profile.id);
 
         // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,  // generateListingItem
-            defaultMarket.id   // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            false,          // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,
-            2,
+            1,
             true,
             generateListingItemTemplateParams
         );
@@ -63,14 +63,14 @@ describe('ItemLocationUpdateCommand', () => {
 
     });
 
-    test('Should fail to update because missing listingItemTemplateId', async () => {
+    test('Should fail because missing listingItemTemplateId', async () => {
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
 
-    test('Should fail to update because missing country', async () => {
+    test('Should fail because missing country', async () => {
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id
         ]);
@@ -79,10 +79,10 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new MissingParamException('country').getMessage());
     });
 
-    test('Should fail to update because invalid listingItemTemplateId', async () => {
+    test('Should fail because invalid listingItemTemplateId', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
-            'INVALID',                  // listingItemTemplateId
+            false,                      // listingItemTemplateId
             'FI',                       // country (country/countryCode)
             'Helsinki address',         // address, optional
             'marker title',             // gpsMarkerTitle, optional
@@ -95,11 +95,11 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
     });
 
-    test('Should fail to update because invalid country', async () => {
+    test('Should fail because invalid country', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
-            0,                          // country (country/countryCode)
+            false,                      // country (country/countryCode)
             'Helsinki address',         // address, optional
             'marker title',             // gpsMarkerTitle, optional
             'marker description',       // gpsMarkerDescription, optional
@@ -111,12 +111,12 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('country', 'string').getMessage());
     });
 
-    test('Should fail to update because invalid address', async () => {
+    test('Should fail because invalid address', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
             'FI',                       // country (country/countryCode)
-            0,                          // address, optional
+            false,                      // address, optional
             'marker title',             // gpsMarkerTitle, optional
             'marker description',       // gpsMarkerDescription, optional
             11.11,                      // gpsMarkerLatitude, optional
@@ -127,13 +127,13 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('address', 'string').getMessage());
     });
 
-    test('Should fail to update because invalid gpsMarkerTitle', async () => {
+    test('Should fail because invalid gpsMarkerTitle', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
             'FI',                       // country (country/countryCode)
             'Helsinki address',         // address, optional
-            0,                          // gpsMarkerTitle, optional
+            false,                      // gpsMarkerTitle, optional
             'marker description',       // gpsMarkerDescription, optional
             11.11,                      // gpsMarkerLatitude, optional
             22.22                       // gpsMarkerLongitude, optional
@@ -143,14 +143,14 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('gpsMarkerTitle', 'string').getMessage());
     });
 
-    test('Should fail to update because invalid gpsMarkerDescription', async () => {
+    test('Should fail because invalid gpsMarkerDescription', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
             'FI',                       // country (country/countryCode)
             'Helsinki address',         // address, optional
             'marker title',             // gpsMarkerTitle, optional
-            0,                          // gpsMarkerDescription, optional
+            false,                      // gpsMarkerDescription, optional
             11.11,                      // gpsMarkerLatitude, optional
             22.22                       // gpsMarkerLongitude, optional
         ]);
@@ -159,7 +159,7 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('gpsMarkerDescription', 'string').getMessage());
     });
 
-    test('Should fail to update because invalid gpsMarkerLatitude', async () => {
+    test('Should fail because invalid gpsMarkerLatitude', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
@@ -167,7 +167,7 @@ describe('ItemLocationUpdateCommand', () => {
             'Helsinki address',         // address, optional
             'marker title',             // gpsMarkerTitle, optional
             'marker description',       // gpsMarkerDescription, optional
-            'INVALID',                  // gpsMarkerLatitude, optional
+            false,                      // gpsMarkerLatitude, optional
             22.22                       // gpsMarkerLongitude, optional
         ]);
         res.expectJson();
@@ -175,7 +175,7 @@ describe('ItemLocationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('gpsMarkerLatitude', 'number').getMessage());
     });
 
-    test('Should fail to update because invalid gpsMarkerLongitude', async () => {
+    test('Should fail because invalid gpsMarkerLongitude', async () => {
 
         const res = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
             listingItemTemplate.id,     // listingItemTemplateId
@@ -184,14 +184,29 @@ describe('ItemLocationUpdateCommand', () => {
             'marker title',             // gpsMarkerTitle, optional
             'marker description',       // gpsMarkerDescription, optional
             11.11,                      // gpsMarkerLatitude, optional
-            'INVALID'                   // gpsMarkerLongitude, optional
+            false                       // gpsMarkerLongitude, optional
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('gpsMarkerLongitude', 'number').getMessage());
     });
 
-    test('Should update ItemLocation without LocationMarker fields', async () => {
+    test('Should update ItemLocation with country', async () => {
+
+        const country = 'FI';
+
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
+            listingItemTemplate.id,
+            country
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.country).toBe(country);
+    });
+
+    test('Should update ItemLocation with country and address', async () => {
 
         const country = 'FI';
         const address = 'Helsinki address';
@@ -243,24 +258,24 @@ describe('ItemLocationUpdateCommand', () => {
 
         // create ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            true,  // generateListingItem
-            defaultMarket.id   // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            true,           // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE,
-            2,
+            1,
             true,
             generateListingItemTemplateParams
         );
@@ -277,7 +292,5 @@ describe('ItemLocationUpdateCommand', () => {
 
         expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
-
-
 
 });

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -17,21 +17,23 @@ describe('ProfileRemoveCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileRemoveCommand = Commands.PROFILE_REMOVE.commandName;
 
-    let createdProfile1: resources.Profile;
-    let createdProfile2: resources.Profile;
+    let profile1: resources.Profile;
+    let profile2: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         const generatedProfiles: resources.Profile[] = await testUtil.generateData(CreatableModel.PROFILE, 2, true);
         expect(generatedProfiles).toHaveLength(2);
-        createdProfile1 = generatedProfiles[0];
-        createdProfile2 = generatedProfiles[1];
+        profile1 = generatedProfiles[0];
+        profile2 = generatedProfiles[1];
 
     });
 
@@ -53,10 +55,11 @@ describe('ProfileRemoveCommand', () => {
         const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, notFoundProfileId]);
         res.expectJson();
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
+
     });
 
     test('Should delete the Profile by id', async () => {
-        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, profile1.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });

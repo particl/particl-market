@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,11 +16,12 @@ export class ProposalCreateRequest extends RequestBody implements ModelRequestIn
 
     public msgid: string;
 
+    public market: string;
+
     @IsNotEmpty()
     @IsEnum(ProposalCategory)
     public category: ProposalCategory;
-
-    public item: string;
+    public target: string;
 
     @IsNotEmpty()
     public title: string;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -26,53 +26,54 @@ import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
-import { ItemImageDataCreateRequest } from '../../requests/model/ItemImageDataCreateRequest';
-import { MessageSize } from '../../responses/MessageSize';
 import { ListingItemFactory } from '../../factories/model/ListingItemFactory';
-import { ImageFactory } from '../../factories/ImageFactory';
-import { ItemImage } from '../../models/ItemImage';
-import { ompVersion} from 'omp-lib/dist/omp';
-import { ListingItemAddMessageFactory } from '../../factories/message/ListingItemAddMessageFactory';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
+import { Image } from '../../models/Image';
 import { ItemInformationService } from './ItemInformationService';
-import { ItemImageDataService } from './ItemImageDataService';
-import { ItemImageService } from './ItemImageService';
+import { ImageDataService } from './ImageDataService';
+import { ImageService } from './ImageService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { ListingItemAddMessageCreateParams } from '../../requests/message/ListingItemAddMessageCreateParams';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ItemPriceCreateRequest } from '../../requests/model/ItemPriceCreateRequest';
 import { EscrowRatioCreateRequest } from '../../requests/model/EscrowRatioCreateRequest';
 import { EscrowCreateRequest } from '../../requests/model/EscrowCreateRequest';
 import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from '../../requests/model/ItemImageCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
 import { LocationMarkerCreateRequest } from '../../requests/model/LocationMarkerCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../../requests/model/ListingItemObjectDataCreateRequest';
+import { MessagingInformation } from '../../models/MessagingInformation';
+import { ImageFactory } from '../../factories/model/ImageFactory';
+import { ImageCreateParams } from '../../factories/ModelCreateParams';
+import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
+import { DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { ModelServiceInterface } from '../ModelServiceInterface';
 
-export class ListingItemTemplateService {
 
-    public static MAX_SMSG_SIZE = 524288;  // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+export class ListingItemTemplateService implements ModelServiceInterface<ListingItemTemplate> {
 
+    // todo: move elsewhere?
     private static IMG_BOUNDING_WIDTH = 600;
     private static IMG_BOUNDING_HEIGHT = 600;
-    private static FRACTION_LOWEST_COMPRESSION = 0.8;
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) public itemImageDataService: ItemImageDataService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private listingItemAddMessageFactory: ListingItemAddMessageFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) private imageFactory: ImageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) private imageDataFactory: ImageDataFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) private imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -107,21 +108,42 @@ export class ListingItemTemplateService {
     }
 
     /**
+     * TODO: test
+     * @param templateId
+     * @param market
+     */
+    public async findLatestByParentTemplateAndMarket(templateId: number, market: string): Promise<ListingItemTemplate> {
+        const listingItemTemplate = await this.listingItemTemplateRepo.findLatestByParentTemplateAndMarket(templateId, market);
+        if (listingItemTemplate === null) {
+            this.log.warn(`ListingItemTemplate with the templateId=${templateId} and market=${market} was not found!`);
+            throw new NotFoundException(templateId);
+        }
+        return listingItemTemplate;
+    }
+
+    /**
+     * TODO: test
+     * @param templateId
+     * @param market
+     */
+    public async findAllVersionsByParentTemplateAndMarket(templateId: number, market: string): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+        return await this.listingItemTemplateRepo.findAllVersionsByParentTemplateAndMarket(templateId, market);
+    }
+
+    /**
      * searchBy ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
      */
-    @validate()
-    public async search(
-        @request(ListingItemTemplateSearchParams) options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+    public async search(options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
         return await this.listingItemTemplateRepo.search(options);
     }
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
-        // this.log.debug('listingItemTemplate, data:', JSON.stringify(data, null, 2));
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create(), body:', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -141,14 +163,14 @@ export class ListingItemTemplateService {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
             const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
                 .then(value => value.toJSON());
-            // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
             const createdPaymentInfo: resources.PaymentInformation = await this.paymentInformationService.create(paymentInformation)
                 .then(value => value.toJSON());
-            // this.log.debug('paymentInformation, result:', JSON.stringify(result, null, 2));
+            // this.log.debug('paymentInformation, result:', JSON.stringify(createdPaymentInfo, null, 2));
         }
 
         if (!_.isEmpty(messagingInformation)) {
@@ -156,7 +178,7 @@ export class ListingItemTemplateService {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
                 const createdMsgInfo: resources.MessagingInformation = await this.messagingInformationService.create(msgInfo)
                     .then(value => value.toJSON());
-                // this.log.debug('msgInfo, result:', JSON.stringify(result, null, 2));
+                // this.log.debug('msgInfo, result:', JSON.stringify(createdMsgInfo, null, 2));
             }
         }
 
@@ -165,7 +187,7 @@ export class ListingItemTemplateService {
                 object.listing_item_template_id = listingItemTemplate.id;
                 const createdListingItemObject: resources.ListingItemObject = await this.listingItemObjectService.create(object)
                     .then(value => value.toJSON());
-                // this.log.debug('object, result:', JSON.stringify(result, null, 2));
+                // this.log.debug('object, result:', JSON.stringify(createdListingItemObject, null, 2));
             }
         }
 
@@ -175,13 +197,18 @@ export class ListingItemTemplateService {
     /**
      * clone a ListingItemTemplate
      *
-     * @param id
-     * @param setAsParent
+     * @param listingItemTemplate: resources.ListingItemTemplate
+     * @param targetParentId
+     * @param market: resources.Market
      */
-    public async clone(id: number, setAsParent: boolean = false): Promise<ListingItemTemplate> {
-        let listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
-        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, setAsParent);
+    public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
+        // this.log.debug('clone(), listingItemTemplateId: ' + listingItemTemplate.id + ', targetParentId: '
+        //    + targetParentId + ', market: ' + (market ? market.id : undefined));
+        const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
+        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
+        // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
         return await this.findOne(listingItemTemplate.id);
     }
 
@@ -192,102 +219,115 @@ export class ListingItemTemplateService {
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
-        // ListingItemTemplates with a hash are not supposed to be modified anymore
+        // ListingItemTemplates with a hash or ListingItems are not supposed to be modified anymore
         if (!_.isEmpty(listingItemTemplate.Hash) || !_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
         // update listingItemTemplate record
+        // todo: ListingItemTemplate has no changeable data?
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
         // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
-        let itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON() || {};
+        const itemInformation: resources.ItemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON()
+            || {} as resources.ItemInformation;
 
         if (!_.isEmpty(body.itemInformation)) {
+            // we want to add/update
             if (!_.isEmpty(itemInformation)) {
-                const itemInformationId = itemInformation.id;
-                itemInformation = body.itemInformation;
-                itemInformation.listing_item_template_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+                // already exists
+                const updateRequest: ItemInformationUpdateRequest = body.itemInformation;
+                //  updateRequest.listing_item_template_id = id;
+                this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
+                await this.itemInformationService.update(itemInformation.id, updateRequest);
             } else {
-                itemInformation = body.itemInformation;
-                itemInformation.listing_item_template_id = id;
-                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+                // doesnt exist
+                const createRequest: ItemInformationCreateRequest = body.itemInformation;
+                createRequest.listing_item_template_id = id;
+                this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+                await this.itemInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(itemInformation)) {
+            // we want to remove
+            // already exists
             await this.itemInformationService.destroy(itemInformation.id);
         }
 
-        // payment-information
-        let paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON() || {};
+        // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
+        const paymentInformation: resources.PaymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON()
+            || {} as resources.PaymentInformation;
 
         if (!_.isEmpty(body.paymentInformation)) {
+            // we want to add/update
             if (!_.isEmpty(paymentInformation)) {
-                const paymentInformationId = paymentInformation.id;
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_template_id = id;
-                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+                // already exists
+                const updateRequest: PaymentInformationUpdateRequest = body.paymentInformation;
+                await this.paymentInformationService.update(paymentInformation.id, updateRequest);
             } else {
-                paymentInformation = body.paymentInformation;
-                paymentInformation.listing_item_template_id = id;
-                await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+                // doesnt exist
+                const createRequest: PaymentInformationCreateRequest = body.paymentInformation;
+                createRequest.listing_item_template_id = id;
+                await this.paymentInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(paymentInformation)) {
+            // we want to remove
+            // already exists
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // find related record and delete it and recreate related data
-        const existintMessagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
+        // ---
+        const existingMessagingInformations: resources.MessagingInformation[] = updatedListingItemTemplate.related('MessagingInformation').toJSON()
+            || [] as resources.MessagingInformation[];
+        const newMessagingInformations = body.messagingInformation || [];
 
-        const newMessagingInformation = body.messagingInformation || [];
-
-        // delete MessagingInformation if not exist with new params
-        for (const msgInfo of existintMessagingInformation) {
-            if (!await this.checkExistingObject(newMessagingInformation, 'id', msgInfo.id)) {
+        // delete existing MessagingInformation if its not included in the newMessagingInformations
+        for (const msgInfo of existingMessagingInformations) {
+            // is existing part of new ones?
+            const found = await this.checkExistingObjectFieldValueExistsInArray<MessagingInformationUpdateRequest>(
+                newMessagingInformations, 'id', msgInfo.id);
+            if (_.isEmpty(found)) {
+                // not found -> delete
                 await this.messagingInformationService.destroy(msgInfo.id);
             }
         }
 
-        // update or create messaging itemInformation
-        for (const msgInfo of newMessagingInformation) {
-            msgInfo.listing_item_template_id = id;
-            const message = await this.checkExistingObject(existintMessagingInformation, 'id', msgInfo.id);
-            delete msgInfo.id;
-            if (message) {
-                message.protocol = msgInfo.protocol;
-                message.publicKey = msgInfo.publicKey;
-                await this.messagingInformationService.update(message.id, msgInfo as MessagingInformationUpdateRequest);
+        // create new or update existing MessagingInformations
+        for (const newMsgInfo of newMessagingInformations) {
+
+            if (newMsgInfo.id !== undefined) {
+                // id exists -> update
+                newMsgInfo.listing_item_template_id = id;
+                await this.messagingInformationService.update(newMsgInfo.id, newMsgInfo);
             } else {
-                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+                newMsgInfo.listing_item_template_id = id;
+                await this.messagingInformationService.create(newMsgInfo);
             }
         }
 
+        // ---
+        const existingListingItemObjects: resources.ListingItemObject[] = updatedListingItemTemplate.related('ListingItemObjects').toJSON()
+            || [] as resources.ListingItemObject[];
         const newListingItemObjects = body.listingItemObjects || [];
-        // find related listingItemObjects
-        const existingListingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON() || [];
 
-        // find highestOrderNumber
-        const highestOrderNumber = await this.findHighestOrderNumber(newListingItemObjects);
-
-        const objectsToBeUpdated = [] as any;
-        for (const object of existingListingItemObjects) {
-            // check if order number is greter than highestOrderNumber then delete
-            if (object.order > highestOrderNumber) {
-                await this.listingItemObjectService.destroy(object.id);
-            } else {
-                objectsToBeUpdated.push(object);
+        // delete existing ListingItemObject if its not included in the newListingItemObjects
+        for (const liObject of existingListingItemObjects) {
+            // is existing part of new ones?
+            const found = await this.checkExistingObjectFieldValueExistsInArray<ListingItemObjectUpdateRequest>(
+                newListingItemObjects, 'id', liObject.id);
+            if (_.isEmpty(found)) {
+                // not found -> delete
+                await this.listingItemObjectService.destroy(liObject.id);
             }
         }
 
         // create or update listingItemObjects
-        for (const object of newListingItemObjects) {
-            object.listing_item_template_id = id;
-            const itemObject = await this.checkExistingObject(objectsToBeUpdated, 'order', object.order);
-
-            if (itemObject) {
-                await this.listingItemObjectService.update(itemObject.id, object as ListingItemObjectUpdateRequest);
+        for (const newLiObject of newListingItemObjects) {
+            if (newLiObject.id !== undefined) {
+                newLiObject.listing_item_template_id = id;
+                await this.listingItemObjectService.update(newLiObject.id, newLiObject);
             } else {
-                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+                newLiObject.listing_item_template_id = id;
+                await this.listingItemObjectService.create(newLiObject as ListingItemObjectCreateRequest);
             }
         }
 
@@ -303,9 +343,9 @@ export class ListingItemTemplateService {
         }
 
         // manually remove images
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
-            for (const image of listingItemTemplate.ItemInformation.ItemImages) {
-                await this.itemImageService.destroy(image.id);
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
+            for (const image of listingItemTemplate.ItemInformation.Images) {
+                await this.imageService.destroy(image.id);
             }
         }
 
@@ -322,104 +362,47 @@ export class ListingItemTemplateService {
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true)
-            .then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
 
         // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
         // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
-        // this.log.debug('listingItemTemplate.ChildListingItemTemplate: ' + listingItemTemplate.ChildListingItemTemplate);
+        // this.log.debug('listingItemTemplate.ChildListingItemTemplates: ' + listingItemTemplate.ChildListingItemTemplates);
 
-        const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplate));
+        // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplates));
+
+        // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash
+        const isModifiable = _.isNil(listingItemTemplate.hash);
 
         this.log.debug('isModifiable: ' + isModifiable);
         return isModifiable;
     }
 
     /**
-     * creates resized versions of the template images, so that all of them fit in one smsgmessage
+     * creates resized versions of the ListingItemTemplate Images, so that all of them fit in one smsgmessage
      *
-     * @param {"resources".ListingItemTemplate} listingItemTemplate
-     * @returns {Promise<"resources".ListingItemTemplate>}
-     */
-    public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemTemplate> {
-        const startTime = new Date().getTime();
-
-        // ItemInformation has ItemImages, which is an array.
-        const itemImages = listingItemTemplate.ItemInformation.ItemImages;
-        const originalImageDatas: resources.ItemImageData[] = [];
-
-        for (const itemImage of itemImages) {
-            const itemImageDataOriginal: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
-            });
-            const itemImageDataResized: resources.ItemImageData | undefined = _.find(itemImage.ItemImageDatas, (imageData) => {
-                return imageData.imageVersion === ImageVersions.RESIZED.propName;
-            });
-
-            if (!itemImageDataOriginal) {
-                // there's something wrong with the ItemImage if original image doesnt have data
-                throw new MessageException('Error while resizing: Original image data not found.');
-            }
-
-            if (!itemImageDataResized) {
-                // Only need to process if the resized image does not exist
-                originalImageDatas.push(itemImageDataOriginal);
-            }
-        }
-
-        for (const originalImageData of originalImageDatas) {
-            const compressedImage = await this.getResizedImage(originalImageData.imageHash, ListingItemTemplateService.FRACTION_LOWEST_COMPRESSION * 100);
-            // save the resized image
-            const imageDataCreateRequest: ItemImageDataCreateRequest = await this.imageFactory.getImageDataCreateRequest(
-                originalImageData.itemImageId, ImageVersions.RESIZED, originalImageData.imageHash, originalImageData.protocol, compressedImage,
-                originalImageData.encoding, originalImageData.originalMime, originalImageData.originalName);
-            await this.itemImageDataService.create(imageDataCreateRequest);
-        }
-
-        this.log.debug('listingItemTemplateService.createResizedTemplateImages: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return await this.findOne(listingItemTemplate.id);
-    }
-
-    /**
-     * calculates the size of the MarketplaceMessage for given ListingItemTemplate.
-     * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
+     * message sizes:
+     *  SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,
+     *  SMSG_MAX_AMSG_BYTES: 512,
+     *  SMSG_MAX_MSG_BYTES: 24000
      *
      * @param listingItemTemplate
-     * @param estimateFee
+     * @param messageVersionToFit
+     * @param scalingFraction
+     * @param qualityFraction
+     * @param maxIterations
+     * @returns {Promise<ListingItemTemplate>}
      */
-    // TODO: move to actionservice?
-    public async calculateMarketplaceMessageSize(listingItemTemplate: resources.ListingItemTemplate): Promise<MessageSize> {
+    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
+                                      scalingFraction: number = 0.9, qualityFraction: number = 0.95,
+                                      maxIterations: number = 10): Promise<ListingItemTemplate> {
 
-        // convert the template to message
-        const action = await this.listingItemAddMessageFactory.get({
-            listingItem: listingItemTemplate
-        } as ListingItemAddMessageCreateParams);
-
-        const marketplaceMessage = {
-            version: ompVersion(),
-            action
-        } as MarketplaceMessage;
-
-        // this.log.debug('marketplacemessage: ', JSON.stringify(marketPlaceMessage, null, 2));
-
-        let imageDataSize = 0;
-        if (action.item.information.images) {
-            for (const image of action.item.information.images) {
-                imageDataSize = imageDataSize + image.data[0].data.length;
-                this.log.debug('imageDataSize: ', image.data[0].data.length);
-            }
+        const images = listingItemTemplate.ItemInformation.Images;
+        for (const image of images) {
+            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
+            this.log.debug('compressed image.hash: ' + image.hash);
         }
-        const messageDataSize = JSON.stringify(marketplaceMessage).length - imageDataSize;
-        const spaceLeft = ListingItemTemplateService.MAX_SMSG_SIZE - messageDataSize - imageDataSize;
-        const fits = spaceLeft > 0;
 
-        return {
-            messageData: messageDataSize,
-            imageData: imageDataSize,
-            spaceLeft,
-            fits
-        } as MessageSize;
+        return await this.findOne(listingItemTemplate.id);
     }
 
     /**
@@ -429,29 +412,28 @@ export class ListingItemTemplateService {
      * @param imageId
      *
      */
-    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<ItemImage> {
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+    public async setFeaturedImage(listingItemTemplate: resources.ListingItemTemplate, imageId: number): Promise<Image> {
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
 
-            for (const itemImage of listingItemTemplate.ItemInformation.ItemImages) {
-                const featured = itemImage.id === imageId;
-                await this.itemImageService.updateFeatured(itemImage.id, featured);
+            for (const image of listingItemTemplate.ItemInformation.Images) {
+                const featured = image.id === imageId;
+                await this.imageService.updateFeatured(image.id, featured);
             }
-            return await this.itemImageService.findOne(imageId);
+            return await this.imageService.findOne(imageId);
         } else {
-            this.log.error('ListingItemTemplate has no ItemImages.');
+            this.log.error('ListingItemTemplate has no Images.');
             throw new MessageException('ListingItemTemplate has no Images.');
         }
     }
 
-    // check if object is exist in a array
-    private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
-        return _.find(objectArray, (object) => {
+    private async checkExistingObjectFieldValueExistsInArray<T>(objectArray: T[], fieldName: string, value: string | number): Promise<T | undefined> {
+        return _.find<T>(objectArray, (object) => {
             return (object[fieldName] === value);
         });
     }
 
     // find highest order number from listingItemObjects
-    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: resources.ListingItemObject[]): Promise<number> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
             return itemObject['order'];
         });
@@ -470,10 +452,10 @@ export class ListingItemTemplateService {
         if (qualityFactor <= 0) {
             return '';
         }
-        const originalItemImage = await this.itemImageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+        const originalImage = await this.itemDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
 
         let compressedImage = await ImageProcessing.resizeImageToFit(
-            originalItemImage,
+            originalImage,
             ListingItemTemplateService.IMG_BOUNDING_WIDTH,
             ListingItemTemplateService.IMG_BOUNDING_HEIGHT
         );
@@ -486,16 +468,17 @@ export class ListingItemTemplateService {
 
     /**
      *
-     * @param listingItemTemplate
-     * @param setAsParent
+     * @param templateToClone
+     * @param targetParentId
+     * @param targetMarket
      */
-    private async getCloneCreateRequest(listingItemTemplate: resources.ListingItemTemplate, setAsParent: boolean = false):
+    private async getCloneCreateRequest(templateToClone: resources.ListingItemTemplate, targetParentId?: number, targetMarket?: resources.Market):
         Promise<ListingItemTemplateCreateRequest> {
 
         let shippingDestinations: ShippingDestinationCreateRequest[] = [];
 
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ShippingDestinations)) {
-            shippingDestinations = _.map(listingItemTemplate.ItemInformation.ShippingDestinations, (destination) => {
+        if (!_.isEmpty(templateToClone.ItemInformation.ShippingDestinations)) {
+            shippingDestinations = _.map(templateToClone.ItemInformation.ShippingDestinations, (destination) => {
                 return _.assign({} as ShippingDestinationCreateRequest, {
                     country: destination.country,
                     shippingAvailability: destination.shippingAvailability
@@ -503,37 +486,44 @@ export class ListingItemTemplateService {
             });
         }
 
-        let itemImages: ItemImageCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.ItemInformation.ItemImages)) {
+        let images: ImageCreateRequest[] = [];
+        if (!_.isEmpty(templateToClone.ItemInformation.Images)) {
 
-            itemImages = await Promise.all(_.map(listingItemTemplate.ItemInformation.ItemImages, async (image) => {
+            images = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
 
-                // for each image, get the data from ORIGINAL and create a new ItemImageCreateRequest based on that data
-                const itemImageDataOriginal: resources.ItemImageData = _.find(image.ItemImageDatas, (imageData) => {
+                // for each image, get the data from ORIGINAL and create a new ImageCreateRequest based on that data
+                const imageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
-                // load the image data
-                itemImageDataOriginal.data = await this.itemImageDataService.loadImageFile(image.hash, itemImageDataOriginal.imageVersion);
+                this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
 
-                return _.assign({} as ItemImageCreateRequest, {
-                    data: [{
-                        dataId: itemImageDataOriginal.dataId,
-                        protocol: itemImageDataOriginal.protocol,
-                        encoding: itemImageDataOriginal.encoding,
-                        data: itemImageDataOriginal.data,
-                        imageVersion: ImageVersions.ORIGINAL.propName,
-                        originalMime: itemImageDataOriginal.originalMime,
-                        originalName: itemImageDataOriginal.originalName
-                    }] as ItemImageDataCreateRequest[],
-                    featured: itemImageDataOriginal.featured
-                } as ItemImageCreateRequest);
+                const imageCreateRequest: ImageCreateRequest = await this.imageFactory.get({
+                    actionMessage: {
+                        hash: image.hash,
+                        data: [{
+                            protocol: ProtocolDSN.FILE,
+                            dataId: imageDataOriginal.dataId,
+                            encoding: imageDataOriginal.encoding,
+                            data: imageDataOriginal.data
+                        }] as DSN[],
+                        generated: Date.now(),
+                        featured: image.featured
+                    } as BaseImageAddMessage
+                } as ImageCreateParams);
+
+                if (image.hash !== imageCreateRequest.hash) {
+                    const exception = new HashMismatchException('ImageCreateRequest', image.hash, imageCreateRequest.hash);
+                    this.log.error(exception.getMessage());
+                    throw exception;
+                }
+                return imageCreateRequest;
             }));
         }
 
         let messagingInformation: MessagingInformationCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
-            messagingInformation = _.map(listingItemTemplate.MessagingInformation, (msgInfo) => {
+        if (!_.isEmpty(templateToClone.MessagingInformation)) {
+            messagingInformation = _.map(templateToClone.MessagingInformation, (msgInfo) => {
                 return _.assign({} as MessagingInformationCreateRequest, {
                     protocol: msgInfo.protocol,
                     publicKey: msgInfo.publicKey
@@ -542,11 +532,11 @@ export class ListingItemTemplateService {
         }
 
         let listingItemObjects: ListingItemObjectCreateRequest[] = [];
-        if (!_.isEmpty(listingItemTemplate.MessagingInformation)) {
-            listingItemObjects = _.map(listingItemTemplate.ListingItemObjects, (liObject) => {
+        if (!_.isEmpty(templateToClone.MessagingInformation)) {
+            listingItemObjects = _.map(templateToClone.ListingItemObjects, (liObject) => {
                 // this.log.debug('liObject.ListingItemObjectDatas: ', JSON.stringify(liObject.ListingItemObjectDatas, null, 2));
                 const listingItemObjectDatas: ListingItemObjectDataCreateRequest[] = _.map(liObject.ListingItemObjectDatas, (liObjectData) => {
-                    this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
+                    // this.log.debug('liObjectData: ', JSON.stringify(liObjectData, null, 2));
                     return _.assign({} as ListingItemObjectCreateRequest, {
                         key: liObjectData.key,
                         value: liObjectData.value
@@ -565,48 +555,67 @@ export class ListingItemTemplateService {
         }
 
         return {
-            parent_listing_item_template_id: setAsParent ? listingItemTemplate.id : undefined,
-            profile_id: listingItemTemplate.Profile.id,
-            generatedAt: +new Date().getTime(),
-
-            itemInformation: {
-                title: listingItemTemplate.ItemInformation.title,
-                shortDescription: listingItemTemplate.ItemInformation.shortDescription,
-                longDescription: listingItemTemplate.ItemInformation.longDescription,
-                item_category_id: listingItemTemplate.ItemInformation.ItemCategory.id,
-                shippingDestinations,
-                itemImages,
-                itemLocation: {
-                    country: listingItemTemplate.ItemInformation.ItemLocation.country,
-                    address: listingItemTemplate.ItemInformation.ItemLocation.address,
-                    description: listingItemTemplate.ItemInformation.ItemLocation.description,
-                    locationMarker: {
-                        lat: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lat,
-                        lng: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.lng,
-                        title: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.title,
-                        description: listingItemTemplate.ItemInformation.ItemLocation.LocationMarker.description
-                    } as LocationMarkerCreateRequest
-                } as ItemLocationCreateRequest
-            } as ItemInformationCreateRequest,
-            paymentInformation: {
-                type: listingItemTemplate.PaymentInformation.type,
-                itemPrice: {
-                    currency: listingItemTemplate.PaymentInformation.ItemPrice.currency,
-                    basePrice: listingItemTemplate.PaymentInformation.ItemPrice.basePrice,
-                    shippingPrice: {
-                        domestic: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.domestic,
-                        international: listingItemTemplate.PaymentInformation.ItemPrice.ShippingPrice.international
-                    } as ShippingPriceCreateRequest
-                } as ItemPriceCreateRequest,
-                escrow: {
-                    type: listingItemTemplate.PaymentInformation.Escrow.type,
-                    secondsToLock: listingItemTemplate.PaymentInformation.Escrow.secondsToLock,
-                    ratio: {
-                        buyer: listingItemTemplate.PaymentInformation.Escrow.Ratio.buyer,
-                        seller: listingItemTemplate.PaymentInformation.Escrow.Ratio.seller
-                    } as EscrowRatioCreateRequest
-                } as EscrowCreateRequest
-            } as PaymentInformationCreateRequest,
+            parent_listing_item_template_id: targetParentId,
+            profile_id: templateToClone.Profile.id,
+            market: targetMarket ? targetMarket.receiveAddress : undefined,
+            generatedAt: +Date.now(),
+            itemInformation: templateToClone.ItemInformation
+                ? {
+                    title: templateToClone.ItemInformation.title,
+                    shortDescription: templateToClone.ItemInformation.shortDescription,
+                    longDescription: templateToClone.ItemInformation.longDescription,
+                    item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
+                    shippingDestinations,
+                    images,
+                    itemLocation: templateToClone.ItemInformation.ItemLocation
+                        ? {
+                            country: templateToClone.ItemInformation.ItemLocation.country,
+                            address: templateToClone.ItemInformation.ItemLocation.address,
+                            description: templateToClone.ItemInformation.ItemLocation.description,
+                            locationMarker: templateToClone.ItemInformation.ItemLocation.LocationMarker
+                                ? {
+                                    lat: templateToClone.ItemInformation.ItemLocation.LocationMarker.lat,
+                                    lng: templateToClone.ItemInformation.ItemLocation.LocationMarker.lng,
+                                    title: templateToClone.ItemInformation.ItemLocation.LocationMarker.title,
+                                    description: templateToClone.ItemInformation.ItemLocation.LocationMarker.description
+                                } as LocationMarkerCreateRequest
+                                : undefined
+                        } as ItemLocationCreateRequest
+                        : undefined
+                } as ItemInformationCreateRequest
+                : undefined,
+            paymentInformation: templateToClone.PaymentInformation
+                ? {
+                    type: templateToClone.PaymentInformation.type,
+                    itemPrice: templateToClone.PaymentInformation.ItemPrice
+                        ? {
+                            currency: templateToClone.PaymentInformation.ItemPrice.currency,
+                            basePrice: templateToClone.PaymentInformation.ItemPrice.basePrice,
+                            shippingPrice: templateToClone.PaymentInformation.ItemPrice.ShippingPrice
+                                ? {
+                                    domestic: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.domestic,
+                                    international: templateToClone.PaymentInformation.ItemPrice.ShippingPrice.international
+                                } as ShippingPriceCreateRequest
+                                : undefined
+                        } as ItemPriceCreateRequest
+                        : undefined,
+                    escrow: templateToClone.PaymentInformation.Escrow
+                        ? {
+                            type: templateToClone.PaymentInformation.Escrow.type,
+                            releaseType: templateToClone.PaymentInformation.Escrow.releaseType,
+                            secondsToLock: templateToClone.PaymentInformation.Escrow.secondsToLock
+                                ? templateToClone.PaymentInformation.Escrow.secondsToLock
+                                : undefined,
+                            ratio: templateToClone.PaymentInformation.Escrow.Ratio
+                                ? {
+                                    buyer: templateToClone.PaymentInformation.Escrow.Ratio.buyer,
+                                    seller: templateToClone.PaymentInformation.Escrow.Ratio.seller
+                                } as EscrowRatioCreateRequest
+                                : undefined
+                        } as EscrowCreateRequest
+                        : undefined
+                } as PaymentInformationCreateRequest
+                : undefined,
             messagingInformation,
             listingItemObjects
         } as ListingItemTemplateCreateRequest;

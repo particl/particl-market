@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -71,7 +71,7 @@ export class PriceTickerService {
         priceTicker.CryptoAvailableSupply = body.crypto_available_supply;
 
         priceTicker.CryptoTotalSupply = body.crypto_total_supply;
-        priceTicker.CryptoMaxSupply = body.crypto_max_supply;
+        priceTicker.CryptoMaxSupply = body.crypto_max_supply!;
         priceTicker.CryptoPercentChange1H = body.crypto_percent_change_1h;
 
         priceTicker.CryptoPercentChange24H = body.crypto_percent_change_24h;

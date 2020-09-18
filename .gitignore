@@ -6,7 +6,6 @@
 # Downloaded images
 data/images/*
 
-
 # Node files #
 node_modules/
 npm-debug.log
@@ -44,7 +43,7 @@ test/reports/*
 
 data/wallet1.dat
 data/wallet2.dat
-data/database/*
+data/database*/*
 data/uploads/*
 data/tests/*
 data/particl1/*

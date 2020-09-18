@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { NotificationType } from '../enums/NotificationType';
+import { ActionNotificationInterface } from './notification/ActionNotificationInterface';
+import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 
 export class MarketplaceNotification {
-    public event: NotificationType;
-    public payload: object;
+    public event: ActionMessageTypes;
+    public payload: ActionNotificationInterface;
 }

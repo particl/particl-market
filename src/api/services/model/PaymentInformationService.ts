@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -45,42 +46,44 @@ export class PaymentInformationService {
 
     @validate()
     public async create( @request(PaymentInformationCreateRequest) data: PaymentInformationCreateRequest): Promise<PaymentInformation> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
 
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+
         // ItemInformation needs to be related to either one
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+        if (_.isNil(body.listing_item_id) && _.isNil(body.listing_item_template_id)) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
         // extract and remove related models from request
-        const escrow = body.escrow;
-        const itemPrice = body.itemPrice;
+        const escrow = body.escrow || {};
+        const itemPrice = body.itemPrice || {};
         delete body.escrow;
         delete body.itemPrice;
 
         // If the request body was valid we will create the paymentInformation
-        const paymentInformation = await this.paymentInformationRepo.create(body);
+        const paymentInformation: resources.PaymentInformation = await this.paymentInformationRepo.create(body).then(value => value.toJSON());
 
         // create related models, escrow
         if (!_.isEmpty(escrow)) {
-            escrow.payment_information_id = paymentInformation.Id;
-            await this.escrowService.create(escrow);
+            escrow.payment_information_id = paymentInformation.id;
+            // this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
+
+            const createdEscrow: resources.Escrow = await this.escrowService.create(escrow).then(value => value.toJSON());
+            // this.log.debug('escrow, result:', JSON.stringify(createdEscrow, null, 2));
+
         }
 
         // create related models, item price
         if (!_.isEmpty(itemPrice)) {
-            itemPrice.payment_information_id = paymentInformation.Id;
-            await this.itemPriceService.create(itemPrice);
+            itemPrice.payment_information_id = paymentInformation.id;
+            const createdItemPrice: resources.ItemPrice = await this.itemPriceService.create(itemPrice).then(value => value.toJSON());
+            // this.log.debug('itemPrice, result:', JSON.stringify(createdItemPrice, null, 2));
         }
 
         // finally find and return the created paymentInformation
-        const result = await this.findOne(paymentInformation.Id);
+        return await this.findOne(paymentInformation.id);
 
-        // this.log.debug('paymentInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return result;
     }
 
     @validate()
