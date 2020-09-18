@@ -1,8 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as resources from 'resources';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -43,23 +44,18 @@ export class ItemLocationService {
     @validate()
     public async create(@request(ItemLocationCreateRequest) data: ItemLocationCreateRequest): Promise<ItemLocation> {
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
 
-        // extract and remove related models from request
         const locationMarker = body.locationMarker;
         delete body.locationMarker;
 
-        // If the request body was valid we will create the itemLocation
-        const itemLocation = await this.itemLocationRepo.create(body);
+        const itemLocation: resources.ItemLocation = await this.itemLocationRepo.create(body).then(value => value.toJSON());
 
-        // create related models
         if (!_.isEmpty(locationMarker)) {
-            locationMarker.item_location_id = itemLocation.Id;
+            locationMarker.item_location_id = itemLocation.id;
             await this.locationMarkerService.create(locationMarker);
         }
-
-        // finally find and return the created itemLocation
-        const result = await this.findOne(itemLocation.Id);
-        return result;
+        return await this.findOne(itemLocation.id);
     }
 
     @validate()

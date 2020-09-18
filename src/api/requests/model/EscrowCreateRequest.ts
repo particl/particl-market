@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { EscrowRatioCreateRequest } from './EscrowRatioCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
@@ -19,6 +19,10 @@ export class EscrowCreateRequest extends RequestBody implements ModelRequestInte
     public type: EscrowType;
 
     public secondsToLock: number;
+
+    @IsEnum(EscrowReleaseType)
+    @IsNotEmpty()
+    public releaseType: EscrowReleaseType;
 
     public ratio: EscrowRatioCreateRequest;
 

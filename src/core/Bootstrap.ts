@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,6 +14,7 @@ import { extendExpressResponse } from './api/extendExpressResponse';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
 import { SocketIoServer } from './SocketIoServer';
+import { ZmqWorker } from './ZmqWorker';
 
 export class Bootstrap {
 
@@ -66,6 +67,11 @@ export class Bootstrap {
     }
 
     public createSocketIoServer(server: Server, ioc: IoC): SocketIoServer {
-         return new SocketIoServer(server.httpServer, ioc);
+        return new SocketIoServer(server.httpServer, ioc);
     }
+
+    public createZmqWorker(ioc: IoC): ZmqWorker {
+        return new ZmqWorker(ioc);
+    }
+
 }

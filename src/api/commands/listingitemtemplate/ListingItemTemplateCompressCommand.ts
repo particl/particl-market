@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,12 +13,19 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import {
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    NumberValidationRule,
+    ParamValidationRule,
+    ScalingValueValidationRule
+} from '../CommandParamValidation';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+
 
 export class ListingItemTemplateCompressCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -28,9 +35,26 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new EnumValidationRule('messageVersionToFit', false, 'CoreMessageVersion',
+                    EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
+                new ScalingValueValidationRule('scalingFraction', false, 0.9),
+                new ScalingValueValidationRule('qualityFraction', false, 0.9),
+                new NumberValidationRule('maxIterations', false, 10)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [2]: scalingFraction, default: 0.9
+     *  [3]: qualityFraction, default: 0.9
+     *  [4]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -38,44 +62,45 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        return this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate);
+        const messageVersionToFit: CoreMessageVersion = data.params[1];
+        const scalingFraction: number = data.params[2];
+        const qualityFraction: number = data.params[3];
+        const maxIterations: number = data.params[4];
+        return await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+            qualityFraction, maxIterations);
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
+     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [2]: scalingFraction, default: 0.9
+     *  [3]: qualityFraction, default: 0.9
+     *  [4]: maxIterations, default: 10
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        }
-
-        // make sure required data exists and fetch it
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> ';
+        return this.getName() + ' <listingTemplateId> [messageVersionToFit] [scalingFraction] [qualityFraction] [maxIterations]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. ';
+            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. '
+            + '    <messageVersionToFit>    - [optional] string, CoreMessageVersion to fit. '
+            + '    <scalingFraction>        - [optional] number used to scale the Image size. '
+            + '    <qualityFraction>        - [optional] number used to scale the Image quality. '
+            + '    <maxIterations>          - [optional] number of max iterations run. ';
     }
 
     public description(): string {
-        return 'Compress the ListingItemTemplate images so that they will fit in a single SmsgMessage.';
+        return 'Compress the ListingItemTemplate Images so that they will fit in a SmsgMessage.';
     }
 
     public example(): string {

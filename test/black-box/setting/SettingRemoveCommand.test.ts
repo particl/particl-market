@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,7 +16,9 @@ describe('SettingRemoveCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const settingCommand = Commands.SETTING_ROOT.commandName;
     const settingRemoveCommand = Commands.SETTING_REMOVE.commandName;
@@ -24,6 +26,7 @@ describe('SettingRemoveCommand', () => {
 
     let market: resources.Market;
     let profile: resources.Profile;
+
     let setting: resources.Setting;
 
     const testData = {
@@ -34,11 +37,11 @@ describe('SettingRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
         profile = await testUtil.getDefaultProfile();
-        market = await testUtil.getDefaultMarket();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        // create setting
         const res = await testUtil.rpc(settingCommand, [settingSetCommand,
             testData.key,
             testData.value,
@@ -59,7 +62,7 @@ describe('SettingRemoveCommand', () => {
 
     test('Should fail to remove Setting because invalid settingId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand,
-            'INVALID'
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);

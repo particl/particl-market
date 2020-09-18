@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,7 +14,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemObjectSearchParams } from '../../requests/search/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MessageException } from '../../exceptions/MessageException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
 export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemObject>> {
 
@@ -42,10 +43,22 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
         } as ListingItemObjectSearchParams);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: searchString, string
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length === 0) {
-            throw new MessageException('Missing searchString.');
+        if (data.params.length < 1) {
+            throw new MissingParamException('searchString');
         }
+
+        if (typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('searchString', 'string');
+        }
+
         return data;
     }
 
@@ -55,12 +68,11 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <searchString>           - String - A string that is used to find listing items objects by\n'
-            + '                                matching their type or description. ';
+            + '    <searchString>           - String - A string that is used to find ListingItemObjects. ';
     }
 
     public description(): string {
-        return 'Search listing items objects by given string match with listing item object type or description.';
+        return 'Search ListingItemObjects by given string.';
     }
 
     public example(): string {

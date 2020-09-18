@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,102 +7,107 @@ import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 
 describe('FavoriteAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const favoriteCommand =  Commands.FAVORITE_ROOT.commandName;
     const favoriteAddCommand = Commands.FAVORITE_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
-    let createdListingItem1: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
 
     beforeAll(async () => {
-
-        // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+        // generate ListingItemTemplate with ListingItem
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,       // generateItemInformation
+            true,       // generateItemLocation
+            true,       // generateShippingDestinations
+            false,      // generateImages
+            true,       // generatePaymentInformation
+            true,       // generateEscrow
+            true,       // generateItemPrice
+            true,       // generateMessagingInformation
+            false,      // generateListingItemObjects
+            false,      // generateObjectDatas
+            profile.id, // profileId
+            true,       // generateListingItem
+            market.id   // marketId
         ]).toParamsArray();
 
-        // create item and store its id for testing
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,         // what to generate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
-            true,                    // return model
-            generateListingItemParams           // what kind of data to generate
-        ) as resources.ListingItem[];
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
 
-        createdListingItem1 = listingItems[0];
+        listingItemTemplate = listingItemTemplates[0];
+        listingItem = listingItemTemplate.ListingItems[0];
 
     });
 
-    test('Should fail to add because missing profileId', async () => {
+    test('Should fail because missing profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
-    test('Should fail to add because missing listingItemId', async () => {
+    test('Should fail because missing listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
     });
 
-    test('Should fail to add because invalid profileId', async () => {
+    test('Should fail because invalid profileId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             'INVALID',
-            createdListingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-/*
-    // TODO: hash is supported, propably id shouldnt be
-    test('Should fail to add because invalid listingItemId', async () => {
+    test('Should fail because invalid listingItemId', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             'INVALID'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
     });
-*/
-    test('Should fail to add because Profile not found', async () => {
 
+    test('Should fail because Profile not found', async () => {
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
             0,
-            createdListingItem1.id
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -110,9 +115,8 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail to add because ListingItem not found', async () => {
-
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             0
         ]);
         res.expectJson();
@@ -121,23 +125,21 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should add FavoriteItem', async () => {
-
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
-            createdListingItem1.id
+            profile.id,
+            listingItem.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        expect(result.ListingItem.id).toBe(createdListingItem1.id);
-        expect(result.Profile.id).toBe(defaultProfile.id);
+        expect(result.ListingItem.id).toBe(listingItem.id);
+        expect(result.Profile.id).toBe(profile.id);
     });
 
     test('Should fail to add because ListingItem already added', async () => {
-
         const res = await testUtil.rpc(favoriteCommand, [favoriteAddCommand,
-            defaultProfile.id,
+            profile.id,
             0
         ]);
         res.expectJson();

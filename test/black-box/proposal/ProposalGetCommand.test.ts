@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,6 +11,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { Proposal } from '../../../src/api/models/Proposal';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
+import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
 // tslint:enable:max-line-length
 
 describe('ProposalGetCommand', () => {
@@ -18,54 +20,78 @@ describe('ProposalGetCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
 
-    let defaultProfile: resources.Profile;
-    let createdProposal: resources.Proposal;
+    let profile: resources.Profile;
+    let market: resources.Market;
+
+    let proposal: resources.Proposal;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
-        // Generate a proposal
-        const generateProposalsParams = new GenerateProposalParams([
-            false,                  // generateListingItemTemplate = true;
-            false,                  // generateListingItem = true;
-            null,                   // listingItemHash: string;
-            false,                  // generatePastProposal = false;
-            0,                      // voteCount
-            defaultProfile.address  // submitter
+        const generateActiveProposalParams = new GenerateProposalParams([
+            undefined,                  // listingItemId,
+            false,                      // generatePastProposal,
+            0,                          // voteCount
+            market.Identity.address,    // submitter
+            market.receiveAddress,      // market
+            true,                       // generateOptions
+            true                        // generateResults
         ]).toParamsArray();
 
-        // create Proposal for testing
+        // generate active proposals
         const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,     // what to generate
-            1,                           // how many to generate
-            true,                        // return model
-            generateProposalsParams      // what kind of data to generate
-        ) as Proposal[];
-        createdProposal = proposals[0];
+            CreatableModel.PROPOSAL,        // what to generate
+            1,                      // how many to generate
+            true,                // return model
+            generateActiveProposalParams    // what kind of data to generate
+        ) as resources.Proposal[];
+        proposal = proposals[0];
+    });
 
+    test('Should fail because missing proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalGetCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('proposalHash').getMessage());
+    });
+
+    test('Should fail because invalid proposalHash', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalGetCommand,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('proposalHash', 'string').getMessage());
     });
 
     test('Should get the Proposal', async () => {
-        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, createdProposal.hash]);
+        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand,
+            proposal.hash
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
-        expect(result.submitter).toBe(createdProposal.submitter);
-        expect(result.blockStart).toBe(createdProposal.blockStart);
-        expect(result.blockEnd).toBe(createdProposal.blockEnd);
-        expect(result.hash).toBe(createdProposal.hash);
-        expect(result.type).toBe(createdProposal.type);
-        expect(result.title).toBe(createdProposal.title);
-        expect(result.description).toBe(createdProposal.description);
-        expect(result.updatedAt).toBe(createdProposal.updatedAt);
-        expect(result.createdAt).toBe(createdProposal.createdAt);
+        const result: resources.Proposal = res.getBody()['result'];
+        expect(result.submitter).toBe(proposal.submitter);
+        expect(result.timeStart).toBe(proposal.timeStart);
+        expect(result.expiredAt).toBe(proposal.expiredAt);
+        expect(result.hash).toBe(proposal.hash);
+        expect(result.type).toBe(proposal.type);
+        expect(result.title).toBe(proposal.title);
+        expect(result.description).toBe(proposal.description);
+        expect(result.updatedAt).toBe(proposal.updatedAt);
+        expect(result.createdAt).toBe(proposal.createdAt);
     });
 });

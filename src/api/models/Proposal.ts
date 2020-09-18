@@ -1,15 +1,20 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
 import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
+import { Logger as LoggerType } from '../../core/Logger';
+
 
 export class Proposal extends Bookshelf.Model<Proposal> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'ProposalOptions',
@@ -17,7 +22,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ProposalResults',
         'ProposalResults.ProposalOptionResults',
         'ProposalResults.ProposalOptionResults.ProposalOption',
-        'FlaggedItem'
+        'FlaggedItem',
+        'FlaggedItem.ListingItem',
+        'FlaggedItem.Market'
     ];
 
     /**
@@ -31,19 +38,24 @@ export class Proposal extends Bookshelf.Model<Proposal> {
      */
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
 
-        const proposalCollection = Proposal.forge<Model<Proposal>>()
+        // this.log.debug('options: ', JSON.stringify(options, null, 2));
+
+        const collection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
                 if (options.category) {
-                    // searchBy all
                     qb.where('proposals.category', '=', options.category.toString());
                 }
 
-                if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
+                if (options.market) {
+                    qb.where('proposals.market', '=', options.market);
+                }
+
+                if (typeof options.timeStart === 'number' && _.isNil(options.timeEnd)) {
                     // searchBy all ending after options.timeStart
                     qb.where('proposals.expired_at', '>', options.timeStart - 1);
 
-                } else if (typeof options.timeStart === 'string' && typeof options.timeEnd === 'number') {
+                } else if (_.isNil(options.timeStart) && typeof options.timeEnd === 'number') {
                     // searchBy all ending before options.timeEnd
                     qb.where('proposals.expired_at', '<', options.timeEnd + 1);
 
@@ -57,53 +69,31 @@ export class Proposal extends Bookshelf.Model<Proposal> {
             })
             .orderBy('time_start', options.order);
 
-        if (withRelated) {
-            return await proposalCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await proposalCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ id: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ hash: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ msgid: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Proposal.where<Proposal>({ msgid: value }).fetch();
-        }
+        return Proposal.where<Proposal>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
-    public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
-        if (withRelated) {
-            return await Proposal.where<Proposal>({ item: value }).fetch({
-                withRelated: this.RELATIONS
+    public static async fetchByTarget(value: string, withRelated: boolean = true): Promise<Proposal> {
+        return Proposal.where<Proposal>({ target: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchExpired(): Promise<Collection<Proposal>> {
+        const collection = Proposal.forge<Model<Proposal>>()
+            .query(qb => {
+                qb.where('expired_at', '<=', Date.now());
             });
-        } else {
-            return await Proposal.where<Proposal>({ item: value }).fetch();
-        }
+        return collection.fetchAll();
     }
 
     public get tableName(): string { return 'proposals'; }
@@ -121,8 +111,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
-    public get Item(): string { return this.get('item'); }
-    public set Item(value: string) { this.set('item', value); }
+    public get Target(): string { return this.get('target'); }
+    public set Target(value: string) { this.set('target', value); }
 
     public get Category(): string { return this.get('category'); }
     public set Category(value: string) { this.set('category', value); }
@@ -133,8 +123,11 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
-    public get TimeStart(): Date { return this.get('timeStart'); }
-    public set TimeStart(value: Date) { this.set('timeStart', value); }
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
+
+    public get TimeStart(): number { return this.get('timeStart'); }
+    public set TimeStart(value: number) { this.set('timeStart', value); }
 
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }

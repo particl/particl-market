@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,17 +11,19 @@ import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
+    public static RELATIONS = [
+        'ListingItem',
+        'ListingItemTemplate',
+        'ListingItemObjectDatas'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemObject> {
         if (withRelated) {
-            return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
-                withRelated: [
-                    'ListingItem',
-                    'ListingItemTemplate',
-                    'ListingItemObjectDatas'
-                ]
+            return ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
+                withRelated: this.RELATIONS
             });
         } else {
-            return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch();
+            return ListingItemObject.where<ListingItemObject>({ id: value }).fetch();
         }
     }
 
@@ -30,10 +32,11 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
             .query(qb => {
                 qb.where('listing_item_objects.type', 'LIKE', '%' + options.searchString + '%');
                 qb.orWhere('listing_item_objects.description', 'LIKE', '%' + options.searchString + '%');
+                qb.distinct(['listing_item_objects.type', 'listing_item_objects.description']);
             })
             .orderBy('listing_item_objects.id', 'ASC');
 
-        return await listingCollection.fetchAll();
+        return listingCollection.fetchAll();
     }
 
     public get tableName(): string { return 'listing_item_objects'; }

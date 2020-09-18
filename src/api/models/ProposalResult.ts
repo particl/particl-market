@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -6,18 +6,25 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Proposal } from './Proposal';
 import { ProposalOptionResult } from './ProposalOptionResult';
-import {SearchOrder} from '../enums/SearchOrder';
+import { SearchOrder } from '../enums/SearchOrder';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class ProposalResult extends Bookshelf.Model<ProposalResult> {
 
+    public static log: LoggerType = new LoggerType(__filename);
+
     public static RELATIONS = [
         'Proposal',
+        'Proposal.FlaggedItem',
         'ProposalOptionResults',
         'ProposalOptionResults.ProposalOption'
         // 'ProposalOptionResults.ProposalOption.Votes'
     ];
 
     public static async fetchAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Collection<ProposalResult>> {
+
+        this.log.debug('hash: ', hash);
+
         const proposalResultCollection = ProposalResult.forge<Model<ProposalResult>>()
             .query(qb => {
                 qb.join('proposals', 'proposal_results.proposal_id', 'proposals.id');
@@ -25,24 +32,11 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
             })
             .orderBy('id', SearchOrder.DESC);
 
-
-        if (withRelated) {
-            return await proposalResultCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await proposalResultCollection.fetchAll();
-        }
+        return proposalResultCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalResult> {
-        if (withRelated) {
-            return await ProposalResult.where<ProposalResult>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ProposalResult.where<ProposalResult>({ id: value }).fetch();
-        }
+        return ProposalResult.where<ProposalResult>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'proposal_results'; }

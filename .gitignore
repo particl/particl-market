@@ -6,7 +6,6 @@
 # Downloaded images
 data/images/*
 
-
 # Node files #
 node_modules/
 npm-debug.log

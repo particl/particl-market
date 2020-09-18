@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -51,6 +51,9 @@ export class SmsgMessageUpdateRequest extends RequestBody implements ModelReques
     public to: string;
 
     public text: string;
+
+    public processedCount: number;
+    public processedAt: number;
 
 }
 // tslint:enable:variable-name

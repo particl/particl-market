@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,6 +12,6 @@ export class ShoppingCartCreateRequest extends RequestBody implements ModelReque
     public name: string;
 
     @IsNotEmpty()
-    public profile_id: number;
+    public identity_id: number;
 }
 // tslint:enable:variable-name

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -27,6 +27,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/ShippingPriceUpdateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/model/CryptocurrencyAddressUpdateRequest';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -35,6 +36,7 @@ describe('ItemPrice', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let itemPriceService: ItemPriceService;
     let profileService: ProfileService;
     let marketService: MarketService;
@@ -52,6 +54,7 @@ describe('ItemPrice', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
@@ -59,17 +62,14 @@ describe('ItemPrice', () => {
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.model.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
             true,               // generateItemLocation
             true,               // generateShippingDestinations
-            false,              // generateItemImages
+            false,              // generateImages
             true,               // generatePaymentInformation
             true,               // generateEscrow
             false,              // generateItemPrice

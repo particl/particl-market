@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,29 +16,42 @@ import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/model/BidService';
 import { BidAcceptActionService } from '../../services/action/BidAcceptActionService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { BidAcceptRequest } from '../../requests/action/BidAcceptRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { IdentityService } from '../../services/model/IdentityService';
+import { ProfileService } from '../../services/model/ProfileService';
+import { MessageException } from '../../exceptions/MessageException';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.action.BidAcceptActionService) private bidAcceptActionService: BidAcceptActionService
     ) {
         super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('bidId', true, this.bidService),
+                new IdValidationRule('identityId', true, this.identityService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      * [0]: bid, resources.Bid
+     * [1]: identity, resources.Identity
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -47,18 +60,16 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const bid: resources.Bid = data.params[0];
+        const identity: resources.Identity = data.params[1];
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id).then(value => value.toJSON());
-        const profile: resources.Profile = listingItem.ListingItemTemplate.Profile;
-
-        const fromAddress = profile.address;    // we are the seller, send from the profiles address which posted the item being bidded for
+        const fromAddress = identity.address;   // send from the given identity
         const toAddress = bid.bidder;           // send to the address that sent the bid
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             bid
         } as BidAcceptRequest;
 
@@ -67,25 +78,17 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: bidId
-     *
-     * TODO: instead of bidId, use bid.hash?
+     * [0]: bidId, number
+     * [1]: identityId, number
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('bidId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('bidId', 'number');
-        }
-
-        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
-        data.params[0] = bid;
+        const bid: resources.Bid = data.params[0];
+        const identity: resources.Identity = data.params[1];
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
@@ -99,22 +102,36 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new ModelNotFoundException('ListingItemTemplate');
         }
 
+        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ListingItem');
+            });
+
+        if (listingItem.ListingItemTemplate.Profile.id !== identity.Profile.id) {
+            throw new MessageException('Given Identity does not belong to the Profile which was used to post the ListingItem.');
+        }
+
         // TODO: check that we are the seller
+
+        data.params[0] = bid;
+        data.params[1] = identity;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <bidId>';
+        return this.getName() + ' <bidId> <identityId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <bidId>                  - number - The id of the bid we want to accept. ';
+            + '    <bidId>                  - number, The ID of the Bid we want to accept. '
+            + '    <identityId>             - number, The ID of the Identity used to accept to Bid. ';
     }
 
     public description(): string {
-        return 'Accept bid.';
+        return 'Accept Bid.';
     }
 
     public example(): string {

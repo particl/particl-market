@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,45 +10,51 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ItemImageDataService } from '../../services/model/ItemImageDataService';
+import { ImageDataService } from '../../services/model/ImageDataService';
+import {BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
+
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageDataService) private itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_GET);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new BooleanValidationRule('returnImageData', false, false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: returnImageData (optional)
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: returnImageData
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<resources.ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItemTemplate> {
 
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON()); // throws if not found
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const returnImageData: boolean = data.params[1];
 
-        if (data.params[1]) {
-            for (const image of listingItemTemplate.ItemInformation.ItemImages) {
-                for (const imageData of image.ItemImageDatas) {
-                    imageData.data = await this.itemImageDataService.loadImageFile(image.hash, imageData.imageVersion);
+        if (returnImageData && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
+            for (const image of listingItemTemplate.ItemInformation.Images) {
+                for (const imageData of image.ImageDatas) {
+                    imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
                 }
             }
         }
@@ -59,40 +65,28 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     /**
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: returnImageData (optional)
-     *
-     * when data.params[0] is number then findById, else findOneByHash
+     *  [1]: returnImageData (optional), default false
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
-
-        if (typeof data.params[0] !== 'number' ) {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'boolean') {
-            throw new InvalidParamException('returnImageData', 'boolean');
-        }
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> ';
+        return this.getName() + ' <listingTemplateId> [returnImageData]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
-            + '                                     want to retrieve. ';
+            + '    <listingTemplateId>           - number, The ID of the ListingItemTemplate that we want to retrieve. '
+            + '    <returnImageData>             - [optional] boolean, default: false, return Image data or not. ';
     }
 
     public description(): string {
-        return 'Get ListingItemTemplate using its id.';
+        return 'Get a ListingItemTemplate.';
     }
 
     public example(): string {

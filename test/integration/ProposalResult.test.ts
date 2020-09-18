@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -16,12 +17,11 @@ import { ProposalResultService } from '../../src/api/services/model/ProposalResu
 import { ProposalResultCreateRequest } from '../../src/api/requests/model/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../../src/api/requests/model/ProposalResultUpdateRequest';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { GenerateProposalParams } from '../../src/api/requests/testdata/GenerateProposalParams';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/testdata/GenerateListingItemParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ProposalResult', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,19 +30,25 @@ describe('ProposalResult', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let proposalResultService: ProposalResultService;
     let proposalService: ProposalService;
     let profileService: ProfileService;
     let marketService: MarketService;
+    let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let profile: resources.Profile;
-    let market: resources.Market;
+    let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
     let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
     let proposal: resources.Proposal;
     let proposalResult: resources.ProposalResult;
 
     const testData = {
-        calculatedAt: new Date().getTime()
+        calculatedAt: Date.now()
     } as ProposalResultCreateRequest;
 
     const testDataUpdated = {
@@ -53,67 +59,22 @@ describe('ProposalResult', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         proposalResultService = app.IoC.getNamed<ProposalResultService>(Types.Service, Targets.Service.model.ProposalResultService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+        sellerProfile = await testDataService.generateProfile();
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
+        proposal = await testDataService.generateProposal(listingItem.id, bidderMarket, true, false);
 
-        // get default profile + market
-        profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-
-        // create ListingItems
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,                                       // generateItemInformation
-            true,                                       // generateItemLocation
-            true,                                       // generateShippingDestinations
-            false,                                      // generateItemImages
-            true,                                       // generatePaymentInformation
-            true,                                       // generateEscrow
-            true,                                       // generateItemPrice
-            true,                                       // generateMessagingInformation
-            true,                                       // generateListingItemObjects
-            false,                                      // generateObjectDatas
-            null,                                       // listingItemTemplateHash
-            profile.address                      // seller
-        ]).toParamsArray();
-
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,          // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-        listingItem = listingItems[0];
-
-        // create Proposal
-        const generateProposalParams = new GenerateProposalParams([
-            false,                                      // generateListingItemTemplate
-            false,                                      // generateListingItem
-            listingItem.hash,                           // listingItemHash,
-            false,                                      // generatePastProposal,
-            2,                                          // voteCount
-            profile.address                             // submitter
-        ]).toParamsArray();
-
-        const proposals = await testDataService.generate({
-            model: CreatableModel.PROPOSAL,             // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateProposalParams      // what kind of data to generate
-        } as TestDataGenerateRequest);
-        proposal = proposals[0];
-
-    });
-
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await proposalResultService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
     });
 
     test('Should throw ValidationException because we want to create a empty proposal result', async () => {
@@ -123,17 +84,11 @@ describe('ProposalResult', () => {
         );
     });
 
-    test('shouldRemoveListingItem should return correct result', async () => {
-        proposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash, true).then(value => value.toJSON());
-
-        log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-        proposalResult.ProposalOptionResults[1].weight = 1000 * 100000000; // vote weights are in satoshis
-        let shouldRemove: boolean = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
-        expect(shouldRemove).toBeFalsy();
-
-        proposalResult.ProposalOptionResults[1].weight = 10000 * 100000000; // vote weights are in satoshis
-        shouldRemove = await proposalResultService.shouldRemoveListingItem(proposalResult, listingItem);
-        expect(shouldRemove).toBeTruthy();
+    test('Should throw ValidationException because there is no related_id', async () => {
+        expect.assertions(1);
+        await proposalResultService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
     test('Should create a new ProposalResult without ProposalOptions', async () => {
@@ -152,7 +107,7 @@ describe('ProposalResult', () => {
         const proposalResults: resources.ProposalResult[] = await proposalResultService.findAll().then(value => value.toJSON());
 
         // testDataService.generate creates first 1 empty result, then 1 when recalculating result
-        expect(proposalResults.length).toBe(3);
+        expect(proposalResults.length).toBe(1);
     });
 
     test('Should list all ProposalResults by proposalHash', async () => {
@@ -160,20 +115,12 @@ describe('ProposalResult', () => {
             .then(value => value.toJSON());
 
         // log.debug('proposalResults:', JSON.stringify(proposalResults, null, 2));
-        expect(proposalResults.length).toBe(3);
+        expect(proposalResults.length).toBe(1);
         proposalResult = proposalResults[0];
 
         const result: resources.ProposalResult = proposalResults[0];
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(proposal.id);
-    });
-
-    test('Should return latest ProposalResult by proposalHash', async () => {
-        const result: resources.ProposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash).then(value => value.toJSON());
-        expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(proposal.id);
-        expect(result.id).toBe(proposalResult.id);
-
     });
 
     test('Should return one ProposalResult', async () => {
@@ -184,9 +131,16 @@ describe('ProposalResult', () => {
         expect(result.calculatedAt).toBe(testData.calculatedAt);
     });
 
+    test('Should return latest ProposalResult by proposalHash', async () => {
+        const result: resources.ProposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash).then(value => value.toJSON());
+        expect(result.Proposal).toBeDefined();
+        expect(result.Proposal.id).toBe(proposal.id);
+        expect(result.id).toBe(proposalResult.id);
+
+    });
+
     test('Should update the ProposalResult', async () => {
-        const result: resources.ProposalResult = await proposalResultService.update(proposalResult.id, testDataUpdated)
-            .then(value => value.toJSON());
+        const result: resources.ProposalResult = await proposalResultService.update(proposalResult.id, testDataUpdated).then(value => value.toJSON());
 
         expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(proposal.id);

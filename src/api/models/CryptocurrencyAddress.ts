@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,15 +9,7 @@ import { Profile } from './Profile';
 export class CryptocurrencyAddress extends Bookshelf.Model<CryptocurrencyAddress> {
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<CryptocurrencyAddress> {
-        if (withRelated) {
-            return await CryptocurrencyAddress.where<CryptocurrencyAddress>({ id: value }).fetch({
-                withRelated: [
-                    // 'Profile'
-                ]
-            });
-        } else {
-            return await CryptocurrencyAddress.where<CryptocurrencyAddress>({ id: value }).fetch();
-        }
+        return CryptocurrencyAddress.where<CryptocurrencyAddress>({ id: value }).fetch(withRelated ? {withRelated: []} : undefined);
     }
 
     public get tableName(): string { return 'cryptocurrency_addresses'; }

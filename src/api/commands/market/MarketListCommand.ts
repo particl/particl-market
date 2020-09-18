@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -14,13 +15,11 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MarketService } from '../../services/model/MarketService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class MarketListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Market>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -29,6 +28,14 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.MARKET_LIST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', false, this.profileService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -41,7 +48,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
         const profile: resources.Profile = data.params[0];
-        return await this.marketService.findAllByProfileId(profile.id, false);
+        return await this.marketService.findAllByProfileId(profile ? profile.id : undefined, true);
     }
 
     /**
@@ -52,38 +59,17 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the params are of correct type
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        }
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            data.params[0] = await this.profileService.getDefault()
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        } else {
-            // make sure Profile with the id exists
-            data.params[0] = await this.profileService.findOne(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        }
-
+        await super.validate(data);
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId>';
+        return this.getName() + ' [profileId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    [profileId]              - Number - The ID of the Profile. \n';
+            + '    <profileId>              - number, optional, The ID of the Profile. \n';
     }
 
     public description(): string {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,12 +7,14 @@ import { EscrowRatio } from './EscrowRatio';
 
 export class Escrow extends Bookshelf.Model<Escrow> {
 
+    public static RELATIONS = [
+        'Ratio'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Escrow> {
         if (withRelated) {
             return await Escrow.where<Escrow>({ id: value }).fetch({
-                withRelated: [
-                    'Ratio'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Escrow.where<Escrow>({ id: value }).fetch();
@@ -31,8 +33,8 @@ export class Escrow extends Bookshelf.Model<Escrow> {
     public get SecondsToLock(): number { return this.get('seconds_to_lock'); }
     public set SecondsToLock(value: number) { this.set('seconds_to_lock', value); }
 
-    public get PaymentInformationId(): string { return this.get('payment_information_id'); }
-    public set PaymentInformationId(value: string) { this.set('payment_information_id', value); }
+    public get ReleaseType(): string { return this.get('release_type'); }
+    public set ReleaseType(value: string) { this.set('release_type', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

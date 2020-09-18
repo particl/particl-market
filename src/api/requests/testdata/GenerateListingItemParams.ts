@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -25,7 +25,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     // GenerateItemInformationParamsInterface
     public generateItemLocation = true;
     public generateShippingDestinations = true;
-    public generateItemImages = true;
+    public generateImages = true;
 
     // GeneratePaymentInformationParamsInterface
     public generateEscrow = true;
@@ -37,13 +37,15 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     public listingItemTemplateHash: string;
     public seller: string;
     public categoryId: number;
+    public soldOnMarketId: number;
+    public largeImages = false;
 
     /**
      * generateParams[]:
      * [0]: generateItemInformation
      * [1]: generateItemLocation
      * [2]: generateShippingDestinations
-     * [3]: generateItemImages
+     * [3]: generateImages
      * [4]: generatePaymentInformation
      * [5]: generateEscrow
      * [6]: generateItemPrice
@@ -53,6 +55,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [10]: listingItemTemplateHash
      * [11]: seller
      * [12]: categoryId
+     * [13]: soldOnMarketId
+     * [14]: largeImages
      *
      * TODO: add proposal generation
      *
@@ -64,7 +68,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateItemInformation        = generateParams[0] ? true : false;
             this.generateItemLocation           = generateParams[1] ? true : false;
             this.generateShippingDestinations   = generateParams[2] ? true : false;
-            this.generateItemImages             = generateParams[3] ? true : false;
+            this.generateImages             = generateParams[3] ? true : false;
             this.generatePaymentInformation     = generateParams[4] ? true : false;
             this.generateEscrow                 = generateParams[5] ? true : false;
             this.generateItemPrice              = generateParams[6] ? true : false;
@@ -74,6 +78,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.listingItemTemplateHash        = generateParams[10] ? generateParams[10] : undefined;
             this.seller                         = generateParams[11] ? generateParams[11] : undefined;
             this.categoryId                     = generateParams[12] ? generateParams[12] : undefined;
+            this.soldOnMarketId                 = generateParams[13] ? generateParams[13] : undefined;
+            this.largeImages                    = generateParams[14] ? generateParams[14] : false;
         }
     }
 
@@ -82,7 +88,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateItemInformation,
             this.generateItemLocation,
             this.generateShippingDestinations,
-            this.generateItemImages,
+            this.generateImages,
             this.generatePaymentInformation,
             this.generateEscrow,
             this.generateItemPrice,
@@ -91,7 +97,9 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateObjectDatas,
             this.listingItemTemplateHash,
             this.seller,
-            this.categoryId
+            this.categoryId,
+            this.soldOnMarketId,
+            this.largeImages
         ];
     }
 

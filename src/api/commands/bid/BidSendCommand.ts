@@ -1,23 +1,22 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
+import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/action/BidActionService';
 import { AddressService } from '../../services/model/AddressService';
 import { ProfileService } from '../../services/model/ProfileService';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { MissingParamException } from '../../exceptions/MissingParamException';
@@ -27,20 +26,19 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest';
 import { AddressType } from '../../enums/AddressType';
+import { IdentityService } from '../../services/model/IdentityService';
+import { MarketService } from '../../services/model/MarketService';
+import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
+import { SmsgService } from '../../services/SmsgService';
+import {
+    AddressOrAddressIdValidationRule,
+    CommandParamValidationRules,
+    IdValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
+
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
-
-    private REQUIRED_ADDRESS_KEYS: string[] = [
-        BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
-        BidDataValue.SHIPPING_ADDRESS_LAST_NAME.toString(),
-        BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1.toString(),
-        BidDataValue.SHIPPING_ADDRESS_CITY.toString(),
-        BidDataValue.SHIPPING_ADDRESS_STATE.toString(),
-        BidDataValue.SHIPPING_ADDRESS_ZIP_CODE.toString(),
-        BidDataValue.SHIPPING_ADDRESS_COUNTRY.toString()
-    ];
 
     private PARAMS_ADDRESS_KEYS: string[] = [
         BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
@@ -55,13 +53,26 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.AddressService) private addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_SEND);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemId', true, this.listingItemService),
+                new IdValidationRule('identityId', true, this.identityService),
+                new AddressOrAddressIdValidationRule(true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -71,8 +82,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      *
      * data.params[]:
      * [0]: listingItem, resources.ListingItem
-     * [1]: profile, resources.Profile
-     * [2]: address, resources.Address
+     * [1]: market, resources.Market
+     * [2]: identity, resources.Identity
+     * [3]: address, resources.Address
      * [...]: bidDataId, string, optional       TODO: currently ignored
      * [...]: bidDataValue, string, optional    TODO: currently ignored
      *
@@ -83,7 +95,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const listingItem: resources.ListingItem = data.params.shift();
-        const profile: resources.Profile = data.params.shift();
+        const market: resources.Market = data.params.shift();
+        const identity: resources.Identity = data.params.shift();
         const address: AddressCreateRequest = data.params.shift();
 
         // TODO: support for passing custom BidDatas seems to have been removed
@@ -91,28 +104,38 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // ...BidDatas are KVS's planned to define the product variation being bought
         // const additionalParams: KVS[] = this.additionalDataToKVS(data);
 
-        const fromAddress = profile.address;    // send from the given profiles address
+        // before we can post the bid to the seller, we need to import the pubkey
+        for (const msgInfo of listingItem.MessagingInformation) {
+            if (msgInfo.protocol === MessagingProtocol.SMSG) {
+                this.log.debug('execute(), identity.wallet: ', identity.wallet);
+                this.log.debug('execute(), listingItem.seller: ', listingItem.seller);
+                this.log.debug('execute(), msgInfo.publicKey: ', msgInfo.publicKey);
+                await this.smsgService.smsgAddAddress(listingItem.seller, msgInfo.publicKey);
+            }
+        }
+
+        const fromAddress = identity.address;   // send from the given identity
         const toAddress = listingItem.seller;   // send to listingItem sellers address
 
         const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee = false;
 
-        const postRequest = {
-            sendParams: new SmsgSendParams(fromAddress, toAddress, false, daysRetention, estimateFee),
+        const response: SmsgSendResponse = await this.bidActionService.post({
+            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
             listingItem,
+            market,
             address
-        } as BidRequest;
+        } as BidRequest);
+        // this.log.debug('response: ', JSON.stringify(response, null, 2));
 
-        this.log.debug('postRequest: ', JSON.stringify(postRequest, null, 2));
-        const response: SmsgSendResponse = await this.bidActionService.post(postRequest);
         return response;
 
     }
 
     /**
      * data.params[]:
-     * [0]: listingItemHash, string
-     * [1]: profileId, number
+     * [0]: listingItemId: number -> listingItem: resources.ListingItem
+     * [1]: identityId: number -> identity: resources.Identity
      * [2]: addressId (from profile shipping addresses), number|false
      *                if false, the address must be passed as bidData id/value pairs
      *                         in following format:
@@ -131,92 +154,77 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('hash');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('address or addressId');
-        }
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+/*
         // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('hash');
-        }
-
-        if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('profileId');
-        }
-
         if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
             // make sure that required keys are there
-            for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
+            for (const addressKey of this.MPA_BID_REQUIRED_ADDRESS_KEYS) {
                 if (!_.includes(data.params, addressKey.toString()) ) {
                     throw new MissingParamException(addressKey);
                 }
             }
         } else if (typeof data.params[2] !== 'number') {
-            throw new InvalidParamException('addressId');
+            throw new InvalidParamException('addressId', 'number');
         }
-
+*/
         // make sure required data exists and fetch it
-        const listingItemHash = data.params.shift();
-        const profileId = data.params.shift();
+        const listingItem: resources.ListingItem = data.params.shift();
+        const identity: resources.Identity = data.params.shift();
         const addressId = data.params.shift();
 
         // now the rest of data.params are either address values or biddatas
-
-        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItem');
-            });
-
-        // profile that is doing the bidding
-        const profile: resources.Profile = await this.profileService.findOne(profileId)
+        const profile: resources.Profile = await this.profileService.findOne(identity.Profile.id)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
 
+        // the seller could be selling the ListingItem that were bidding for in multiple markets (having the same hash),
+        // so we need to also send the market info to the seller
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, listingItem.market)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
+
         const address: AddressCreateRequest = this.getAddress(profile, addressId, data);
 
         // unshift the needed data back to the params array
-        data.params.unshift(listingItem, profile, address);
+        data.params.unshift(listingItem, market, identity, address);
 
         // make some other validations
-        if (new Date().getTime() > listingItem.expiredAt) {
+        if (Date.now() > listingItem.expiredAt) {
             this.log.warn(`ListingItem has expired!`);
             throw new MessageException('The ListingItem being bidded for has expired!');
         }
 
-        // TODO: check that we are NOT the seller
+        if (listingItem.seller === identity.address) {
+            throw new MessageException('You cannot Bid for your own ListingItem');
+        }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <profileId> <addressId | false> [(<bidDataKey>, <bidDataValue>), ...] ';
+        return this.getName() + ' <listingItemId> <identityId> <addressId|false> [(<bidDataKey>, <bidDataValue>), ...] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <listingItemHash>        - String - The hash of the item we want to send bids for. \n'
-            + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
-            + '    <addressId>              - Numeric - The id of the address we want to associated with the bid. \n'
-            + '    <bidDataKey>             - [optional] String - The key for additional data for the bid we want to send. \n'
-            + '    <bidDataValue>           - [optional] String - The value for additional data for the bid we want to send. ';
+            + '    <listingItemId>          - Numeric - The id of the ListingItem we want to send Bids for. \n'
+            + '    <identityId>             - Numeric - The id of the Identity we want to associate with the Bid. \n'
+            + '    <addressId>              - Numeric - The id of the Address we want to associated with the Bid. \n'
+            + '    <bidDataKey>             - [optional] String - The key for additional data for the Bid we want to send. \n'
+            + '    <bidDataValue>           - [optional] String - The value for additional data for the Bid we want to send. ';
     }
 
     public description(): string {
-        return 'Send bid.';
+        return 'Send Bid.';
     }
 
     public example(): string {
-        return 'bid ' + this.getName() + ' 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
-        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 ';
+        return 'bid ' + this.getName() + ' 1 1 1 ';
     }
 
     /**
@@ -237,7 +245,6 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             if (address) {
                 delete address.id;  // we want to use an existing ShippingAddress, but save it separately for the Bid
                 return {
-                    // todo: remove this profileId, its ending up in the msg
                     profile_id: profile.id,
                     // title: address.title,
                     firstName: address.firstName,
@@ -251,13 +258,12 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                     type: AddressType.SHIPPING_BID
                 } as AddressCreateRequest;
             } else {
-                throw new NotFoundException(addressId);
+                throw new ModelNotFoundException('Address');
             }
 
         } else { // no addressId, address should have been given as key value params
 
             const address = {
-                // todo: remove this profileId, its ending up in the msg
                 profile_id: profile.id,
                 type: AddressType.SHIPPING_BID
             } as AddressCreateRequest;
@@ -297,7 +303,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                             address.country = paramValue;
                             break;
                         default:
-                            throw new InvalidParamException('addressKey');
+                            throw new InvalidParamException('addressKey', 'BidDataValue');
                     }
                 }
             }

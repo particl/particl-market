@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,10 +12,10 @@ export class ShippingPriceCreateRequest extends RequestBody implements ModelRequ
     @IsNotEmpty()
     public item_price_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public domestic: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public international: number;
 
 }

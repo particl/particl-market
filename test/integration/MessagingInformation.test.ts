@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -21,6 +21,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/testda
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -29,6 +30,7 @@ describe('MessagingInformation', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let messagingInformationService: MessagingInformationService;
     let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
@@ -56,22 +58,20 @@ describe('MessagingInformation', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.model.MessagingInformationService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const generateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             false,      // generatePaymentInformation
             false,      // generateEscrow
             false,      // generateItemPrice

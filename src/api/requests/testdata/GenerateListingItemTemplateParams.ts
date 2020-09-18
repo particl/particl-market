@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -15,7 +15,7 @@ export interface GenerateListingItemTemplateParamsInterface {
 export interface GenerateItemInformationParamsInterface {
     generateItemLocation: boolean;
     generateShippingDestinations: boolean;
-    generateItemImages: boolean;
+    generateImages: boolean;
 }
 
 export interface GeneratePaymentInformationParamsInterface {
@@ -34,25 +34,26 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateItemInformation = true;
     public generateItemLocation = true;
     public generateShippingDestinations = true;
-    public generateItemImages = true;
+    public generateImages = true;
     public generatePaymentInformation = true;
     public generateEscrow = true;
     public generateItemPrice = true;
     public generateMessagingInformation = true;
     public generateListingItemObjects = true;
-
     public generateObjectDatas = true;
-    public profileId: number;
+    public profileId: number;               // Profile owning the template
+
     public generateListingItem = false;
-    public marketId: number;
+    public soldOnMarketId: number;          // Market on which the ListingItem is sold on (for payment address)
     public categoryId: number;
+    public largeImages = false;
 
     /**
      * generateParams[]:
      * [0]: generateItemInformation
      * [1]: generateItemLocation
      * [2]: generateShippingDestinations
-     * [3]: generateItemImages
+     * [3]: generateImages
      * [4]: generatePaymentInformation
      * [5]: generateEscrow
      * [6]: generateItemPrice
@@ -61,8 +62,9 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [9]: generateObjectDatas
      * [10]: profileId
      * [11]: generateListingItem
-     * [12]: marketId
+     * [12]: soldOnMarketId
      * [13]: categoryId
+     * [14]: largeImages
      *
      * @param generateParams
      */
@@ -72,17 +74,18 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateItemInformation        = generateParams[0] ? true : false;
             this.generateItemLocation           = generateParams[1] ? true : false;
             this.generateShippingDestinations   = generateParams[2] ? true : false;
-            this.generateItemImages             = generateParams[3] ? true : false;
+            this.generateImages                 = generateParams[3] ? true : false;
             this.generatePaymentInformation     = generateParams[4] ? true : false;
             this.generateEscrow                 = generateParams[5] ? true : false;
             this.generateItemPrice              = generateParams[6] ? true : false;
             this.generateMessagingInformation   = generateParams[7] ? true : false;
             this.generateListingItemObjects     = generateParams[8] ? true : false;
             this.generateObjectDatas            = generateParams[9] ? true : false;
-            this.profileId                      = generateParams[10] ? generateParams[10] : null;
+            this.profileId                      = generateParams[10] ? generateParams[10] : undefined;
             this.generateListingItem            = generateParams[11] ? true : false;
-            this.marketId                       = generateParams[12] ? generateParams[12] : null;
-            this.categoryId                     = generateParams[13] ? generateParams[13] : null;
+            this.soldOnMarketId                 = generateParams[12] ? generateParams[12] : undefined;
+            this.categoryId                     = generateParams[13] ? generateParams[13] : undefined;
+            this.largeImages                    = generateParams[14] ? generateParams[14] : false;
         }
     }
 
@@ -91,7 +94,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateItemInformation,
             this.generateItemLocation,
             this.generateShippingDestinations,
-            this.generateItemImages,
+            this.generateImages,
             this.generatePaymentInformation,
             this.generateEscrow,
             this.generateItemPrice,
@@ -100,8 +103,9 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateObjectDatas,
             this.profileId,
             this.generateListingItem,
-            this.marketId,
-            this.categoryId
+            this.soldOnMarketId,
+            this.categoryId,
+            this.largeImages
         ];
     }
 

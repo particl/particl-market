@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
-import { SearchOrderField } from '../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../enums/SearchOrderField';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
@@ -13,6 +13,7 @@ import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
 import { ListingItemTemplateSearchParams } from '../requests/search/ListingItemTemplateSearchParams';
 import { Logger as LoggerType } from '../../core/Logger';
+import { SearchOrder } from '../enums/SearchOrder';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -27,8 +28,8 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ItemInformation.ItemLocation',
         'ItemInformation.ItemLocation.LocationMarker',
-        'ItemInformation.ItemImages',
-        'ItemInformation.ItemImages.ItemImageDatas',
+        'ItemInformation.Images',
+        'ItemInformation.Images.ImageDatas',
         'ItemInformation.ShippingDestinations',
         'PaymentInformation',
         'PaymentInformation.Escrow',
@@ -56,52 +57,90 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
         'ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate.ParentListingItemTemplate',
-        'ChildListingItemTemplate'
+        'ChildListingItemTemplates',
+        'ChildListingItemTemplates.ItemInformation',
+        'ChildListingItemTemplates.ChildListingItemTemplates'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemTemplate> {
-        if (withRelated) {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch();
-        }
+        return ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
-
 
     public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
-        if (withRelated) {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch();
-        }
+        return ListingItemTemplate.where<ListingItemTemplate>({ hash: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
+
+    /**
+     *
+     * @param templateId
+     * @param market
+     * @param allVersions
+     */
+    public static async fetchByParentTemplateAndMarket(templateId?: number, market?: string,
+                                                       allVersions: boolean = false, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
+        const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
+            .query(qb => {
+                if (market) {
+                    qb.where('market', '=', market);
+                }
+                if (templateId) {
+                    qb.where('parent_listing_item_template_id', '=', templateId);
+                }
+
+                if (!allVersions) {
+                    qb.max('generated_at');
+                    qb.groupBy(['parent_listing_item_template_id', 'market']);
+                }
+            })
+            .orderBy('generated_at', SearchOrder.DESC);
+
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+
+/*
+// find latest market template versions for each template
+SELECT lit.*, max(lit.generated_at)
+    FROM listing_item_templates lit
+    WHERE lit.market='market1'
+      AND lit.parent_listing_item_template_id=32
+GROUP BY lit.parent_listing_item_template_id, lit.market
+ORDER BY lit.generated_at DESC;
+
+// find all versions of a market template
+SELECT lit.*
+    FROM listing_item_templates lit
+    WHERE lit.market='market1'
+      AND lit.parent_listing_item_template_id=32
+ORDER BY lit.generated_at DESC;
+*/
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
 
-        let sortingField = 'updated_at';
-        if (SearchOrderField.TITLE === options.orderField) {
-            sortingField = 'item_informations.title';
-        } else if (SearchOrderField.STATE === options.orderField) {
-            sortingField = 'listing_items.listing_item_template_id';
-        } else if (SearchOrderField.DATE === options.orderField) {
-            sortingField = 'listing_item_templates.updated_at';
-        }
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || ListingItemTemplateSearchOrderField.UPDATED_AT;
 
-        ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
+        // ListingItemTemplate.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
-        const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
+        const collection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
 
-                if (typeof options.category === 'number') {
-                    qb.where('item_informations.item_category_id', '=', options.category);
-                } else if (options.category && typeof options.category === 'string') {
-                    qb.where('item_categories.key', '=', options.category);
-                    qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                // searchBy categories
+                if (options.categories && options.categories.length > 0) {
+                    if (typeof options.categories[0] === 'number') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.id', options.categories);
+                    } else if (typeof options.categories[0] === 'string') {
+                        qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                        qb.whereIn('item_categories.key', options.categories);
+                    }
+                }
+
+                if (options.marketReceiveAddress) {
+                    qb.where('listing_item_templates.market', '=', options.marketReceiveAddress);
                 }
 
                 if (options.profileId) {
@@ -111,36 +150,37 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 if (options.searchString) {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
-                if (options.hasItems !== undefined && typeof options.hasItems === 'boolean') {
-                    if (options.hasItems) {
-                        // ListingItem.log.debug('hasItems true');
+
+                if (options.isBaseTemplate !== undefined) {
+                    if (options.isBaseTemplate) {
+                        qb.whereNull('parent_listing_item_template_id');
+                    } else {
+                        qb.whereNotNull('parent_listing_item_template_id');
+                    }
+                }
+
+                if (options.hasListingItems !== undefined) {
+                    // ListingItemTemplate.log.debug('hasListingItems', hasListingItems);
+                    if (options.hasListingItems) {
                         qb.innerJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     } else {
-                        // ListingItem.log.debug('hasItems false');
                         qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                         qb.whereNull('listing_items.listing_item_template_id');
                     }
                 } else {
-                    // ListingItem.log.debug('hasItems undefined');
+                    // ListingItemTemplate.log.debug('hasItems undefined');
                     qb.leftJoin('listing_items', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
 
-                qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
+                // qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
             })
-            // .orderBy(sortingField, options.order)
+            .orderBy(/*'listing_item_templates.' + */options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
             });
 
-        if (withRelated) {
-            return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS
-
-            });
-        } else {
-            return await listingCollection.fetchAll();
-        }
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'listing_item_templates'; }
@@ -151,6 +191,9 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
+
+    public get Market(): string { return this.get('market'); }
+    public set Market(value: string) { this.set('market', value); }
 
     public get GeneratedAt(): number { return this.get('generatedAt'); }
     public set GeneratedAt(value: number) { this.set('generatedAt', value); }
@@ -189,12 +232,8 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.belongsTo(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
-    // public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
-    //    return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
-    // }
-
-    public ChildListingItemTemplate(): ListingItemTemplate {
-        return this.hasOne(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
+    public ChildListingItemTemplates(): Collection<ListingItemTemplate> {
+        return this.hasMany(ListingItemTemplate, 'parent_listing_item_template_id', 'id');
     }
 
 }

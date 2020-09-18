@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,7 +10,9 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('flagged_items', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.integer('listing_item_id').unsigned().notNullable().unique();
+            table.string('reason').notNullable();
+
+            table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')
                 .inTable('listing_items').onDelete('cascade');
 
@@ -18,7 +20,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('proposal_id').references('id')
                 .inTable('proposals');
 
-            table.string('reason').notNullable();
+            // adding relation to markets
+            table.integer('market_id').unsigned().nullable();
+            table.foreign('market_id').references('id')
+                .inTable('markets');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

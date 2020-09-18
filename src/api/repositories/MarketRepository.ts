@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,6 +9,7 @@ import { Market } from '../models/Market';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { MarketSearchParams } from '../requests/search/MarketSearchParams';
 
 export class MarketRepository {
 
@@ -26,20 +27,36 @@ export class MarketRepository {
         return list as Bookshelf.Collection<Market>;
     }
 
-    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+    public async findAllByProfileId(profileId: number | undefined, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
         return await this.MarketModel.fetchAllByProfileId(profileId, withRelated);
+    }
+
+    public async findAllByReceiveAddress(receiveAddress: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByReceiveAddress(receiveAddress, withRelated);
+    }
+
+    public async findAllByRegion(region: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByRegion(region, withRelated);
+    }
+
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
+        return await this.MarketModel.fetchAllByHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchById(id, withRelated);
     }
 
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Market> {
+        return await this.MarketModel.fetchByMsgId(msgid, withRelated);
+    }
+
     public async findOneByProfileIdAndReceiveAddress(profileId: number, receiveAddress: string, withRelated: boolean = true): Promise<Market> {
         return await this.MarketModel.fetchByProfileIdAndReceiveAddress(profileId, receiveAddress, withRelated);
     }
 
-    public async findOneByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Market> {
-        return await this.MarketModel.fetchByProfileIdAndName(profileId, name, withRelated);
+    public async search(options: MarketSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Market>> {
+        return this.MarketModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Market> {

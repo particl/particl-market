@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -54,14 +54,18 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const itemCategory: resources.ItemCategory = data.params[4];
 
+        let category;
+        if (!_.isEmpty(itemCategory)) {
+            category = {
+                key: itemCategory.key
+            } as ItemCategoryUpdateRequest;
+        }
+
         return this.itemInformationService.update(listingItemTemplate.ItemInformation.id, {
-            listing_item_template_id: data.params[0].id,
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
-            itemCategory: {
-                id: itemCategory.id
-            } as ItemCategoryUpdateRequest
+            itemCategory: category
         } as ItemInformationUpdateRequest);
     }
 
@@ -71,7 +75,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: categoryId
+     *  [4]: categoryId (optional)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -85,19 +89,23 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             throw new MissingParamException('shortDescription');
         } else if (data.params.length < 4) {
             throw new MissingParamException('longDescription');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('categoryId');
         }
 
-        if (typeof data.params[0] !== 'number') {
+        const listingItemTemplateId = data.params[0];   // required
+        const title = data.params[1];                   // required
+        const shortDescription = data.params[2];        // required
+        const longDescription = data.params[3];         // required
+        const categoryId = data.params[4];              // optional
+
+        if (typeof listingItemTemplateId !== 'number') {
             throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
+        } else if (typeof title !== 'string') {
             throw new InvalidParamException('title', 'string');
-        } else if (typeof data.params[2] !== 'string') {
+        } else if (typeof shortDescription !== 'string') {
             throw new InvalidParamException('shortDescription', 'string');
-        } else if (typeof data.params[3] !== 'string') {
+        } else if (typeof longDescription !== 'string') {
             throw new InvalidParamException('longDescription', 'string');
-        } else if (typeof data.params[4] !== 'number') {
+        } else if (!_.isNil(categoryId) && typeof categoryId !== 'number') {
             throw new InvalidParamException('categoryId', 'number');
         }
 
@@ -116,13 +124,16 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         }
 
         // make sure ItemCategory with the id exists
-        const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('ItemCategory');
-            });
+        if (!_.isNil(categoryId)) {
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
+                .then(value => {
+                    return value.toJSON();
+                })
+                .catch(reason => {
+                    throw new ModelNotFoundException('ItemCategory');
+                });
+            data.params[4] = itemCategory;
+        }
 
         const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
         if (!isModifiable) {
@@ -130,33 +141,25 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         }
 
         data.params[0] = listingItemTemplate;
-        data.params[4] = itemCategory;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> [categoryId] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
-            + '                                     whose associated item information we want to \n'
-            + '                                     update. \n'
-            + '    <title>                       - String - The new title of the item information \n'
-            + '                                     we\'re updating. \n'
-            + '    <shortDescription>            - String - The new short description of the item \n'
-            + '                                     information we\'re updating. \n'
-            + '    <longDescription>             - String - The new long description of the item \n'
-            + '                                     information we\'re updating. \n'
-            + '    <categoryId>                  - String - The ID that identifies the new \n'
-            + '                                     category we want to assign to the item \n'
-            + '                                     information we\'re updating. ';
+            + '    <listingItemTemplateId>       - string, The ID of the ListingItemTemplate which ItemInformation we want to update. \n'
+            + '    <title>                       - string, The title for the ItemInformation. \n'
+            + '    <shortDescription>            - string, The short description for the ItemInformation. \n'
+            + '    <longDescription>             - string, The long description for the ItemInformation. \n'
+            + '    <categoryId>                  - number, optional - The ID of the ItemCategory for the ItemInformation.';
     }
 
     public description(): string {
-        return 'Update the item details of an item information given by listingItemTemplateId.';
+        return 'Update the item details of an ItemInformation.';
     }
 
     public example(): string {

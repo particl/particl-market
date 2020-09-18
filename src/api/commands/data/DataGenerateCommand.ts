@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -42,8 +42,8 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        this.log.info('data.params[0]: ', data.params[0]);
-        this.log.info('data.params[1]: ', data.params[1]);
+        // this.log.info('data.params[0]: ', data.params[0]);
+        // this.log.info('data.params[1]: ', data.params[1]);
         const generateParams = data.params.length > 3 ? _.slice(data.params, 3) : [];
 
         return await this.testDataService.generate({
@@ -55,7 +55,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        this.log.info('data.params[]: ', JSON.stringify(data.params, null, 2));
+        // this.log.info('data.params[]: ', JSON.stringify(data.params, null, 2));
 
         if (data.params.length < 1) {
             throw new MissingParamException('model');
@@ -87,7 +87,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
-            + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
+            + '                                |favoriteitem|iteminformation|bid|paymentinformation|image} \n'
             + '                                - The type of data we want to generate. \n'
             + '    <amount>                 - Numeric - The number of objects we want to generate. \n'
             + '    <withRelated>            - Boolean - Whether to return full objects or just id. ';

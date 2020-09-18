@@ -1,38 +1,38 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
-import { Profile } from './Profile';
+import { Identity } from './Identity';
 import { ShoppingCartItem } from './ShoppingCartItem';
 
 export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
 
     public static RELATIONS = [
-        'Profile',
-        'ShoppingCartItems'
+        'Identity',
+        'ShoppingCartItems',
+        'ShoppingCartItems.ListingItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCart> {
-        if (withRelated) {
-            return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch();
-        }
+        return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
-    public static async fetchAllByProfileId(value: number): Promise<Collection<ShoppingCart>> {
+    public static async fetchAllByIdentityId(value: number, withRelated: boolean = false): Promise<Collection<ShoppingCart>> {
         const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
-                qb.where('profile_id', '=', value);
+                qb.where('identity_id', '=', value);
             }).orderBy('id', 'ASC');
-        return await shoppingCart.fetchAll();
+
+        return await shoppingCart.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
-    public get tableName(): string { return 'shopping_cart'; }
+    public get tableName(): string { return 'shopping_carts'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
@@ -47,8 +47,8 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public Profile(): Profile {
-        return this.belongsTo(Profile, 'profile_id', 'id');
+    public Identity(): Identity {
+        return this.belongsTo(Identity, 'identity_id', 'id');
     }
 
     public ShoppingCartItems(): Collection<ShoppingCartItem> {

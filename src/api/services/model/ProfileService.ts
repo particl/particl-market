@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -22,10 +22,10 @@ import { AddressCreateRequest } from '../../requests/model/AddressCreateRequest'
 import { CryptocurrencyAddressCreateRequest } from '../../requests/model/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/CryptocurrencyAddressUpdateRequest';
 import { ShoppingCartCreateRequest } from '../../requests/model/ShoppingCartCreateRequest';
-import { SettingCreateRequest } from '../../requests/model/SettingCreateRequest';
 import { SettingService } from './SettingService';
 import { SettingValue } from '../../enums/SettingValue';
-import { WalletService } from './WalletService';
+import { IdentityService } from './IdentityService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ProfileService {
 
@@ -36,7 +36,7 @@ export class ProfileService {
         @inject(Types.Service) @named(Targets.Service.model.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartService) public shoppingCartService: ShoppingCartService,
         @inject(Types.Service) @named(Targets.Service.model.SettingService) public settingService: SettingService,
-        @inject(Types.Service) @named(Targets.Service.model.WalletService) public walletService: WalletService,
+        @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -46,12 +46,16 @@ export class ProfileService {
 
     public async getDefault(withRelated: boolean = true): Promise<Profile> {
 
-        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+        const defaultProfileSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.APP_DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileSetting = defaultProfileSettings[0];
-        this.log.debug('getDefault(), defaultProfileSetting: ', defaultProfileSetting.value);
+        // this.log.debug('getDefault(), defaultProfileSetting: ', JSON.stringify(defaultProfileSetting, null, 2));
 
-        const profile = await this.findOne(+defaultProfileSetting.value, withRelated);
+        const profile = await this.findOne(+defaultProfileSetting.value, withRelated)
+            .catch(reason => {
+                this.log.error('reason: ', JSON.stringify(reason, null, 2));
+                throw new MessageException(reason);
+            });
         if (profile === null) {
             this.log.warn(`Default Profile was not found!`);
             throw new NotFoundException(defaultProfileSetting.value);
@@ -81,81 +85,47 @@ export class ProfileService {
         return profile;
     }
 
-    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.findOneByAddress(address, withRelated);
-        if (profile === null) {
-            this.log.warn(`Profile with the address=${address} was not found!`);
-            throw new NotFoundException(address);
-        }
-        return profile;
-    }
-
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body: ProfileCreateRequest = JSON.parse(JSON.stringify(data));
-
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
-        if (_.isEmpty(body.address)) {
-            body.address = await this.getNewAddress();
-        }
 
         // extract and remove related models from request
         const shippingAddresses = body.shippingAddresses || [];
-        delete body.shippingAddresses;
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
-        delete body.cryptocurrencyAddresses;
         const settings = body.settings || [];
+        const identity = body.identity;
+        delete body.shippingAddresses;
+        delete body.cryptocurrencyAddresses;
         delete body.settings;
-        const wallet = body.wallet;
-        delete body.wallet;
+        delete body.identity;
 
         // If the request body was valid we will create the profile
-        const profile = await this.profileRepo.create(body);
+        const profile = await this.profileRepo.create(body).then(value => value.toJSON());
 
         // then create related models
         for (const address of shippingAddresses) {
-            address.profile_id = profile.Id;
+            address.profile_id = profile.id;
             await this.addressService.create(address);
         }
 
         for (const cryptoAddress of cryptocurrencyAddresses) {
-            cryptoAddress.profile_id = profile.Id;
+            cryptoAddress.profile_id = profile.id;
             await this.cryptocurrencyAddressService.create(cryptoAddress);
         }
 
         for (const setting of settings) {
-            setting.profile_id = profile.Id;
+            setting.profile_id = profile.id;
             await this.settingService.create(setting);
         }
 
-        if (!_.isEmpty(wallet)) {
-            wallet.profile_id = profile.Id;
-            await this.walletService.create(wallet);
+        if (!_.isEmpty(identity)) {
+            identity.profile_id = profile.id;
+            await this.identityService.create(identity);
         }
 
-        // create default shoppingCart
-        await this.shoppingCartService.create({
-            name: 'DEFAULT',
-            profile_id: profile.Id
-        } as ShoppingCartCreateRequest);
-
         // finally find and return the created profileId
-        const newProfile = await this.findOne(profile.Id);
-        return newProfile;
-    }
-
-    public async getNewAddress(): Promise<string> {
-        const newAddress = await this.coreRpcService.getNewAddress()
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                return res;
-            })
-            .catch(async (reason) => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                return 'ERROR_NO_ADDRESS';
-            });
-        this.log.debug('new address: ', newAddress );
-        return newAddress;
+        return await this.findOne(profile.id);
     }
 
     @validate()
@@ -168,11 +138,6 @@ export class ProfileService {
 
         // set new values
         profile.Name = body.name;
-
-        // update address only if it is set
-        if (body.address) {
-            profile.Address = body.address;
-        }
 
         // update profile
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,81 +11,110 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
-import { ListingItemSearchParams } from '../../../src/api/requests/search/ListingItemSearchParams';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { CountryCodeNotFoundException } from '../../../src/api/exceptions/CountryCodeNotFoundException';
 
 describe('ListingItemSearchCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
 
-    const itemCommand = Commands.ITEM_ROOT.commandName;
-    const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
-    const itemFlagCommand = Commands.ITEM_FLAG.commandName;
-    const itemGetCommand = Commands.ITEM_GET.commandName;
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let listingItemTemplate: resources.ListingItemTemplate;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let buyerProfile: resources.Profile;
+    let buyerMarket: resources.Market;
+
+    let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
+    let listingItemReceivedOnBuyerNode: resources.ListingItem;
+    let randomCategoryOnSellerNode: resources.ItemCategory;
 
-    const defaultListingItemSearchParams = new ListingItemSearchParams();
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const SEARCHORDER = SearchOrder.ASC;
+    const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
+    const DAYS_RETENTION = 1;
+    let sent = false;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
 
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
+
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(buyerProfile.id).toBeDefined();
+        expect(buyerMarket.id).toBeDefined();
+
+        randomCategoryOnSellerNode = await testUtilSellerNode.getRandomCategory();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            true,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            sellerProfile.id,               // profileId
+            true,                           // generateListingItem
+            sellerMarket.id,                // soldOnMarketId
+            randomCategoryOnSellerNode.id   // categoryId
         ]).toParamsArray();
 
-        // generate ListingItemTemplate with ListingItem
-        const listingItemTemplates = await testUtil.generateData(
+        const listingItemTemplates = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
 
-        listingItemTemplate = listingItemTemplates[0];
+        listingItemTemplateOnSellerNode = listingItemTemplates[0];
         // log.debug('listingItemTemplate:', JSON.stringify(createdListingItemTemplate, null, 2));
 
         // expect template is related to correct profile and ListingItem posted to correct market
-        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
-        expect(listingItemTemplate.ListingItems[0].market).toBe(defaultMarket.receiveAddress);
+        expect(listingItemTemplateOnSellerNode.Profile.id).toBe(sellerProfile.id);
+        expect(listingItemTemplateOnSellerNode.ListingItems[0].market).toBe(sellerMarket.receiveAddress);
 
         // generate ListingItem without a ListingItemTemplate
         const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            true,                           // generateItemInformation
+            true,                           // generateItemLocation
+            true,                           // generateShippingDestinations
+            false,                          // generateImages
+            true,                           // generatePaymentInformation
+            true,                           // generateEscrow
+            true,                           // generateItemPrice
+            true,                           // generateMessagingInformation
+            false,                          // generateListingItemObjects
+            false,                          // generateObjectDatas
+            undefined,                      // listingItemTemplateHash
+            undefined,                      // seller
+            randomCategoryOnSellerNode.id,  // categoryId
+            undefined                       // soldOnMarketId
         ]).toParamsArray();
 
-        const listingItems = await testUtil.generateData(
+        const listingItems = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEM,         // what to generate
             1,                          // how many to generate
             true,                    // return model
@@ -95,139 +124,550 @@ describe('ListingItemSearchCommand', () => {
         listingItem = listingItems[0];
     });
 
-    const PAGE = 0;
-    const PAGELIMIT = 10;
-    const SEARCHORDER = SearchOrder.ASC;
+    test('Should fail because missing market', async () => {
 
-    test('Should fail to searchBy ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'INVALID',          // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL.');
+        expect(res.error.error.message).toBe(new MissingParamException('market').getMessage());
     });
 
-    test('Should searchBy OWN ListingItems when profileid = OWN', async () => {
+    test('Should fail because invalid market', async () => {
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'OWN',              // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('market', 'string').getMessage());
+    });
+
+    test('Should fail because invalid category', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            ''  // should be string[] or number[]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('categories', 'number[] | string[]').getMessage());
+    });
+
+    test('Should fail because mixed types of categories', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            ['string', 0]  // should be string[] or number[]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('categories', 'number[] | string[]').getMessage());
+    });
+
+    test('Should fail because invalid seller', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('seller', 'string').getMessage());
+    });
+
+    test('Should fail because invalid minPrice', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
+            listingItem.seller,
+            -1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('minPrice').getMessage());
+    });
+
+    test('Should fail because invalid maxPrice', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
+            listingItem.seller,
+            undefined,
+            -1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('maxPrice').getMessage());
+    });
+
+    test('Should fail because invalid country', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            1
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('country', 'string').getMessage());
+    });
+
+    test('Should fail because country code not found', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('INVALID').getMessage());
+    });
+
+    test('Should fail because invalid shippingDestination', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('shippingDestination', 'string').getMessage());
+    });
+
+    test('Should fail because shippingDestination code not found', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            'NOT_FOUND'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new CountryCodeNotFoundException('NOT_FOUND').getMessage());
+    });
+
+    test('Should fail because invalid searchString', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('searchString', 'string').getMessage());
+    });
+
+    test('Should fail because invalid flagged', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            null,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('flagged', 'boolean').getMessage());
+    });
+
+    test('Should fail because invalid listingItemHash', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemHash', 'string').getMessage());
+    });
+
+    test('Should fail because invalid msgid', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('msgid', 'string').getMessage());
+    });
+
+    test('Should search by market', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.ListingItem[] = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
 
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
     });
 
-    test('Should searchBy ALL ListingItems when profileid = ALL', async () => {
+    test('Should search by market and categories (using ids)', async () => {
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.id, listingItem.ItemInformation.ItemCategory.id]
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(listingItem.hash);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
     });
 
-    test('Should searchBy ALL ListingItems when profileId = *', async () => {
+    test('Should search by market and categories (using keys)', async () => {
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key]
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-        expect(result[1].hash).toBe(listingItem.hash);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
     });
 
-    test('Should searchBy only first ListingItem using pagination and setting pageLimit to 1', async () => {
+    test('Should search by market and categories (using keys) and seller', async () => {
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, 1, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemCategory.key, listingItem.ItemInformation.ItemCategory.key],
+            listingItem.seller
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and seller', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            listingItem.seller
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and minPrice', async () => {
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            0
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and between minPrice and maxPrice', async () => {
+
+        const largestBasePrice
+            = (listingItemTemplateOnSellerNode.ListingItems[0].PaymentInformation.ItemPrice.basePrice > listingItem.PaymentInformation.ItemPrice.basePrice)
+            ? listingItemTemplateOnSellerNode.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 1
+            : listingItem.PaymentInformation.ItemPrice.basePrice + 1;
+
+        const lowestBasePrice
+            = (listingItemTemplateOnSellerNode.ListingItems[0].PaymentInformation.ItemPrice.basePrice < listingItem.PaymentInformation.ItemPrice.basePrice)
+            ? listingItemTemplateOnSellerNode.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 1
+            : listingItem.PaymentInformation.ItemPrice.basePrice - 1;
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            lowestBasePrice,
+            largestBasePrice
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and country', async () => {
+        // log.debug('country1: ', listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country);
+        // log.debug('country2: ', listingItem.ItemInformation.ItemLocation.country);
+        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country
+            === listingItem.ItemInformation.ItemLocation.country);
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(isSameCountry ? 2 : 1);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and shippingDestination', async () => {
+        const country = listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country;
+        const shippingDestination = listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
+        // log.debug('country: ', country);
+        // log.debug('shippingDestination: ', shippingDestination);
+
+        const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            shippingDestination
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(hasSameShippingDestination ? 2 : 1);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and country and shippingDestination', async () => {
+        const country = listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country;
+        const shippingDestination = listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ShippingDestinations[0].country;
+        // log.debug('country: ', country);
+        // log.debug('shippingDestination: ', shippingDestination);
+
+        const isSameCountry = (listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.ItemLocation.country
+            === listingItem.ItemInformation.ItemLocation.country);
+        const hasSameShippingDestination = _.includes(listingItem.ItemInformation.ShippingDestinations, shippingDestination);
+
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            country,
+            shippingDestination
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(hasSameShippingDestination || isSameCountry ? 2 : 1);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and title searchString', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.title.substr(0, 10)
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
     });
 
-    test('Should searchBy the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
+    test('Should search by market and shortDescription searchString', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.shortDescription.substr(0, 5)
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            1, 1, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and longDescription searchString', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            listingItemTemplateOnSellerNode.ListingItems[0].ItemInformation.longDescription.substr(0, 10)
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and hash searchString', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            listingItemTemplateOnSellerNode.ListingItems[0].hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and flagged', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(listingItemTemplateOnSellerNode.ListingItems[0].hash);
+    });
+
+    test('Should search by market and hash', async () => {
+        const res = await testUtilSellerNode.rpc(listingItemCommand, [listingItemSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+            sellerMarket.receiveAddress,
+            [],
+            '*',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            listingItem.hash
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -235,398 +675,126 @@ describe('ListingItemSearchCommand', () => {
 
         expect(result.length).toBe(1);
         expect(result[0].hash).toBe(listingItem.hash);
+
+        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        log.debug('result[0].PaymentInformation:', JSON.stringify(result[0].PaymentInformation, null, 2));
+
+        expect(result[0].PaymentInformation.id).toBe(listingItem.PaymentInformation.id);
+        expect(result[0].PaymentInformation.type).toBe(listingItem.PaymentInformation.type);
+        expect(result[0].PaymentInformation.Escrow.type).toBe(listingItem.PaymentInformation.Escrow.type);
+        expect(result[0].PaymentInformation.Escrow.Ratio.buyer).toBe(listingItem.PaymentInformation.Escrow.Ratio.buyer);
+        expect(result[0].PaymentInformation.Escrow.Ratio.seller).toBe(listingItem.PaymentInformation.Escrow.Ratio.seller);
+        expect(result[0].PaymentInformation.Escrow.releaseType).toBe(listingItem.PaymentInformation.Escrow.releaseType);
+        expect(result[0].PaymentInformation.ItemPrice.currency).toBe(listingItem.PaymentInformation.ItemPrice.currency);
+        expect(result[0].PaymentInformation.ItemPrice.basePrice).toBe(listingItem.PaymentInformation.ItemPrice.basePrice);
+        expect(result[0].PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(listingItem.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(result[0].PaymentInformation.ItemPrice.ShippingPrice.international).toBe(listingItem.PaymentInformation.ItemPrice.ShippingPrice.international);
+        expect(result[0].PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
+        expect(result[0].PaymentInformation.ItemPrice.CryptocurrencyAddress.address)
+            .toBe(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
     });
+/*
+    no need for these for now...
 
-    test('Should return empty ListingItems array if invalid pagination', async () => {
+    test('Should post ListingItem from SELLER node', async () => {
 
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            2, 1, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
+        log.debug('========================================================================================');
+        log.debug('SELLER POSTS MPA_LISTING_ADD');
+        log.debug('========================================================================================');
+
+        await testUtilSellerNode.waitFor(5);
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
+        // Post ListingItemTemplate to create ListingItem
+        const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplateOnSellerNode.id,
+            DAYS_RETENTION
         ]);
         res.expectJson();
         res.expectStatusCode(200);
+
+        // make sure we got the expected result from posting the template
         const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(0);
-    });
-
-    test('Should searchBy ListingItems by category.key', async () => {
-
-        const itemCount = listingItem.ItemInformation.ItemCategory.key
-            === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key
-            ? 2 : 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            listingItem.ItemInformation.ItemCategory.key, // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemCategory.key).toBe(listingItem.ItemInformation.ItemCategory.key);
-    });
-
-    test('Should searchBy ListingItems by category.id', async () => {
-        log.debug('listingItem.ItemInformation: ', JSON.stringify(listingItem.ItemInformation, null, 2));
-        log.debug('listingItemTemplate.ListingItems[0].ItemInformation: ', JSON.stringify(listingItemTemplate.ListingItems[0].ItemInformation, null, 2));
-
-        const itemCount = listingItem.ItemInformation.ItemCategory.id
-            === listingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
-            ? 2 : 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            listingItem.ItemInformation.ItemCategory.id, // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        // log.debug('params:', JSON.stringify(params, null, 2));
-        // log.debug('result[0].ItemInformation.ItemCategory.id:', result[0].ItemInformation.ItemCategory.id);
-        // log.debug('result:', JSON.stringify(result, null, 2));
-
-        expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemCategory.id).toBe(listingItem.ItemInformation.ItemCategory.id);
-
-    });
-
-    test('Should searchBy ListingItems by searchString', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            listingItem.ItemInformation.title.substr(0, 10), // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(listingItem.hash);
-
-    });
-
-    test('Should return two ListingItems when searching by price', async () => {
-
-        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
-
-        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
-            minPrice,           // minPrice
-            maxPrice,           // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-    });
-
-    test('Should return one ListingItem when searching by price', async () => {
-
-        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
-
-        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
-            minPrice,           // minPrice
-            maxPrice,           // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(1);
-    });
-
-    test('Should return no ListingItems when searching using invalid price range', async () => {
-
-        const minPrice = 1000.0001;
-        const maxPrice = 1000.0002;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            'ALL',              // profileId, (NUMBER | OWN | ALL | *)
-            minPrice,           // minPrice
-            maxPrice,           // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(0);
-    });
-
-    test('Should return ListingItems without related', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            false               // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(listingItemTemplate.ListingItems[0].hash);
-        expect(result[0].ItemInformation).toBeUndefined();
-        expect(result[0].PaymentInformation).toBeUndefined();
-        expect(result[0].MessagingInformation).toBeUndefined();
-        expect(result[0].ListingItemObjects).toBeUndefined();
-        expect(result[0].Bids).toBeUndefined();
-        expect(result[0].Market).toBeUndefined();
-    });
-
-    test('Should searchBy ListingItems by country (ItemLocation)', async () => {
-
-        const itemCount = listingItem.ItemInformation.ItemLocation.country
-        === listingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.country
-            ? 2 : 1;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            listingItem.ItemInformation.ItemLocation.country, // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ItemLocation.country).toBe(listingItem.ItemInformation.ItemLocation.country);
-    });
-
-    test('Should searchBy ListingItem by ShippingDestination', async () => {
-
-        const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
-        const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
-            return o.shippingAvailability === ShippingAvailability.SHIPS;
-        });
-
-        const shippingDestination = shippingDestinationsThatShip[0].country;
-
-        const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
-        const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
-            return o.shippingAvailability === ShippingAvailability.SHIPS
-                && o.country === shippingDestination;
-        });
-
-        const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            shippingDestination, // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(itemCount);
-        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
-    });
-
-    test('Should searchBy ListingItem by ShippingDestination, min-maxPrice and searchString', async () => {
-
-        const shippingDestinationsForItem1: resources.ShippingDestination[] = listingItem.ItemInformation.ShippingDestinations;
-        const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
-            return o.shippingAvailability === ShippingAvailability.SHIPS;
-        });
-
-        const shippingDestination = shippingDestinationsThatShip[0].country;
-
-        const shippingDestinationsForItem2: resources.ShippingDestination[] = listingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
-        const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
-            return o.shippingAvailability === ShippingAvailability.SHIPS
-                && o.country === shippingDestination;
-        });
-
-        const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
-
-        const minPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            < listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
-
-        const maxPrice = listingItem.PaymentInformation.ItemPrice.basePrice
-            > listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
-            ? listingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
-            : listingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
-
-        const searchString = listingItem.ItemInformation.title.substr(0, 10);
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            minPrice,           // minPrice
-            maxPrice,           // maxPrice
-            '',                 // country, string, can be null
-            shippingDestination, // shippingDestination, string, can be null
-            searchString,       // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(itemCount);
-
-    });
-
-    test('Should find all ListingItems when using no searchBy criteria', async () => {
-
-        const res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            false,              // flagged, boolean, can be null
-            true                // withRelated
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBe(2);
-    });
-
-    test('Should searchBy for flagged listing items', async () => {
-        // flag item
-        let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
-            listingItem.id,
-            defaultProfile.id
-        ]);
-        // make sure we got the expected result from posting the proposal
-        const result: any = res.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toBe('Sent.');
+        // expect(result.txid).toBeDefined();
+        // expect(result.fee).toBeGreaterThan(0);
 
-        res = await testUtil.rpc(itemCommand, [itemSearchCommand,
-            PAGE, PAGELIMIT, SEARCHORDER,
-            '',                 // category, number|string, if string, try to find using key, can be null
-            'ALL',              // type, DEPRECATED
-            '*',                // profileId, (NUMBER | OWN | ALL | *)
-            null,               // minPrice
-            null,               // maxPrice
-            '',                 // country, string, can be null
-            '',                 // shippingDestination, string, can be null
-            '',                 // searchString, string, can be null
-            true,               // flagged, boolean, can be null
-            true                // withRelated
+        log.debug('==> ListingItemTemplate posted.');
+
+    }, 600000); // timeout to 600s
+
+    test('Should have received ListingItem (MPA_LISTING_ADD) on BUYER node, ListingItem is created', async () => {
+
+        // sending should have succeeded for this test to work
+        expect(sent).toBeTruthy();
+
+        await testUtilSellerNode.waitFor(2);
+
+        log.debug('========================================================================================');
+        log.debug('BUYER RECEIVES MPA_LISTING_ADD posted from sellers node, ListingItem is created');
+        log.debug('========================================================================================');
+
+        let response: any = await testUtilBuyerNode.rpcWaitFor(listingItemCommand, [listingItemSearchCommand,
+                PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
+                buyerMarket.receiveAddress,
+                [],
+                '*',
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                listingItemTemplateOnSellerNode.hash
+            ],
+            15 * 60,
+            200,
+            '[0].hash',
+            listingItemTemplateOnSellerNode.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const results: resources.ListingItem[] = response.getBody()['result'];
+
+        log.debug('results:', JSON.stringify(results, null, 2));
+
+        expect(results.length).toBe(1);
+        expect(results[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
+
+        expect(results[0].PaymentInformation.type).toBe(listingItemTemplateOnSellerNode.PaymentInformation.type);
+        expect(results[0].PaymentInformation.Escrow.type).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.type);
+        expect(results[0].PaymentInformation.Escrow.Ratio.buyer).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.Ratio.buyer);
+        expect(results[0].PaymentInformation.Escrow.Ratio.seller).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.Ratio.seller);
+        expect(results[0].PaymentInformation.Escrow.releaseType).toBe(listingItemTemplateOnSellerNode.PaymentInformation.Escrow.releaseType);
+        expect(results[0].PaymentInformation.ItemPrice.currency).toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.currency);
+        expect(results[0].PaymentInformation.ItemPrice.basePrice).toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.basePrice);
+        expect(results[0].PaymentInformation.ItemPrice.ShippingPrice.domestic)
+            .toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(results[0].PaymentInformation.ItemPrice.ShippingPrice.international)
+            .toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.ShippingPrice.international);
+        expect(results[0].PaymentInformation.ItemPrice.CryptocurrencyAddress.type)
+            .toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
+        expect(results[0].PaymentInformation.ItemPrice.CryptocurrencyAddress.address)
+            .toBe(listingItemTemplateOnSellerNode.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
+
+        await testUtilBuyerNode.waitFor(5);
+
+        response = await testUtilBuyerNode.rpc(listingItemCommand, [listingItemGetCommand,
+            results[0].id
         ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const resMain: any = res.getBody()['result'];
+        response.expectJson();
+        response.expectStatusCode(200);
 
-        expect(resMain.length).toBe(1);
-        expect(resMain[0].hash).toBe(listingItem.hash);
-    });
+        const result: resources.ListingItem = response.getBody()['result'];
+        expect(result).toBeDefined();
+        expect(result.hash).toBe(listingItemTemplateOnSellerNode.hash);
 
+        log.debug('==> BUYER received MPA_LISTING_ADD.');
+    }, 600000); // timeout to 600s
+*/
 });

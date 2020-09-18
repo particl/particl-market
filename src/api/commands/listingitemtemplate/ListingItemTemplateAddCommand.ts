@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { request, validate } from '../../../core/api/Validate';
@@ -14,27 +15,53 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateFactory } from '../../factories/model/ListingItemTemplateFactory';
-import { ListingItemTemplateCreateParams } from '../../factories/model/ModelCreateParams';
+import { ListingItemTemplateCreateParams } from '../../factories/ModelCreateParams';
 import { ProfileService } from '../../services/model/ProfileService';
+import { ItemCategoryService } from '../../services/model/ItemCategoryService';
+import { MessageException } from '../../exceptions/MessageException';
+import {
+    CommandParamValidationRules, CryptocurrencyValidationRule, EnumValidationRule, EscrowRatioValidationRule,
+    IdValidationRule, ParamValidationRule, PriceValidationRule, SaleTypeValidationRule, StringValidationRule
+} from '../CommandParamValidation';
+import {EnumHelper} from '../../../core/helpers/EnumHelper';
+import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Factory) @named(Targets.Factory.model.ListingItemTemplateFactory) public listingItemTemplateFactory: ListingItemTemplateFactory
     ) {
         super(Commands.TEMPLATE_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('title', true),
+                new StringValidationRule('shortDescription', true),
+                new StringValidationRule('longDescription', true),
+                new IdValidationRule('categoryId', false),
+                new SaleTypeValidationRule(false),
+                new CryptocurrencyValidationRule(false),
+                new PriceValidationRule('basePrice', false),
+                new PriceValidationRule('domesticShippingPrice', false),
+                new PriceValidationRule('internationalShippingPrice', false),
+                new EnumValidationRule('escrowType', false, 'EscrowType',
+                    [EscrowType.MAD_CT] as string[], EscrowType.MAD_CT),
+                new EscrowRatioValidationRule('buyerRatio', false),
+                new EscrowRatioValidationRule('sellerRatio', false),
+                new EnumValidationRule('escrowReleaseType', false, 'EscrowReleaseType',
+                    EnumHelper.getValues(EscrowReleaseType) as string[], EscrowReleaseType.ANON)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -56,22 +83,20 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      *  [10]: escrowType
      *  [11]: buyerRatio
      *  [12]: sellerRatio
-     *  [13]: listingItemTemplate: resources.ListingItemTemplate (optional)
+     *  [13]: escrowReleaseType, default EscrowReleaseType.ANON
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-        // TODO: support for custom categories
 
         const profile: resources.Profile = data.params[0];
-
-        // depending on escrowType, create the address for the payment
-        const escrowType: EscrowType = data.params[10];
 /*
     TODO: omp-lib will generate cryptoAddress for now as this will require unlocked wallet
 
+        // depending on escrowType, create the address for the payment
+        const escrowType: EscrowType = data.params[10];
         let cryptoAddress: CryptoAddress;
         switch (escrowType) {
             case EscrowType.MULTISIG:
@@ -104,7 +129,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 escrowType: data.params[10],
                 buyerRatio: data.params[11],
                 sellerRatio: data.params[12],
-                parentListingItemTemplateId: data.params[13]
+                escrowReleaseType: data.params[13]
                 // paymentAddress: cryptoAddress.address,
                 // paymentAddressType: cryptoAddress.type
             } as ListingItemTemplateCreateParams);
@@ -114,154 +139,52 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: profile_id
+     *  [0]: profile_id -> profile: resources.Profile
      *
      *  itemInformation
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: categoryId
+     *  [4]: categoryId, (optional)
      *
      *  paymentInformation
-     *  [5]: saleType
-     *  [6]: currency
-     *  [7]: basePrice
-     *  [8]: domesticShippingPrice
-     *  [9]: internationalShippingPrice
+     *  [5]: saleType, (optional) default SaleType.SALE
+     *  [6]: currency, (optional) default Cryptocurrency.PART
+     *  [7]: basePrice, (optional) default 0
+     *  [8]: domesticShippingPrice, (optional) default 0
+     *  [9]: internationalShippingPrice, (optional) default 0
      *  [10]: escrowType, (optional) default EscrowType.MAD_CT
      *  [11]: buyerRatio, (optional) default 100
      *  [12]: sellerRatio, (optional) default 100
-     *  [13]: parent_listing_item_template_id (optional)
+     *  [13]: escrowReleaseType, (optional) default EscrowReleaseType.ANON
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('title');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('shortDescription');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('longDescription');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('categoryId');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('saleType');
-        } else if (data.params.length < 7) {
-            throw new MissingParamException('currency');
-        } else if (data.params.length < 8) {
-            throw new MissingParamException('basePrice');
-        } else if (data.params.length < 9) {
-            throw new MissingParamException('domesticShippingPrice');
-        } else if (data.params.length < 10) {
-            throw new MissingParamException('internationalShippingPrice');
-        }
-/*
-        else if (data.params.length < 11) {
-            throw new MissingParamException('escrowType');
-        } else if (data.params.length < 12) {
-            throw new MissingParamException('buyerRatio');
-        } else if (data.params.length < 13) {
-            throw new MissingParamException('sellerRatio');
-        }
-*/
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('title', 'string');
-        } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('shortDescription', 'string');
-        } else if (typeof data.params[3] !== 'string') {
-            throw new InvalidParamException('longDescription', 'string');
-        } else if (typeof data.params[4] !== 'number') {
-            throw new InvalidParamException('categoryId', 'number');
-        } else if (typeof data.params[5] !== 'string') {
-            throw new InvalidParamException('saleType', 'string');
-        } else if (typeof data.params[6] !== 'string') {
-            throw new InvalidParamException('currency', 'string');
-        } else if (typeof data.params[7] !== 'number') {
-            throw new InvalidParamException('basePrice', 'number');
-        } else if (typeof data.params[8] !== 'number') {
-            throw new InvalidParamException('domesticShippingPrice', 'number');
-        } else if (typeof data.params[9] !== 'number') {
-            throw new InvalidParamException('internationalShippingPrice', 'number');
-        }
+        const categoryId = data.params[4];
 
-        if (data.params[10] && typeof data.params[10] !== 'string') {
-            throw new InvalidParamException('escrowType', 'string');
-        } else if (data.params[11] && typeof data.params[11] !== 'number') {
-            throw new InvalidParamException('buyerRatio', 'number');
-        } else if (data.params[12] && typeof data.params[12] !== 'number') {
-            throw new InvalidParamException('sellerRatio', 'number');
-        }
-
-        // override the needed params
-        // TODO: validate that category exists
-        // TODO: add support for custom categories
-        // TODO: we only support SaleType.SALE for now
-        // TODO: add support for multiple SaleTypes
-        // TODO: missing support for STEALTH ADDRESS
-
-        // TODO: forced values for now, remove later
-        data.params[5] = SaleType.SALE;
-        data.params[6] = Cryptocurrency.PART;
-        data.params[10] = EscrowType.MAD_CT;
-        data.params[11] = 100;
-        data.params[12] = 100;
-
-        const validSaleTypeTypes = [SaleType.SALE];
-        if (validSaleTypeTypes.indexOf(data.params[5]) === -1) {
-            throw new InvalidParamException('saleType');
-        }
-
-        const validCryptocurrencyTypes = [Cryptocurrency.PART];
-        if (validCryptocurrencyTypes.indexOf(data.params[6]) === -1) {
-            throw new InvalidParamException('currency');
-        }
-
-        if (!data.params[10]) {
-            data.params[10] = EscrowType.MAD_CT;
-        }
-
-        const validEscrowTypes = [EscrowType.MAD_CT, EscrowType.MULTISIG];
-        if (validEscrowTypes.indexOf(data.params[10]) === -1) {
-            throw new InvalidParamException('escrowType');
-        }
-
-        if (data.params[13]) { // parentListingItemTemplateId was given, make sure its valid and exists
-            if (typeof data.params[13] !== 'number') {
-                throw new InvalidParamException('parentListingItemTemplateId', 'number');
-            }
-            data.params[13] = await this.listingItemTemplateService.findOne(data.params[13]).then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItemTemplate');
-                });
-        }
-
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
+        // validate that given category exists
+        // for now, when creating a template, its category can only be a default one
+        if (!_.isNil(categoryId)) {
+            await this.itemCategoryService.findOne(categoryId).then(value => {
+                const category: resources.ItemCategory = value.toJSON();
+                // validate that given category is a default one -> market should not be defined
+                if (category.market) {
+                    throw new MessageException('Not a default ItemCategory.');
+                }
             });
-        data.params[0] = profile;
-
-        // TODO: make sure category exists
+        }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryId>'
-            + ' <saleType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice>'
-            + ' [<escrowType> [<buyerRatio> <sellerRatio> [<parentListingItemTemplateId>]]] ';
+        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> [categoryId]'
+            + ' [saleType] [currency] [basePrice] [domesticShippingPrice] [internationalShippingPrice]'
+            + ' [escrowType] [buyerRatio] [sellerRatio] [escrowReleaseType] [parentListingItemTemplateId] ';
     }
 
     public help(): string {
@@ -270,17 +193,16 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '    <title>                        - string - The title. \n'
             + '    <shortDescription>             - string - A short description. \n'
             + '    <longDescription>              - string - A longer description. \n'
-            + '    <categoryId>                   - number - The id of the category. \n'
-            + '    <saleType>                     - string - SaleType enum. \n'
-            + '    <currency>                     - string - The currency used for price. \n'
-            + '    <basePrice>                    - number - The price for the item. \n'
-            + '    <domesticShippingPrice>        - number - The domestic shipping price. \n'
-            + '    <internationalShippingPrice>   - number - The international shipping price. \n'
+            + '    <categoryId>                   - number - optional, The id of the category. \n'
+            + '    <saleType>                     - string - optional, SaleType enum. \n'
+            + '    <currency>                     - string - optional, The currency used for price. \n'
+            + '    <basePrice>                    - number - optional, The price for the item. \n'
+            + '    <domesticShippingPrice>        - number - optional, The domestic shipping price. \n'
+            + '    <internationalShippingPrice>   - number - optional, The international shipping price. \n'
             + '    <escrowType>                   - string - optional, default: MAD_CT. MAD_CT/MULTISIG \n'
             + '    <buyerRatio>                   - number - optional, default: 100 \n'
             + '    <sellerRatio>                  - number - optional, default: 100 \n'
-            + '    <parentListingItemTemplateId>  - number - optional \n';
-
+            + '    <escrowReleaseType>            - string - optional, default: ANON. ANON/BLIND \n';
     }
 
     public description(): string {
@@ -295,4 +217,5 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         + ' and best book on destroying your economy!\''
         + ' 16 SALE PART 0.1848 0.1922 0.1945 ';
     }
+
 }

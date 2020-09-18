@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -55,31 +55,16 @@ export class ShippingDestinationService {
 
     @validate()
     public async create( @request(ShippingDestinationCreateRequest) body: ShippingDestinationCreateRequest): Promise<ShippingDestination> {
-        const startTime = new Date().getTime();
-
-        // If the request body was valid we will create the shippingDestination
         const shippingDestination = await this.shippingDestinationRepo.create(body);
-
-        // finally find and return the created shippingDestination
-        const newShippingDestination = await this.findOne(shippingDestination.id);
-
-        // this.log.debug('shippingDestinationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        return newShippingDestination;
+        return await this.findOne(shippingDestination.id);
     }
 
     @validate()
     public async update(id: number, @request(ShippingDestinationUpdateRequest) body: ShippingDestinationUpdateRequest): Promise<ShippingDestination> {
-
-        // find the existing one without related
         const shippingDestination = await this.findOne(id, false);
-
-        // set new values
         shippingDestination.Country = body.country;
         shippingDestination.ShippingAvailability = body.shippingAvailability;
-
-        // update shippingDestination record
-        const updatedShippingDestination = await this.shippingDestinationRepo.update(id, shippingDestination.toJSON());
-        return updatedShippingDestination;
+        return await this.shippingDestinationRepo.update(id, shippingDestination.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

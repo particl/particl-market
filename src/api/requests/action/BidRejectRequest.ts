@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,7 +7,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
-import {BidRejectReason} from '../../enums/BidRejectReason';
+import { BidRejectReason } from '../../enums/BidRejectReason';
 
 export class BidRejectRequest extends RequestBody implements ActionRequestInterface {
 
@@ -17,5 +17,4 @@ export class BidRejectRequest extends RequestBody implements ActionRequestInterf
     public bid: resources.Bid;                  // bid which we're rejecting
 
     public reason: BidRejectReason;             // optional predefined reject reason
-
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,7 +8,7 @@ import { AddressCreateRequest } from './AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from './CryptocurrencyAddressCreateRequest';
 import { SettingCreateRequest } from './SettingCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
-import {WalletCreateRequest} from './WalletCreateRequest';
+import {IdentityCreateRequest} from './IdentityCreateRequest';
 
 // tslint:disable:variable-name
 export class ProfileCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -17,12 +17,12 @@ export class ProfileCreateRequest extends RequestBody implements ModelRequestInt
     public name: string;
 
     // @IsNotEmpty()
-    public address: string;         // profile address
+    // public address: string;         // DEPRECATED, use Identity.address
 
     // related
     public shippingAddresses: AddressCreateRequest[];    // shipping addresses
     public cryptocurrencyAddresses: CryptocurrencyAddressCreateRequest[];    // cryptocurrency addresses
     public settings: SettingCreateRequest[];    // settings
-    public wallet: WalletCreateRequest;
+    public identity: IdentityCreateRequest;
 }
 // tslint:enable:variable-name

@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
@@ -46,21 +47,23 @@ export class EscrowService {
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         const escrowRatio = body.ratio;
         delete body.ratio;
 
         // If the request body was valid we will create the escrow
-        const escrow = await this.escrowRepo.create(body);
+        const escrow: resources.Escrow = await this.escrowRepo.create(body).then(value => value.toJSON());
+        // this.log.debug('escrow, result:', JSON.stringify(escrow, null, 2));
 
         // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {
-            escrowRatio.escrow_id = escrow.Id;
+            escrowRatio.escrow_id = escrow.id;
             await this.escrowRatioService.create(escrowRatio);
         }
 
         // finally find and return the created escrow
-        return await this.findOne(escrow.Id);
+        return await this.findOne(escrow.id);
     }
 
     @validate()
@@ -68,30 +71,22 @@ export class EscrowService {
 
         const body: EscrowUpdateRequest = JSON.parse(JSON.stringify(data));
 
-        // find the existing one without related
         const escrow = await this.findOne(id, false);
 
-        // set new values
         escrow.Type = body.type;
         escrow.SecondsToLock = body.secondsToLock;
+        escrow.ReleaseType = body.releaseType;
 
-        // update escrow record
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());
 
-        // find related escrowratio
+        // find related escrowratio and update
         let relatedRatio = updatedEscrow.related('Ratio').toJSON();
-
-        // delete it
         await this.escrowRatioService.destroy(relatedRatio.id);
-
-        // and create new related data
         relatedRatio = body.ratio;
         relatedRatio.escrow_id = id;
         await this.escrowRatioService.create(relatedRatio);
 
-        // finally find and return the updated escrow
-        const newEscrow = await this.findOne(id);
-        return newEscrow;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {

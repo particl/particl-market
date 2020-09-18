@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -13,15 +14,12 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { CommentType } from '../../enums/CommentType';
+import { CommandParamValidationRules, EnumValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+
 
 export class CommentCountCommand extends BaseCommand implements RpcCommandInterface<number> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -29,6 +27,17 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     ) {
         super(Commands.COMMENT_COUNT);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new EnumValidationRule('commentType', true, 'CommentType', [CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT] as string[]),
+                new StringValidationRule('target', true),
+                new StringValidationRule('parentCommentHash', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -54,44 +63,28 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
+     * TODO: the params here might need some rethinking :)
+     *
      * data.params[]:
      *  [0]: type, CommentType
      *  [1]: target
-     *  [2]: parentHash, optional
+     *  [2]: parentCommentHash, optional
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('type');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('target');
+        await super.validate(data);
+
+        const parentCommentHash = data.params[2];   // optional
+
+        if (!_.isNil(parentCommentHash) && parentCommentHash.length > 0) {
+            data.params[2] = await this.commentService.findOneByHash(parentCommentHash)
+                .then(value => value.toJSON())
+                .catch(() => {
+                    throw new ModelNotFoundException('Comment');
+                });
         }
-
-        if (!EnumHelper.containsName(CommentType, data.params[0])) {
-            throw new InvalidParamException('type', 'CommentType');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('target', 'string');
-        }
-
-        let parentHash;
-        if (data.params.length >= 3) {
-            parentHash = data.params[2];
-
-            if (typeof parentHash !== 'string') {
-                throw new InvalidParamException('parentHash', 'string');
-            }
-
-            if (parentHash && parentHash.length > 0) {
-                data.params[2] = await this.commentService.findOneByHash(parentHash)
-                    .then(value => value.toJSON())
-                    .catch(() => {
-                        throw new ModelNotFoundException('Comment');
-                    });
-            }
-        }
-
         return data;
     }
 

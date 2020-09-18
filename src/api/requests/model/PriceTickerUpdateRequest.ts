@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -39,7 +39,7 @@ export class PriceTickerUpdateRequest extends RequestBody implements ModelReques
 
     public crypto_total_supply: string;
 
-    public crypto_max_supply: string;
+    public crypto_max_supply: string | null;
 
 
 

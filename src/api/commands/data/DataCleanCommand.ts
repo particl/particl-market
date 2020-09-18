@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,7 +13,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<boolean> {
 
     public log: LoggerType;
 
@@ -27,21 +27,29 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     *  none
+     *  [0]: bootstrap, boolean
      *
      * @param {RpcRequest} data
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute(@request(RpcRequest) data: RpcRequest): Promise<void> {
-        let seed = true;
-        if (!_.isEmpty(data.params[0])) {
-            seed = data.params[0] === true;
-        }
-        return await this.testDataService.clean(seed);
+    public async execute(@request(RpcRequest) data: RpcRequest): Promise<boolean> {
+        await this.testDataService.clean(data.params[0]);
+
+        return true;
     }
 
+    /**
+     * data.params[]:
+     *  [0]: bootstrap, boolean, optional, default true, bootstraps the default data
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (!_.isEmpty(data.params[0])) {
+            data.params[0] = data.params[0] === true;
+        }
         return data;
     }
 

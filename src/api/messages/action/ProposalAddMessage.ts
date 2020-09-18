@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -27,7 +27,8 @@ export class ProposalAddMessage extends MessageBody implements ActionMessageInte
     public category: ProposalCategory;
     @IsNotEmpty()
     public hash: string;
-    public item?: string;   // itemHash
+
+    public target?: string; // target of the flagging, ListingItem.hash or Market.receiveAddress
 
     public objects?: KVS[];
 

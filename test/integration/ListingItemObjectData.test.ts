@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -23,6 +23,7 @@ import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDat
 import { ListingItemObjectService } from '../../src/api/services/model/ListingItemObjectService';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,6 +31,7 @@ describe('ListingItemObjectData', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let listingItemObjectDataService: ListingItemObjectDataService;
     let marketService: MarketService;
     let profileService: ProfileService;
@@ -57,25 +59,23 @@ describe('ListingItemObjectData', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         // generate template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             true,       // generatePaymentInformation
             false,      // generateEscrow
             false,      // generateItemPrice

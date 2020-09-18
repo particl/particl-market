@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -32,10 +32,6 @@ export class ProfileRepository {
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         return await this.ProfileModel.fetchByName(name, withRelated);
-    }
-
-    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
-        return await this.ProfileModel.fetchByAddress(name, withRelated);
     }
 
     public async create(data: any): Promise<Profile> {

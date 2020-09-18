@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -14,16 +15,13 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/model/OrderItemService';
 import { OrderItemCreateRequest } from '../../src/api/requests/model/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../../src/api/requests/model/OrderItemUpdateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
-import { GenerateProfileParams } from '../../src/api/requests/testdata/GenerateProfileParams';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
-import { GenerateBidParams } from '../../src/api/requests/testdata/GenerateBidParams';
-import { GenerateOrderParams } from '../../src/api/requests/testdata/GenerateOrderParams';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { OrderItemStatus } from '../../src/api/enums/OrderItemStatus';
+import { ListingItemService } from '../../src/api/services/model/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('OrderItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -32,109 +30,56 @@ describe('OrderItem', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let orderItemService: OrderItemService;
     let marketService: MarketService;
     let profileService: ProfileService;
+    let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let profile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let bidderProfile: resources.Profile;
     let sellerProfile: resources.Profile;
-    let market: resources.Market;
-
-    let listingItemTemplate: resources.ListingItemTemplate;
+    let sellerMarket: resources.Market;
     let listingItem: resources.ListingItem;
-    let bid: resources.Bid;
-    let order: resources.Order;
-    let orderItem: resources.OrderItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+
+    let bidderBid: resources.Bid;
+    let sellerBid: resources.Bid;
+
+    let bidderOrder: resources.Order;
+    let sellerOrder: resources.Order;
+
+    let bidderOrderItem: resources.Order;
+    // let sellerOrderItem: resources.Order;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.model.OrderItemService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
-        profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        sellerProfile = await testDataService.generateProfile();
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
-        // generate a seller profile in addition to the default one used for buyer
-        const generateProfileParams = new GenerateProfileParams().toParamsArray();
-        const profiles: resources.Profile[] = await testDataService.generate({
-            model: CreatableModel.PROFILE,              // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateProfileParams       // what kind of data to generate
-        } as TestDataGenerateRequest);
-        sellerProfile = profiles[0];
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,               // generateItemInformation
-            true,               // generateItemLocation
-            false,              // generateShippingDestinations
-            false,              // generateItemImages
-            true,               // generatePaymentInformation
-            true,               // generateEscrow
-            true,               // generateItemPrice
-            false,              // generateMessagingInformation
-            false,              // generateListingItemObjects
-            false,              // generateObjectDatas
-            sellerProfile.id,   // profileId
-            true,               // generateListingItem
-            market.id           // marketId
-        ]).toParamsArray();
+        const bids: resources.Bid[]  = await testDataService.generateBid(MPAction.MPA_BID, listingItem.id, bidderMarket, sellerMarket);
+        bidderBid = bids[0];
+        sellerBid = bids[1];
 
-        // generate ListingItemTemplate with ListingItem
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
-            amount: 1,                                          // how many to generate
-            withRelated: true,                                  // return model
-            generateParams: generateListingItemTemplateParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-
-        listingItemTemplate = listingItemTemplates[0];
-        listingItem = listingItemTemplates[0].ListingItems[0];
-
-        // create a new bid from defaultProfile for ListingItem that is being sold by sellerProfile
-        const bidParams = new GenerateBidParams([
-            false,                      // generateListingItemTemplate
-            false,                      // generateListingItem
-            listingItem.hash,           // listingItemHash
-            MPAction.MPA_BID,           // type
-            profile.address,            // bidder
-            sellerProfile.address       // seller
-        ]).toParamsArray();
-
-        const bids: resources.Bid[] = await testDataService.generate({
-            model: CreatableModel.BID,
-            amount: 1,
-            withRelated: true,
-            generateParams: bidParams
-        } as TestDataGenerateRequest);
-        bid = bids[0];
-
-        const orderGenerateParams = new GenerateOrderParams([
-            false,                      // generateListingItemTemplate
-            false,                      // generateListingItem
-            false,                      // generateBid
-            false,                      // generateOrderItems
-            listingItem.hash,           // listingItemhash
-            bid.id,                     // bidId
-            profile.address,            // bidder
-            sellerProfile.address       // seller
-        ]);
-
-        const orders: resources.Order[] = await testDataService.generate({
-            model: CreatableModel.ORDER,
-            amount: 1,
-            withRelated: true,
-            generateParams: orderGenerateParams.toParamsArray()
-        } as TestDataGenerateRequest);
-
-        order = orders[0];
-        log.debug('order: ', JSON.stringify(order, null, 2));
+        const orders: resources.Order[]  = await testDataService.generateOrder(bidderBid, false);
+        bidderOrder = orders[0];
+        sellerOrder = orders[1];
 
     });
 
@@ -152,14 +97,14 @@ describe('OrderItem', () => {
     test('Should create a new OrderItem', async () => {
 
         const testData = {
-            itemHash: bid.ListingItem.hash,
-            bid_id: bid.id,
+            itemHash: bidderBid.ListingItem.hash,
+            bid_id: bidderBid.id,
             status: OrderItemStatus.AWAITING_ESCROW,
-            order_id: order.id
+            order_id: bidderOrder.id
         } as OrderItemCreateRequest;
 
-        orderItem = await orderItemService.create(testData).then(value => value.toJSON());
-        expect(orderItem.status).toBe(testData.status);
+        bidderOrderItem = await orderItemService.create(testData).then(value => value.toJSON());
+        expect(bidderOrderItem.status).toBe(testData.status);
     });
 
     test('Should throw ValidationException because we want to create a empty OrderItem', async () => {
@@ -169,43 +114,43 @@ describe('OrderItem', () => {
         );
     });
 
-    test('Should list OrderItems with our newly created one', async () => {
+    test('Should list all with our newly created one', async () => {
         const orderItems: resources.OrderItem[] = await orderItemService.findAll().then(value => value.toJSON());
         expect(orderItems.length).toBe(1);
 
         const result = orderItems[0];
-        expect(result.itemHash).toBe(orderItem.itemHash);
-        expect(result.status).toBe(orderItem.status);
+        expect(result.itemHash).toBe(bidderOrderItem.itemHash);
+        expect(result.status).toBe(bidderOrderItem.status);
     });
 
     test('Should return one OrderItem', async () => {
-        orderItem = await orderItemService.findOne(orderItem.id).then(value => value.toJSON());
-        const result = orderItem;
-        expect(result.itemHash).toBe(orderItem.itemHash);
-        expect(result.status).toBe(orderItem.status);
-        expect(result.Order.id).toBe(order.id);
-        expect(result.Bid.id).toBe(bid.id);
+        bidderOrderItem = await orderItemService.findOne(bidderOrderItem.id).then(value => value.toJSON());
+        const result = bidderOrderItem;
+        expect(result.itemHash).toBe(bidderOrderItem.itemHash);
+        expect(result.status).toBe(bidderOrderItem.status);
+        expect(result.Order.id).toBe(bidderOrder.id);
+        expect(result.Bid.id).toBe(bidderBid.id);
     });
 
     test('Should update the OrderItem', async () => {
         const testDataUpdated = {
-            itemHash: bid.ListingItem.hash,
+            itemHash: bidderBid.ListingItem.hash,
             status: OrderItemStatus.SHIPPING
         } as OrderItemUpdateRequest;
 
-        orderItem = await orderItemService.update(orderItem.id, testDataUpdated).then(value => value.toJSON());
-        const result = orderItem;
+        bidderOrderItem = await orderItemService.update(bidderOrderItem.id, testDataUpdated).then(value => value.toJSON());
+        const result = bidderOrderItem;
         expect(result.itemHash).toBe(testDataUpdated.itemHash);
         expect(result.status).toBe(testDataUpdated.status);
-        expect(result.Order.id).toBe(order.id);
-        expect(result.Bid.id).toBe(bid.id);
+        expect(result.Order.id).toBe(bidderOrder.id);
+        expect(result.Bid.id).toBe(bidderBid.id);
     });
 
     test('Should delete the OrderItem', async () => {
         expect.assertions(1);
-        await orderItemService.destroy(orderItem.id);
-        await orderItemService.findOne(orderItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(orderItem.id))
+        await orderItemService.destroy(bidderOrderItem.id);
+        await orderItemService.findOne(bidderOrderItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(bidderOrderItem.id))
         );
     });
 

@@ -1,11 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from 'events';
@@ -16,74 +15,59 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { OrderService } from '../model/OrderService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
-import { BaseActionService } from './BaseActionService';
 import { SmsgMessageFactory } from '../../factories/model/SmsgMessageFactory';
-import { BidCreateParams } from '../../factories/model/ModelCreateParams';
 import { OrderStatus } from '../../enums/OrderStatus';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest';
-import { OrderItemShipValidator } from '../../messages/validator/OrderItemShipValidator';
+import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { OrderItemShipMessageFactory } from '../../factories/message/OrderItemShipMessageFactory';
-import { OrderItemShipMessageCreateParams } from '../../requests/message/OrderItemShipMessageCreateParams';
+import { MPActionExtended } from '../../enums/MPActionExtended';
+import { NotificationService } from '../NotificationService';
+import { ListingItemService } from '../model/ListingItemService';
+import { BaseBidActionService } from '../BaseBidActionService';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 
-export class OrderItemShipActionService extends BaseActionService {
+export class OrderItemShipActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public orderItemShipMessageFactory: OrderItemShipMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public actionMessageFactory: OrderItemShipMessageFactory,
+        @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(smsgService, smsgMessageService, smsgMessageFactory);
-        this.log = new Logger(__filename);
+        super(MPActionExtended.MPA_SHIP,
+            smsgService,
+            smsgMessageService,
+            notificationService,
+            smsgMessageFactory,
+            validator,
+            Logger,
+            listingItemService,
+            bidService,
+            bidFactory
+        );
     }
 
     /**
      * create the MarketplaceMessage to which is to be posted to the network
      *
-     * @param params
+     * @param actionRequest
      */
-    public async createMessage(params: OrderItemShipRequest): Promise<MarketplaceMessage> {
-
-        // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-        return this.smsgMessageService.findOneByMsgId(params.bid.msgid)
-            .then(async bid => {
-
-                const actionMessage: OrderItemShipMessage = await this.orderItemShipMessageFactory.get({
-                    bidHash: params.bid.hash,
-                    memo: params.memo
-                } as OrderItemShipMessageCreateParams);
-
-                this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
-                return {
-                    version: ompVersion(),
-                    action: actionMessage
-                } as MarketplaceMessage;
-
-            });
-
-    }
-
-    /**
-     * validate the MarketplaceMessage to which is to be posted to the network.
-     * called directly after createMessage to validate the creation.
-     *
-     * @param marketplaceMessage
-     */
-    public async validateMessage(marketplaceMessage: MarketplaceMessage): Promise<boolean> {
-        // todo: implement a Base/CommonMessageValidator for validating the common stuff
-        return OrderItemShipValidator.isValid(marketplaceMessage);
+    public async createMarketplaceMessage(actionRequest: OrderItemShipRequest): Promise<MarketplaceMessage> {
+        return await this.actionMessageFactory.get(actionRequest);
     }
 
     /**
@@ -107,17 +91,6 @@ export class OrderItemShipActionService extends BaseActionService {
     public async afterPost(params: OrderItemShipRequest, marketplaceMessage: MarketplaceMessage, smsgMessage: resources.SmsgMessage,
                            smsgSendResponse: SmsgSendResponse): Promise<SmsgSendResponse> {
 
-        const bidCreateParams = {
-            listingItem: params.bid.ListingItem,
-            bidder: params.bid.bidder,
-            parentBid: params.bid
-        } as BidCreateParams;
-
-        await this.bidFactory.get(bidCreateParams, marketplaceMessage.action as OrderItemShipMessage, smsgMessage)
-            .then(async bidCreateRequest => {
-                return await this.createBid(marketplaceMessage.action as OrderItemShipMessage, bidCreateRequest);
-            });
-
         return smsgSendResponse;
     }
 
@@ -126,12 +99,20 @@ export class OrderItemShipActionService extends BaseActionService {
      * - update OrderItem.status
      * - update Order.status
      *
-     * @param orderItemShipMessage
-     * @param bidCreateRequest
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     * @param actionRequest
      */
-    public async createBid(orderItemShipMessage: OrderItemShipMessage, bidCreateRequest: BidCreateRequest): Promise<resources.Bid> {
+    public async processMessage(marketplaceMessage: MarketplaceMessage,
+                                actionDirection: ActionDirection,
+                                smsgMessage: resources.SmsgMessage,
+                                actionRequest?: OrderItemShipRequest): Promise<resources.SmsgMessage> {
 
-        return await this.bidService.create(bidCreateRequest)
+        const orderItemShipMessage: OrderItemShipMessage = marketplaceMessage.action as OrderItemShipMessage;
+        const bidCreateRequest: BidCreateRequest = await this.createChildBidCreateRequest(orderItemShipMessage, smsgMessage);
+
+        await this.bidService.create(bidCreateRequest)
             .then(async value => {
                 const bid: resources.Bid = value.toJSON();
 
@@ -142,5 +123,24 @@ export class OrderItemShipActionService extends BaseActionService {
 
                 return await this.bidService.findOne(bid.id, true).then(bidModel => bidModel.toJSON());
             });
+
+        return smsgMessage;
+    }
+
+    /**
+     *
+     * @param marketplaceMessage
+     * @param actionDirection
+     * @param smsgMessage
+     */
+    public async createNotification(marketplaceMessage: MarketplaceMessage,
+                                    actionDirection: ActionDirection,
+                                    smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
+
+        // only send notifications when receiving messages
+        if (ActionDirection.INCOMING === actionDirection) {
+            return this.createBidNotification(marketplaceMessage, smsgMessage);
+        }
+        return undefined;
     }
 }

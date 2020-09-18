@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -31,6 +31,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
     /**
      * data.params[]:
      *  [0]: profile: resources.Profile
+     * todo: should we even allow Profile removal?
      *
      * @param data
      * @returns {Promise<void>}
@@ -62,9 +63,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
 
         // make sure Profile with the id exists
         const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('Profile');
             });
@@ -79,7 +78,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <profileID>              -  The ID of the Profile we want to destroy. \n';
+            + '    <profileID>              -  The Id of the Profile we want to destroy. \n';
     }
 
     public description(): string {

@@ -1,7 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -64,29 +66,54 @@ export class SettingService {
 
     @validate()
     public async create( @request(SettingCreateRequest) data: SettingCreateRequest): Promise<Setting> {
-
         const body = JSON.parse(JSON.stringify(data));
-
-        // If the request body was valid we will create the setting
         const setting = await this.settingRepo.create(body);
+        return await this.findOne(setting.id);
+    }
 
-        // finally find and return the created setting
-        const newSetting = await this.findOne(setting.id);
-        return newSetting;
+    // TODO: createOrUpdateProfileMarketSetting
+    // TODO: createOrUpdateMarketSetting
+
+    public async createOrUpdateProfileSetting(key: string, newValue: string, profileId: number, marketId?: number): Promise<Setting> {
+        return await this.findAllByKeyAndProfileId(key, profileId)
+            .then(async values => {
+                const foundSettings: resources.Setting[] = values.toJSON();
+                const foundSetting = _.find(foundSettings, setting => {
+                    const keyMatch = setting.key === key;
+                    const profileMatch = setting.Profile.id === profileId;
+                    let marketMatch = false;
+                    if (_.isNil(marketId)) {
+                        marketMatch = _.isNil(setting.Market);
+                    } else {
+                        marketMatch = !_.isNil(setting.Market) ? marketId === setting.Market.id : false;
+                    }
+                    return keyMatch && profileMatch && marketMatch;
+                });
+
+                if (!_.isNil(foundSetting)) {
+                    const settingRequest = {
+                        key,
+                        value: newValue
+                    } as SettingUpdateRequest;
+                    return await this.update(foundSetting.id, settingRequest);
+                } else {
+                    const settingRequest = {
+                        profile_id: profileId,
+                        market_id: marketId,
+                        key,
+                        value: newValue
+                    } as SettingCreateRequest;
+                    return await this.create(settingRequest);
+                }
+            });
     }
 
     @validate()
     public async update(id: number, @request(SettingUpdateRequest) body: SettingUpdateRequest): Promise<Setting> {
-
-        // find the existing one without related
         const setting = await this.findOne(id, false);
-
-        // set new values
         setting.Key = body.key;
         setting.Value = body.value;
-
-        const updatedSetting = await this.settingRepo.update(id, setting.toJSON());
-        return updatedSetting;
+        return await this.settingRepo.update(id, setting.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -39,6 +39,25 @@ export class ListingItemTemplateRepository {
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
         return this.ListingItemTemplateModel.fetchByHash(hash, withRelated);
+    }
+
+    /**
+     *
+     * @param parentTemplateId
+     * @param market
+     */
+    public async findLatestByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<ListingItemTemplate> {
+        const collection = await this.ListingItemTemplateModel.fetchByParentTemplateAndMarket(parentTemplateId, market, false);
+        return collection.first();
+    }
+
+    /**
+     *
+     * @param parentTemplateId
+     * @param market
+     */
+    public async findAllVersionsByParentTemplateAndMarket(parentTemplateId: number, market: string): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+        return await this.ListingItemTemplateModel.fetchByParentTemplateAndMarket(parentTemplateId, market, true);
     }
 
     /**

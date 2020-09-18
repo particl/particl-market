@@ -1,7 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -11,86 +13,148 @@ import { OrderService } from '../../services/model/OrderService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
 import { Order } from '../../models/Order';
-import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderSearchParams } from '../../requests/search/OrderSearchParams';
+import { BaseSearchCommand } from '../BaseSearchCommand';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { OrderSearchOrderField } from '../../enums/SearchOrderField';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ListingItemService } from '../../services/model/ListingItemService';
+import { MarketService } from '../../services/model/MarketService';
+import {
+    CommandParamValidationRules,
+    IdValidationRule,
+    OrderStatusOrOrderItemStatusValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
-export class OrderSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
-    public log: LoggerType;
+export class OrderSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) private orderService: OrderService
     ) {
         super(Commands.ORDER_SEARCH);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemId', false, this.listingItemService),
+                new OrderStatusOrOrderItemStatusValidationRule(false),
+                new StringValidationRule('buyerAddress', false),
+                new StringValidationRule('sellerAddress', false),
+                new StringValidationRule('market', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
+    public getAllowedSearchOrderFields(): string[] {
+        return EnumHelper.getValues(OrderSearchOrderField) as string[];
+    }
+
     /**
      * data.params[]:
-     * [0]: itemhash, optional
-     * [1]: OrderItemStatus, optional
-     * [2]: buyerAddress, optional
-     * [3]: sellerAddress, optional
-     * [4]: ordering, optional
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: listingItem, resources.ListingItem, optional
+     *  [5]: status, OrderStatus or OrderItemStatus, optional
+     *  [6]: buyerAddress, string, optional
+     *  [7]: sellerAddress, string, optional
+     *  [8]: market, string, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Order>> {
-        const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
-        const status = data.params[1] !== '*' ? data.params[1] : undefined;
-        const buyerAddress = data.params[2] !== '*' ? data.params[2] : undefined;
-        const sellerAddress = data.params[3] !== '*' ? data.params[3] : undefined;
-        let ordering = data.params[4];
 
-        if (!ordering) {
-            ordering = SearchOrder.ASC;
-        }
+        const page = data.params[0];
+        const pageLimit = data.params[1];
+        const order = data.params[2];
+        const orderField = data.params[3];
+        const listingItem: resources.ListingItem = data.params[4];
+        const status = data.params[5];
+        const buyerAddress = data.params[6];
+        const sellerAddress = data.params[7];
+        const market = data.params[8];
 
-        const searchArgs = {
-            listingItemHash,
+        const orderSearchParams = {
+            page, pageLimit, order, orderField,
+            listingItemId: !_.isNil(listingItem) ? listingItem.id : undefined,
             status,
             buyerAddress,
             sellerAddress,
-            ordering
+            market
         } as OrderSearchParams;
 
-        return await this.orderService.search(searchArgs);
+        return await this.orderService.search(orderSearchParams);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: listingItemId, number, optional
+     *  [5]: status, OrderStatus or OrderItemStatus, optional
+     *  [6]: buyerAddress, string, optional
+     *  [7]: sellerAddress, string, optional
+     *  [8]: market, string, optional
+     *
+     * @param data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // todo: validations
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+
+        const market = data.params[8];                                  // optional
+
+        if (!_.isNil(market)) {
+            await this.marketService.findAllByReceiveAddress(market)
+                .then(results => {
+                    const markets: resources.Market[] = results.toJSON();
+                    if (_.isEmpty(markets)) {
+                        throw new ModelNotFoundException('Market');
+                    }
+                });
+        }
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' [(<itemhash>|*) [(<status>|*) [(<buyerAddress>|*) [(<sellerAddress>|*) [<ordering>]]]]]';
+        return this.getName() + ' [listingItemId] [status] [buyerAddress] [sellerAddress] [market]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to searchBy orders for. \n'
-            + '                                A value of * specifies that any item hash is acceptable. \n'
-            + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n'
-            + '                                The status of the orders we want to searchBy for \n'
-            + '                                A value of * specifies that any order status is acceptable. \n'
-            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to searchBy for. \n'
-            + '                                A value of * specifies that any buyer address is acceptable. \n'
-            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to searchBy for. \n'
-            + '                                A value of * specifies that any seller address is acceptable. \n'
-            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the searchBy results. ';
+            + '    <page>                   - number - The number of result page we want to return. \n'
+            + '    <pageLimit>              - number - The number of results per page. \n'
+            + '    <order>                  - SearchOrder - The order of the returned results. \n'
+            + '    <orderField>             - SearchOrderField - The field to order the results by. \n'
+            + '    <listingItemId>          - [optional] string - The Id of the ListingItem. \n'
+            + '    <status>                 - [optional] OrderStatus|OrderItemStatus - The status.\n'
+            + '    <buyerAddress>           - [optional] string - The address of the buyer. \n'
+            + '    <sellerAddress>          - [optional] string - The address of the seller. \n'
+            + '    <market>                 - [optional] string - The market receiveAddress. \n';
     }
 
     public description(): string {
-        return 'Search for orders by item hash, order status, or addresses. ';
+        return 'Search for Orders by listingItemId, orderItemStatus, or addresses. ';
     }
 
     public example(): string {
-        return 'TODO';
+        return 'order ' + this.getName() + ' 0 10 \'ASC\' \'FIELD\' 1'
+            + ' AWAITING_ESCROW pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj1 pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnj2';
     }
+
 }

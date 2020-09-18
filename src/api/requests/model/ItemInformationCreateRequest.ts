@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,7 +7,7 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ItemCategoryUpdateRequest } from './ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from './ItemLocationCreateRequest';
 import { ShippingDestinationCreateRequest } from './ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from './ItemImageCreateRequest';
+import { ImageCreateRequest } from './ImageCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { ItemCategoryCreateRequest } from './ItemCategoryCreateRequest';
 
@@ -22,8 +22,6 @@ export class ItemInformationCreateRequest extends RequestBody implements ModelRe
 
     @IsNotEmpty()
     public shortDescription: string;
-
-    @IsNotEmpty()
     public longDescription: string;
 
     public itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest;
@@ -31,7 +29,7 @@ export class ItemInformationCreateRequest extends RequestBody implements ModelRe
 
     public itemLocation: ItemLocationCreateRequest;
     public shippingDestinations: ShippingDestinationCreateRequest[];
-    public itemImages: ItemImageCreateRequest[];
+    public images: ImageCreateRequest[];
 
 }
 // tslint:enable:variable-name

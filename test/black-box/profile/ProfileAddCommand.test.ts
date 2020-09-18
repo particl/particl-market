@@ -1,10 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
-import * as Faker from 'faker';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
@@ -17,14 +16,14 @@ describe('ProfileAddCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileAddCommand = Commands.PROFILE_ADD.commandName;
 
-    const profileName = 'test-profile-' + Faker.random.uuid();
-
-    let createdProfile: resources.Profile;
+    let profile: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -46,28 +45,35 @@ describe('ProfileAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('name', 'string').getMessage());
     });
 
-    test('Should create a new Profile', async () => {
+    test('Should fail to create because wallet already exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand,
-            profileName
+            'TEST-1'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Wallet with the same name already exists.').getMessage());
+    });
+
+    test('Should create a new Profile even with existing wallet', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileAddCommand,
+            'TEST-1',
+            true
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-        createdProfile = result;
-        expect(result.name).toBe(profileName);
-        expect(result.ShoppingCart).toHaveLength(1);
-        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
+        profile = result;
+        expect(result.name).toBe('TEST-1');
     });
 
     test('Should fail to create because given name already exist', async () => {
         const res = await testUtil.rpc(profileCommand, [profileAddCommand,
-            profileName
+            'TEST-1'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MessageException('Profile with the same name already exists.').getMessage());
     });
-
 
 });

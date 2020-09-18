@@ -1,7 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -12,8 +14,11 @@ import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCartService } from '../../services/model/ShoppingCartService';
 import { ShoppingCart } from '../../models/ShoppingCart';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
 
-export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInterface<ShoppingCart> {
+export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInterface<resources.ShoppingCart> {
 
     public log: LoggerType;
 
@@ -27,17 +32,39 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
+     *  [0]: cart, resources.ShoppingCart
+     *
+     * @param data
+     * @returns {Promise<resources.ShoppingCart>}
+     */
+    @validate()
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ShoppingCart> {
+        return data.params[0];
+    }
+
+    /**
+     * data.params[]:
      *  [0]: cartId
      *
      * @param data
      * @returns {Promise<ShoppingCart>}
      */
-    @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCart> {
-        return await this.shoppingCartService.findOne(data.params[0]);
-    }
-
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MissingParamException('cartId');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('cartId', 'number');
+        }
+
+        data.params[0] = await this.shoppingCartService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ShoppingCart');
+            });
+
         return data;
     }
 

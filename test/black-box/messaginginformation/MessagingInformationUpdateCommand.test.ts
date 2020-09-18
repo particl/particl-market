@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
@@ -19,139 +20,159 @@ describe('MessagingInformationUpdateCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const messagingCommand = Commands.MESSAGINGINFORMATION_ROOT.commandName;
     const messagingUpdateCommand = Commands.MESSAGINGINFORMATION_UPDATE.commandName;
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
+    let profile: resources.Profile;
+    let market: resources.Market;
 
-    let listingItemTemplates: resources.ListingItemTemplate[];
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile and market
-        defaultProfile = await testUtil.getDefaultProfile();
-        defaultMarket = await testUtil.getDefaultMarket();
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
 
+        // create ListingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,  // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            defaultProfile.id, // profileId
-            false,  // generateListingItem
-            defaultMarket.id   // marketId
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            false,          // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
-        // generate listingItemTemplate
-        listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            1,
+            true,
+            generateListingItemTemplateParams
+        );
+        listingItemTemplate = listingItemTemplates[0];
 
     });
 
-    const messageInfoData = {
-        protocol: MessagingProtocol.SMSG,
-        publicKey: 'publickey2'
-    };
 
-    test('Should fail to update MessagingInformation because missing protocol', async () => {
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
-            listingItemTemplates[0].id
+    test('Should fail because missing listingItemTemplateId', async () => {
+        const res: any = await testUtil.rpc(messagingCommand, [messagingUpdateCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
+    });
+
+    test('Should fail because missing protocol', async () => {
+        const res: any = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplate.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('protocol').getMessage());
     });
 
-    test('Should fail to update MessagingInformation because invalid protocol', async () => {
+    test('Should fail because missing publicKey', async () => {
+        const res: any = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplate.id,
+            MessagingProtocol.SMSG
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('publicKey').getMessage());
+    });
+
+
+    test('Should fail because invalid listingItemTemplateId', async () => {
         const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
-            listingItemTemplates[0].id,
-            'test',
-            messageInfoData.publicKey
+            false,
+            MessagingProtocol.SMSG,
+            Faker.finance.bitcoinAddress()
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('protocol').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('listingItemTemplateId', 'number').getMessage());
+    });
+
+    test('Should fail because invalid protocol', async () => {
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplate.id,
+            false,
+            Faker.finance.bitcoinAddress()
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('protocol', 'string').getMessage());
+    });
+
+    test('Should fail because invalid publicKey', async () => {
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplate.id,
+            MessagingProtocol.SMSG,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('publicKey', 'string').getMessage());
     });
 
     test('Should update the MessagingInformation', async () => {
+        const publicKey = Faker.finance.bitcoinAddress();
         const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
-            listingItemTemplates[0].id,
-            messageInfoData.protocol,
-            messageInfoData.publicKey
+            listingItemTemplate.id,
+            MessagingProtocol.SMSG,
+            publicKey
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.protocol).toBe(messageInfoData.protocol);
-        expect(result.publicKey).toBe(messageInfoData.publicKey);
-        expect(result.listingItemId).toBe(null);
-        expect(result.listingItemTemplateId).toBe(listingItemTemplates[0].id);
+        expect(result.protocol).toBe(MessagingProtocol.SMSG);
+        expect(result.publicKey).toBe(publicKey);
+        expect(result.listingItemTemplateId).toBe(listingItemTemplate.id);
     });
 
     test('Should not update the MessagingInformation because the ListingItemTemplate has been published', async () => {
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,    // generateListingItemObjects
-            false,
-            null,
-            true,
-            defaultMarket.id
+            true,           // generateItemInformation
+            true,           // generateItemLocation
+            true,           // generateShippingDestinations
+            false,          // generateImages
+            true,           // generatePaymentInformation
+            true,           // generateEscrow
+            true,           // generateItemPrice
+            true,           // generateMessagingInformation
+            false,          // generateListingItemObjects
+            false,          // generateObjectDatas
+            profile.id,     // profileId
+            true,           // generateListingItem
+            market.id       // soldOnMarketId
         ]).toParamsArray();
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtil.generateData(
+        const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
 
-        // post template
-        const daysRetention = 4;
-        let res = await testUtil.rpc(templateCommand, [templatePostCommand,
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
             listingItemTemplates[0].id,
-            daysRetention,
-            defaultMarket.id
-        ]);
-        res.expectJson();
-
-        // make sure we got the expected result from posting the template
-        const result: any = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-        const sent = result.result === 'Sent.';
-        if (!sent) {
-            log.debug(JSON.stringify(result, null, 2));
-        }
-        expect(result.result).toBe('Sent.');
-
-        res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
-            listingItemTemplates[0].id,
-            messageInfoData.protocol,
-            messageInfoData.publicKey
+            MessagingProtocol.SMSG,
+            Faker.finance.bitcoinAddress()
         ]);
         res.expectJson();
         res.expectStatusCode(400);

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,6 +12,6 @@ export class ProfileUpdateRequest extends RequestBody implements ModelRequestInt
     @IsNotEmpty()
     public name: string;
 
-    public address: string;
+    // public address: string; // DEPRECATED use Identity.address
 }
 // tslint:enable:variable-name

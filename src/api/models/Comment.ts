@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -13,66 +14,64 @@ export class Comment extends Bookshelf.Model<Comment> {
 
     public static RELATIONS = [
         'ParentComment',
-        'ChildComments'
+        'ChildComments',
+        'ChildComments.ChildComments'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Comment> {
-        if (withRelated) {
-            return await Comment.where<Comment>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Comment.where<Comment>({ id: value }).fetch();
-        }
+        return Comment.where<Comment>({ id: value }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async fetchByHash(hash: string, withRelated: boolean = true): Promise<Comment> {
-        if (withRelated) {
-            return await Comment.where<Comment>({ hash }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Comment.where<Comment>({ hash }).fetch();
-        }
+        return Comment.where<Comment>({ hash }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
+    }
+
+    public static async fetchByMsgId(msgId: string, withRelated: boolean = true): Promise<Comment> {
+        return Comment.where<Comment>({ msgid: msgId }).fetch({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async fetchAllByTypeAndTarget(type: string, target: string): Promise<Collection<Comment>> {
       const commentResultCollection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.type', '=', type);
-                qb.where('comments.target', '=', target);
+                qb.andWhere('comments.target', '=', target);
             });
-      return await commentResultCollection.fetchAll();
+      return commentResultCollection.fetchAll();
     }
 
     public static async fetchAllByCommentorsAndCommentHash(addresses: string[], hash: string, withRelated: boolean = true): Promise<Collection<Comment>> {
-        const commentResultCollection = Comment.forge<Model<Comment>>()
+        const collection = Comment.forge<Model<Comment>>()
             .query(qb => {
                 qb.where('comments.hash', '=', hash);
                 qb.whereIn('comments.sender', addresses);
             })
             .orderBy('id', SearchOrder.DESC);
-        if (withRelated) {
-            return await commentResultCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await commentResultCollection.fetchAll();
-        }
+        return collection.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public static async countBy(options: CommentSearchParams): Promise<number> {
         return Comment.forge<Model<Comment>>()
             .query( qb => {
-                qb.where('comments.type', '=', options.type);
-                qb.where('comments.target', '=', options.target);
-
-                if (options.parentCommentId === undefined) {
-                    qb.whereNull('comments.parent_comment_id');
+                if (options.type) {
+                    qb.where('type', '=', options.type);
                 }
 
-                if (options.parentCommentId) {
-                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
+                if (options.target) {
+                    qb.where('target', '=', options.target);
+                }
+
+                if (_.isNil(options.parentCommentId)) {
+                    qb.whereNull('parent_comment_id');
+                } else {
+                    qb.where('parent_comment_id', '=', options.parentCommentId);
                 }
             })
             .count();
@@ -85,37 +84,41 @@ export class Comment extends Bookshelf.Model<Comment> {
         options.order = options.order || SearchOrder.ASC;
         options.orderField = options.orderField || CommentSearchOrderField.POSTED_AT;
 
-        const commentCollection = Comment.forge<Model<Comment>>()
+        const collection = Comment.forge<Model<Comment>>()
             .query( qb => {
 
                 if (CommentType[options.type]) {
-                    qb.where('comments.type', '=', options.type);
+                    qb.andWhere('comments.type', '=', options.type);
+                }
+
+                if (options.sender) {
+                    qb.andWhere('comments.sender', '=', options.sender);
+                }
+
+                if (options.receiver) {
+                    qb.andWhere('comments.receiver', '=', options.receiver);
                 }
 
                 if (options.target) {
-                    qb.where('comments.target', '=', options.target);
+                    qb.andWhere('comments.target', '=', options.target);
                 }
 
-                if (options.parentCommentId === undefined) {
-                    qb.whereNull('comments.parent_comment_id');
+                if (_.isNil(options.parentCommentId)) {
+                    qb.whereNull('parent_comment_id');
+                } else {
+                    qb.andWhere('parent_comment_id', '=', options.parentCommentId);
                 }
 
-                if (options.parentCommentId) {
-                    qb.where('comments.parent_comment_id', '=', options.parentCommentId);
-                }
             })
             .orderBy('comments.' + options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
             });
-        if (withRelated) {
-            return await commentCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await commentCollection.fetchAll();
-        }
+
+        return collection.fetchAll({
+            withRelated: withRelated ? this.RELATIONS : undefined
+        });
     }
 
     public get tableName(): string { return 'comments'; }
@@ -144,6 +147,9 @@ export class Comment extends Bookshelf.Model<Comment> {
 
     public get Message(): string { return this.get('message'); }
     public set Message(value: string) { this.set('message', value); }
+
+    public get GeneratedAt(): number { return this.get('generatedAt'); }
+    public set GeneratedAt(value: number) { this.set('generatedAt', value); }
 
     public get PostedAt(): number { return this.get('postedAt'); }
     public set PostedAt(value: number) { this.set('postedAt', value); }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,16 +7,15 @@ import { RequestBody } from '../../../core/api/RequestBody';
 import { ItemCategoryUpdateRequest } from './ItemCategoryUpdateRequest';
 import { ItemLocationCreateRequest } from './ItemLocationCreateRequest';
 import { ShippingDestinationCreateRequest } from './ShippingDestinationCreateRequest';
-import { ItemImageCreateRequest } from './ItemImageCreateRequest';
+import { ImageCreateRequest } from './ImageCreateRequest';
 import { ModelRequestInterface } from './ModelRequestInterface';
 
 // tslint:disable:variable-name
 export class ItemInformationUpdateRequest extends RequestBody implements ModelRequestInterface {
 
-    public id: number;
-
-    public listing_item_id: number;
-    public listing_item_template_id: number;
+    // we should not be updating relations
+    // public listing_item_id: number;
+    // public listing_item_template_id: number;
 
     @IsNotEmpty()
     public title: string;
@@ -27,11 +26,11 @@ export class ItemInformationUpdateRequest extends RequestBody implements ModelRe
     @IsNotEmpty()
     public longDescription: string;
 
-    public itemCategory: ItemCategoryUpdateRequest;
     public item_category_id: number;
+    public itemCategory: ItemCategoryUpdateRequest;
 
     public itemLocation: ItemLocationCreateRequest;
     public shippingDestinations: ShippingDestinationCreateRequest[];
-    public itemImages: ItemImageCreateRequest[];
+    public images: ImageCreateRequest[];
 }
 // tslint:enable:variable-name

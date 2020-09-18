@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -19,6 +19,7 @@ import { ShoppingCartItemCreateRequest } from '../../src/api/requests/model/Shop
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ShoppingCartItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -27,6 +28,7 @@ describe('ShoppingCartItem', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let shoppingCartItemService: ShoppingCartItemService;
@@ -48,24 +50,22 @@ describe('ShoppingCartItem', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         shoppingCartItemService = app.IoC.getNamed<ShoppingCartItemService>(Types.Service, Targets.Service.model.ShoppingCartItemService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market + shoppingcart
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
-        shoppingCart = profile.ShoppingCart[0];
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        shoppingCart = market.Identity.ShoppingCarts[0];
 
         const generateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
             true,       // generateItemLocation
             false,      // generateShippingDestinations
-            false,      // generateItemImages
+            false,      // generateImages
             true,       // generatePaymentInformation
             true,       // generateEscrow
             true,       // generateItemPrice
@@ -90,6 +90,13 @@ describe('ShoppingCartItem', () => {
         //
     });
 
+    test('Should throw ValidationException because we want to create a empty ShoppingCartItem', async () => {
+        expect.assertions(1);
+        await shoppingCartItemService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new ShoppingCartItem', async () => {
 
         testData.shopping_cart_id = shoppingCart.id;
@@ -100,13 +107,6 @@ describe('ShoppingCartItem', () => {
         expect(shoppingCartItem.id).not.toBeUndefined();
         expect(shoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
         expect(shoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
-    });
-
-    test('Should throw ValidationException because we want to create a empty ShoppingCartItem', async () => {
-        expect.assertions(1);
-        await shoppingCartItemService.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
     });
 
     test('Should list ShoppingCartItem with our new create one', async () => {
@@ -154,7 +154,7 @@ describe('ShoppingCartItem', () => {
     });
 
     test('Should clear all ShoppingCartItems of ShoppingCart by shoppingCartId', async () => {
-        const clearCart = await shoppingCartItemService.clearCart(shoppingCart.id);
+        const clearCart = await shoppingCartItemService.destroyByCartId(shoppingCart.id);
         const result: resources.ShoppingCartItem[] = await shoppingCartItemService.findAllByCartId(shoppingCart.id).then(value => value.toJSON());
         expect(result).toHaveLength(0);
     });
@@ -168,8 +168,8 @@ describe('ShoppingCartItem', () => {
         shoppingCartItem = await shoppingCartItemService.create(testData).then(value => value.toJSON());
 
         expect(shoppingCartItem.id).not.toBeUndefined();
-        expect(shoppingCartItem.shoppingCartId).toBe(testData.shopping_cart_id);
-        expect(shoppingCartItem.listingItemId).toBe(testData.listing_item_id);
+        expect(shoppingCartItem.ShoppingCart.id).toBe(testData.shopping_cart_id);
+        expect(shoppingCartItem.ListingItem.id).toBe(testData.listing_item_id);
 
         await shoppingCartItemService.destroy(shoppingCartItem.id);
         await shoppingCartItemService.findOne(shoppingCartItem.id).catch(e =>

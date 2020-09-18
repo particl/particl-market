@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -9,44 +9,43 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 describe('ShoppingCartListCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
     const shoppingCartListCommand = Commands.SHOPPINGCART_LIST.commandName;
     const shoppingCartAddCommand = Commands.SHOPPINGCART_ADD.commandName;
 
-    let defaultProfile: resources.Profile;
-    const secondShoppingCartName = 'NEW_CART_NAME';
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        defaultProfile = await testUtil.getDefaultProfile();
+
+        profile = await testUtil.getDefaultProfile();
+        expect(profile.id).toBeDefined();
+        market = await testUtil.getDefaultMarket(profile.id);
+        expect(market.id).toBeDefined();
+
     });
 
-    test('Should fail to list ShoppingCarts because missing profileId', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
-    });
-
-    test('Should fail to list ShoppingCarts because of invalid profileId', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
-            'INVALID-PROFILE-ID'
+    test('Should fail because invalid profileId', async () => {
+        const res: any = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
     });
 
-    test('Should fail to list ShoppingCarts because Profile not found', async () => {
+    test('Should fail because Profile not found', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
             0
         ]);
@@ -55,45 +54,75 @@ describe('ShoppingCartListCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('Profile').getMessage());
     });
 
-    test('Should get a ShoppingCart by profileId', async () => {
-        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
-            defaultProfile.id
-        ]);
+    test('Should list only one default ShoppingCart', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
-
         const result: any = res.getBody()['result'];
+
         expect(result).toHaveLength(1);
-        expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(defaultProfile.id);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
     });
 
-    test('Should get two ShoppingCarts by profileId', async () => {
-
-        const resAdd = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
-            secondShoppingCartName, defaultProfile.id
-        ]);
-        resAdd.expectJson();
-        resAdd.expectStatusCode(200);
-
+    test('Should list only one default ShoppingCart for specified Profile', async () => {
         const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
-            defaultProfile.id
+            profile.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        const result: resources.ShoppingCart[] = res.getBody()['result'];
+        expect(result).toHaveLength(1);
+
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
+    });
+
+    test('Should create a second ShoppingCart for specified Identity', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartAddCommand,
+            market.Identity.id,
+            'NEW_CART_NAME'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ShoppingCart = res.getBody()['result'];
+        expect(result.name).toBe('NEW_CART_NAME');
+        expect(result.Identity.id).toBe(market.Identity.id);
+    });
+
+    test('Should list two ShoppingCarts for the default Profile', async () => {
+
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ShoppingCart[] = res.getBody()['result'];
         expect(result).toHaveLength(2);
 
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItems).not.toBeDefined();
-        expect(result[0].name).toBe('DEFAULT');
-        expect(result[0].profileId).toBe(defaultProfile.id);
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
 
         expect(result[1].Profile).not.toBeDefined();
-        expect(result[1].ShoppingCartItems).not.toBeDefined();
-        expect(result[1].name).toBe(secondShoppingCartName);
-        expect(result[1].profileId).toBe(defaultProfile.id);
+        expect(result[1].name).toBe('NEW_CART_NAME');
+        expect(result[1].Identity.id).toBe(market.Identity.id);
     });
+
+    test('Should list two Markets for specified Profile', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartListCommand,
+            profile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ShoppingCart[] = res.getBody()['result'];
+        expect(result).toHaveLength(2);
+
+        expect(result[0].Profile).not.toBeDefined();
+        expect(result[0].name).toBe(market.Identity.address);
+        expect(result[0].Identity.id).toBe(market.Identity.id);
+
+        expect(result[1].Profile).not.toBeDefined();
+        expect(result[1].name).toBe('NEW_CART_NAME');
+        expect(result[1].Identity.id).toBe(market.Identity.id);
+    });
+
 });

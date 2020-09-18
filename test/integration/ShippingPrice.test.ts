@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -23,6 +23,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ShippingPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,6 +32,7 @@ describe('ShippingPrice', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let profileService: ProfileService;
     let marketService: MarketService;
     let shippingPriceService: ShippingPriceService;
@@ -59,6 +61,7 @@ describe('ShippingPrice', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.model.ShippingPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
@@ -67,27 +70,24 @@ describe('ShippingPrice', () => {
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.model.EscrowService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.model.ItemPriceService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         profile = await profileService.getDefault().then(value => value.toJSON());
-        market = await marketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
         const templateGenerateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateItemImages
-            true,       // generatePaymentInformation
-            false,       // generateEscrow
-            true,       // generateItemPrice
-            false,      // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            false,       // generateListingItem
-            market.id   // marketId
+            true,               // generateItemInformation
+            true,               // generateItemLocation
+            false,              // generateShippingDestinations
+            false,              // generateImages
+            true,               // generatePaymentInformation
+            false,              // generateEscrow
+            true,               // generateItemPrice
+            false,              // generateMessagingInformation
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            profile.id,         // profileId
+            false              // generateListingItem
+            // market.id           // soldOnMarketId
         ]);
 
         const generateParams = templateGenerateParams.toParamsArray();

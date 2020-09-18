@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,8 +8,20 @@ import { ImageTriplet } from '../../../src/core/helpers/ImageTriplet';
 import * as Jimp from 'jimp';
 import * as piexif from 'piexifjs';
 import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
+import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
+import { MessageVersions } from '../../../src/api/messages/MessageVersions';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as dotenv from 'dotenv';
 
 describe('ImageProcessing', () => {
+
+    const log: LoggerType = new LoggerType(__filename);
+
+    beforeAll(async () => {
+        dotenv.config({ path: '.env.test' });
+    });
+
 
     test('Test data should have metadata before processing', async () => {
         expect.assertions(0);
@@ -27,20 +39,6 @@ describe('ImageProcessing', () => {
         await ImageProcessing.convertToJPEG(ImageProcessing.milkcatBroken).catch(e =>
             expect(e).toEqual('unknown JPEG marker 0')
         );
-    });
-
-    test('convertToJPEG() should remove metadata', async () => {
-        /*
-        TODO: Fix: Failed: Given data isn't JPEG.
-        expect.assertions(2);
-        const processedImage: string = await ImageProcessing.convertToJPEG(ImageProcessing.milkcatSmall);
-        expect(processedImage.big).not.toBe(null);
-
-        const rawImage = ImageProcessing.PIEXIF_JPEG_START_STR + processedImage.big;
-        piexif.remove(rawImage).catch(e =>
-            expect(e).toBe('Exif not found.')
-        );
-        */
     });
 
     test('convertToJPEG() should resize tall(er than wide, by the ratio in the static bounds) image to reach MAX height', async () => {
@@ -83,7 +81,7 @@ describe('ImageProcessing', () => {
         const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
         const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
 
-        // TODO: create separate tests so you know faster what went wrong
+        // TODO: create separate tests
         // large
         const largeData = resizedDatas.get(ImageVersions.LARGE.propName) || '';
         expect(largeData).not.toEqual(null);
@@ -150,6 +148,6 @@ describe('ImageProcessing', () => {
 
         expect(imageBuffer.bitmap.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
         expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);
-
     });
+
 });
