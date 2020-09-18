@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,7 +16,7 @@ export class EscrowReleaseRequest extends RequestBody implements ActionRequestIn
     public bid: resources.Bid;                  // the original bid
     @IsNotEmpty()
     public bidAccept: resources.Bid;            // the accepted bid
-    public memo: string;                        // todo: memo, is this needed?
+    public memo: string;
 
     public createdBid: resources.Bid;           // the created bid id stored in here on beforePost() so that on afterPost() we can update it with the msgid
 

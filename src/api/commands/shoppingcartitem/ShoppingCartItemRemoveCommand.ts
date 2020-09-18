@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -11,8 +12,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCartItemService } from '../../services/model/ShoppingCartItemService';
-import { ListingItemService } from '../../services/model/ListingItemService';
-import { MessageException } from '../../exceptions/MessageException';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -20,7 +22,6 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCARTITEM_REMOVE);
@@ -29,46 +30,53 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: cartId
-     *  [1]: itemId | hash
+     *  [0]: shoppingCartItem, resources.ShoppingCartItem
      *
      * @param data
      * @returns {Promise<void>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        if (data.params[0] && data.params[1]) {
-            // check if listingItem hash then get Id and pass as parameter
-            let listingItemId = data.params[1];
-            if (typeof data.params[1] !== 'number') {
-                const listingItem = await this.listingItemService.findOneByHash(listingItemId);
-                listingItemId = listingItem.id;
-            }
-            const isItemExistOnCart = await this.shoppingCartItemService.findOneByCartIdAndListingItemId(data.params[0], listingItemId);
-            if (isItemExistOnCart === null) {
-                this.log.warn(`listing item not exist on shopping cart`);
-                throw new MessageException(`listing item not exist on shopping cart`);
-            } else {
-                // delete
-                return this.shoppingCartItemService.destroy(isItemExistOnCart.Id);
-            }
-        } else {
-            throw new MessageException('cartId and listingItemId can\'t be blank');
-        }
+        const shoppingCartItem: resources.ShoppingCartItem = data.params[0];
+        return this.shoppingCartItemService.destroy(shoppingCartItem.id);
     }
 
+    /**
+     *
+     *  data.params[]:
+     *  [0]: shoppingCartItemId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // make sure the required params exist
+        if (data.params.length < 1) {
+            throw new MissingParamException('id');
+        }
+
+        // make sure the params are of correct type
+        if (typeof data.params[0] !== 'number') {
+            throw new InvalidParamException('id', 'number');
+        }
+
+        data.params[0] = await this.shoppingCartItemService.findOne(data.params[0])
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('ShoppingCartItem');
+            });
+
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <cartId> <listingItemId> ';
+        return this.getName() + ' <shoppingCartItemId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The id of the ShoppingCart. \n'
-            + '    <listingItemId>          - The id of the ListingItem we want to add to the ShoppingCart. \n';
+            + '    <shoppingCartItemId>     - The id of the ShoppingCartItem we want to remove. \n';
     }
 
     public description(): string {
@@ -76,6 +84,6 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
     }
 
     public example(): string {
-        return 'cartitem ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+        return 'cartitem ' + this.getName() + ' 1 ';
     }
 }

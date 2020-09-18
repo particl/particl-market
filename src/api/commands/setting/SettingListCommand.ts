@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -50,7 +50,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
         const profile: resources.Profile = data.params[0];
         const market: resources.Market = data.params[1];
 
-        if (!_.isEmpty(market)) {
+        if (!_.isNil(market)) {
             return await this.settingService.findAllByProfileIdAndMarketId(profile.id, market.id, true);
         } else {
             return await this.settingService.findAllByProfileId(profile.id, true);
@@ -76,7 +76,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         // optional
-        if (data.params[1] !== undefined && typeof data.params[1] !== 'number') {
+        if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'number') {
             throw new InvalidParamException('marketId', 'number');
         }
 
@@ -88,7 +88,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
             });
 
         // if given, make sure Market exists
-        if (data.params[1] !== undefined) {
+        if (!_.isNil(data.params[1])) {
             data.params[1] = await this.marketService.findOne(data.params[1])
                 .then(value => value.toJSON())
                 .catch(reason => {
@@ -106,7 +106,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the related Profile \n'
-            + '    <marketId>               - Numeric - The ID of the related Market \n';
+            + '    <marketId>               - Numeric, optional - The ID of the related Market \n';
     }
 
     public description(): string {

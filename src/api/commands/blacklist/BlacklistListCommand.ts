@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -19,6 +20,8 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BlacklistType } from '../../enums/BlacklistType';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ProfileService } from '../../services/model/ProfileService';
 
 export class BlacklistListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Blacklist>> {
 
@@ -26,7 +29,8 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) private blacklistService: BlacklistService
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) private blacklistService: BlacklistService,
+        @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.BLACKLIST_LIST);
         this.log = new Logger(__filename);
@@ -37,6 +41,7 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
      *
      * data.params[]:
      *  [0]: type: BlacklistType
+     *  [1]: profile: resources.Profile, optional
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -45,7 +50,13 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Blacklist>> {
         const type: BlacklistType = data.params[0];
-        return await this.blacklistService.findAllByType(type);
+
+        if (_.isEmpty(data.params[1])) {
+            return await this.blacklistService.findAllByType(type);
+        } else {
+            const profile: resources.Profile = data.params[1];
+            return await this.blacklistService.findAllByTypeAndProfileId(type, profile.id);
+        }
     }
 
     /**
@@ -64,22 +75,34 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
         // make sure the params are of correct type
         if (typeof data.params[0] !== 'string') {
             throw new InvalidParamException('type', 'string');
+        } else if (data.params[1] && typeof data.params[1] !== 'number') {
+            throw new InvalidParamException('profileId', 'number');
         }
 
         // check for valid enum
         if (!EnumHelper.containsName(BlacklistType, data.params[0])) {
             throw new InvalidParamException('type', 'BlacklistType');
         }
+
+        if (data.params[1]) {
+            // make sure Profile with the id exists
+            data.params[1] = await this.profileService.findOne(data.params[1])
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
+        }
         return data;
     }
 
     public usage(): string {
-        return this.getName() + '<type>';
+        return this.getName() + '<type> [profileId]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <type>                      - string, type of hash \n';
+            + '    <type>                      - BlacklistType, MARKET/LISTINGITEM \n'
+            + '    <profileId>                 - profileId, number, optional';
     }
 
     public description(): string {

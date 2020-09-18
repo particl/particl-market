@@ -1,24 +1,26 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
+import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import * as resources from 'resources';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('PriceTickerRootCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const priceTickerCommand = Commands.PRICETICKER_ROOT.commandName;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        // await testUtil.cleanDb();
     });
 
     const expectCoinData = (result: resources.PriceTicker, cryptoId: string, cryptoName: string, cryptoSymbol: string) => {
@@ -42,6 +44,11 @@ describe('PriceTickerRootCommand', () => {
         expect(result.cryptoMarketCapEur).toBeDefined();
     };
 
+    test('Should skip, not used', async () => {
+        //
+    });
+
+/*
     test('Should get PriceTicker by passing single currency (UPPER case)', async () => {
         const res = await testUtil.rpc(priceTickerCommand, ['ETH']);
         res.expectJson();
@@ -111,5 +118,6 @@ describe('PriceTickerRootCommand', () => {
         expectCoinData(data2, 'bitcoin', 'Bitcoin', 'BTC');
 
     });
+*/
 });
 

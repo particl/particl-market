@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,7 +14,7 @@ import { BlacklistRepository } from '../../repositories/BlacklistRepository';
 import { Blacklist } from '../../models/Blacklist';
 import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
 import { BlacklistUpdateRequest } from '../../requests/model/BlacklistUpdateRequest';
-import {BlacklistType} from '../../enums/BlacklistType';
+import { BlacklistType } from '../../enums/BlacklistType';
 
 
 export class BlacklistService {
@@ -34,6 +34,14 @@ export class BlacklistService {
 
     public async findAllByType(type: BlacklistType): Promise<Bookshelf.Collection<Blacklist>> {
         return this.blacklistRepo.findAllByType(type);
+    }
+
+    public async findAllByTypeAndProfileId(type: BlacklistType, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return this.blacklistRepo.findAllByTypeAndProfileId(type, profileId);
+    }
+
+    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return this.blacklistRepo.findAllByTargetAndProfileId(target, profileId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Blacklist> {
@@ -66,7 +74,7 @@ export class BlacklistService {
 
         // set new values
         blacklist.Type = body.type;
-        blacklist.Hash = body.hash;
+        blacklist.Target = body.target;
 
         const updatedBlacklist = await this.blacklistRepo.update(id, blacklist.toJSON());
         return updatedBlacklist;

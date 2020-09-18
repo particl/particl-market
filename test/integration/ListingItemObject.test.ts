@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -19,10 +19,8 @@ import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/model/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../src/api/requests/model/ListingItemObjectUpdateRequest';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
 import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ListingItemObject', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,27 +29,30 @@ describe('ListingItemObject', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let listingItemObjectService: ListingItemObjectService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let listingItemTemplateService: ListingItemTemplateService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
-    let defaultProfile: resources.Profile;
-    let defaultMarket: resources.Market;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
-    let createdListingItemObject: resources.ListingItemObject;
+    let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItemObject: resources.ListingItemObject;
 
     const testData = {
         type: ListingItemObjectType.DROPDOWN,
         description: 'where to store the dropdown data...',
         order: 0,
-        listingItemObjectDatas: [
-            {
-                key: 'gps',
-                value: 'NVIDIA 500'
-            }
-        ]
+        listingItemObjectDatas: [{
+            key: 'gps',
+            value: 'NVIDIA 500'
+        }]
     } as ListingItemObjectCreateRequest;
 
     const testDataUpdated = {
@@ -65,44 +66,25 @@ describe('ListingItemObject', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.model.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.model.ListingItemObjectDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
-        defaultProfile = await profileService.getDefault().then(value => value.toJSON());
-        defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
 
-        // generate template
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-                true,               // generateItemInformation
-                true,               // generateItemLocation
-                true,               // generateShippingDestinations
-                false,              // generateItemImages
-                true,               // generatePaymentInformation
-                true,               // generateEscrow
-                true,               // generateItemPrice
-                true,               // generateMessagingInformation
-                false,              // generateListingItemObjects
-                false,              // generateObjectDatas
-                defaultProfile.id,  // profileId
-                false,              // generateListingItem
-                defaultMarket.id    // marketId
-            ]).toParamsArray();
+        sellerProfile = await testDataService.generateProfile();
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
-        const listingItemTemplates = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,  // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemTemplateParams // what kind of data to generate
-        } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0];
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
 
     });
 
@@ -118,11 +100,9 @@ describe('ListingItemObject', () => {
     });
 
     test('Should create a new ListingItemObject', async () => {
-        testData.listing_item_template_id = createdListingItemTemplate.id;
+        testData.listing_item_template_id = listingItemTemplate.id;
 
-        const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(testData);
-        createdListingItemObject = listingItemObjectModel.toJSON();
-        const result = createdListingItemObject;
+        const result: resources.ListingItemObject = await listingItemObjectService.create(testData).then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
@@ -132,6 +112,8 @@ describe('ListingItemObject', () => {
 
         expect(result.ListingItemObjectDatas[0].key).toBe(testData.listingItemObjectDatas[0].key);
         expect(result.ListingItemObjectDatas[0].value).toBe(testData.listingItemObjectDatas[0].value);
+
+        listingItemObject = result;
     });
 
     test('Should throw ValidationException because we want to create a empty ListingItemObject', async () => {
@@ -142,8 +124,7 @@ describe('ListingItemObject', () => {
     });
 
     test('Should list all ListingItemObjects with our new create one', async () => {
-        const listingItemObjectCollection = await listingItemObjectService.findAll();
-        const listingItemObjects = listingItemObjectCollection.toJSON();
+        const listingItemObjects: resources.ListingItemObject[] = await listingItemObjectService.findAll().then(value => value.toJSON());
         expect(listingItemObjects.length).toBe(1);
 
         const result = listingItemObjects[0];
@@ -156,8 +137,7 @@ describe('ListingItemObject', () => {
     });
 
     test('Should return one ListingItemObject', async () => {
-        const listingItemObjectModel: ListingItemObject = await listingItemObjectService.findOne(createdListingItemObject.id);
-        const result = listingItemObjectModel.toJSON();
+        const result: resources.ListingItemObject = await listingItemObjectService.findOne(listingItemObject.id).then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
@@ -168,17 +148,9 @@ describe('ListingItemObject', () => {
         expect(result.ListingItemObjectDatas[0].value).toBe(testData.listingItemObjectDatas[0].value);
     });
 
-    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
-        expect.assertions(1);
-        await listingItemObjectService.update(createdListingItemObject.id, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should update the ListingItemObject', async () => {
-        testDataUpdated.listing_item_template_id = createdListingItemTemplate.id;
-        const listingItemObjectModel: ListingItemObject = await listingItemObjectService.update(createdListingItemObject.id, testDataUpdated);
-        const result = listingItemObjectModel.toJSON();
+        const result: resources.ListingItemObject = await listingItemObjectService.update(listingItemObject.id, testDataUpdated)
+            .then(value => value.toJSON());
 
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.description).toBe(testDataUpdated.description);
@@ -186,22 +158,14 @@ describe('ListingItemObject', () => {
     });
 
     test('Should delete the ListingItemObject', async () => {
-        const dataObjectId = createdListingItemObject.ListingItemObjectDatas[0].id;
-
-        expect.assertions(3);
-        await listingItemObjectService.destroy(createdListingItemObject.id);
-        await listingItemObjectService.findOne(createdListingItemObject.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemObject.id))
+        expect.assertions(2);
+        await listingItemObjectService.destroy(listingItemObject.id);
+        await listingItemObjectService.findOne(listingItemObject.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObject.id))
         );
 
-        await listingItemObjectDataService.findOne(dataObjectId).catch(e =>
-           expect(e).toEqual(new NotFoundException(dataObjectId))
-        );
-
-        // delete also the ListingItemTemplate
-        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
-        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
+        await listingItemObjectDataService.findOne(listingItemObject.ListingItemObjectDatas[0].id).catch(e =>
+           expect(e).toEqual(new NotFoundException(listingItemObject.ListingItemObjectDatas[0].id))
         );
     });
 

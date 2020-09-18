@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,7 +19,6 @@ import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 import { OrderStatus } from '../../enums/OrderStatus';
-import * as resources from 'resources';
 
 export class OrderService {
 
@@ -53,16 +53,11 @@ export class OrderService {
      *
      * @param options
      * @param withRelated
-     * @returns {Promise<Bookshelf.Collection<Bid>>}
+     * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     @validate()
     public async search(@request(OrderSearchParams) options: OrderSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Order>> {
-
-        // if item hash was given, set the item id
-        if (options.listingItemHash) {
-            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
-            options.listingItemId = foundListing.Id;
-        }
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.orderRepo.search(options, withRelated);
     }
 
@@ -87,16 +82,14 @@ export class OrderService {
         // then create the OrderItems
         for (const orderItemCreateRequest of orderItemCreateRequests) {
             orderItemCreateRequest.order_id = order.id;
-            const orderItemModel = await this.orderItemService.create(orderItemCreateRequest);
-            const orderItem = orderItemModel.toJSON();
+            const orderItem: resources.OrderItem = await this.orderItemService.create(orderItemCreateRequest).then(value => value.toJSON());
             // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
         }
 
         this.log.debug('orderService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         // finally find and return the created order
-        const newOrder = await this.findOne(order.id);
-        return newOrder;
+        return await this.findOne(order.id);
     }
 
     @validate()

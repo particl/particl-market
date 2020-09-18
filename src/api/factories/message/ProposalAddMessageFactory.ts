@@ -1,59 +1,56 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Types } from '../../../constants';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
-import { ProposalCategory } from '../../enums/ProposalCategory';
-import { MessageFactoryInterface } from './MessageFactoryInterface';
-import { BidMessage } from '../../messages/action/BidMessage';
-import { ProposalAddMessageCreateParams } from '../../requests/message/ProposalAddMessageCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
 import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
 import { GovernanceAction } from '../../enums/GovernanceAction';
 import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
+import { MissingParamException } from '../../exceptions/MissingParamException';
+import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { BaseMessageFactory } from './BaseMessageFactory';
 
-export class ProposalAddMessageFactory implements MessageFactoryInterface {
+export class ProposalAddMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
 
     constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+        super();
         this.log = new Logger(__filename);
     }
 
     /**
      *
-     * @param params: ProposalAddMessageCreateParams
-     *      title: string;
-     *      description: string;
-     *      options: string[];
-     *      sender: resources.Profile;
-     *      itemHash?: string;
-     * @returns {Promise<BidMessage>}
+     * @param actionRequest
+     * @returns {Promise<MarketplaceMessage>}
      */
-    public async get(params: ProposalAddMessageCreateParams): Promise<ProposalAddMessage> {
+    public async get(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
 
-        const optionsList: resources.ProposalOption[] = this.createOptionsList(params.options);
+        // this.log.debug('actionRequest: ', JSON.stringify(actionRequest, null, 2));
 
-        const category = params.category
-            ? params.category
-            : params.itemHash
-                ? ProposalCategory.ITEM_VOTE
-                : ProposalCategory.PUBLIC_VOTE;
+        const optionsList: resources.ProposalOption[] = this.createOptionsList(actionRequest.options);
+
+        if (_.isEmpty(actionRequest.category)) {
+            throw new MissingParamException('category');
+        }
 
         const message: ProposalAddMessage = {
             type: GovernanceAction.MPA_PROPOSAL_ADD,
-            submitter: params.sender.address,
-            title: params.title,
-            description: params.description,
+            submitter: actionRequest.sender.address,
+            title: actionRequest.title,
+            description: actionRequest.description,
             options: optionsList,
-            category,
-            item: params.itemHash
+            category: actionRequest.category,
+            target: actionRequest.target ? actionRequest.target : '' // todo: ffs, allow undefined in ConfigurableHasher
         } as ProposalAddMessage;
 
         // hash the proposal
@@ -62,11 +59,14 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
 
+        // this.log.debug('message: ', JSON.stringify(message, null, 2));
+
+        // todo:
         message.hash = ConfigurableHasher.hash(message, new HashableProposalAddMessageConfig([{
                 value: hashableOptions,
                 to: HashableProposalAddField.PROPOSAL_OPTIONS
             }, {
-                value: params.market,
+                value: actionRequest.market.receiveAddress,
                 to: HashableProposalAddField.PROPOSAL_MARKET
             }] as HashableFieldValueConfig[]));
 
@@ -78,7 +78,7 @@ export class ProposalAddMessageFactory implements MessageFactoryInterface {
             }]));
         }
 
-        return message;
+        return await this.getMarketplaceMessage(message);
     }
 
     private createOptionsList(options: string[]): resources.ProposalOption[] {

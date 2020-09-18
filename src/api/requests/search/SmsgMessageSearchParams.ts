@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,11 +13,11 @@ export class SmsgMessageSearchParams extends BaseSearchParams {
 
     public orderField = SmsgMessageSearchOrderField.SENT;
 
-    public types: ActionMessageTypes[];
+    public types: ActionMessageTypes[] | string;
     public status: SmsgMessageStatus;
     public direction: ActionDirection;
 
-    public age = 1000 * 60 * 2; // minimum message age in ms, 2 min
+    public age: number = 1000 * 60 * 2; // minimum message age in ms, 2 min
 
     public msgid: string;
 }

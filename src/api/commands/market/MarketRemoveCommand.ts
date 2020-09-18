@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,17 +12,18 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
 import { MarketService } from '../../services/model/MarketService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProfileService } from '../../services/model/ProfileService';
+import { DefaultMarketService } from '../../services/DefaultMarketService';
+import { DefaultProfileService } from '../../services/DefaultProfileService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
-    public log: LoggerType;
-
     constructor(
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) private defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) private defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -31,9 +32,16 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('marketId', true, this.marketService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
-     *  [1]: profile: resources.Profile
      *  [0]: market: resources.Market
      *
      * @param data
@@ -41,71 +49,43 @@ export class MarketRemoveCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const profile: resources.Profile = data.params[0];
-        const market: resources.Market = data.params[1];
+        const market: resources.Market = data.params[0];
 
-        // TODO: add removal of all other market related data
+        // TODO: make sure all other market related data is removed
         return this.marketService.destroy(market.id);
     }
 
     /**
      * data.params[]:
-     *  [0]: profileId
      *  [0]: marketId
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('marketId');
-        }
+        const market: resources.Market = data.params[0];
 
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        }
-
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        // make sure Market with the id exists
-        const market: resources.Market = await this.marketService.findOne(data.params[1])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
-
-        const defaultMarket: resources.Market = await this.marketService.getDefaultForProfile(data.params[0], true)
+        const defaultProfile: resources.Profile = await this.defaultProfileService.getDefault();
+        const defaultMarket: resources.Market = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id, false)
             .then(value => value.toJSON());
 
         if (market.id === defaultMarket.id) {
             throw new MessageException('Default Market cannot be removed.');
         }
 
-        data.params[0] = profile;
-        data.params[1] = market;
+        data.params[0] = market;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <marketId> ';
+        return this.getName() + ' <marketId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>                - The Id of the Profile which Market we want to remove. '
             + '    <marketId>                 - The Id of the Market we want to remove. ';
     }
 

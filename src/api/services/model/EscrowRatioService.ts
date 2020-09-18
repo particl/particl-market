@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -39,28 +39,16 @@ export class EscrowRatioService {
 
     @validate()
     public async create( @request(EscrowRatioCreateRequest) body: EscrowRatioCreateRequest): Promise<EscrowRatio> {
-
-        // If the request body was valid we will create the escrowRatio
         const escrowRatio = await this.escrowRatioRepo.create(body);
-
-        // finally find and return the created escrowRatio
-        const newEscrowRatio = await this.findOne(escrowRatio.Id);
-        return newEscrowRatio;
+        return await this.findOne(escrowRatio.Id);
     }
 
     @validate()
     public async update(id: number, @request(EscrowRatioUpdateRequest) body: EscrowRatioUpdateRequest): Promise<EscrowRatio> {
-
-        // find the existing one without related
         const escrowRatio = await this.findOne(id, false);
-
-        // set new values
         escrowRatio.Buyer = body.buyer;
         escrowRatio.Seller = body.seller;
-
-        // update escrowRatio record
-        const updatedEscrowRatio = await this.escrowRatioRepo.update(id, escrowRatio.toJSON());
-        return updatedEscrowRatio;
+        return await this.escrowRatioRepo.update(id, escrowRatio.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

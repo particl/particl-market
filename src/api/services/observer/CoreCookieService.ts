@@ -1,70 +1,63 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { inject, named } from 'inversify';
+import {inject, named, unmanaged} from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { Environment } from '../../../core/helpers/Environment';
-import pForever from 'pm-forever';
-import delay from 'pm-delay';
-
-export enum CoreCookieServiceStatus {
-    ERROR = 'ERROR',
-    USING_DEFAULTS = 'USING_DEFAULTS',
-    USING_COOKIE = 'USING_COOKIE'
-}
+import { CoreCookieServiceStatus } from '../../enums/CoreCookieServiceStatus';
+import { BaseObserverService } from './BaseObserverService';
+import { ObserverStatus } from '../../enums/ObserverStatus';
+import { EventEmitter } from '../../../core/api/events';
 
 /**
  * Deals with Authentication.
  * particl-core: read the cookie file in a loop (singleton!)
  */
-export class CoreCookieService {
+export class CoreCookieService extends BaseObserverService {
 
-    public log: LoggerType;
+    public cookieStatus: CoreCookieServiceStatus = CoreCookieServiceStatus.USING_DEFAULTS;
 
-    public isStarted = false;
-    public updated = 0;
-    public status: CoreCookieServiceStatus = CoreCookieServiceStatus.ERROR;
+    private CORE_USER = 'test';
+    private CORE_PASSWORD = 'test';
 
-    private DEFAULT_CORE_USER = 'test';
-    private DEFAULT_CORE_PASSWORD = 'test';
     private CORE_COOKIE_FILE = process.env.RPCCOOKIEFILE ? process.env.RPCCOOKIEFILE : '.cookie';
-    private INTERVAL = 1000;
     private PATH_TO_COOKIE: string;
-    private STOP = false;
 
-    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
-        this.log = new Logger(__filename);
-        this.start();
+    constructor(
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
+    ) {
+        super(__filename, 1000, Logger);
+        // this.log = new Logger(__filename);
     }
 
-    public async start(): Promise<void> {
+    public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
-        await pForever(async (i) => {
-            i++;
+        const cookie = this.getPathToCookie();
 
-            await this.getCookieLoop();
-            this.updated = Date.now();
-            if (this.STOP) {
-                return pForever.end;
+        if (cookie) {
+            try {
+                const data = fs.readFileSync(cookie);
+                const usernameAndPassword = data.toString().split(':', 2);
+
+                // set username and password to cookie values
+                this.CORE_USER = usernameAndPassword[0];
+                this.CORE_PASSWORD = usernameAndPassword[1];
+
+                this.cookieStatus = CoreCookieServiceStatus.USING_COOKIE;
+            } catch (e) {
+                this.cookieStatus = CoreCookieServiceStatus.USING_DEFAULTS;
             }
-            await delay(this.INTERVAL);
-            // this.log.info('CoreCookieService: ' + i);
+        } else {
+            this.cookieStatus = CoreCookieServiceStatus.USING_DEFAULTS;
+        }
 
-            return i;
-        }, 0).catch(async reason => {
-            this.log.error('ERROR: ', reason);
-            await delay(this.INTERVAL);
-            this.start();
-        });
-    }
-
-    public async stop(): Promise<void> {
-        this.STOP = true;
+        return ObserverStatus.RUNNING;
     }
 
     /**
@@ -72,42 +65,14 @@ export class CoreCookieService {
      * Note: cookie username is basically always "__cookie__"
      */
     public getCoreRpcUsername(): string {
-        return this.DEFAULT_CORE_USER;
+        return this.CORE_USER;
     }
 
     /**
      * Returns either the default password or the one grabbed from the cookie file.
      */
     public getCoreRpcPassword(): string {
-        return this.DEFAULT_CORE_PASSWORD;
-    }
-
-    public async getCookieLoop(): Promise<void> {
-        const cookie = this.getPathToCookie();
-        // this.log.info('getCookieLoop(), cookie path: ', cookie);
-
-        if (cookie) {
-            try {
-                const data = fs.readFileSync(cookie);
-                if (!this.isStarted) {
-                    this.log.debug('getCookieLoop(), cookie: ', data.toString());
-                }
-                const usernameAndPassword = data.toString().split(':', 2);
-
-                // set username and password to cookie values
-                this.DEFAULT_CORE_USER = usernameAndPassword[0];
-                this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
-                // this.log.debug('getCookieLoop(), DEFAULT_CORE_USER: ', this.DEFAULT_CORE_USER);
-                // this.log.debug('getCookieLoop(), DEFAULT_CORE_PASSWORD: ', this.DEFAULT_CORE_PASSWORD);
-                this.status = CoreCookieServiceStatus.USING_COOKIE;
-            } catch (e) {
-                if (!this.isStarted) {
-                    this.log.error('ERROR: Could not find the cookie file.');
-                    this.status = CoreCookieServiceStatus.USING_DEFAULTS;
-                }
-            }
-        }
-        this.isStarted = true;
+        return this.CORE_PASSWORD;
     }
 
     private getPathToCookie(): string | null {
@@ -115,35 +80,33 @@ export class CoreCookieService {
         if (this.PATH_TO_COOKIE) {
             return this.PATH_TO_COOKIE;
         }
-        this.log.debug('PATH_TO_COOKIE: ', this.PATH_TO_COOKIE);
+        // this.log.debug('PATH_TO_COOKIE: ', this.PATH_TO_COOKIE);
 
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
         let dir = '';
         const appName = 'Particl';
 
-        this.log.debug('process.platform: ', process.platform);
+        // this.log.debug('process.platform: ', process.platform);
 
         switch (process.platform) {
-          case 'linux': {
-            dir = path.join(homeDir, '.' + appName.toLowerCase());
-            break;
-          }
-
-          case 'darwin': {
-            dir = path.join(homeDir, 'Library', 'Application Support', appName);
-            break;
-          }
-
-          case 'win32': {
-            const temp = path.join(process.env['APPDATA'], appName);
-            if (this.checkIfExists(temp)) {
-                dir = temp;
-            } else {
-                dir = path.join(homeDir, 'AppData', 'Roaming', appName);
-            }
-            break;
-          }
+            case 'linux':
+                dir = path.join(homeDir, '.' + appName.toLowerCase());
+                break;
+            case 'darwin':
+                dir = path.join(homeDir, 'Library', 'Application Support', appName);
+                break;
+            case 'win32':
+                const temp = path.join(process.env['APPDATA'], appName);
+                if (this.checkIfExists(temp)) {
+                    dir = temp;
+                } else {
+                    dir = path.join(homeDir, 'AppData', 'Roaming', appName);
+                }
+                break;
+            default:
+                this.log.error('process.platform not supported: ', process.platform);
+                throw new Error('process.platform not supported: ' + process.platform);
         }
 
         // just check if it exist so it logs an error just in case
@@ -163,7 +126,8 @@ export class CoreCookieService {
             this.log.debug('Found particl-core path', dir);
             return true;
         } catch (err) {
-            this.log.error('Could not find particl-core path!', dir);
+            // expected on docker
+            // this.log.error('Could not find particl-core path!', dir);
         }
         return false;
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -21,7 +21,7 @@ import { SearchOrder } from '../../enums/SearchOrder';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { SearchOrderField } from '../../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -71,50 +71,42 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         const categoryId = data.params[0];
 
         const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(categoryId)
-            .then(value => {
-                const category = value.toJSON();
-                if (_.includes(category.key, 'cat_')) {
-                    throw new MessageException('Default Category cant be removed.');
-                }
-                return category;
-            })
             .catch(reason => {
                 throw new ModelNotFoundException('ItemCategory');
+            })
+            .then(value => {
+                const category = value.toJSON();
+                if (_.isNil(category.market)) {
+                    throw new MessageException('Default ItemCategory cannot be removed.');
+                }
+                return category;
             });
 
         data.params[0] = itemCategory;
 
-        const searchParams = {
+        // check for listingItemTemplates related to category
+        await this.listingItemTemplateService.search({
             page: 0,
             pageLimit: 10,
             order: SearchOrder.ASC,
-            orderField: SearchOrderField.DATE,
-            category: categoryId
-        } as ListingItemTemplateSearchParams;
-
-        this.log.debug('ListingItemTemplateSearchParams: ', JSON.stringify(searchParams, null, 2));
-
-        // check listingItemTemplate related with category
-        await this.listingItemTemplateService.search(searchParams)
+            orderField: ListingItemTemplateSearchOrderField.UPDATED_AT,
+            categories: [categoryId]
+        } as ListingItemTemplateSearchParams)
             .then(values => {
                 const listingItemTemplates = values.toJSON();
                 if (listingItemTemplates.length > 0) {
-                    throw new MessageException(`Category associated with ListingItemTemplate can't be deleted. id= ${categoryId}`);
+                    throw new MessageException('ItemCategory associated with ListingItemTemplate cannot be deleted.');
                 }
             });
 
-        const defaultListingItemSearchParams = new ListingItemSearchParams();
-        defaultListingItemSearchParams.profileId = '*';
-        defaultListingItemSearchParams.category = categoryId;
-
-        this.log.debug('ListingItemSearchParams: ', JSON.stringify(defaultListingItemSearchParams, null, 2));
-
-        // check listingItem related with category
-        await this.listingItemService.search(defaultListingItemSearchParams)
+        // check for listingItems related to category
+        await this.listingItemService.search({
+            categories: [categoryId]
+        } as ListingItemSearchParams)
             .then(values => {
                 const listingItems = values.toJSON();
                 if (listingItems.length > 0) {
-                    throw new MessageException(`Category associated with ListingItem can't be deleted. id= ${categoryId}`);
+                    throw new MessageException('ItemCategory associated with ListingItem cannot be deleted.');
                 }
             });
 
@@ -127,12 +119,11 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <categoryId>                  - Numeric - The ID belonging to the category we \n'
-            + '                                     want to destroy. ';
+            + '    <categoryId>                  - Numeric - The ID belonging to the category we want to destroy. ';
     }
 
     public description(): string {
-        return 'Remove and destroy an item category via categoryId.';
+        return 'Remove ItemCategory.';
     }
 
     public example(): string {

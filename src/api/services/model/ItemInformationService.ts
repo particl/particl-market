@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,11 +16,16 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { ItemLocationService } from './ItemLocationService';
-import { ItemImageService } from './ItemImageService';
+import { ImageService } from './ImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { ItemCategory } from '../../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../../requests/model/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
+import { ItemLocationCreateRequest } from '../../requests/model/ItemLocationCreateRequest';
+import { ShippingDestinationCreateRequest } from '../../requests/model/ShippingDestinationCreateRequest';
+import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
+
 
 export class ItemInformationService {
 
@@ -28,7 +33,7 @@ export class ItemInformationService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ShippingDestinationService) public shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.model.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Repository) @named(Targets.Repository.ItemInformationRepository) public itemInformationRepo: ItemInformationRepository,
@@ -61,11 +66,9 @@ export class ItemInformationService {
 
     @validate()
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
-        const startTime = new Date().getTime();
-
         const body: ItemInformationCreateRequest = JSON.parse(JSON.stringify(data));
 
-        // this.log.debug('create itemInformation, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
 
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -73,61 +76,56 @@ export class ItemInformationService {
         }
 
         // extract and remove related models from request
-        const itemCategory = body.itemCategory;
-        const itemLocation = body.itemLocation;
-        const shippingDestinations = body.shippingDestinations || [];
-        const itemImages = body.itemImages || [];
+        // body.item_category_id might also exist
+        const itemCategory: ItemCategoryCreateRequest | ItemCategoryUpdateRequest = body.itemCategory;
+        const itemLocation: ItemLocationCreateRequest = body.itemLocation || {};
+        const shippingDestinations: ShippingDestinationCreateRequest[] = body.shippingDestinations || [];
+        const images: ImageCreateRequest[] = body.images || [];
+
         delete body.itemCategory;
         delete body.itemLocation;
         delete body.shippingDestinations;
-        delete body.itemImages;
+        delete body.images;
 
-        if (!body.item_category_id) {
+        if (!_.isEmpty(itemCategory)) {
             // get existing ItemCategory or create new one
-            const existingItemCategory = await this.getOrCreateItemCategory(itemCategory);
-            body.item_category_id = existingItemCategory.Id;
+            const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(itemCategory).then(value => value.toJSON());
+            body.item_category_id = existingItemCategory.id;
         }
 
         // ready to save, if the request body was valid, create the itemInformation
-        const itemInformation = await this.itemInformationRepo.create(body);
+        const itemInformation: resources.ItemInformation = await this.itemInformationRepo.create(body).then(value => value.toJSON());
 
-        // create related models
         if (!_.isEmpty(itemLocation)) {
-            itemLocation.item_information_id = itemInformation.Id;
+            itemLocation.item_information_id = itemInformation.id;
             await this.itemLocationService.create(itemLocation);
         }
 
-        if (shippingDestinations) {
+        if (!_.isEmpty(shippingDestinations)) {
             for (const shippingDestination of shippingDestinations) {
-                shippingDestination.item_information_id = itemInformation.Id;
+                shippingDestination.item_information_id = itemInformation.id;
+                // this.log.debug('shippingDestination: ', JSON.stringify(shippingDestination, null, 2));
                 await this.shippingDestinationService.create(shippingDestination);
             }
         }
 
-        if (itemImages) {
-            for (const itemImage of itemImages) {
-                itemImage.item_information_id = itemInformation.Id;
-                // this.log.debug('itemImage: ', JSON.stringify(itemImage, null, 2));
-                await this.itemImageService.create(itemImage);
+        if (!_.isEmpty(images)) {
+            for (const image of images) {
+                image.item_information_id = itemInformation.id;
+                // this.log.debug('create(), image: ', JSON.stringify(image, null, 2));
+                await this.imageService.create(image);
             }
         }
 
         // finally find and return the created itemInformation
-        const result = await this.findOne(itemInformation.Id);
-        // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return result;
+        return await this.findOne(itemInformation.id);
     }
 
     @validate()
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('updating ItemInformation, body: ', JSON.stringify(body, null, 2));
-
-        if (body.listing_item_id == null && body.listing_item_template_id == null) {
-            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
-        }
+        // this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
@@ -136,53 +134,84 @@ export class ItemInformationService {
         itemInformation.Title = body.title;
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
-        const itemInfoToSave = itemInformation.toJSON();
 
-        // get existing item category or create new one
-        const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
-        itemInfoToSave.item_category_id = existingItemCategory.Id;
+        // const itemInfoToSave = itemInformation.toJSON();
+
+        if (!_.isEmpty(body.itemCategory)) {
+            const existingItemCategory: resources.ItemCategory = await this.getOrCreateItemCategory(body.itemCategory).then(value => value.toJSON());
+            itemInformation.set('itemCategoryId', existingItemCategory.id);
+        }
 
         // update itemInformation record
-        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
+        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInformation.toJSON());
 
         if (body.itemLocation) {
-            // find related record and delete it
-            let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
-            await this.itemLocationService.destroy(itemLocation.id);
-            // recreate related data
-            itemLocation = body.itemLocation;
-            itemLocation.item_information_id = id;
-            await this.itemLocationService.create(itemLocation);
+            // find related and delete
+            const itemLocation: resources.ItemLocation = updatedItemInformation.related('ItemLocation').toJSON() || {} as resources.ItemLocation;
+
+            if (!_.isEmpty(itemLocation)) {
+                await this.itemLocationService.destroy(itemLocation.id);
+            }
+
+            // then create
+            const createRequest: ItemLocationCreateRequest = body.itemLocation;
+            createRequest.item_information_id = id;
+            await this.itemLocationService.create(createRequest);
         }
 
-        // todo: instead of delete and create, update
+        // update only if new data was passed
+        if (!_.isEmpty(body.shippingDestinations)) {
 
-        // find related record and delete it
-        let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
-        for (const shippingDestination of shippingDestinations) {
-            await this.shippingDestinationService.destroy(shippingDestination.id);
+            // find related and delete
+            const shippingDestinations: resources.ShippingDestination[] = updatedItemInformation.related('ShippingDestinations').toJSON()
+                || [] as resources.ShippingDestination[];
+            if (!_.isEmpty(shippingDestinations)) {
+                for (const shippingDestination of shippingDestinations) {
+                    await this.shippingDestinationService.destroy(shippingDestination.id);
+                }
+            }
+
+            // then create
+            if (!_.isEmpty(body.shippingDestinations)) {
+                for (const createRequest of body.shippingDestinations) {
+                    createRequest.item_information_id = id;
+                    await this.shippingDestinationService.create(createRequest);
+                }
+            }
         }
 
-        // recreate related data
-        shippingDestinations = body.shippingDestinations || [];
-        for (const shippingDestination of shippingDestinations) {
-            shippingDestination.item_information_id = id;
-            await this.shippingDestinationService.create(shippingDestination);
+        // this.log.debug('update(), body.images: ', JSON.stringify(body.images, null, 2));
+
+        // update only if new data was passed
+        if (!_.isEmpty(body.images)) {
+
+            // find related and delete
+            const images = updatedItemInformation.related('Images').toJSON() || [] as resources.Image[];
+            if (!_.isEmpty(images)) {
+                for (const image of images) {
+                    await this.imageService.destroy(image.id);
+                }
+            }
+
+            // then create
+            if (!_.isEmpty(body.images)) {
+                for (const createRequest of body.images) {
+                    createRequest.item_information_id = itemInformation.id;
+                    // this.log.debug('image, createRequest: ', JSON.stringify(createRequest, null, 2));
+                    await this.imageService.create(createRequest);
+                }
+            }
         }
 
         // finally find and return the updated itemInformation
-        const newItemInformation = await this.findOne(id);
-        return newItemInformation;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {
-        const itemImage: resources.ItemImage = await this.findOne(id, true).then(value => value.toJSON());
-        // find the existing one without related
         const itemInformation: resources.ItemInformation = await this.findOne(id, true).then(value => value.toJSON());
-
-        // manually remove images
-        for (const image of itemInformation.ItemImages) {
-            await this.itemImageService.destroy(image.id);
+        for (const image of itemInformation.Images) {
+            // this.log.debug('image: ', JSON.stringify(image, null,  2));
+            await this.imageService.destroy(image.id);
         }
         await this.itemInformationRepo.destroy(id);
     }
@@ -194,15 +223,15 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        if (createRequest.key) {
-            result = await this.itemCategoryService.findOneByKey(createRequest.key);
-        } else if (createRequest.id) {
-            result = await this.itemCategoryService.findOne(createRequest.id);
+        // this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
+
+        if (createRequest.key && createRequest.market) {
+            result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);
+        } else if (createRequest.key) {
+            result = await this.itemCategoryService.findOneDefaultByKey(createRequest.key);
         } else {
             result = await this.itemCategoryService.create(createRequest);
         }
-
         return result;
     }
-
 }

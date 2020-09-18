@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,9 +12,11 @@ import {AddressCreateRequest} from '../model/AddressCreateRequest';
 export class BidRequest extends RequestBody implements ActionRequestInterface {
 
     @IsNotEmpty()
-    public sendParams: SmsgSendParams;       // PostRequest always needs to contain the send parameters for the message
+    public sendParams: SmsgSendParams;          // PostRequest always needs to contain the send parameters for the message
     @IsNotEmpty()
-    public listingItem: resources.ListingItem;  // listingItem being bidder for to be used to create the ListingItemAddMessage
+    public listingItem: resources.ListingItem;  // ListingItem being bidded for
+    @IsNotEmpty()
+    public market: resources.Market;            // Market which the ListingItem is being bidded on
     @IsNotEmpty()
     public address: AddressCreateRequest;       // bidder delivery address
 

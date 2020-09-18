@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,26 +14,41 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageSize } from '../../responses/MessageSize';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import { ListingItemAddActionService } from '../../services/action/ListingItemAddActionService';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MarketService } from '../../services/model/MarketService';
+import { MessageException } from '../../exceptions/MessageException';
+import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
+import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCommandInterface<MessageSize> {
 
-    public log: LoggerType;
-
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService
     ) {
         super(Commands.TEMPLATE_SIZE);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
+     *  [1]: market: resources.Market
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -42,8 +57,9 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<MessageSize> {
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const market: resources.Market = data.params[1];
 
-        // template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
+        // note!! template might not have a payment address (CryptocurrencyAddress) yet, so in that case we'll
         // add some data to get a more realistic result
         if (!listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress
             || _.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice.CryptocurrencyAddress)) {
@@ -59,7 +75,23 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
             }
         }
 
-        return await this.listingItemTemplateService.calculateMarketplaceMessageSize(listingItemTemplate);
+        const actionRequest = {
+            sendParams: {
+                wallet: market.Identity.wallet,
+                fromAddress: market.publishAddress,
+                toAddress: market.receiveAddress,
+                daysRetention: 1,
+                estimateFee: false
+            } as SmsgSendParams,
+            listingItem: listingItemTemplate,
+            sellerAddress: market.Identity.address,
+            imagesWithData: false
+        } as ListingItemAddRequest;
+
+        const marketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage(actionRequest);
+
+        return await this.listingItemAddActionService.getMarketplaceMessageSize(marketplaceMessage);
+
     }
 
     /**
@@ -67,23 +99,40 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplateId
      *
      * @param data
-     * @returns {Promise<ListingItemTemplate>}
+     * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+
+        // todo: pretty much the same validations as in template post
+        // ListingItemTemplate should be a market template
+        if (_.isEmpty(listingItemTemplate.market)) {
+            throw new MessageException('ListingItemTemplate has no market.');
         }
 
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new ModelNotFoundException('PaymentInformation');
+        } else if (_.isEmpty(listingItemTemplate.PaymentInformation.ItemPrice)) {
+            throw new ModelNotFoundException('ItemPrice');
+        } else if (_.isEmpty(listingItemTemplate.ItemInformation.ItemCategory)) {
+            // we cannot post without a category
+            throw new ModelNotFoundException('ItemCategory');
         }
 
-        // make sure required data exists and fetch it
-        data.params[0] = await this.listingItemTemplateService.findOne(data.params[0]).then(value => value.toJSON());
+        // make sure the Market exists for the Profile
+        const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(listingItemTemplate.Profile.id,
+            listingItemTemplate.market)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Market');
+            });
 
+        // this.log.debug('market:', JSON.stringify(market, null, 2));
+
+        data.params[0] = listingItemTemplate;
+        data.params[1] = market;
         return data;
     }
 

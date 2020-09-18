@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -60,6 +60,8 @@ export class IoC {
         await this.bindCommands();
         this.log.info('binding factories');
         await this.bindFactories();
+        this.log.info('binding message validators');
+        await this.bindMessageValidators();
         this.log.info('binding message processors');
         await this.bindMessageProcessors();
         this.log.info('binding listeners');
@@ -129,6 +131,13 @@ export class IoC {
             (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
     }
 
+    private bindMessageValidators(): Promise<void> {
+        return this.bindFiles(
+            '/messagevalidators/**/*Validator.ts',
+            Targets.MessageValidator,
+            (name: any, value: any) => this.bindFile(Types.MessageValidator, name, value));
+    }
+
     private bindMiddlewares(): Promise<void> {
         return this.bindFiles(
             '/middlewares/**/*Middleware.ts',
@@ -145,6 +154,7 @@ export class IoC {
 
     private bindListeners(): Promise<void> {
         return this.bindFiles('/listeners/**/*Listener.ts', Targets.Listener, (name: any, value: any) => {
+
             decorate(injectable(), value);
             this.container
                 .bind<any>(Types.Listener)
@@ -171,6 +181,7 @@ export class IoC {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
                 // this.log.info('bindFiles, filePath:', filePath);
+                // this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;

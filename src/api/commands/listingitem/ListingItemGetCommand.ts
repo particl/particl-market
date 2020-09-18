@@ -1,9 +1,9 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -14,92 +14,79 @@ import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { ImageDataService } from '../../services/model/ImageDataService';
+import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
-export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
-
-    public log: LoggerType;
+export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) private imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService
     ) {
         super(Commands.ITEM_GET);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemId', true, this.listingItemService),
+                new BooleanValidationRule('returnImageData', false, false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      *  [0]: listingItem: resources.ListingItem
-     *
-     * when data.params[0] is number then findById, else findOneByHash
+     *  [1]: returnImageData
      *
      * @param data
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
-        const listingItem: resources.ListingItem = data.params[0];
-        return await this.listingItemService.findOne(listingItem.id);
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.ListingItem> {
 
+        const listingItem: resources.ListingItem = data.params[0];
+        const returnImageData: boolean = data.params[1];
+
+        if (returnImageData && !_.isEmpty(listingItem.ItemInformation.Images)) {
+            for (const image of listingItem.ItemInformation.Images) {
+                for (const imageData of image.ImageDatas) {
+                    imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                }
+            }
+        }
+
+        return listingItem;
     }
 
     /**
      * data.params[]:
      *  [0]: listingItemId
-     *
-     * TODO: this command should be refactored as in the future hash could return multiple items
+     *  [1]: returnImageData (optional)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemId');
-        }
-
-        // if (data.params[0] && typeof data.params[0] !== 'number') {
-        //    throw new InvalidParamException('listingItemId', 'number');
-        // }
-
-        let listingItem: resources.ListingItem;
-
-        if (typeof data.params[0] === 'number') {
-            listingItem = await this.listingItemService.findOne(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        } else if (typeof data.params[0] === 'string') {
-            listingItem = await this.listingItemService.findOneByHash(data.params[0])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('ListingItem');
-                });
-        } else {
-            throw new InvalidParamException('listingItemId', 'number');
-        }
-
-        data.params[0] = listingItem;
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemId> ';
+        return this.getName() + ' <listingItemId> [returnImageData]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>          - Numeric - The ID of the listing item we want to retrieve. \n'
-            + '    <hash>                   - [optional] String - The hash of the listing item we want to retrieve. ';
+            + '    <listingItemId>          - number - The Id of the ListingItem we want to retrieve. \n'
+            + '    <returnImageData>        - number, optional - Whether to return image data or not. ';
     }
 
     public description(): string {
-        return 'Get a listing item via listingItemId.';
+        return 'Get a ListingItem.';
     }
 
     public example(): string {

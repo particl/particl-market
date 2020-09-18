@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -15,8 +15,6 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidService } from '../../services/model/BidService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
@@ -25,10 +23,10 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ProfileService } from '../../services/model/ProfileService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -40,6 +38,15 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     ) {
         super(Commands.BID_CANCEL);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('bidId', true, this.bidService),
+                new IdValidationRule('identityId', true, this.identityService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -80,21 +87,10 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('bidId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('identityId');
-        }
-
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('bidId', 'number');
-        } else if (typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('identityId', 'number');
-        }
-
-        const bid: resources.Bid = await this.bidService.findOne(data.params[0]).then(value => value.toJSON());
+        const bid: resources.Bid = data.params[0];
+        const identity: resources.Identity = data.params[1];
 
         // make sure ListingItem exists
         if (_.isEmpty(bid.ListingItem)) {
@@ -110,16 +106,10 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Escrow has already been completed, unable to cancel.');
         }
 
-        const listingItem: resources.ListingItem = await this.listingItemService.findOne(bid.ListingItem.id)
+        await this.listingItemService.findOne(bid.ListingItem.id)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('ListingItem');
-            });
-
-        const identity: resources.Identity = await this.identityService.findOne(data.params[1])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Identity');
             });
 
         data.params[0] = bid;
@@ -134,8 +124,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <bidId>                  - number - The id of the Bid we want to cancel. '
-            + '    <identityId>             - number - The id of the Identity used to cancel to Bid. ';
+            + '    <bidId>                  - number, The ID of the Bid we want to cancel. '
+            + '    <identityId>             - number, The ID of the Identity used to cancel to Bid. ';
     }
 
     public description(): string {

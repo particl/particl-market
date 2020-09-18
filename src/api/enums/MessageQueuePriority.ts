@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,6 +13,11 @@ export enum MessageQueuePriority {
 
     // listing events
     MPA_LISTING_ADD = 90,
+    MPA_LISTING_IMAGE_ADD = 40,
+
+    // market events
+    MPA_MARKET_ADD = 90,
+    MPA_MARKET_IMAGE_ADD = 40,
 
     // buy flow events
     MPA_BID = 80,

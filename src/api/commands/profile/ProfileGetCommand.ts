@@ -1,7 +1,8 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
+import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -37,16 +39,24 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
-        if (typeof data.params[0] === 'number') {
-            return await this.profileService.findOne(data.params[0]);
+        if (_.isNil(data.params[0])) {
+            return await this.profileService.getDefault();
+        } else if (typeof data.params[0] === 'number') {
+            return await this.profileService.findOne(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
         } else {
-            return await this.profileService.findOneByName(data.params[0]);
+            return await this.profileService.findOneByName(data.params[0])
+                .catch(reason => {
+                    throw new ModelNotFoundException('Profile');
+                });
         }
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('profileId|profileName', 'number|string');
+        if (!_.isNil(data.params[0]) && typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
+            throw new InvalidParamException('id|name', 'number|string');
         }
 
         if (data.params.length === 0) {
@@ -56,15 +66,13 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' [<profileId>|<profileName>] ';
+        return this.getName() + ' [id|name] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <profileId>              - [optional] Numeric - The ID of the Profile we want to \n'
-            + '                                retrieve. \n'
-            + '    <profileName>            - [optional] String - The name of the Profile we want to \n'
-            + '                                retrieve. ';
+            + '    <id>              - [optional] Numeric - The ID of the Profile. \n'
+            + '    <name>            - [optional] String - The name of the Profile. ';
     }
 
     public description(): string {

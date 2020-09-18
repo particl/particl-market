@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,12 +14,15 @@ import { ModelRequestInterface } from './ModelRequestInterface';
 export class ListingItemCreateRequest extends RequestBody implements ModelRequestInterface {
 
     public hash: string;
+    public removed: boolean;
 
     @IsNotEmpty()
     public msgid: string;
 
     @IsNotEmpty()
     public seller: string;
+    @IsNotEmpty()
+    public signature: string;
 
     @IsNotEmpty()
     public market: string;

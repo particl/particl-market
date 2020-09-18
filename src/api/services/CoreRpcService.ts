@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,11 +13,15 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './observer/CoreCookieService';
 import { Rpc } from 'omp-lib';
-import { RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainInfo, RpcExtKeyGenesisImport, RpcMnemonic, RpcNetworkInfo, RpcRawTx,
-    RpcUnspentOutput, RpcWallet, RpcWalletDir, RpcWalletInfo, RpcExtKey, RpcExtKeyResult } from 'omp-lib/dist/interfaces/rpc';
+import {
+    RpcAddressBalance, RpcAddressInfo, RpcBlindSendToOutput, RpcBlockchainInfo, RpcExtKeyGenesisImport, RpcMnemonic, RpcNetworkInfo, RpcRawTx,
+    RpcUnspentOutput, RpcWallet, RpcWalletDir, RpcWalletInfo, RpcExtKey, RpcExtKeyResult, RpcBalances
+} from 'omp-lib/dist/interfaces/rpc';
 import { BlindPrevout, CryptoAddress, CryptoAddressType, OutputType, Prevout } from 'omp-lib/dist/interfaces/crypto';
 import { fromSatoshis } from 'omp-lib/dist/util';
 import { CtRpc } from 'omp-lib/dist/abstract/rpc';
+import { VerifiableMessage } from '../factories/message/ListingItemAddMessageFactory';
+import { AuthOptions, RequestOptions, Headers} from 'web-request';
 
 
 decorate(injectable(), Rpc);
@@ -50,41 +54,13 @@ export class CoreRpcService extends CtRpc {
             });
     }
 
-/*
-    public async hasWallet(): Promise<boolean> {
-        return await this.getWalletInfo()
-            .then(response => {
-                // the Hash160 of the HD account pubkey (only present when HD is enabled)
-                return response.hdseedid !== undefined;
-            })
-            .catch(error => {
-                return false;
-            });
-    }
-
-    public get currentWallet(): string {
-        return this.activeWallet;
-    }
-
-    public async setActiveWallet(wallet: string): Promise<void> {
-        this.activeWallet = wallet;
-
-        const walletLoaded = await this.walletLoaded(wallet);
-        if (!walletLoaded) {
-            await this.loadWallet(wallet);
-        }
-        await this.smsgSetWallet(wallet);
-        this.log.debug('ACTIVE WALLET SET TO: ' + wallet);
-    }
-*/
-
     /**
      * Returns a list of loaded wallets.
      *
      * @returns {Promise<string>}
      */
     public async listLoadedWallets(): Promise<string[]> {
-        return await this.call('listwallets');
+        return await this.call('listwallets', undefined, undefined, false);
     }
 
     /**
@@ -104,9 +80,7 @@ export class CoreRpcService extends CtRpc {
     public async walletLoaded(name: string): Promise<boolean> {
         return await this.listLoadedWallets()
             .then(wallets => {
-                const loaded = _.includes(wallets, name);
-                this.log.debug('walletLoaded(): ', loaded);
-                return loaded;
+                return _.includes(wallets, name);
             });
     }
 
@@ -149,12 +123,16 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * Loads a wallet from a wallet file or directory.
+     * Loads a wallet from a wallet file or directory unless already loaded.
      *
      * @param walletName
      */
-    public async loadWallet(walletName: string): Promise<RpcWallet> {
-        return await this.call('loadwallet', [walletName]);
+    public async loadWallet(walletName: string): Promise<RpcWallet | boolean> {
+        const isLoaded = await this.walletLoaded(walletName);
+        if (!isLoaded) {
+            return await this.call('loadwallet', [walletName]);
+        }
+        return false;
     }
 
     /**
@@ -167,8 +145,10 @@ export class CoreRpcService extends CtRpc {
         for (const walletName of walletNames) {
             const isLoaded = await this.walletLoaded(walletName);
             if (!isLoaded) {
-                const loadedWallet: RpcWallet = await this.loadWallet( walletName);
-                loaded.push(loadedWallet.name);
+                const loadedWallet = await this.loadWallet(walletName);
+                if (loadedWallet) { // false if already loaded
+                    loaded.push((loadedWallet as RpcWallet).name);
+                }
             }
         }
         return loaded;
@@ -183,16 +163,11 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * Set secure messaging to use the specified wallet.
-     * SMSG can only be enabled on one wallet.
-     * Call with no parameters to unset the active wallet.
-     *
-     * @param walletName
+     * Returns an object with all balances in PART.
+     * @param wallet
      */
-    public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
-        const result: RpcWallet = await this.call('smsgsetwallet', [walletName]);
-        this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
-        return result;
+    public async getBalances(wallet: string): Promise<RpcBalances> {
+        return await this.call('getbalances', [], wallet);
     }
 
     /**
@@ -357,7 +332,7 @@ export class CoreRpcService extends CtRpc {
      *
      */
     public async getNetworkInfo(): Promise<RpcNetworkInfo> {
-        return await this.call('getnetworkinfo', []);
+        return await this.call('getnetworkinfo', [], undefined, false);
     }
 
     /**
@@ -385,13 +360,14 @@ export class CoreRpcService extends CtRpc {
      *   "balance"   (string) The current balance in satoshis
      *   "received"  (string) The total number of satoshis received (including change)
      * }
-     * @param wallet
-     * @param addresses
+     * @param address
      */
-    public async getAddressBalance(addresses: string[]): Promise<RpcAddressBalance> {
-        return await this.call('getaddressbalance', [{
-            addresses
-        }]);
+    // public async getAddressBalance(addresses: string[]): Promise<RpcAddressBalance> {
+    public async getAddressBalance(address: string): Promise<RpcAddressBalance> {
+        return await this.call('getaddressbalance', [address]);
+        // return await this.call('getaddressbalance', [{
+        //    addresses
+        // }]);
     }
 
     /**
@@ -445,22 +421,11 @@ export class CoreRpcService extends CtRpc {
      *
      * @param wallet
      * @param {any[]} params
-     * @param {boolean} smsgAddress
      * @returns {Promise<string>}
      */
-    public async getNewAddress(wallet: string, params: any[] = [], smsgAddress: boolean = true): Promise<string> {
-        const address = await this.call('getnewaddress', params, wallet);
-
-        if (smsgAddress) {
-            // call﻿smsgaddlocaladdress, even though I'm not sure if its required
-            const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [address], wallet);
-            this.log.debug('addLocalAddressResponse: ', addLocalAddressResponse);
-
-            // add address as receive address
-            // const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
-            // this.log.debug('localKeyResponse: ', localKeyResponse);
-        }
-        return address;
+    public async getNewAddress(wallet: string, params: any[] = []): Promise<string> {
+        // use smsgService.getNewAddress to add keys to smsg db
+        return await this.call('getnewaddress', params, wallet);
     }
 
     /**
@@ -500,14 +465,12 @@ export class CoreRpcService extends CtRpc {
 
 /*
     public async getBlindPrevouts(type: string, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // todo: create an enum for the outputtype
         this.log.debug('getBlindPrevouts(), type: ' + type + ', satoshis: ' + satoshis + ', blind: ' + blind);
         return [await this.createBlindPrevoutFrom(type, satoshis, blind)];
     }
 */
     public async getPrevouts(wallet: string, typeIn: OutputType, typeOut: OutputType, satoshis: number, blind?: string): Promise<BlindPrevout[]> {
-        // todo: create an enum for the outputtype
-        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeIn: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
+        this.log.debug('getPrevouts(), typeIn: ' + typeIn + ', typeOut: ' + typeOut + ', satoshis: ' + satoshis + ', blind: ' + blind);
         const prevOuts: BlindPrevout[] = [];
         const newPrevOut = await this.createPrevoutFrom(wallet, typeIn, typeOut, satoshis, blind);
         prevOuts.push(newPrevOut);
@@ -687,7 +650,7 @@ export class CoreRpcService extends CtRpc {
      */
     public async sendTypeTo(wallet: string, typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
         const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs], wallet);
-        this.log.debug('txid: ', txid);
+        this.log.debug('sendTypeTo(), txid: ', txid);
         return txid;
     }
 
@@ -748,10 +711,11 @@ export class CoreRpcService extends CtRpc {
      * @param allowHighFees
      * @returns {Promise<any>}
      */
-    public async sendRawTransaction(hex: string, allowHighFees: boolean = false): Promise<string> {
+    public async sendRawTransaction(hex: string/*, allowHighFees: boolean = false*/): Promise<string> {
         const params: any[] = [];
         params.push(hex);
-        params.push(allowHighFees);
+        // api change on 0.19.x
+        // params.push(allowHighFees);
         return await this.call('sendrawtransaction', params);
     }
 
@@ -775,10 +739,24 @@ export class CoreRpcService extends CtRpc {
     /**
      * Return the raw transaction data.
      *
+     * By default this function only works for mempool transactions. When called with a blockhash
+     * argument, getrawtransaction will return the transaction if the specified block is available and
+     * the transaction is found in that block. When called without a blockhash argument, getrawtransaction
+     * will return the transaction if it is in the mempool, or if -txindex is enabled and the transaction
+     * is in a block in the blockchain.
+     *
+     * Hint: Use gettransaction for wallet transactions.
+     *
+     * If verbose is 'true', returns an Object with information about 'txid'.
+     * If verbose is 'false' or omitted, returns a string that is serialized, hex-encoded data for 'txid'.
+     *
      * @returns {Promise<any>}
-     * @param txid
-     * @param verbose
-     * @param blockhash
+     * @param txid                  (string, required) The transaction id
+     * @param verbose               (boolean, optional, default=true) If false, return a string, otherwise return a json object
+     * @param blockhash             (string, optional) The block in which to look for the transaction
+     *
+     * TODO: should optionally return string (when verbose=false)
+     * TODO: needs to be fixed in omp-lib also
      */
     public async getRawTransaction(txid: string, verbose: boolean = true, blockhash?: string): Promise<RpcRawTx> {
         const params: any[] = [];
@@ -854,11 +832,10 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
-     * ﻿Reveals the private key corresponding to 'address'.
+     * ﻿Reveals the private key corresponding to 'address'. Then the importprivkey can be used with this output.
      *
      * @param wallet
-     * @param {string} address
-     * @returns {Promise<string>}
+     * @param address   (string, required) The particl address for the private key
      */
     public async dumpPrivKey(wallet: string, address: string): Promise<string> {
         const params: any[] = [address];
@@ -866,15 +843,50 @@ export class CoreRpcService extends CtRpc {
     }
 
     /**
+     * Adds a private key (as returned by dumpprivkey) to your wallet. Requires a new wallet backup.
+     *
+     * if key is invalid:  Invalid private key encoding (code -5)
+     * Seems to always return null for valid key, even if key exists.
+     *
+     * @param wallet
+     * @param key       (string, required) The private key (see dumpprivkey)
+     * @param label     (string, optional, default="") An optional label
+     * @param rescan    (boolean, optional, default=false) Rescan the wallet for transactions
+     */
+    public async importPrivKey(wallet: string, key: string, label: string = '', rescan: boolean = false): Promise<string> {
+        const params: any[] = [key, label, rescan];
+        return await this.call('importprivkey', params, wallet);
+    }
+
+    /**
+     * Adds a public key (in hex) that can be watched as if it were in your wallet but cannot be used to spend.
+     * Requires a new wallet backup.Adds a public key (in hex) that can be watched as if it were in your wallet
+     * but cannot be used to spend. Requires a new wallet backup.
+     *
+     * if key is invalid: Pubkey must be a hex string (code -5)
+     * Seems to always return null for valid key, even if key exists.
+     *
+     * @param wallet
+     * @param key       (string, required) The hex-encoded public key
+     * @param label     (string, optional, default="") An optional label
+     * @param rescan    (boolean, optional, default=false) Rescan the wallet for transactions
+     */
+    public async importPubKey(wallet: string, key: string, label: string = '', rescan: boolean = false): Promise<string> {
+        const params: any[] = [key, label, rescan];
+        return await this.call('importpubkey', params, wallet);
+    }
+
+    /**
      * Sign an object.
      *
      * @param wallet
      * @param {string} address
-     * @param {any} message
+     * @param {VerifiableMessage} message
      * @returns {Promise<string>}
      */
-    public async signMessage(wallet: string, address: string, message: any): Promise<string> {
+    public async signMessage(wallet: string, address: string, message: VerifiableMessage): Promise<string> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
+        this.log.debug('signMessage(), signableMessage: \"' + signableMessage + '\"');
         return await this.call('signmessage', [address, signableMessage], wallet);
     }
 
@@ -883,11 +895,12 @@ export class CoreRpcService extends CtRpc {
      *
      * @param {string} address
      * @param signature
-     * @param {any} message
+     * @param {VerifiableMessage} message
      * @returns {Promise<string>}
      */
-    public async verifyMessage(address: string, signature: string, message: any): Promise<boolean> {
+    public async verifyMessage(address: string, signature: string, message: VerifiableMessage): Promise<boolean> {
         const signableMessage = JSON.stringify(message).split('').sort().toString();
+        this.log.debug('verifyMessage(), signableMessage: \"' + signableMessage + '\"');
         return await this.call('verifymessage', [address, signature, signableMessage]);
     }
 
@@ -948,25 +961,24 @@ export class CoreRpcService extends CtRpc {
 
     }
 
-    private getOptions(): any {
+    private getOptions(): RequestOptions {
 
         const auth = {
             user: (process.env.RPCUSER ? process.env.RPCUSER : this.coreCookieService.getCoreRpcUsername()),
             pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.coreCookieService.getCoreRpcPassword()),
             sendImmediately: false
-        };
+        } as AuthOptions;
 
         const headers = {
             'User-Agent': 'Marketplace RPC client',
             'Content-Type': 'application/json',
             'Accept': 'application/json'
-        };
-        const rpcOpts = {
+        } as Headers;
+
+        return {
             auth,
             headers
-        };
-
-        return rpcOpts;
+        } as RequestOptions;
     }
 
     private getUrl(wallet: string | undefined): string {

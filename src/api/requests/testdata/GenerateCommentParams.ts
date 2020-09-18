@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -15,10 +15,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
     public generateListingItemTemplate = true;
     public generateListingItem = true;
     public generatePastComment = false;
-    public type = null;
-    public sender = null;
-    public receiver = null;
-    public target = null;
+    public type: string;
+    public sender: string;
+    public receiver: string;
+    public target: string;
 
     /**
      * generateParams[]:
@@ -30,10 +30,10 @@ export class GenerateCommentParams implements GenerateCommentParamsInterface {
             this.generateListingItemTemplate = generateParams[0] ? true : false;
             this.generateListingItem = generateParams[1] ? true : false;
             this.generatePastComment = generateParams[2] ? generateParams[2] : false;
-            this.sender = generateParams[3] ? generateParams[3] : null;
-            this.receiver = generateParams[4] ? generateParams[4] : null;
-            this.type = generateParams[5] ? generateParams[5] : null;
-            this.target = generateParams[6] ? generateParams[6] : null;
+            this.sender = generateParams[3] ? generateParams[3] : undefined;
+            this.receiver = generateParams[4] ? generateParams[4] : undefined;
+            this.type = generateParams[5] ? generateParams[5] : undefined;
+            this.target = generateParams[6] ? generateParams[6] : undefined;
         }
     }
 

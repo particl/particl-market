@@ -1,8 +1,11 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as express from 'express';
+import * as dotenv from 'dotenv';
+import * as databaseMigrate from '../database/migrate';
+import { app } from '../app';
 import { Container } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { Logger } from './Logger';
@@ -11,18 +14,17 @@ import { Bootstrap } from './Bootstrap';
 import { Server } from './Server';
 import { IoC } from './IoC';
 import { AppConfig } from '../config/AppConfig';
-import { Types, Core } from '../constants';
+import { Types, Core, Targets } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { DataDir } from './helpers/DataDir';
-import * as databaseMigrate from '../database/migrate';
 import { Environment } from './helpers/Environment';
 import { MessageException } from '../api/exceptions/MessageException';
 import { envConfig } from '../config/EnvironmentConfig';
-import * as dotenv from 'dotenv';
 import { ZmqWorker } from './ZmqWorker';
+import { TestDataService } from '../api/services/TestDataService';
 
 export interface Configurable {
     configure(app: App): void;
@@ -100,7 +102,6 @@ export class App {
         dotenv.config({ path: config.envFile });
 
         // Perform database migrations
-        // TODO: migrate fails when db is created from the desktop and when run from the market project and vice versa
         if (Environment.isTruthy(process.env.MIGRATE)) {
             const result = await databaseMigrate.migrate()
                 .catch(reason => {
@@ -144,9 +145,19 @@ export class App {
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
 
-        this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
+        if (Environment.isTruthy(process.env.ZMQ_ENABLED)) {
+            this.zmqWorker = this.bootstrapApp.createZmqWorker(this.ioc);
+        }
 
         this.log.info('App is ready!');
+
+        if (Environment.isTest()/*|| Environment.isBlackBoxTest()*/) {
+            // todo: add env var for clean start
+            // clean up db
+            const testDataService: TestDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+            await testDataService.clean();
+            this.log.info('DB cleaned!');
+        }
 
         const eventEmitter = this.ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
         eventEmitter.emit(ServerStartedListener.Event, 'Hello!');

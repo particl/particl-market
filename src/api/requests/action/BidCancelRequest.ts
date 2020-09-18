@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,6 +12,7 @@ export class BidCancelRequest extends RequestBody implements ActionRequestInterf
 
     @IsNotEmpty()
     public sendParams: SmsgSendParams;          // ActionRequest always needs to contain the send parameters for the message
+
     @IsNotEmpty()
     public bid: resources.Bid;                  // bid which we're canceling
 

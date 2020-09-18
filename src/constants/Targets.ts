@@ -1,8 +1,6 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
-import {IdentityRepository} from '../api/repositories/IdentityRepository';
 
 /**
  * constants.Targets
@@ -29,8 +27,8 @@ export const Targets = {
         FlaggedItem: 'FlaggedItem',
         Identity: 'Identity',
         ItemCategory: 'ItemCategory',
-        ItemImage: 'ItemImage',
-        ItemImageData: 'ItemImageData',
+        Image: 'Image',
+        ImageData: 'ImageData',
         ItemInformation: 'ItemInformation',
         ItemLocation: 'ItemLocation',
         ItemPrice: 'ItemPrice',
@@ -72,8 +70,8 @@ export const Targets = {
         FlaggedItemRepository: 'FlaggedItemRepository',
         IdentityRepository: 'IdentityRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
-        ItemImageDataRepository: 'ItemImageDataRepository',
-        ItemImageRepository: 'ItemImageRepository',
+        ImageDataRepository: 'ImageDataRepository',
+        ImageRepository: 'ImageRepository',
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
@@ -104,7 +102,6 @@ export const Targets = {
     Service:     {
         action: {
             ActionServiceInterface: 'ActionServiceInterface',
-            BaseActionService: 'BaseActionService',
             BidAcceptActionService: 'BidAcceptActionService',
             BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
@@ -115,16 +112,21 @@ export const Targets = {
             EscrowRefundActionService: 'EscrowRefundActionService',
             EscrowReleaseActionService: 'EscrowReleaseActionService',
             ListingItemAddActionService: 'ListingItemAddActionService',
+            ListingItemImageAddActionService: 'ListingItemImageAddActionService',
+            MarketAddActionService: 'MarketAddActionService',
+            MarketImageAddActionService: 'MarketImageAddActionService',
             OrderItemShipActionService: 'OrderItemShipActionService',
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
+        BaseActionService: 'BaseActionService',
+        BaseBidActionService: 'BaseBidActionService',
         CoreRpcService: 'CoreRpcService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
         DefaultSettingService: 'DefaultSettingService',
-        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
+        ImageHttpUploadService: 'ImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
@@ -139,8 +141,8 @@ export const Targets = {
             FlaggedItemService: 'FlaggedItemService',
             IdentityService: 'IdentityService',
             ItemCategoryService: 'ItemCategoryService',
-            ItemImageDataService: 'ItemImageDataService',
-            ItemImageService: 'ItemImageService',
+            ImageDataService: 'ImageDataService',
+            ImageService: 'ImageService',
             ItemInformationService: 'ItemInformationService',
             ItemLocationService: 'ItemLocationService',
             ItemPriceService: 'ItemPriceService',
@@ -169,8 +171,13 @@ export const Targets = {
             VoteService: 'VoteService'
         },
         observer: {
+            BaseObserverService: 'BaseObserverService',
             CoreCookieService: 'CoreCookieService',
-            CoreConnectionStatusService: 'CoreConnectionStatusService'
+            CoreConnectionStatusService: 'CoreConnectionStatusService',
+            ExpiredListingItemService: 'ExpiredListingItemService',
+            ExpiredProposalService: 'ExpiredProposalService',
+            ProposalResultRecalcService: 'ProposalResultRecalcService',
+            WaitingMessageService: 'WaitingMessageService'
         },
         OmpService: 'OmpService',
         SmsgService: 'SmsgService',
@@ -196,6 +203,7 @@ export const Targets = {
             BidRejectCommand: 'BidRejectCommand',
             BidRootCommand: 'BidRootCommand',
             BidSearchCommand: 'BidSearchCommand',
+            BidGetCommand: 'BidGetCommand',
             BidSendCommand: 'BidSendCommand'
         },
         blacklist: {
@@ -239,6 +247,7 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         identity: {
+            IdentityAddCommand: 'IdentityAddCommand',
             IdentityListCommand: 'IdentityListCommand',
             IdentityRootCommand: 'IdentityRootCommand'
         },
@@ -251,11 +260,12 @@ export const Targets = {
             ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
-        itemimage: {
-            ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageListCommand: 'ItemImageListCommand',
-            ItemImageRemoveCommand: 'ItemImageRemoveCommand',
-            ItemImageRootCommand: 'ItemImageRootCommand'
+        image: {
+            ImageAddCommand: 'ImageAddCommand',
+            ImageCompressCommand: 'ImageCompressCommand',
+            ImageListCommand: 'ImageListCommand',
+            ImageRemoveCommand: 'ImageRemoveCommand',
+            ImageRootCommand: 'ImageRootCommand'
         },
         iteminformation: {
             ItemInformationGetCommand: 'ItemInformationGetCommand',
@@ -263,8 +273,6 @@ export const Targets = {
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
         },
         itemlocation: {
-            ItemLocationAddCommand: 'ItemLocationAddCommand',
-            ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
             ItemLocationRootCommand: 'ItemLocationRootCommand',
             ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
@@ -292,10 +300,15 @@ export const Targets = {
         },
         market: {
             MarketAddCommand: 'MarketAddCommand',
+            MarketFlagCommand: 'MarketFlagCommand',
+            MarketGetCommand: 'MarketGetCommand',
             MarketListCommand: 'MarketListCommand',
             MarketRemoveCommand: 'MarketRemoveCommand',
+            MarketJoinCommand: 'MarketJoinCommand',
+            MarketPostCommand: 'MarketPostCommand',
+            MarketSearchCommand: 'MarketSearchCommand',
             MarketRootCommand: 'MarketRootCommand',
-            MarketSetDefaultCommand: 'MarketSetDefaultCommand'
+            MarketDefaultCommand: 'MarketDefaultCommand'
         },
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
@@ -309,7 +322,8 @@ export const Targets = {
             OrderItemHistoryCommand: 'OrderItemHistoryCommand',
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemShipCommand: 'OrderItemShipCommand',
-            OrderItemStatusCommand: 'OrderItemStatusCommand'
+            OrderItemStatusCommand: 'OrderItemStatusCommand',
+            OrderItemSearchCommand: 'OrderItemSearchCommand'
         },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
@@ -320,6 +334,7 @@ export const Targets = {
         },
         profile: {
             ProfileAddCommand: 'ProfileAddCommand',
+            ProfileDefaultCommand: 'ProfileDefaultCommand',
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileListCommand: 'ProfileListCommand',
             ProfileRemoveCommand: 'ProfileRemoveCommand',
@@ -377,20 +392,22 @@ export const Targets = {
     },
     Factory:     {
         hashableconfig: {
+            HashableField: 'HashableField',
             createrequest: {
                 HashableBidBasicCreateRequestConfig: 'HashableBidBasicCreateRequestConfig',
                 HashableBidCreateRequestConfig: 'HashableBidCreateRequestConfig',
                 HashableCommentCreateRequestConfig: 'HashableCommentCreateRequestConfig',
                 HashableItemCategoryCreateRequestConfig: 'HashableItemCategoryCreateRequestConfig',
-                HashableItemImageCreateRequestConfig: 'HashableItemImageCreateRequestConfig',
+                HashableImageCreateRequestConfig: 'HashableImageCreateRequestConfig',
                 HashableListingItemTemplateCreateRequestConfig: 'HashableListingItemTemplateCreateRequestConfig',
+                HashableMarketCreateRequestConfig: 'HashableMarketCreateRequestConfig',
                 HashableOrderCreateRequestConfig: 'HashableOrderCreateRequestConfig',
                 HashableProposalCreateRequestConfig: 'HashableProposalCreateRequestConfig'
             },
-            HashableField: 'HashableField',
             message: {
                 HashableBidMessageConfig: 'HashableBidMessageConfig',
                 HashableCommentAddMessageConfig: 'HashableCommentAddMessageConfig',
+                HashableMarketAddMessageConfig: 'HashableMarketAddMessageConfig',
                 HashableProposalAddMessageConfig: 'HashableProposalAddMessageConfig',
                 HashableProposalOptionMessageConfig: 'HashableProposalOptionMessageConfig'
             },
@@ -398,42 +415,90 @@ export const Targets = {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
             }
         },
-        ImageFactory: 'ImageFactory',
-        ItemCategoryFactory: 'ItemCategoryFactory',
+        MessageFactoryInterface: 'MessageFactoryInterface',
+        ModelCreateParams: 'ModelCreateParams',
+        ModelFactoryInterface: 'ModelFactoryInterface',
+        RpcCommandFactory: 'RpcCommandFactory',
         message: {
+            BaseMessageFactory: 'BaseMessageFactory',
+            BidMessageFactory: 'BidMessageFactory',
+            BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',
             BidRejectMessageFactory: 'BidRejectMessageFactory',
             CommentAddMessageFactory: 'CommentAddMessageFactory',
             EscrowCompleteMessageFactory: 'EscrowCompleteMessageFactory',
+            EscrowLockMessageFactory: 'EscrowLockMessageFactory',
             EscrowRefundMessageFactory: 'EscrowRefundMessageFactory',
             EscrowReleaseMessageFactory: 'EscrowReleaseMessageFactory',
             ListingItemAddMessageFactory: 'ListingItemAddMessageFactory',
-            MessageFactoryInterface: 'MessageFactoryInterface',
+            ListingItemImageAddMessageFactory: 'ListingItemImageAddMessageFactory',
+            MarketAddMessageFactory: 'MarketAddMessageFactory',
+            MarketImageAddMessageFactory: 'MarketImageAddMessageFactory',
             OrderItemShipMessageFactory: 'OrderItemShipMessageFactory',
             ProposalAddMessageFactory: 'ProposalAddMessageFactory',
             VoteMessageFactory: 'VoteMessageFactory'
         },
-        MessagingInformationFactory: 'MessagingInformationFactory',
         model: {
             BidFactory: 'BidFactory',
             CommentFactory: 'CommentFactory',
+            ImageFactory: 'ImageFactory',
+            ImageDataFactory: 'ImageDataFactory',
+            ItemCategoryFactory: 'ItemCategoryFactory',
+            ItemInformationFactory: 'ItemInformationFactory',
             ListingItemFactory: 'ListingItemFactory',
             ListingItemTemplateFactory: 'ListingItemTemplateFactory',
-            ModelCreateParams: 'ModelCreateParams',
-            ModelFactoryInterface: 'ModelFactoryInterface',
+            MarketFactory: 'MarketFactory',
             OrderFactory: 'OrderFactory',
+            OrderItemFactory: 'OrderItemFactory',
+            PaymentInformationFactory: 'PaymentInformationFactory',
             ProposalFactory: 'ProposalFactory',
             SmsgMessageFactory: 'SmsgMessageFactory',
             VoteFactory: 'VoteFactory'
-        },
-        RpcCommandFactory: 'RpcCommandFactory'
+        }
+    },
+    MessageValidator:     {
+        BidAcceptValidator: 'BidAcceptValidator',
+        BidCancelValidator: 'BidCancelValidator',
+        BidRejectValidator: 'BidRejectValidator',
+        BidValidator: 'BidValidator',
+        CommentAddValidator: 'CommentAddValidator',
+        EscrowCompleteValidator: 'EscrowCompleteValidator',
+        EscrowLockValidator: 'EscrowLockValidator',
+        EscrowRefundValidator: 'EscrowRefundValidator',
+        EscrowReleaseValidator: 'EscrowReleaseValidator',
+        ListingItemAddValidator: 'ListingItemAddValidator',
+        ListingItemImageAddValidator: 'ListingItemImageAddValidator',
+        MarketAddValidator: 'MarketAddValidator',
+        MarketImageAddValidator: 'MarketImageAddValidator',
+        OrderItemShipValidator: 'OrderItemShipValidator',
+        ProposalAddValidator: 'ProposalAddValidator',
+        VoteValidator: 'VoteValidator'
     },
     MessageProcessor:     {
+        action: {
+            BidAcceptActionMessageProcessor: 'BidAcceptActionMessageProcessor',
+            BidActionMessageProcessor: 'BidActionMessageProcessor',
+            BidCancelActionMessageProcessor: 'BidCancelActionMessageProcessor',
+            BidRejectActionMessageProcessor: 'BidRejectActionMessageProcessor',
+            CommentAddActionMessageProcessor: 'CommentAddActionMessageProcessor',
+            EscrowCompleteActionMessageProcessor: 'EscrowCompleteActionMessageProcessor',
+            EscrowLockActionMessageProcessor: 'EscrowLockActionMessageProcessor',
+            EscrowRefundActionMessageProcessor: 'EscrowRefundActionMessageProcessor',
+            EscrowReleaseActionMessageProcessor: 'EscrowReleaseActionMessageProcessor',
+            ListingItemAddActionMessageProcessor: 'ListingItemAddActionMessageProcessor',
+            ListingItemImageAddActionMessageProcessor: 'ListingItemImageAddActionMessageProcessor',
+            MarketAddActionMessageProcessor: 'MarketAddActionMessageProcessor',
+            MarketImageAddActionMessageProcessor: 'MarketImageAddActionMessageProcessor',
+            OrderItemShipActionMessageProcessor: 'OrderItemShipActionMessageProcessor',
+            ProposalAddActionMessageProcessor: 'ProposalAddActionMessageProcessor',
+            VoteActionMessageProcessor: 'VoteActionMessageProcessor'
+        },
+        ActionMessageProcessorInterface: 'ActionMessageProcessorInterface',
+        BaseActionMessageProcessor: 'BaseActionMessageProcessor',
+        BaseBidActionMessageProcessor: 'BaseBidActionMessageProcessor',
         CoreMessageProcessor: 'CoreMessageProcessor',
-        ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface',
-        ProposalResultProcessor: 'ProposalResultProcessor',
-        WaitingMessageProcessor: 'WaitingMessageProcessor'
+        MarketplaceMessageProcessor: 'MarketplaceMessageProcessor',
+        MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
@@ -442,27 +507,10 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        action: {
-            BidAcceptActionListener: 'BidAcceptActionListener',
-            BidActionListener: 'BidActionListener',
-            BidCancelActionListener: 'BidCancelActionListener',
-            BidRejectActionListener: 'BidRejectActionListener',
-            CommentAddActionListener: 'CommentAddActionListener',
-            EscrowCompleteActionListener: 'EscrowCompleteActionListener',
-            EscrowLockActionListener: 'EscrowLockActionListener',
-            EscrowRefundActionListener: 'EscrowRefundActionListener',
-            EscrowReleaseActionListener: 'EscrowReleaseActionListener',
-            ListingItemAddActionListener: 'ListingItemAddActionListener',
-            OrderItemShipActionListener: 'OrderItemShipActionListener',
-            ProposalAddActionListener: 'ProposalAddActionListener',
-            VoteActionListener: 'VoteActionListener'
-        },
-        ActionListenerInterface: 'ActionListenerInterface',
-        BaseActionListenr: 'BaseActionListenr',
         ServerStartedListener: 'ServerStartedListener'
     },
     Controller:     {
-        ItemImageController: 'ItemImageController',
+        ImageController: 'ImageController',
         RpcController: 'RpcController'
     }
 };

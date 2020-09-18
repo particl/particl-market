@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,6 +14,7 @@ import { SettingService } from './model/SettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { IdentityService } from './model/IdentityService';
 import { DefaultSettingService } from './DefaultSettingService';
+import { IdentityType } from '../enums/IdentityType';
 
 export class DefaultProfileService {
 
@@ -39,7 +40,7 @@ export class DefaultProfileService {
     public async seedDefaultProfile(): Promise<resources.Profile> {
 
         // retrieve the default Profile id, if it exists
-        const defaultProfileIdSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.DEFAULT_PROFILE_ID)
+        const defaultProfileIdSettings: resources.Setting[] = await this.settingService.findAllByKey(SettingValue.APP_DEFAULT_PROFILE_ID)
             .then(value => value.toJSON());
         const defaultProfileIdSetting = defaultProfileIdSettings[0];
 
@@ -52,6 +53,17 @@ export class DefaultProfileService {
             const profiles = await this.profileService.findAll().then(value => value.toJSON());
             if (profiles.length > 0) {
                 profile = profiles[0];
+
+                // try to find the Profile Identity
+                const profileIdentity: resources.Identity | undefined = _.find(profile.Identities, identity => {
+                    return identity.type === IdentityType.PROFILE;
+                });
+
+                if (_.isEmpty(profileIdentity)) {
+                    // no Profile Identity was found -> create
+                    await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
+                }
+
             } else {
                 // we are starting the mp for the first time and there's no Profile
 
@@ -61,7 +73,7 @@ export class DefaultProfileService {
                 } as ProfileCreateRequest).then(value => value.toJSON());
 
                 // create Identity for default Profile
-                const identity: resources.Identity = await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
+                await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
             }
 
             // create or update the default profile Setting

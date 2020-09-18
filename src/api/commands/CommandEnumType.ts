@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -22,12 +22,13 @@ export class CommandEnumType extends Enum<Command> {
         [this.DATA_ROOT], EnvironmentType.DEVELOPMENT);
 
     public BID_SEARCH: Command      = new Command('bidsearch', 'search', false);
+    public BID_GET: Command         = new Command('bidget', 'get', false);
     public BID_ACCEPT: Command      = new Command('bidaccept', 'accept', false);
     public BID_CANCEL: Command      = new Command('bidcancel', 'cancel', false);
     public BID_REJECT: Command      = new Command('bidreject', 'reject', false);
     public BID_SEND: Command        = new Command('bidsend', 'send', false);
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
-        [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
+        [this.BID_SEARCH, this.BID_GET, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND], EnvironmentType.ALL);
 
     public COMMENT_POST: Command    = new Command('commentpost', 'post', false);
     public COMMENT_GET: Command     = new Command('commentget', 'get', false);
@@ -73,11 +74,12 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMLOCATION_ROOT: Command       = new Command('itemlocation', 'location', true,
         [this.ITEMLOCATION_ADD, this.ITEMLOCATION_UPDATE, this.ITEMLOCATION_REMOVE], EnvironmentType.ALL);
 
-    public ITEMIMAGE_LIST: Command          = new Command('itemimagelist', 'list', false);
-    public ITEMIMAGE_ADD: Command           = new Command('itemimageadd', 'add', false);
-    public ITEMIMAGE_REMOVE: Command        = new Command('itemimageremove', 'remove', false);
-    public ITEMIMAGE_ROOT: Command          = new Command('itemimage', 'image', true,
-        [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE], EnvironmentType.ALL);
+    public IMAGE_ADD: Command               = new Command('imageadd', 'add', false);
+    public IMAGE_COMPRESS: Command          = new Command('imagecompress', 'compress', false);
+    public IMAGE_LIST: Command              = new Command('imagelist', 'list', false);
+    public IMAGE_REMOVE: Command            = new Command('imageremove', 'remove', false);
+    public IMAGE_ROOT: Command              = new Command('image', 'image', true,
+        [this.IMAGE_ADD, this.IMAGE_COMPRESS, this.IMAGE_LIST, this.IMAGE_REMOVE], EnvironmentType.ALL);
 
     public ITEMINFORMATION_GET: Command     = new Command('iteminformationget', 'get', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
@@ -97,7 +99,7 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
         [this.TEMPLATE_SEARCH, this.TEMPLATE_GET, this.TEMPLATE_ADD, this.TEMPLATE_REMOVE, this.TEMPLATE_POST,
             this.TEMPLATE_IMPORT, this.TEMPLATE_SIZE, this.TEMPLATE_COMPRESS, this.TEMPLATE_CLONE, this.ITEMINFORMATION_ROOT,
-            this.TEMPLATE_FEATURED_IMAGE, this.ITEMIMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
+            this.TEMPLATE_FEATURED_IMAGE, this.IMAGE_ROOT, this.ITEMLOCATION_ROOT, this.SHIPPINGDESTINATION_ROOT,
             this.MESSAGINGINFORMATION_ROOT, this.PAYMENTINFORMATION_ROOT, this.ESCROW_ROOT],
         EnvironmentType.ALL);
 
@@ -128,11 +130,12 @@ export class CommandEnumType extends Enum<Command> {
     public PROFILE_ADD: Command         = new Command('profileadd', 'add', false);
     public PROFILE_UPDATE: Command      = new Command('profileupdate', 'update', false);
     public PROFILE_REMOVE: Command      = new Command('profileremove', 'remove', false);
+    public PROFILE_DEFAULT: Command     = new Command('profiledefault', 'default', false);
     // public PROFILE_ADDRESS: Command     = new Command('profileaddress', 'address', true);      // link to root
     // public PROFILE_FAVORITE: Command    = new Command('profilefavorite', 'favorite', true);    // link to root
     public PROFILE_ROOT: Command        = new Command('profile', 'profile', true,
         [this.PROFILE_LIST, this.PROFILE_GET, this.PROFILE_ADD, this.PROFILE_UPDATE, this.PROFILE_REMOVE,
-            this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
+            this.PROFILE_DEFAULT, this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
 
     public PROPOSAL_GET: Command         = new Command('proposalget', 'get', false);
     public PROPOSAL_POST: Command        = new Command('proposalpost', 'post', false);
@@ -141,12 +144,18 @@ export class CommandEnumType extends Enum<Command> {
     public PROPOSAL_ROOT: Command        = new Command('proposal', 'proposal', true,
         [this.PROPOSAL_GET, this.PROPOSAL_POST, this.PROPOSAL_LIST, this.PROPOSAL_RESULT], EnvironmentType.ALL);
 
-    public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
     public MARKET_ADD: Command          = new Command('marketadd', 'add', false);
+    public MARKET_DEFAULT: Command      = new Command('marketdefault', 'default', false);
+    public MARKET_FLAG: Command         = new Command('marketflag', 'flag', false);
+    public MARKET_GET: Command          = new Command('marketget', 'get', false);
+    public MARKET_JOIN: Command         = new Command('marketjoin', 'join', false);
+    public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
+    public MARKET_POST: Command         = new Command('marketpost', 'post', false);
+    public MARKET_SEARCH: Command       = new Command('marketsearch', 'search', false);
     public MARKET_REMOVE: Command       = new Command('marketremove', 'remove', false);
-    public MARKET_SETDEFAULT: Command   = new Command('marketsetdefault', 'default', false);
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
-        [this.MARKET_LIST, this.MARKET_ADD, this.MARKET_REMOVE, this.MARKET_SETDEFAULT], EnvironmentType.ALL);
+        [this.MARKET_LIST, this.MARKET_ADD, this.MARKET_REMOVE, this.MARKET_DEFAULT, this.MARKET_FLAG,
+            this.MARKET_JOIN, this.MARKET_GET, this.MARKET_POST, this.MARKET_SEARCH], EnvironmentType.ALL);
 
     public SHOPPINGCART_LIST: Command   = new Command('cartlist', 'list', false);
     public SHOPPINGCART_GET: Command    = new Command('cartget', 'get', false);
@@ -175,8 +184,9 @@ export class CommandEnumType extends Enum<Command> {
     public ORDERITEM_HISTORY: Command   = new Command('orderitemhistory', 'history', false);
     public ORDERITEM_STATUS: Command    = new Command('orderitemstatus', 'status', false);
     public ORDERITEM_SHIP: Command      = new Command('orderitemship', 'ship', false);
+    public ORDERITEM_SEARCH: Command    = new Command('orderitemsearch', 'search', false);
     public ORDERITEM_ROOT: Command      = new Command('orderitem', 'orderitem', true,
-        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP], EnvironmentType.ALL);
+        [this.ORDERITEM_HISTORY, this.ORDERITEM_STATUS, this.ORDERITEM_SHIP, this.ORDERITEM_SEARCH], EnvironmentType.ALL);
 
     public PRICETICKER_ROOT: Command    = new Command('priceticker', 'priceticker', true);
 
@@ -202,8 +212,9 @@ export class CommandEnumType extends Enum<Command> {
         [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
     public IDENTITY_LIST: Command         = new Command('identitylist', 'list', false);
+    public IDENTITY_ADD: Command         = new Command('identityadd', 'add', false);
     public IDENTITY_ROOT: Command         = new Command('identity', 'identity', true,
-        [this.IDENTITY_LIST], EnvironmentType.ALL);
+        [this.IDENTITY_ADD, this.IDENTITY_LIST], EnvironmentType.ALL);
 
     public BLACKLIST_LIST: Command      = new Command('blacklistlist', 'list', false);
     public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,

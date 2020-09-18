@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -84,7 +84,6 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
             throw new InvalidParamException('publicKey', 'string');
         }
 
-        // make sure ListingItemTemplate with the id exists
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
             .then(value => {
                 return value.toJSON();

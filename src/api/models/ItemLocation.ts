@@ -1,22 +1,22 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
 import { LocationMarker } from './LocationMarker';
+import { ItemInformation } from './ItemInformation';
 
 export class ItemLocation extends Bookshelf.Model<ItemLocation> {
 
+    public static RELATIONS = [
+        'LocationMarker',
+        'ItemInformation'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemLocation> {
-        if (withRelated) {
-            return await ItemLocation.where<ItemLocation>({ id: value }).fetch({
-                withRelated: [
-                    'LocationMarker'
-                ]
+        return ItemLocation.where<ItemLocation>({ id: value }).fetch({
+                withRelated: withRelated ? this.RELATIONS : undefined
             });
-        } else {
-            return await ItemLocation.where<ItemLocation>({ id: value }).fetch();
-        }
     }
 
     public get tableName(): string { return 'item_locations'; }
@@ -42,5 +42,9 @@ export class ItemLocation extends Bookshelf.Model<ItemLocation> {
 
     public LocationMarker(): LocationMarker {
         return this.hasOne(LocationMarker);
+    }
+
+    public ItemInformation(): ItemInformation {
+        return this.belongsTo(ItemInformation);
     }
 }

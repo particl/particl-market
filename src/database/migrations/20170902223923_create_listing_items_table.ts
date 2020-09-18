@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,6 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('hash').notNullable();   // .notNullable().unique();
 
             table.string('seller').notNullable();
+            table.string('signature').notNullable();
             table.string('market').notNullable();
 
             table.integer('listing_item_template_id').unsigned().nullable();

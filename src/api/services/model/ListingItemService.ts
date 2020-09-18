@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -28,7 +28,7 @@ import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { CommentService } from './CommentService';
 import { CommentType } from '../../enums/CommentType';
-import { ItemImageService } from './ItemImageService';
+import { ImageService } from './ImageService';
 import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 export class ListingItemService {
@@ -39,7 +39,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) public shoppingCartItemService: ShoppingCartItemService,
@@ -64,8 +64,7 @@ export class ListingItemService {
      * @returns {Promise<ListingItem>}
      */
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        const listingItems = await this.listingItemRepo.findAllByHash(hash, withRelated);
-        return listingItems;
+        return await this.listingItemRepo.findAllByHash(hash, withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -78,21 +77,19 @@ export class ListingItemService {
     }
 
     /**
-     * TODO: DEPRECATED, shouldnt be used since a ListingItem with the same hash can exist in multiple markets
      *
      * @param {string} hash
+     * @param marketReceiveAddress
      * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
-        // this.log.debug('findOneByHash(), hash: ', hash);
-        const listingItems = await this.findAllByHash(hash, withRelated);
-        // this.log.debug('findOneByHash(), listingItems: ', JSON.stringify(listingItems, null, 2));
-        if (listingItems.size() === 0) {
-            this.log.warn(`ListingItem with the hash=${hash} was not found!`);
+    public async findOneByHashAndMarketReceiveAddress(hash: string, marketReceiveAddress: string, withRelated: boolean = true): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHashAndMarketReceiveAddress(hash, marketReceiveAddress, withRelated);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the hash=${hash} and market=${marketReceiveAddress} was not found!`);
             throw new NotFoundException(hash);
         }
-        return listingItems.at(0);
+        return listingItem;
     }
 
     public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<ListingItem> {
@@ -114,10 +111,8 @@ export class ListingItemService {
     @validate()
     public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams,
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        // if valid params
-        // todo: check whether category is string or number, if string, try to find the Category by key
 
-        this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
+        // this.log.debug('searchBy(), options: ', JSON.stringify(options, null, 2));
         return await this.listingItemRepo.search(options, withRelated);
     }
 
@@ -128,59 +123,52 @@ export class ListingItemService {
      */
     @validate()
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
-        const startTime = new Date().getTime();
 
-        const body = JSON.parse(JSON.stringify(data));
+        const body: ListingItemCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
-        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
-        delete body.messagingInformation;
         const listingItemObjects = body.listingItemObjects || [];
+
+        delete body.itemInformation;
+        delete body.paymentInformation;
+        delete body.messagingInformation;
         delete body.listingItemObjects;
 
         // this.log.debug('body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the listingItem
-        const listingItem: resources.ListingItem = await this.listingItemRepo.create(body)
-            .then(value => value.toJSON());
+        const listingItem: resources.ListingItem = await this.listingItemRepo.create(body).then(value => value.toJSON());
 
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_id = listingItem.id;
-            await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+            await this.itemInformationService.create(itemInformation);
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.id;
-            await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            await this.paymentInformationService.create(paymentInformation);
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_id = listingItem.id;
-                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+                await this.messagingInformationService.create(msgInfo);
             }
         }
 
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_id = listingItem.id;
-                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+                await this.listingItemObjectService.create(object);
             }
         }
 
-        // finally find and return the created listingItem
-        const result = await this.findOne(listingItem.id);
-
-        // this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
-
-        return result;
-
+        return await this.findOne(listingItem.id);
     }
 
     /**
@@ -203,12 +191,13 @@ export class ListingItemService {
         listingItem.hash = body.hash;
         listingItem.seller = body.seller;
         listingItem.market = body.market;
-        listingItem.expiryTime = body.expiryTime;
-        listingItem.postedAt = body.postedAt;
-        listingItem.expiredAt = body.expiredAt;
-        listingItem.receivedAt = body.receivedAt;
         listingItem.removed = body.removed;
-        listingItem.generatedAt = body.generatedAt;
+
+        // listingItem.expiryTime = body.expiryTime;
+        // listingItem.postedAt = body.postedAt;
+        // listingItem.expiredAt = body.expiredAt;
+        // listingItem.receivedAt = body.receivedAt;
+        // listingItem.generatedAt = body.generatedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem);
@@ -216,18 +205,17 @@ export class ListingItemService {
         // update related ItemInformation
         // if the related one exists already, then update. if it doesnt exist, create.
         // and if the related one is missing, then remove.
-        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
+        let itemInformation = updatedListingItem.related('ItemInformation').toJSON();
 
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
-                const itemInformationId = itemInformation.id;
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation);
+                await this.itemInformationService.update(itemInformation.id, itemInformation);
             } else {
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+                await this.itemInformationService.create(itemInformation);
             }
         } else if (!_.isEmpty(itemInformation)) {
             await this.itemInformationService.destroy(itemInformation.id);
@@ -333,6 +321,7 @@ export class ListingItemService {
         }
 
         // Comments dont have a hard link to ListinItems
+        // TODO: we might not want to delete Comments just yet since the LstingItem might get relisted
         const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {
@@ -344,29 +333,15 @@ export class ListingItemService {
             }
         });
 
-        // manually remove ItemImages
-        if (!_.isEmpty(listingItem.ItemInformation.ItemImages)) {
-            for (const image of listingItem.ItemInformation.ItemImages) {
-                await this.itemImageService.destroy(image.id);
+        // manually remove Images
+        if (!_.isEmpty(listingItem.ItemInformation.Images)) {
+            for (const image of listingItem.ItemInformation.Images) {
+                await this.imageService.destroy(image.id);
             }
         }
         this.log.debug('destroy(), deleting ListingItem:', listingItem.id);
 
         await this.listingItemRepo.destroy(listingItem.id);
-    }
-
-    /**
-     * delete expired listing items
-     *
-     * @returns {Promise<void>}
-     */
-    public async deleteExpiredListingItems(): Promise<void> {
-       const listingItems: resources.ListingItem[] = await this.findAllExpired().then(value => value.toJSON());
-       for (const listingItem of listingItems) {
-           if (listingItem.expiredAt <= Date.now()) {
-               await this.destroy(listingItem.id);
-           }
-       }
     }
 
     /**
@@ -383,12 +358,12 @@ export class ListingItemService {
     }
 
     /**
-     * Flag listing as removed
+     * Flag ListingItem as removed
      *
      * @returns {Promise<void>}
      */
-    public async setRemovedFlag(itemHash: string, removed: boolean): Promise<void> {
-        const listingItem: resources.ListingItem = await this.findOneByHash(itemHash).then(value => value.toJSON());
+    public async setRemovedFlag(id: number, removed: boolean): Promise<void> {
+        const listingItem: resources.ListingItem = await this.findOne(id).then(value => value.toJSON());
         await this.listingItemRepo.update(listingItem.id, { removed });
      }
 

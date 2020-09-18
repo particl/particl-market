@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,12 +8,11 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BidMessage } from '../../messages/action/BidMessage';
-import { MessageException } from '../../exceptions/MessageException';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
 import { BidDataCreateRequest } from '../../requests/model/BidDataCreateRequest';
 import { HashableBidField, MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
-import { BidCreateParams } from './ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { BidCreateParams } from '../ModelCreateParams';
 import { BidAcceptMessage } from '../../messages/action/BidAcceptMessage';
 import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
@@ -48,126 +47,90 @@ export class BidFactory implements ModelFactoryInterface {
      * create a BidCreateRequest
      *
      * @param params
-     * @param bidMessage
-     * @param smsgMessage
      */
-    public async get(params: BidCreateParams, bidMessage: BidMessageTypes, smsgMessage: resources.SmsgMessage): Promise<BidCreateRequest> {
+    public async get(params: BidCreateParams): Promise<BidCreateRequest> {
 
-        // check that the bidAction is valid
-        if (this.checkBidMessageActionValidity(bidMessage, params.parentBid)) {
-            const bidDataValues = {};
+        const actionMessage: BidMessageTypes = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage | undefined = params.smsgMessage;
+        const bidDataValues = {};
 
-            // copy the existing key-value pairs from parentBid.BidDatas
-            if (params.parentBid && params.parentBid.BidDatas) {
-                for (const bidData of params.parentBid.BidDatas) {
-                    bidDataValues[bidData.key] = bidData.value;
+        // copy the existing key-value pairs from parentBid.BidDatas
+        if (params.parentBid && params.parentBid.BidDatas) {
+            for (const bidData of params.parentBid.BidDatas) {
+                bidDataValues[bidData.key] = bidData.value;
+            }
+        }
+
+        if (params.parentBid && params.parentBid.ChildBids) {
+            for (const childBid of params.parentBid.ChildBids) {
+                if (childBid.BidDatas) {
+                    for (const bidData of childBid.BidDatas) {
+                        bidDataValues[bidData.key] = bidData.value;
+                    }
                 }
             }
+        }
 
-            // copy the new key-value pairs from bidMessage overriding the old if some exist
-            if (bidMessage.objects) {
-                for (const bidData of bidMessage.objects) {
-                    bidDataValues[bidData.key] = bidData.value;
-                }
+        // copy the new key-value pairs from bidMessage overriding the old if some exist
+        if (actionMessage.objects) {
+            for (const bidData of actionMessage.objects) {
+                bidDataValues[bidData.key] = bidData.value;
             }
+        }
 
-            // create bidDataCreateRequests
-            const bidDatas = Object.keys(bidDataValues).map( (key) => {
-                return {
-                    key,
-                    value: bidDataValues[key]
-                } as BidDataCreateRequest;
-            });
+        // create bidDataCreateRequests
+        const bidDatas = Object.keys(bidDataValues).map((key) => {
+            return {
+                key,
+                value: bidDataValues[key]
+            } as BidDataCreateRequest;
+        });
 
-            // create and return the request that can be used to create the bid
-            const createRequest = {
-                msgid: smsgMessage.msgid,
-                listing_item_id: params.listingItem.id,
-                generatedAt: bidMessage.generated,
-                type: bidMessage.type,
-                bidder: params.bidder,
-                address: params.address,
-                bidDatas,
-                hash: 'recalculateandvalidate'
-            } as BidCreateRequest;
+        const createRequest = {
+            // profile_id: params.profile.id,
+            identity_id: params.identity.id,
+            listing_item_id: params.listingItem.id,
 
-            if (params.parentBid) {
-                createRequest.parent_bid_id = params.parentBid.id;
-            }
+            generatedAt: actionMessage.generated,
+            type: actionMessage.type,
+            bidder: params.bidder,
+            address: params.address,
+            bidDatas,
+            hash: 'recalculateandvalidate',
 
-            if (MPAction.MPA_BID === createRequest.type) {
-                // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
-                createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
-                    value: params.listingItem.hash,
-                    to: HashableBidField.ITEM_HASH
-                }, {
-                    value: params.listingItem.PaymentInformation.Escrow.type,
-                    to: HashableBidField.PAYMENT_ESCROW_TYPE
-                }, {
-                    value: params.listingItem.PaymentInformation.ItemPrice.currency,
-                    to: HashableBidField.PAYMENT_CRYPTO
-                }]));
-            } else {
-                createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidBasicCreateRequestConfig([{
-                    value: (bidMessage as BidMessageTypesWithParentBid).bid,
-                    to: HashableBidReleaseField.BID_HASH
-                }]));
-            }
+            msgid: smsgMessage ? smsgMessage.msgid : undefined,
+            postedAt: smsgMessage ? smsgMessage.sent : undefined,
+            expiredAt: smsgMessage ? smsgMessage.expiration : undefined,
+            receivedAt: smsgMessage ? smsgMessage.received : undefined
+        } as BidCreateRequest;
 
-            this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
-            this.log.debug('bidMessage.hash:', bidMessage.hash);
-            this.log.debug('createRequest.hash:', createRequest.hash);
+        if (params.parentBid) {
+            createRequest.parent_bid_id = params.parentBid.id;
+        }
 
-            // todo: when called from beforePost(), we dont have the bidMessage.hash
-            // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
-            // if (bidMessage.hash !== createRequest.hash) {
-            //    const error = new HashMismatchException('BidCreateRequest', bidMessage.hash, createRequest.hash);
-            //    this.log.error(error.getMessage());
-            //    throw error;
-            // }
-
-            return createRequest;
-
+        if (MPAction.MPA_BID === createRequest.type) {
+            // pass the values not included directly in BidCreateRequest, but needed for hashing, as extra config values to the hasher
+            createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidCreateRequestConfig([{
+                value: params.listingItem.hash,
+                to: HashableBidField.ITEM_HASH
+            }, {
+                value: params.listingItem.PaymentInformation.Escrow.type,
+                to: HashableBidField.PAYMENT_ESCROW_TYPE
+            }, {
+                value: params.listingItem.PaymentInformation.ItemPrice.currency,
+                to: HashableBidField.PAYMENT_CRYPTO
+            }]));
         } else {
-            this.log.error('Invalid MPAction.');
-            throw new MessageException('Invalid MPAction.');
+            createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableBidBasicCreateRequestConfig([{
+                value: (actionMessage as BidMessageTypesWithParentBid).bid,
+                to: HashableBidReleaseField.BID_HASH
+            }]));
         }
+
+        // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('get(), bidMessage.hash:', actionMessage.hash);
+        this.log.debug('get(), createRequest.hash:', createRequest.hash);
+
+        return createRequest;
     }
-
-    /**
-     * Checks if the type in the given BidMessage is valid for the latest bid
-     *
-     * @param bidMessage
-     * @param parentBid
-     * @returns {boolean}
-     */
-    private checkBidMessageActionValidity(bidMessage: BidMessageTypes, parentBid?: resources.Bid): boolean {
-
-        if (parentBid) {
-            // todo: might be that parentBid is always MPAction.MPA_BID, this might need to be fixed
-            switch (parentBid.type) {
-                case MPAction.MPA_BID:
-                    // if the parent bid was already bidded on, then the message needs to be something else
-                    return bidMessage.type !== MPAction.MPA_BID;
-                case MPAction.MPA_ACCEPT:
-                    // parent bid was already accepted, any bid is invalid
-                    return false;
-                case MPAction.MPA_CANCEL:
-                    // parent bid was cancelled, so we allow only new bids
-                    return bidMessage.type === MPAction.MPA_BID;
-                case MPAction.MPA_REJECT:
-                    // parent bid was rejected, so we allow only new bids
-                    return bidMessage.type === MPAction.MPA_BID;
-                default:
-                    const exception = new MessageException('Unknown BidMessage.type');
-                    this.log.error(exception.getMessage());
-                    throw exception;
-            }
-        } else if (bidMessage.type === MPAction.MPA_BID) {
-            // if no existing bid and message is MPA_BID -> true
-            return true;
-        }
-        return false;
-    }
-
 }

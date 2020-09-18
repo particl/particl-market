@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -34,10 +34,11 @@ export class OrderRepository {
     /**
      *
      * @param options, OrderSearchParams
+     * @param withRelated
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
     public async search(options: OrderSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Order>> {
-        return this.OrderModel.search(options, withRelated);
+        return this.OrderModel.searchBy(options, withRelated);
     }
 
     public async create(data: any): Promise<Order> {

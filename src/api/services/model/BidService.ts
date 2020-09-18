@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -53,6 +53,14 @@ export class BidService {
         return await this.bidRepo.findAll();
     }
 
+    public async findAllByProfileId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.bidRepo.findAllByProfileId(id, withRelated);
+    }
+
+    public async findAllByIdentityId(id: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return await this.bidRepo.findAllByIdentityId(id, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
         const bid = await this.bidRepo.findOne(id, withRelated);
         if (bid === null) {
@@ -80,13 +88,6 @@ export class BidService {
         return smsgMessage;
     }
 
-    public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        const params = {
-            listingItemHash: hash
-        } as BidSearchParams;
-        return await this.search(params);
-    }
-
     public async unlockBidOutputs(cancelBid: resources.Bid): Promise<void> {
 
         // if identity is found for cancelBid.ParentBid.bidder, then we're the bidder
@@ -110,7 +111,7 @@ export class BidService {
     }
 
     /**
-     * searchBy Bid using given BidSearchParams
+     * search Bids using given BidSearchParams
      *
      * @param options
      * @param withRelated
@@ -118,14 +119,7 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-
-        // if item hash was given, set the item id
-        if (options.listingItemHash) {
-            this.log.debug('findOneByHash: ', options.listingItemHash);
-            const foundListing: resources.ListingItem = await this.listingItemService.findOneByHash(options.listingItemHash, false)
-                .then(value => value.toJSON());
-            options.listingItemId = foundListing.id;
-        }
+        // this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.bidRepo.search(options, withRelated);
     }
 
@@ -135,7 +129,7 @@ export class BidService {
         return await this.search({
             listingItemId,
             bidders: [ bidder ],
-            ordering: SearchOrder.DESC
+            order: SearchOrder.DESC
         } as BidSearchParams, true)[0];
     }
 
@@ -147,7 +141,7 @@ export class BidService {
 
         // MPAction.MPA_BID needs to contain shipping address, for other types its optional
         if (body.type === MPAction.MPA_BID) {
-            if (!body.address && !body.address_id) {
+            if (_.isEmpty(body.address) && _.isEmpty(body.address_id)) {
                 this.log.error('Request body is not valid, address missing');
                 throw new ValidationException('Request body is not valid', ['address missing']);
             } else { // if (!body.address_id) {
@@ -159,6 +153,9 @@ export class BidService {
 
                 // no profile_id set -> figure it out
                 if (!addressCreateRequest.profile_id) {
+
+                    // todo: now when there's a relation to Profile, this is propably not necessary anymore
+                    // ...or could be moved to where BidCreateRequest is created
 
                     // if identity is found for body.bidder, then we're the bidder
                     const identity: resources.Identity = await this.identityService.findOneByAddress(body.bidder)
@@ -254,7 +251,7 @@ export class BidService {
     }
 
     private async unlockOutputsFor(wallet: string, msgid: string, type: string): Promise<void>  {
-        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msgid).then((b) => b.toJSON());
+        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(msgid).then((b) => b.toJSON());
         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
         await this.coreRpcService.lockUnspent(wallet, true, bidMPM.action[type].payment.prevouts, true);
     }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -24,7 +24,6 @@ import { ProposalResultCreateRequest } from '../../requests/model/ProposalResult
 import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { MarketService } from './MarketService';
-import {ModelNotFoundException} from '../../exceptions/ModelNotFoundException';
 
 export class ProposalService {
 
@@ -53,6 +52,10 @@ export class ProposalService {
         return await this.proposalRepo.findAll(withRelated);
     }
 
+    public async findAllExpired(): Promise<Bookshelf.Collection<Proposal>> {
+        return await this.proposalRepo.findAllExpired();
+    }
+
     public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         return await this.proposalRepo.findAllByMarket(market, withRelated);
     }
@@ -75,8 +78,8 @@ export class ProposalService {
         return proposal;
     }
 
-    public async findOneByItemHash(listingItemHash: string, withRelated: boolean = true): Promise<Proposal> {
-        const proposal = await this.proposalRepo.findOneByItemHash(listingItemHash, withRelated);
+    public async findOneByTarget(listingItemHash: string, withRelated: boolean = true): Promise<Proposal> {
+        const proposal = await this.proposalRepo.findOneByTarget(listingItemHash, withRelated);
         if (proposal === null) {
             this.log.warn(`Proposal with the listingItemHash=${listingItemHash} was not found!`);
             throw new NotFoundException(listingItemHash);
@@ -134,7 +137,7 @@ export class ProposalService {
         // set new values
         proposal.Submitter = body.submitter;
         proposal.Hash = body.hash;
-        proposal.Item = body.item;
+        proposal.Target = body.target;
         proposal.Category = body.category;
         proposal.Title = body.title;
         proposal.Description = body.description;
@@ -164,6 +167,8 @@ export class ProposalService {
         await this.proposalRepo.destroy(id);
     }
 
+/*
+    // there should be no need for this anymore
     public async updateMsgId(hash: string, msgid: string): Promise<Proposal> {
         let proposal = await this.findOneByHash(hash, false);
         proposal.Msgid = msgid;
@@ -172,6 +177,7 @@ export class ProposalService {
         // finally find and return the created proposal
         return await this.findOne(proposal.Id, true);
     }
+*/
 
     /**
      * creates empty ProposalResult for the Proposal
@@ -181,7 +187,7 @@ export class ProposalService {
      * @returns {Promise<"resources".ProposalResult>}
      */
     public async createEmptyProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const calculatedAt: number = new Date().getTime();
+        const calculatedAt: number = Date.now();
 
         const proposalResultCreateRequest = {
             calculatedAt,
@@ -258,7 +264,7 @@ export class ProposalService {
             let balance = 0;
             // get the address balance
             if (!test) { // todo: skipping balance update for test data generation
-                balance = await this.coreRpcService.getAddressBalance([vote.voter]).then(value => parseInt(value.balance, 10));
+                balance = await this.coreRpcService.getAddressBalance(vote.voter).then(value => parseInt(value.balance, 10));
             }
 
             // update vote weight in case it's changed

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,7 +14,9 @@ describe('DataAddCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-    const testUtil = new BlackBoxTestUtil();
+
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
     const dataCommand = Commands.DATA_ROOT.commandName;
     const dataAddCommand =  Commands.DATA_ADD.commandName;
@@ -60,6 +62,9 @@ describe('DataAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('withRelated', 'boolean').getMessage());
     });
 
+/*
+    TODO: remove this command?
+
     test('Should create test data for Profile', async () => {
         const res = await testUtil.rpc(dataCommand, [dataAddCommand,
             CreatableModel.PROFILE,
@@ -71,6 +76,6 @@ describe('DataAddCommand', () => {
         expect(result.name).toBe(testProfileData.name);
         expect(result.address).toBe(testProfileData.address);
     });
-
+*/
 });
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -7,9 +7,10 @@ import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
-import { ShoppingCart } from './ShoppingCart';
 import { Market } from './Market';
 import { Identity } from './Identity';
+import { Setting } from './Setting';
+
 
 export class Profile extends Bookshelf.Model<Profile> {
 
@@ -17,31 +18,19 @@ export class Profile extends Bookshelf.Model<Profile> {
         'ShippingAddresses',
         'CryptocurrencyAddresses',
         'FavoriteItems',
-        'ShoppingCart',
         'Markets',
         'Markets.Identity',
         'Identities',
-        'Identities.Markets'
+        'Identities.Markets',
+        'Settings'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
-        if (withRelated) {
-            return await Profile.where<Profile>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Profile.where<Profile>({ id: value }).fetch();
-        }
+        return Profile.where<Profile>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByName(value: string, withRelated: boolean = true): Promise<Profile> {
-        if (withRelated) {
-            return await Profile.where<Profile>({ name: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await Profile.where<Profile>({ name: value }).fetch();
-        }
+        return Profile.where<Profile>({ name: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'profiles'; }
@@ -52,10 +41,6 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
-
-    // Deprecated, use the Profiles Identity.address
-    // public get Address(): string { return this.get('address'); }
-    // public set Address(value: string) { this.set('address', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
@@ -75,17 +60,16 @@ export class Profile extends Bookshelf.Model<Profile> {
         return this.hasMany(FavoriteItem, 'profile_id', 'id');
     }
 
-    // TODO: rename to ShoppingCarts
-    public ShoppingCart(): Collection<ShoppingCart> {
-        return this.hasMany(ShoppingCart, 'profile_id', 'id');
-    }
-
     public Markets(): Collection<Market> {
         return this.hasMany(Market, 'profile_id', 'id');
     }
 
     public Identities(): Collection<Identity> {
         return this.hasMany(Identity, 'profile_id', 'id');
+    }
+
+    public Settings(): Collection<Setting> {
+        return this.hasMany(Setting, 'profile_id', 'id');
     }
 
 }

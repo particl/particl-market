@@ -1,4 +1,4 @@
-version: '3.6'
+version: '2.4'
 
 services:
   app1:
@@ -7,7 +7,7 @@ services:
     volumes:
       - .:/app/:delegated
 #      - ./yarn.lock:/app/yarn.lock
-#      - ./data/app1_dist:/app/dist
+      - ./data/app1_dist:/app/dist
       - ./data/app1:/app/data:delegated
       - ./data/app1_node_modules:/app/node_modules:delegated
     ports:
@@ -29,6 +29,8 @@ services:
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
       - STANDALONE=true
+#    cpus: '2.00'
+#    mem_limit: '500M'
 
   app2:
     build:
@@ -36,7 +38,7 @@ services:
     volumes:
       - .:/app/:delegated
 #      - ./yarn.lock:/app/yarn.lock
-#      - ./data/app2_dist:/app/dist
+      - ./data/app2_dist:/app/dist
       - ./data/app2:/app/data:delegated
       - ./data/app2_node_modules:/app/node_modules:delegated
     ports:
@@ -57,6 +59,8 @@ services:
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
       - STANDALONE=true
+#    cpus: '2.00'
+#    mem_limit: '500M'
 
 #  gui1:
 #    image: market-gui
@@ -103,7 +107,7 @@ services:
 #      - PORT=4200
 
   particld1:
-    image: ludx/particl:0.18.1.5
+    image: ludx/particl:0.19.1.1
     volumes:
       - ./data/particl1:/root/.particl:cached
     ports:
@@ -134,7 +138,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:0.18.1.5
+    image: ludx/particl:0.19.1.1
     volumes:
       - ./data/particl2:/root/.particl:cached
     ports:

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -14,7 +14,21 @@ import { MessageException } from '../exceptions/MessageException';
 import { CoreSmsgMessage } from '../messages/CoreSmsgMessage';
 import { SmsgSendParams } from '../requests/action/SmsgSendParams';
 import { SmsgMessageService } from './model/SmsgMessageService';
-import { RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
+import { RpcWallet, RpcWalletInfo } from 'omp-lib/dist/interfaces/rpc';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import {CoreMessageVersion} from '../enums/CoreMessageVersion';
+import {MessageVersions} from '../messages/MessageVersions';
+
+export interface SmsgGetInfo {
+    enabled: boolean;
+    active_wallet: string;
+    enabled_wallets: string[];
+}
+
+export interface SmsgGetPubKey {
+    address: string;            // (string) address of public key
+    publickey: string;          // (string) public key of address
+}
 
 export interface SmsgInboxOptions {
     updatestatus?: boolean;     // Update read status if true. default=true.
@@ -92,25 +106,31 @@ export class SmsgService {
                     return value.toJSON();
                 })
                 .catch(reason => {
+                    this.log.info('No new smsg messages waiting to be processed.');
                     return undefined;
                 });
-            if (!lastSmsgMessage) {
-                return {
-                    numsent: 0
-                } as SmsgZmqPushResult;
+
+            this.log.debug('pushUnreadCoreSmsgMessages(), lastSmsgMessage: ', JSON.stringify(lastSmsgMessage, null, 2));
+            if (_.isEmpty(lastSmsgMessage)) {
+                const earliestDate = 60 * 60 * 24 * parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+                from = Math.trunc(Date.now() / 1000) - earliestDate;
+            } else {
+                from = Math.trunc(lastSmsgMessage.received / 1000);
             }
-            from = Math.trunc(lastSmsgMessage.received / 1000);
         }
 
         if (!to) {
             to = Math.trunc(Date.now() / 1000);
         }
 
-        const result: SmsgZmqPushResult = await this.smsgZmqPush({
+        const pushOptions: SmsgZmqPushOptions = {
             timefrom: from,             // timefrom, the last SmsgMessage received time
             timeto: to,                 // timeto, now
             unreadonly: true
-        } as SmsgZmqPushOptions);
+        };
+        this.log.debug('pushUnreadCoreSmsgMessages(), pushOptions: ', JSON.stringify(pushOptions, null, 2));
+
+        const result: SmsgZmqPushResult = await this.smsgZmqPush(pushOptions);
 
         this.log.debug('requestUnreadCoreSmsgMessagesSinceShutdown(), numsent:', result.numsent);
         return result;
@@ -149,7 +169,9 @@ export class SmsgService {
      * @param sendParams
      */
     public async sendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, sendParams.paidMessage,
+        const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        const paidMessage = messageVersion === CoreMessageVersion.PAID;
+        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, paidMessage,
             sendParams.daysRetention, sendParams.estimateFee);
     }
 
@@ -161,13 +183,12 @@ export class SmsgService {
      * 1. "privkey"          (string, required) The private key (see dumpprivkey)
      * 2. "label"            (string, optional, default="") An optional label
      *
-     * @param wallet
      * @param {string} privateKey
      * @param {string} label
      * @returns {Promise<boolean>}
      */
-    public async smsgImportPrivKey(wallet: string, privateKey: string, label: string = 'default market'): Promise<boolean> {
-        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label], wallet)
+    public async smsgImportPrivKey(privateKey: string, label: string = 'particl-market imported pk'): Promise<boolean> {
+        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label])
             .then(response => true)
             .catch(error => {
                 this.log.error('smsgImportPrivKey failed: ', error);
@@ -188,7 +209,7 @@ export class SmsgService {
      * @param {object} options
      * @returns {Promise<any>}
      */
-    public async smsgInbox(wallet: string, mode: string = 'all',
+    public async smsgInbox(mode: string = 'all',
                            filter: string = '',
                            options?: SmsgInboxOptions): Promise<CoreSmsgMessageResult> {
         if (!options) {
@@ -197,7 +218,7 @@ export class SmsgService {
                 encoding: 'text'
             } as SmsgInboxOptions;
         }
-        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], wallet, false);
+        const response = await this.coreRpcService.call('smsginbox', [mode, filter, options], undefined, false);
         // this.log.debug('got response:', response);
         return response;
     }
@@ -216,6 +237,11 @@ export class SmsgService {
      * "error": "Message is too long, 5392 > 4096"
      * }
      *
+     * https://github.com/tecnovert/particl-core/blob/f66e893f276e68fa8ece0054b443db61bbc9b5e7/src/smsg/smessage.cpp#L95
+     * uint32_t SMSG_MAX_FREE_TTL      = SMSG_SECONDS_IN_DAY * 14;
+     * uint32_t SMSG_MAX_PAID_TTL      = SMSG_SECONDS_IN_DAY * 31;
+     * uint32_t SMSG_RETENTION         = SMSG_MAX_PAID_TTL;
+     *
      * @param wallet
      * @param {string} fromAddress
      * @param {string} toAddress
@@ -231,18 +257,22 @@ export class SmsgService {
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                           estimateFee: boolean = false, options?: SmsgSendOptions, coinControl?: SmsgSendCoinControl): Promise<SmsgSendResponse> {
 
-        await this.coreRpcService.smsgSetWallet(wallet);
+        // set secure messaging to use the specified wallet
+        await this.smsgSetWallet(wallet);
 
-        this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);
+        // enable receiving messages on the sending address, just in case
+        await this.smsgAddLocalAddress(fromAddress);
+
+        this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress + ', daysRetention: ' + daysRetention + ', estimateFee: ' + estimateFee);
         const params: any[] = [
             fromAddress,
             toAddress,
             JSON.stringify(message),
             paidMessage,
             daysRetention,
-            estimateFee,
-            options,
-            coinControl
+            estimateFee
+            // options,
+            // coinControl
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
@@ -252,7 +282,6 @@ export class SmsgService {
         }
         return response;
     }
-
 
     /**
      * List and manage keys.
@@ -281,6 +310,7 @@ export class SmsgService {
         // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
+
 
     /**
      * View smsg by msgid.
@@ -327,6 +357,9 @@ export class SmsgService {
      * ﻿Add address and matching public key to database.
      * ﻿smsgaddaddress <address> <pubkey>
      *
+     * 1. address    (string, required) Address to add.
+     * 2. pubkey     (string, required) Public key for "address".
+     *
      * @param {string} address
      * @param {string} publicKey
      * @returns {Promise<boolean>}
@@ -334,7 +367,7 @@ export class SmsgService {
     public async smsgAddAddress(address: string, publicKey: string): Promise<boolean> {
         return await this.coreRpcService.call('smsgaddaddress', [address, publicKey])
             .then(response => {
-                this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
+                // this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
                 if (response.result === 'Public key added to db.'
                     || (response.result === 'Public key not added to db.' && response.reason === 'Public key exists in database')) {
                     return true;
@@ -347,6 +380,116 @@ export class SmsgService {
                 return false;
             });
     }
+
+
+    /**
+     * Enable receiving messages on address.
+     * Key for address must exist in the wallet.
+     *
+     * @param {string} address
+     * @returns {Promise<boolean>}
+     */
+    public async smsgAddLocalAddress(address: string): Promise<boolean> {
+        return await this.coreRpcService.call('smsgaddlocaladdress', [address])
+            .then(response => {
+                this.log.debug('smsgAddLocalAddress, response: ' + JSON.stringify(response, null, 2));
+                if (response.result === 'Receiving messages enabled for address.'
+                    || (response.result === 'Address not added.' && response.reason === 'Key exists in database')) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            .catch(error => {
+                this.log.error('smsgAddLocalAddress failed: ', error);
+                return false;
+            });
+    }
+
+
+    /**
+     * ﻿Returns a new Particl address for receiving smsg and payments, key is saved in wallet.
+     *
+     * Result:
+     * "address"                (string) The new particl address
+     *
+     * @param wallet
+     * @param {any[]} params
+     * @param {boolean} smsgAddress
+     * @returns {Promise<string>}
+     */
+    public async getNewAddress(wallet: string, params: any[] = [], smsgAddress: boolean = true): Promise<string> {
+        const address = await this.coreRpcService.getNewAddress(wallet, params);
+        const publicKey = await this.smsgGetPubKey(address);    // get address public key
+        await this.smsgAddAddress(address, publicKey);          // add address and matching public key to smsg database
+        await this.smsgAddLocalAddress(address);                // enable receiving messages on address.
+        return address;
+    }
+
+    /**
+     * Reveals the private key corresponding to 'address'.
+     *
+     * @param address    (string, required) The particl address for the private key
+     */
+    public async smsgGetPubKey(address: string): Promise<string> {
+        const result: SmsgGetPubKey = await this.coreRpcService.call('smsggetpubkey', [address]);
+        return result.publickey;
+    }
+
+
+    public async getPublicKeyForAddress(address: string): Promise<string|undefined> {
+        return await this.smsgLocalKeys()
+            .then(localKeys => {
+                for (const smsgKey of localKeys.smsg_keys) {
+                    if (smsgKey.address === address) {
+                        return smsgKey.public_key;
+                    }
+                }
+                return undefined;
+            })
+            .catch(error => undefined);
+    }
+
+
+    /**
+     *
+     * @param address
+     */
+    public async smsgDumpPrivKey(address: string): Promise<string> {
+        return await this.coreRpcService.call('smsgdumpprivkey', [address]);
+    }
+
+
+    /**
+     * Set secure messaging to use the specified wallet.
+     * SMSG can only be enabled on one wallet.
+     * Call with no parameters to unset the active wallet.
+     *
+     * @param walletName
+     */
+    public async smsgSetWallet(walletName: string): Promise<RpcWallet> {
+        const result: RpcWallet = await this.coreRpcService.call('smsgsetwallet', [walletName]);
+        // this.log.debug('smsgSetWallet(), result: ', JSON.stringify(result, null, 2));
+        return result;
+    }
+
+
+    /**
+     * USE smsgSetWallet!
+     */
+    public async smsgEnable(walletName: string): Promise<void> {
+        throw new NotImplementedException();
+    }
+
+    /**
+     *
+     */
+    public async smsgGetInfo(): Promise<SmsgGetInfo> {
+        const result: SmsgGetInfo = await this.coreRpcService.call('smsggetinfo', []);
+        // this.log.debug('smsgGetInfo(), result: ', JSON.stringify(result, null, 2));
+        return result;
+    }
+
 
     /**
      * ﻿Resend ZMQ notifications.
@@ -362,6 +505,5 @@ export class SmsgService {
                 return response;
             });
     }
-
 
 }

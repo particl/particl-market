@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -13,8 +13,8 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { SmsgMessageCreateParams } from './ModelCreateParams';
-import { ModelFactoryInterface } from './ModelFactoryInterface';
+import { SmsgMessageCreateParams } from '../ModelCreateParams';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
 
 export class SmsgMessageFactory implements ModelFactoryInterface {
 
@@ -50,7 +50,6 @@ export class SmsgMessageFactory implements ModelFactoryInterface {
                     from: params.message.from,
                     to: params.message.to,
                     text: params.message.text,
-                    // need to set these manually since knex doesn't set these in correct format
                     updated_at: Date.now(),
                     created_at: Date.now()
                 } as SmsgMessageCreateRequest;

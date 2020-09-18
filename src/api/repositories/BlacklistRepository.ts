@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -29,6 +29,14 @@ export class BlacklistRepository {
 
     public async findAllByType(type: BlacklistType): Promise<Bookshelf.Collection<Blacklist>> {
         return await this.BlacklistModel.fetchAllByType(type);
+    }
+
+    public async findAllByTypeAndProfileId(type: BlacklistType, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return await this.BlacklistModel.fetchAllByTypeAndProfileId(type, profileId);
+    }
+
+    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+        return await this.BlacklistModel.fetchAllByTargetAndProfileId(target, profileId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Blacklist> {

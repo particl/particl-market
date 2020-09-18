@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -55,9 +55,6 @@ describe('ListingItemMessage', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.model.ListingItemFactory);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         // get default profile + market
         defaultProfile = await profileService.getDefault().then(value => value.toJSON());
         defaultMarket = await marketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
@@ -66,7 +63,7 @@ describe('ListingItemMessage', () => {
             true,   // generateItemInformation
             true,   // generateItemLocation
             true,   // generateShippingDestinations
-            false,   // generateItemImages
+            false,   // generateImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -129,14 +126,14 @@ describe('ListingItemMessage', () => {
         // expect(message.information.shipping_destinations).toContain('-MOROCCO');
         // expect(message.information.shipping_destinations).toContain('PANAMA');
 
-        // ItemInformation.ItemImages
-        expect(result.ItemInformation.ItemImages.length).toBe(message.item.information.images.length);
+        // ItemInformation.Images
+        expect(result.ItemInformation.Images.length).toBe(message.item.information.images.length);
         // todo: test the images
-        // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
+        // expect(message.information.images[0].hash).toBe(testData.ItemInformation.Images[0].hash);
         // expect(message.information.images[0].data.length).toBe(1);
-        // expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
-        // expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
-        // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        // expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.Images[0].ImageDatas[0].protocol);
+        // expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.Images[0].ImageDatas[0].encoding);
+        // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.Images[0].ImageDatas[0].data);
 
         // PaymentInformation
         expect(result.PaymentInformation.type).toBe(message.item.payment.type);

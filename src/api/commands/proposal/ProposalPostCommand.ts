@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -17,17 +17,21 @@ import { ProposalAddActionService } from '../../services/action/ProposalAddActio
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
-import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    IdValidationRule,
+    MessageRetentionValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
+
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -39,6 +43,20 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new StringValidationRule('proposalTitle', true),
+                new StringValidationRule('proposalDescription', true),
+                new MessageRetentionValidationRule('daysRetention', true),
+                new BooleanValidationRule('estimateFee', true),
+                new StringValidationRule('option1Description', true),
+                new StringValidationRule('option2Description', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * command description
      * [0] market: resources.Market
@@ -47,6 +65,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [3] daysRetention
      * [4] estimateFee
      * [5] option1Description
+     * [6] option2Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -90,54 +109,19 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [3] daysRetention
      * [4] estimateFee
      * [5] option1Description
+     * [6] option2Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+
+        const market: resources.Market = data.params[0];
 
         // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('proposalTitle');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('proposalDescription');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('daysRetention');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('estimateFee');
-        } else if (data.params.length < 6) {
-            throw new MissingParamException('option1Description');
-        } else if (data.params.length < 7) {
-            throw new MissingParamException('option2Description');
-        }
-
-        if (data.params[0] !== undefined && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        } else if (data.params[1] !== undefined && typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('proposalTitle', 'string');
-        } else if (data.params[2] !== undefined && typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('proposalDescription', 'string');
-        } else if (data.params[3] !== undefined && typeof data.params[3] !== 'number') {
-            throw new InvalidParamException('daysRetention', 'number');
-        } else if (data.params[4] !== undefined && typeof data.params[4] !== 'boolean') {
-            throw new InvalidParamException('estimateFee', 'boolean');
-        }
-
-        if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daaysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
-        }
-
-        // make sure the Market exists
-        const market: resources.Market = await this.marketService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
 
         // make sure Identity with the id exists
         await this.identityService.findOne(market.Identity.id)
@@ -153,17 +137,19 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     public usage(): string {
         return this.getName() + ' <marketId> <proposalTitle> <proposalDescription> <daysRetention> <estimateFee> '
-            + '<option1Description> ... <optionNDescription> ';
+            + '<option1Description> <option2Description> ... [optionNDescription] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <marketId>               - number, id of the Market. \n'
-            + '    <proposalTitle>          - string, Title for the Proposal. \n'
-            + '    <proposalDescription>    - string, Description for the Proposal. \n'
-            + '    <daysRetentions>         - number, Days retention. \n'
-            + '    <estimateFee>            - boolean, Just estimate the Fee, dont post the Proposal. \n'
-            + '    <optionNDescription>     - string, ProposalOption description. ';
+            + '    <proposalTitle>          - string, title for the Proposal. \n'
+            + '    <proposalDescription>    - string, description for the Proposal. \n'
+            + '    <daysRetentions>         - number, days retention. \n'
+            + '    <estimateFee>            - boolean, estimate the fee, dont post the Proposal. \n'
+            + '    <option1Description>     - string, first ProposalOption description. '
+            + '    <option2Description>     - string, second ProposalOption description. '
+            + '    <optionNDescription>     - [optional] string, ProposalOption description. ';
     }
 
     public description(): string {

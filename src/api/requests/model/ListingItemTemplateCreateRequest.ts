@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -21,7 +21,11 @@ export class ListingItemTemplateCreateRequest extends RequestBody implements Mod
     public generatedAt: number;
 
     // should be empty when created, as template with a hash should not be modified anymore
-    // public hash: string;
+    // used just for testing
+    public hash: string;
+
+    // the base template should not have a market
+    public market: string;
 
     public itemInformation: ItemInformationCreateRequest;
     public paymentInformation: PaymentInformationCreateRequest;

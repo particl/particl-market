@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -31,13 +31,14 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(seed: boolean = true): Promise<any> {
+    public async cleanDb(seed: boolean = true): Promise<boolean> {
 
         this.log.debug('cleanDb, this.node', this.node);
         const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, seed]);
         res.expectJson();
         res.expectStatusCode(200);
-        return { result: 'success' };
+
+        return res.getBody()['result'];
 
     }
 
@@ -81,12 +82,14 @@ export class BlackBoxTestUtil {
      * @returns {Promise<"resources".Profile>}
      */
     public async getDefaultProfile(generateShippingAddress: boolean = true): Promise<resources.Profile> {
-        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
+        const res: any = await this.rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_DEFAULT.commandName]);
 
         res.expectJson();
         res.expectStatusCode(200);
 
-        const defaultProfile = res.getBody()['result'];
+        const defaultProfile: resources.Profile = res.getBody()['result'];
+
+        // this.log.debug('defaultProfile', JSON.stringify(defaultProfile, null, 2));
 
         if (_.isEmpty(defaultProfile.ShippingAddresses
             || _.find(defaultProfile.ShippingAddresses, (address: resources.Address) => {
@@ -94,7 +97,7 @@ export class BlackBoxTestUtil {
         }) === undefined )) {
 
             if (generateShippingAddress) {
-                this.log.debug('Adding a missing ShippingAddress for the default Profile.');
+                // this.log.debug('Adding a missing ShippingAddress for the default Profile.');
 
                 // if default profile doesnt have a shipping address, add it
                 // TODO: generate a random address
@@ -155,13 +158,54 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultMarket(): Promise<resources.Market> {
-        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
+    public async getDefaultMarket(profileId: number): Promise<resources.Market> {
+        const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_DEFAULT.commandName, profileId]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: resources.Market[] = res.getBody()['result'];
-        // get the commandType for the method name
-        return _.find(result, o => o.name === 'DEFAULT');
+        return res.getBody()['result'];
+    }
+
+    /**
+     * get default market
+     *
+     * @returns {Promise<any>}
+     */
+    public async getRandomCategory(): Promise<resources.ItemCategory> {
+        const res: any = await this.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.key).toBeDefined();
+        expect(result.name).toBe('ROOT');
+        expect(result.market).toBeNull();
+        expect(result.ParentItemCategory).not.toBeDefined();
+        const childItemCategories = result.ChildItemCategories;
+        expect(childItemCategories.length).toBeGreaterThan(0);
+        const childCat: resources.ItemCategory = Faker.random.arrayElement(result.ChildItemCategories);
+        return Faker.random.arrayElement(childCat.ChildItemCategories);
+    }
+
+    /**
+     *
+     * @param wallet
+     */
+    public async unlockLockedOutputs(wallet: string): Promise<resources.Market> {
+
+        let response: any = await this.rpc(Commands.DAEMON_ROOT.commandName, [wallet, 'listlockunspent']);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result = response.getBody()['result'];
+
+        if (result.length > 0) {
+            this.log.debug('==> Found locked outputs:', JSON.stringify(result, null, 2));
+            response = await this.rpc(Commands.DAEMON_ROOT.commandName, [wallet, 'lockunspent', true, result]);
+            response.expectJson();
+            response.expectStatusCode(200);
+            this.log.debug('==> No locked outputs left.');
+        } else {
+            this.log.debug('==> No locked outputs.');
+        }
     }
 
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
@@ -234,7 +278,12 @@ export class BlackBoxTestUtil {
 
                         // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                        const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
+                        let objectPropertyValue;
+                        if (waitForObjectProperty === '.length') {
+                            objectPropertyValue = !_.isEmpty(result) ? result.length : 0;
+                        } else {
+                            objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
+                        }
 
                         // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
                         // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
@@ -243,6 +292,30 @@ export class BlackBoxTestUtil {
                         // this.log.debug('waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
 
                         let waitForResult = false;
+
+                        if (objectPropertyValue !== null) {
+                            switch (waitForCondition) {
+                                case '=':
+                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    break;
+                                case '<':
+                                    waitForResult = (objectPropertyValue < waitForObjectPropertyValue);
+                                    break;
+                                case '>':
+                                    waitForResult = (objectPropertyValue > waitForObjectPropertyValue);
+                                    break;
+                                case '<=':
+                                    waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);
+                                    break;
+                                case '>=':
+                                    waitForResult = (objectPropertyValue >= waitForObjectPropertyValue);
+                                    break;
+                                default:
+                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    break;
+                            }
+                        }
+                        /*
                         if (objectPropertyValue != null && waitForCondition === '=') {
                             waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
                         } else if (objectPropertyValue != null  && waitForCondition === '<') {
@@ -253,7 +326,11 @@ export class BlackBoxTestUtil {
                             waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);
                         } else if (objectPropertyValue != null  && waitForCondition === '>=') {
                             waitForResult = (objectPropertyValue >= waitForObjectPropertyValue);
+                        } else if (objectPropertyValue === waitForObjectPropertyValue && waitForCondition === '=') {
+                            waitForResult = true;
                         }
+                        */
+
                         // this.log.debug('waitForResult: ' + waitForResult);
 
                         if (waitForResult) {
@@ -265,8 +342,12 @@ export class BlackBoxTestUtil {
                             errorCount++;
 
                             if (errorCount < 5 || errorCount % 15 === 0) {
-                                this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !' + waitForCondition
-                                    + ' ' + waitForObjectPropertyValue);
+                                if (_.isEmpty(result)) {
+                                    this.log.error('empty result.');
+                                } else {
+                                    this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !' + waitForCondition
+                                        + ' ' + waitForObjectPropertyValue);
+                                }
                             }
                             if (errorCount === 5) {
                                 this.log.error('... posting every 15th from now on...');

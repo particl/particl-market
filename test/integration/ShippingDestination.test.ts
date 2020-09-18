@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -12,18 +13,14 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ItemLocationService } from '../../src/api/services/model/ItemLocationService';
-import { LocationMarkerService } from '../../src/api/services/model/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/model/ShippingDestinationService';
-import { ItemImageService } from '../../src/api/services/model/ItemImageService';
-import { ItemInformationService } from '../../src/api/services/model/ItemInformationService';
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { ListingItemService } from '../../src/api/services/model/ListingItemService';
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/model/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/model/ShippingDestinationUpdateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../src/api/requests/testdata/TestDataGenerateRequest';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+import { MarketService } from '../../src/api/services/model/MarketService';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 describe('ShippingDestination', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -32,14 +29,20 @@ describe('ShippingDestination', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
+    let defaultMarketService: DefaultMarketService;
     let shippingDestinationService: ShippingDestinationService;
-    let listingItemTemplateService: ListingItemTemplateService;
-    let itemInformationService: ItemInformationService;
-    let itemLocationService: ItemLocationService;
-    let locationMarkerService: LocationMarkerService;
-    let itemImageService: ItemImageService;
-
+    let profileService: ProfileService;
+    let marketService: MarketService;
     let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
+
+    let bidderProfile: resources.Profile;
+    let bidderMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let shippingDestination: resources.ShippingDestination;
 
     const testData = {
         country: 'United Kingdom',
@@ -51,48 +54,36 @@ describe('ShippingDestination', () => {
         shippingAvailability: ShippingAvailability.SHIPS
     } as ShippingDestinationUpdateRequest;
 
-    let listingItemTemplate: resources.ListingItemTemplate;
-    let shippingDestination: resources.ShippingDestination;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.model.ShippingDestinationService);
-        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.model.ItemInformationService);
-        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.model.ItemLocationService);
-        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.model.LocationMarkerService);
-        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.model.ItemImageService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.model.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.model.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.model.ListingItemTemplateService);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
+        bidderProfile = await profileService.getDefault().then(value => value.toJSON());
+        bidderMarket = await defaultMarketService.getDefaultForProfile(bidderProfile.id).then(value => value.toJSON());
+        sellerProfile = await testDataService.generateProfile();
+        sellerMarket = await defaultMarketService.getDefaultForProfile(sellerProfile.id).then(value => value.toJSON());
 
-        const generateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateItemLocation
-            false,  // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
-        ]).toParamsArray();
-
-        // create listingitemtemplate without ShippingDestinations and store its id for testing
-        const listingItemTemplates = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,  // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams                              // what kind of data to generate
-        } as TestDataGenerateRequest);
-        listingItemTemplate = listingItemTemplates[0];
+        listingItem = await testDataService.generateListingItemWithTemplate(sellerProfile, bidderMarket);
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItem.ListingItemTemplate.id).then(value => value.toJSON());
     });
 
     afterAll(async () => {
         //
+    });
+
+    test('Should throw ValidationException because we want to create a empty ShippingDestination', async () => {
+        expect.assertions(1);
+        await shippingDestinationService.create({} as ShippingDestinationCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
     test('Should fail to create and throw ValidationException because there is no item_information_id', async () => {
@@ -105,31 +96,26 @@ describe('ShippingDestination', () => {
     test('Should create a new ShippingDestination for ListingItemTemplate', async () => {
 
         testData.item_information_id = listingItemTemplate.ItemInformation.id;
-        shippingDestination = await shippingDestinationService.create(testData).then(value => value.toJSON());
-        const result = shippingDestination;
+        const result: resources.ShippingDestionation = await shippingDestinationService.create(testData).then(value => value.toJSON());
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
+
+        shippingDestination = result;
     });
 
-    test('Should throw ValidationException because we want to create a empty ShippingDestination', async () => {
-        expect.assertions(1);
-        await shippingDestinationService.create({} as ShippingDestinationCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
-    test('Should list ShippingDestination', async () => {
+    test('Should list all ShippingDestinations', async () => {
         const shippingDestinations: resources.ShippingDestination[] = await shippingDestinationService.findAll().then(value => value.toJSON());
-        expect(shippingDestinations.length).toBe(1);
+        const length = listingItem.ItemInformation.ShippingDestinations.length + (2 * listingItemTemplate.ItemInformation.ShippingDestinations.length) + 1;
+        expect(shippingDestinations.length).toBe(length);
 
-        const result = shippingDestinations[0];
+        const result = shippingDestinations[length - 1];
 
         expect(result.country).toBe(testData.country);
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
     });
 
-    test('Should return one ShippingDestination related to ListingItemTemplate', async () => {
+    test('Should return one ShippingDestination', async () => {
         shippingDestination = await shippingDestinationService.findOne(shippingDestination.id).then(value => value.toJSON());
         const result = shippingDestination;
 
@@ -138,7 +124,7 @@ describe('ShippingDestination', () => {
         expect(result.ItemInformation.ListingItemTemplate).toBeDefined();
     });
 
-    test('Should update the ShippingDestination related to ListingItemTemplate', async () => {
+    test('Should update the ShippingDestination', async () => {
         shippingDestination = await shippingDestinationService.update(shippingDestination.id, testDataUpdated)
             .then(value => value.toJSON());
         const result = shippingDestination;
@@ -147,13 +133,12 @@ describe('ShippingDestination', () => {
         expect(result.shippingAvailability).toBe(testDataUpdated.shippingAvailability);
     });
 
-    test('Should delete the ShippingDestination related to ListingItemTemplate', async () => {
+    test('Should delete the ShippingDestination', async () => {
         expect.assertions(1);
         await shippingDestinationService.destroy(shippingDestination.id);
         await shippingDestinationService.findOne(shippingDestination.id).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingDestination.id))
         );
     });
-
 
 });

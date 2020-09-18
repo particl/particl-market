@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -20,10 +20,14 @@ export class HashableProposalAddMessageConfig extends BaseHashableConfig {
         from: 'description',
         to: HashableProposalAddField.PROPOSAL_DESCRIPTION
     }, {
-        from: 'item',
-        to: HashableProposalAddField.PROPOSAL_ITEM
+        from: 'target',
+        to: HashableProposalAddField.PROPOSAL_TARGET
     }] as HashableFieldConfig[];
 
+    /**
+     * HashableProposalAddField.PROPOSAL_OPTIONS and  HashableProposalAddField.PROPOSAL_MARKET should be added manually
+     * @param values
+     */
     constructor(values?: HashableFieldValueConfig[]) {
         super(values);
     }

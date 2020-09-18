@@ -1,10 +1,12 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as interfaces from '../../types/interfaces';
+import pForever from 'pm-forever';
+import delay from 'pm-delay';
 import { inject, named } from 'inversify';
 import { Core, Targets, Types } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -12,24 +14,25 @@ import { DefaultItemCategoryService } from '../services/DefaultItemCategoryServi
 import { DefaultProfileService } from '../services/DefaultProfileService';
 import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
-import { WaitingMessageProcessor } from '../messageprocessors/WaitingMessageProcessor';
+import { WaitingMessageService } from '../services/observer/WaitingMessageService';
 import { CoreRpcService } from '../services/CoreRpcService';
-import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 import { CoreMessageProcessor } from '../messageprocessors/CoreMessageProcessor';
-import { ProposalResultProcessor } from '../messageprocessors/ProposalResultProcessor';
+import { ProposalResultRecalcService } from '../services/observer/ProposalResultRecalcService';
 import { DefaultSettingService } from '../services/DefaultSettingService';
 import { SettingValue } from '../enums/SettingValue';
 import { SettingService } from '../services/model/SettingService';
-import { CoreCookieService, CoreCookieServiceStatus } from '../services/observer/CoreCookieService';
+import { CoreCookieService } from '../services/observer/CoreCookieService';
 import { SmsgService } from '../services/SmsgService';
-import { CoreConnectionStatusService, CoreConnectionStatusServiceStatus } from '../services/observer/CoreConnectionStatusService';
-import pForever from 'pm-forever';
-import delay from 'pm-delay';
+import { CoreConnectionStatusService } from '../services/observer/CoreConnectionStatusService';
+import { IdentityService } from '../services/model/IdentityService';
+import { ExpiredListingItemService } from '../services/observer/ExpiredListingItemService';
 import { IdentityType } from '../enums/IdentityType';
 import { MarketService } from '../services/model/MarketService';
 import { MessageException } from '../exceptions/MessageException';
 import { ProfileService } from '../services/model/ProfileService';
-import {IdentityService} from '../services/model/IdentityService';
+import { CoreConnectionStatusServiceStatus } from '../enums/CoreConnectionStatusServiceStatus';
+import { ExpiredProposalService } from '../services/observer/ExpiredProposalService';
+import { RpcBlockchainInfo } from 'omp-lib/dist/interfaces/rpc';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -38,7 +41,7 @@ export class ServerStartedListener implements interfaces.Listener {
     public log: LoggerType;
 
     public updated = 0;
-    public isStarted = false;
+    public isStarted = false;       // todo: status enum
     private previousState = false;
 
     private timeout: any;
@@ -49,10 +52,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.WaitingMessageProcessor) public waitingMessageProcessor: WaitingMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.CoreMessageProcessor) public coreMessageProcessor: CoreMessageProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor) public expiredListingItemProcessor: ExpiredListingItemProcessor,
-        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ProposalResultProcessor) public proposalResultProcessor: ProposalResultProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -62,7 +62,14 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.observer.CoreCookieService) public coreCookieService: CoreCookieService,
+
+        // inject all observers here to make sure they start up
         @inject(Types.Service) @named(Targets.Service.observer.CoreConnectionStatusService) public coreConnectionStatusService: CoreConnectionStatusService,
+        @inject(Types.Service) @named(Targets.Service.observer.WaitingMessageService) public waitingMessageService: WaitingMessageService,
+        @inject(Types.Service) @named(Targets.Service.observer.ProposalResultRecalcService) public proposalResultRecalcService: ProposalResultRecalcService,
+        @inject(Types.Service) @named(Targets.Service.observer.ExpiredListingItemService) public expiredListingItemService: ExpiredListingItemService,
+        @inject(Types.Service) @named(Targets.Service.observer.ExpiredProposalService) public expiredProposalService: ExpiredProposalService,
+
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -89,14 +96,18 @@ export class ServerStartedListener implements interfaces.Listener {
             i++;
 
             this.log.debug('this.coreCookieService.status: ' + this.coreCookieService.status);
-            this.log.debug('this.coreConnectionStatusService.status: ' + this.coreConnectionStatusService.status);
+            this.log.debug('this.coreConnectionStatusService.status: ' + this.coreConnectionStatusService.connectionStatus);
             this.log.debug('this.BOOTSTRAPPING: ' + this.BOOTSTRAPPING);
 
             // keep checking whether we are connected to the core and when we are, call this.bootstrap()
             // then STOP the polling, if bootstrap was successful
-            if (this.coreConnectionStatusService.status === CoreConnectionStatusServiceStatus.CONNECTED
+            if (this.coreConnectionStatusService.connectionStatus === CoreConnectionStatusServiceStatus.CONNECTED
                 && this.BOOTSTRAPPING) {
                 this.STOP = await this.bootstrap()
+                    .then((started) => {
+                        this.isStarted = started;
+                        return started;
+                    })
                     .catch(reason => {
                         this.log.error('ERROR: marketplace bootstrap failed: ', reason);
                         // stop if there's an error
@@ -120,26 +131,6 @@ export class ServerStartedListener implements interfaces.Listener {
             this.start();
         });
     }
-/*
-    // DEPRECATED
-    public pollForConnection(): void {
-        this.timeout = setTimeout(
-            async () => {
-                this.isStarted = await this.checkConnection();
-                this.pollForConnection();
-            },
-            this.INTERVAL
-        );
-    }
-
-    // DEPRECATED
-    public stop(): void {
-        if (this.timeout) {
-            clearTimeout(this.timeout);
-            this.timeout = undefined;
-        }
-    }
-*/
 
     /**
      *  - Default Profile, Market and Identity creation on app startup.
@@ -151,11 +142,13 @@ export class ServerStartedListener implements interfaces.Listener {
      *    - create Market with new Identity (+wallet)
      *    - set the new Market as the default one
      */
-    private async bootstrap(): Promise<boolean> {
+    public async bootstrap(): Promise<boolean> {
         // all is now ready for bootstrapping the app
+        const blockchainInfo: RpcBlockchainInfo = await this.coreRpcService.getBlockchainInfo();
+        process.env.CHAIN = blockchainInfo.chain;
 
         // are we updating from previous installation (a market wallet already exists+no profile identity)
-        const isUpgradingFromSingleMarketWallet = await this.isUpdatingFromSingleMarketWallet();
+        const isUpgradingFromSingleMarketWallet = await this.isUpgradingFromSingleMarketWallet();
         this.log.debug('bootstrap(), isUpgradingFromSingleMarketWallet: ', isUpgradingFromSingleMarketWallet);
 
         let defaultProfile: resources.Profile;
@@ -163,11 +156,12 @@ export class ServerStartedListener implements interfaces.Listener {
 
             // create new Identity (+wallet) for the default Profile
             defaultProfile = await this.defaultProfileService.upgradeDefaultProfile();
-            this.log.debug('bootstrap(), updated old default Profile: ', JSON.stringify(defaultProfile, null, 2));
+            this.log.debug('bootstrap(), upgraded old default Profile: ', JSON.stringify(defaultProfile, null, 2));
 
             // renames the existing default Market to oldname + " (OLD)"
+            // the new default market will be created later
             const oldMarket: resources.Market = await this.defaultMarketService.upgradeDefaultMarket();
-            this.log.debug('bootstrap(), updated old default Market: ', JSON.stringify(oldMarket, null, 2));
+            this.log.debug('bootstrap(), upgraded old default Market: ', JSON.stringify(oldMarket, null, 2));
 
         } else { // not upgrading...
             // create new Profile with new Identity (+wallet)
@@ -176,9 +170,14 @@ export class ServerStartedListener implements interfaces.Listener {
 
         // save/update the default env vars as Settings
         await this.defaultSettingService.saveDefaultSettings(defaultProfile);
+        await this.defaultSettingService.upgradeDefaultSettings();
 
-        const loadedWallets = await this.loadWalletsForProfile(defaultProfile);
-        this.log.debug('bootstrap(), loadedWallets: ', JSON.stringify(loadedWallets, null, 2));
+        await this.loadWalletsForProfile(defaultProfile);
+
+        // Seed the default ItemCategories (ItemCategory with no relation to a Market)
+        // - ListingItemTemplates are assigned an ItemCategory from the list of default ItemCategories
+        // - market ItemCategories are created for Markets as new ListingItems are received
+        await this.defaultItemCategoryService.seedDefaultCategories();
 
         // check whether we have the required default marketplace configuration to continue
         const hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
@@ -188,23 +187,24 @@ export class ServerStartedListener implements interfaces.Listener {
             // marketplace will create the wallet it needs (each Market will have its own Identity linked to it)
 
             // seed the default Market for default Profile
-            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
+            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarketForProfile(defaultProfile)
                 .catch(reason => {
-                    this.log.error('ERROR: seedDefaultMarket, ' + reason);
+                    this.log.error('ERROR: seedDefaultMarketForProfile, ' + reason);
                     throw reason;
                 });
 
-            this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
+            // this.log.debug('bootstrap(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
-            // seed the default categories to default market
-            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
+            // todo: Seed the default custom ItemCategories for a Market
+            // await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
+
+            // this.log.debug('bootstrap(), process.env.NODE_ENV:', process.env.NODE_ENV);
 
             // start message polling and other stuff, unless we're running integration tests
             if (process.env.NODE_ENV !== 'test') {
 
-                // TODO: these should start automatically
-                this.expiredListingItemProcessor.scheduleProcess();
-                this.proposalResultProcessor.scheduleProcess();
+                // this.expiredListingItemProcessor.scheduleProcess();
+                // this.proposalResultRecalcService.scheduleProcess();
 
                 // poll for waiting smsgmessages to be processed
                 // this.waitingMessageProcessor.schedulePoll();
@@ -217,7 +217,7 @@ export class ServerStartedListener implements interfaces.Listener {
             throw new MessageException('Missing default Market configuration.');
         }
 
-        this.log.debug('bootstrap(), DONE');
+        this.log.info('bootstrap(), DONE');
 
         return true;
     }
@@ -226,15 +226,13 @@ export class ServerStartedListener implements interfaces.Listener {
 
         const allSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profile.id).then(value => value.toJSON());
         const foundSettings: resources.Setting[] = _.filter(allSettings, (value) => {
-            return value.key === SettingValue.DEFAULT_MARKETPLACE_NAME
-                || value.key === SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY
-                || value.key === SettingValue.DEFAULT_MARKETPLACE_ADDRESS;
+            return value.key === SettingValue.APP_DEFAULT_MARKETPLACE_NAME
+                || value.key === SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY;
         });
 
-        if ((!_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_NAME])
-            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_PRIVATE_KEY])
-            && !_.isEmpty(process.env[SettingValue.DEFAULT_MARKETPLACE_ADDRESS]))
-            || foundSettings.length === 3) {
+        if ((!_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_NAME])
+            && !_.isEmpty(process.env[SettingValue.APP_DEFAULT_MARKETPLACE_PRIVATE_KEY]))
+            || foundSettings.length === 2) {
             return true;
         }
         return false;
@@ -245,20 +243,33 @@ export class ServerStartedListener implements interfaces.Listener {
      * ->   a wallet called market exists
      *      && Identity with type PROFILE belonging to default Profile DOES NOT exist
      */
-    private async isUpdatingFromSingleMarketWallet(): Promise<boolean> {
+    private async isUpgradingFromSingleMarketWallet(): Promise<boolean> {
 
         const hasMarketWallet = await this.coreRpcService.walletExists('market');
+        this.log.debug('isUpgradingFromSingleMarketWallet(), hasMarketWallet: ', hasMarketWallet);
 
-        this.log.debug('isUpdatingFromSingleMarketWallet(), hasMarketWallet: ', hasMarketWallet);
+        if (!hasMarketWallet) {
+            // if we dont have the market wallet, we can't be upgrading it
+            return false;
+        }
 
-        const defaultProfile: resources.Profile = await this.defaultProfileService.getDefault(true);
+        const defaultProfile: resources.Profile | undefined = await this.defaultProfileService.getDefault(true)
+            .catch(reason => {
+                return undefined;
+            });
+
+        // there is old market wallet, but no Profile -> not updating (we should seed the thing)
+        if (!defaultProfile) {
+            return false;
+        }
+
+        // try to find the Profile Identity
         const profileIdentity: resources.Identity | undefined = _.find(defaultProfile.Identities, identity => {
             return identity.type === IdentityType.PROFILE;
         });
-
         this.log.debug('isUpdatingFromSingleMarketWallet(), profileIdentity: ', profileIdentity);
 
-        // there is old market wallet, but no profile Identity -> need to update
+        // there is old market wallet, but no Profile Identity was found -> need to update
         if (hasMarketWallet && _.isEmpty(profileIdentity)) {
             return true;
         }
@@ -272,108 +283,17 @@ export class ServerStartedListener implements interfaces.Listener {
      */
     private async loadWalletsForProfile(profile: resources.Profile): Promise<string[]> {
         const identitiesToLoad: resources.Identity[] = await this.identityService.findAllByProfileId(profile.id).then(value => value.toJSON());
+
+        // make sure the addresses are added as smsg receive addresses
+        for (const identity of identitiesToLoad) {
+            await this.smsgService.smsgAddLocalAddress(identity.address);
+        }
+
         const walletsToLoad: string[] = identitiesToLoad.map( value => {
             return value.wallet;
         });
+        this.log.debug('loadWalletsForProfile(), walletsToLoad: ', JSON.stringify(walletsToLoad, null, 2));
         return await this.coreRpcService.loadWallets(walletsToLoad);
     }
 
-
-
-
-
-
-
-    /*
-        private async checkConnection(): Promise<boolean> {
-            let isConnected = await this.coreRpcService.isConnected();
-            let hasMarketConfiguration = false;
-
-            if (isConnected) {
-
-                if (this.previousState !== isConnected) {
-                    this.log.info('connection with particld established.');
-
-                    const hasWallet = await this.coreRpcService.hasWallet();
-                    this.log.debug('hasWallet: ' + hasWallet);
-
-                    if (hasWallet) {
-                        this.log.info('wallet is ready.');
-
-                        // seed the default Profile
-                        const defaultProfile: resources.Profile = await this.defaultProfileService.seedDefaultProfile()
-                            .then(value => value.toJSON());
-
-                        // save the default env vars as settings
-                        await this.defaultSettingService.saveDefaultProfileSettings(defaultProfile);
-
-                        // check whether we have the required default marketplace configuration to continue
-                        hasMarketConfiguration = await this.hasMarketConfiguration(defaultProfile);
-
-                        // currently, we have the requirement for the particl-desktop user to create the market wallet manually
-                        // we'll skip this nonsense if process.env.STANDALONE=true
-                        if (!Environment.isTruthy(process.env.STANDALONE)) {
-                            const hasRequiredMarketWallet = await this.coreRpcService.walletExists('market');
-                            this.log.warn('Not running in standalone mode, wallet created: ', hasRequiredMarketWallet);
-                            hasMarketConfiguration = hasRequiredMarketWallet && hasMarketConfiguration;
-                            this.INTERVAL = 10000;
-                        }
-
-                        // if there's no configuration for the market, set the isConnected back to false
-                        isConnected = hasMarketConfiguration;
-
-                        if (hasMarketConfiguration) {
-
-                            // seed the default market
-                            const defaultMarket: resources.Market = await this.defaultMarketService.seedDefaultMarket(defaultProfile)
-                                .then(value => value.toJSON());
-
-                            // seed the default categories
-                            await this.defaultItemCategoryService.seedDefaultCategories(defaultMarket.receiveAddress);
-
-                            // start message polling and other stuff, unless we're running integration tests
-                            if (process.env.NODE_ENV !== 'test') {
-                                this.expiredListingItemProcessor.scheduleProcess();
-                                this.proposalResultProcessor.scheduleProcess();
-
-                                // poll for waiting smsgmessages to be processed
-                                // this.waitingMessageProcessor.schedulePoll();
-
-                                // request new messages to be pushed through zmq
-                                await this.smsgService.pushUnreadCoreSmsgMessages();
-
-                            }
-                            this.INTERVAL = 10000;
-                        } else {
-                            isConnected = false;
-                            this.log.error('market not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
-                        }
-
-                    } else {
-                        isConnected = false;
-                        this.log.error('wallet not initialized yet, retrying in ' + this.INTERVAL + 'ms.');
-                    }
-                }
-
-                // this.log.info('connected to particld, checking again in ' + this.INTERVAL + 'ms.');
-            } else {
-
-                if (this.previousState !== isConnected && hasMarketConfiguration) {
-                    this.log.info('connection with particld disconnected.');
-
-                    // stop message polling
-                    // await this.coreCookieService.stop();
-                    this.INTERVAL = 1000;
-                }
-
-                if (process.env.NODE_ENV !== 'test') {
-                    this.log.error('failed to connect to particld, retrying in ' + this.INTERVAL + 'ms.');
-                }
-            }
-
-            this.previousState = isConnected;
-
-            return isConnected;
-        }
-    */
 }

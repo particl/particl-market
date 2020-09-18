@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -8,6 +8,7 @@ import { OrderItem } from './OrderItem';
 import { Address } from './Address';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderSearchParams } from '../requests/search/OrderSearchParams';
+import { OrderSearchOrderField } from '../enums/SearchOrderField';
 
 export class Order extends Bookshelf.Model<Order> {
 
@@ -18,22 +19,75 @@ export class Order extends Bookshelf.Model<Order> {
         'OrderItems.Bid.ChildBids',
         'OrderItems.Bid.ChildBids.BidDatas',
         'OrderItems.Bid.ListingItem',
+        'OrderItems.Bid.ListingItem.ItemInformation',
+        'OrderItems.Bid.ListingItem.ItemInformation.Images',
+        'OrderItems.Bid.ListingItem.ItemInformation.Images.ItemImageDatas',
+        'OrderItems.Bid.ListingItem.PaymentInformation.ItemPrice',
+        'OrderItems.Bid.ListingItem.PaymentInformation.ItemPrice.ShippingPrice',
         'OrderItems.Bid.ListingItem.ListingItemTemplate',
         'OrderItems.Bid.ListingItem.PaymentInformation',
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow',
         'OrderItems.Bid.ListingItem.PaymentInformation.Escrow.Ratio',
         'OrderItems.Bid.ShippingAddress',
-        'ShippingAddress'
+        'ShippingAddress',
+        'ShippingAddress.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Order> {
-        if (withRelated) {
-            return await Order.where<Order>({ id: value }).fetch({
-                withRelated: this.RELATIONS
+        return await Order.where<Order>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async searchBy(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
+        options.order = options.order || SearchOrder.ASC;
+        options.orderField = options.orderField || OrderSearchOrderField.UPDATED_AT;
+
+        const collection = Order.forge<Model<Order>>()
+            .query( qb => {
+                qb.innerJoin('order_items', 'orders.id', 'order_items.order_id');
+
+                if (options.market || options.listingItemId) {
+                    qb.innerJoin('bids', 'order_items.bid_id', 'bids.id');
+
+                    if (options.market) {
+                        qb.innerJoin('listing_items', 'bid.listing_item_id', 'listing_items.id');
+                        qb.andWhere( qbInner => {
+                            return qbInner.where('bids.listing_items.market', '=', options.market);
+                        });
+                    }
+
+                    if (options.listingItemId) {
+                        qb.andWhere( qbInner => {
+                            return qbInner.where('bids.listing_item_id', '=', options.listingItemId);
+                        });
+                    }
+                }
+
+                if (options.status && typeof options.status === 'string') {
+                    qb.andWhere( qbInner => {
+                        return qbInner
+                            .where('order_items.status', '=', options.status)
+                            .orWhere('orders.status', '=', options.status);
+                    });
+                }
+
+                if (options.buyerAddress) {
+                    qb.where('orders.buyer', '=', options.buyerAddress);
+                }
+
+                if (options.sellerAddress) {
+                    qb.where('orders.seller', '=', options.sellerAddress);
+                }
+            })
+            .orderBy('orders.' + options.orderField, options.order)
+            .query({
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
+                // debug: true
             });
-        } else {
-            return await Order.where<Order>({ id: value }).fetch();
-        }
+
+        return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'orders'; }
@@ -62,43 +116,6 @@ export class Order extends Bookshelf.Model<Order> {
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
-
-
-    public static async search(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {
-        if (!options.ordering) {
-            options.ordering = SearchOrder.ASC;
-        }
-
-        const orderCollection = Order.forge<Model<Order>>()
-            .query( qb => {
-                qb.join('order_items', 'orders.id', 'order_items.order_id');
-
-                if (options.listingItemId) {
-                    qb.join('bids', 'order_items.bid_id', 'bids.id');
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
-                }
-
-                if (options.status && typeof options.status === 'string') {
-                    qb.where('order_items.status', '=', options.status);
-                }
-
-                if (options.buyerAddress && typeof options.buyerAddress === 'string') {
-                    qb.where('orders.buyer', '=', options.buyerAddress);
-                }
-
-                if (options.sellerAddress && typeof options.sellerAddress === 'string') {
-                    qb.where('orders.seller', '=', options.sellerAddress);
-                }
-            }).orderBy('orders.created_at', options.ordering);
-
-        if (withRelated) {
-            return await orderCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await orderCollection.fetchAll();
-        }
-    }
 
     public OrderItems(): Collection<OrderItem> {
         return this.hasMany(OrderItem, 'order_id', 'id');

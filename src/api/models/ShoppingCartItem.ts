@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,8 +16,8 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         'ListingItem.ItemInformation.ItemCategory',
         'ListingItem.ItemInformation.ItemLocation',
         'ListingItem.ItemInformation.ItemLocation.LocationMarker',
-        'ListingItem.ItemInformation.ItemImages',
-        'ListingItem.ItemInformation.ItemImages.ItemImageDatas',
+        'ListingItem.ItemInformation.Images',
+        'ListingItem.ItemInformation.Images.ImageDatas',
         'ListingItem.ItemInformation.ShippingDestinations',
         'ListingItem.PaymentInformation',
         'ListingItem.PaymentInformation.Escrow',
@@ -84,7 +84,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         }
     }
 
-    public static async clearCart(cartId: number): Promise<void> {
+    public static async destroyByCartId(cartId: number): Promise<void> {
         const ShoppingCartItemCollection = ShoppingCartItem.forge<ShoppingCartItem>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
@@ -93,7 +93,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         return;
     }
 
-    public get tableName(): string { return 'shopping_cart_item'; }
+    public get tableName(): string { return 'shopping_cart_items'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }

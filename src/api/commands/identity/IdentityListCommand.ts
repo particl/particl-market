@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -12,17 +12,13 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { Identity } from '../../models/Identity';
 import { ProfileService } from '../../services/model/ProfileService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { Collection } from 'bookshelf';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 export class IdentityListCommand extends BaseCommand implements RpcCommandInterface<Collection<Identity>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
@@ -32,6 +28,14 @@ export class IdentityListCommand extends BaseCommand implements RpcCommandInterf
         super(Commands.IDENTITY_LIST);
         this.log = new Logger(__filename);
     }
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', true, this.profileService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
 
     /**
      * command description
@@ -45,7 +49,6 @@ export class IdentityListCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Collection<Identity>> {
-
         const profile: resources.Profile = data.params[0];
         return await this.identityService.findAllByProfileId(profile.id);
     }
@@ -58,24 +61,7 @@ export class IdentityListCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        }
-
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        }
-
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-
-        data.params[0] = profile;
-
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
     }
 

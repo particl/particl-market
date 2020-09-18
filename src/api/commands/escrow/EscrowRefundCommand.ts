@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -16,8 +16,6 @@ import { MessageException } from '../../exceptions/MessageException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { OrderItemService } from '../../services/model/OrderItemService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
@@ -25,10 +23,9 @@ import { BidService } from '../../services/model/BidService';
 import { EscrowRefundActionService } from '../../services/action/EscrowRefundActionService';
 import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -39,6 +36,15 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
     ) {
         super(Commands.ESCROW_REFUND);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('orderItemId', true, this.orderItemService),
+                new StringValidationRule('memo', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -101,23 +107,10 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<any>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('orderItemId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('orderItemId', 'number');
-        }
-
-        // make sure required data exists and fetch it
-        const orderItem: resources.OrderItem = await this.orderItemService.findOne(data.params[0]).then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('OrderItem');
-            });
-        data.params[0] = orderItem;
+        const orderItem: resources.OrderItem = data.params[0];
+        const memo: string = data.params[1];
 
         // TODO: check these
         const validOrderItemStatuses = [
@@ -153,8 +146,8 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <orderItemId>            - String - The id of the OrderItem for which we want to refund the Escrow.\n'
-            + '    <memo>                   - String - The memo of the Escrow ';
+            + '    <orderItemId>            - number, the id of the OrderItem for which we want to refund the Escrow.\n'
+            + '    <memo>                   - [optional] string, the memo for the Escrow ';
     }
 
     public description(): string {

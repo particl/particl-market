@@ -1,66 +1,104 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
+import { request, validate } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
+import { Core, Targets, Types } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { SearchOrderField } from '../../enums/SearchOrderField';
+import { ListingItemTemplateSearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/search/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SearchOrder } from '../../enums/SearchOrder';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ProfileService } from '../../services/model/ProfileService';
+import { BaseSearchCommand } from '../BaseSearchCommand';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { MarketService } from '../../services/model/MarketService';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules, IdValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
-export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
-    public log: LoggerType;
-    private DEFAULT_PAGE_LIMIT = 10;
+export class ListingItemTemplateSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_SEARCH);
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', true, this.profileService),
+                new StringValidationRule('searchString', false),
+                {
+                    name: 'categories',
+                    required: false,
+                    type: undefined // todo: number[]|string[]'
+                },
+                new BooleanValidationRule('isBaseTemplate', false),
+                new StringValidationRule('marketReceiveAddress', false),
+                new BooleanValidationRule('hasItems', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
+    public getAllowedSearchOrderFields(): string[] {
+        return EnumHelper.getValues(ListingItemTemplateSearchOrderField) as string[];
+    }
+
     /**
      * data.params[]:
      *  [0]: page, number, 0-based
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profile id, number, optional
+     *  [4]: profile, resources.Profile, required
      *  [5]: searchString, string, optional
-     *  [6]: category, number|string, if string, try to searchBy using key, optional
-     *  [7]: hasItems, boolean, optional
+     *  [6]: categories, optional, number[]|string[], if string -> find using key
+     *  [7]: isBaseTemplate, boolean, optional, default true
+     *  [8]: market, resources.Market, optional
+     *  [9]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
-        return await this.listingItemTemplateService.search({
+
+        const profile: resources.Profile = data.params[4];
+        const market: resources.Market = data.params[8];
+
+        const searchParams = {
             page: data.params[0] || 0,
             pageLimit: data.params[1] || 10,
-            order: data.params[2] || 'ASC',
-            orderField: data.params[3] || SearchOrderField.DATE,
-            profileId: data.params[4],
+            order: data.params[2] || SearchOrder.ASC,
+            orderField: data.params[3] || ListingItemTemplateSearchOrderField.UPDATED_AT,
+            profileId: profile ? profile.id : undefined,
             searchString: data.params[5],
-            category: data.params[6],
-            hasItems: data.params[7]
-        } as ListingItemTemplateSearchParams);
+            categories: data.params[6],
+            isBaseTemplate: data.params[7],
+            marketReceiveAddress: market ? market.receiveAddress : undefined,
+            hasListingItems: data.params[9]
+        } as ListingItemTemplateSearchParams;
+
+        return await this.listingItemTemplateService.search(searchParams);
     }
 
     /**
@@ -69,85 +107,78 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: profileId, number, optional
+     *  [4]: profileId: number, required -> profile: resources.Profile
      *  [5]: searchString, string, * for all, optional
-     *  [6]: category, number|string, if string, try to searchBy using key, * for all, optional
-     *  [7]: hasItems, boolean, optional
+     *  [6]: categories, optional, number[]|string[], if string -> find using key
+     *  [7]: isBaseTemplate, boolean, optional, default true
+     *  [8]: marketReceiveAddress, string, * for all, optional
+     *  [9]: hasItems, boolean, optional
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('page');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('pageLimit');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('order');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('orderField');
+        await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
+
+        const profile: resources.Profile = data.params[4];  // required
+        const searchString = data.params[5];                // optional
+        const categories = data.params[6];                  // optional
+        const isBaseTemplate = data.params[7];              // optional
+        let marketReceiveAddress = data.params[8];          // optional
+        const hasItems = data.params[9];                    // optional
+
+        this.log.debug('profileId: ', JSON.stringify(profile.id, null, 2));
+
+        if (categories) {
+            // categories needs to be an array
+            if (!_.isArray(categories)) {
+                throw new InvalidParamException('categories', 'number[] | string[]');
+            } else {
+                // validate types, since we could have any[]...
+                const foundDiffenent = _.find(categories, value => {
+                    return typeof value !== typeof categories[0];
+                });
+                if (foundDiffenent) {
+                    throw new InvalidParamException('categories', 'number[] | string[]');
+                }
+            }
         }
 
-        data.params[0] = data.params[0] ? data.params[0] : 0;
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('page');
+        marketReceiveAddress = (marketReceiveAddress !== '*') ? marketReceiveAddress : undefined;
+        if (marketReceiveAddress) {
+            const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(profile.id, marketReceiveAddress)
+                .then(value => value.toJSON())
+                .catch(reason => {
+                    throw new ModelNotFoundException('Market');
+                });
+            data.params[8] = market;
         }
 
-        data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('pageLimit');
-        }
-
-        if (data.params[2] === 'ASC') {
-            data.params[2] = SearchOrder.ASC;
-        } else {
-            data.params[2] = SearchOrder.DESC;
-        }
-        const validSearchOrders = [SearchOrder.ASC, SearchOrder.DESC];
-        if (!data.params[2] || !_.includes(validSearchOrders, data.params[2])) {
-            throw new InvalidParamException('order');
-        }
-
-        const validOrderFields = [SearchOrderField.STATE, SearchOrderField.DATE, SearchOrderField.TITLE];
-        if (!data.params[3] || !_.includes(validOrderFields, data.params[3])) {
-            throw new InvalidParamException('orderField');
-        }
-
-        if (data.params[4] && typeof data.params[4] !== 'number') {
-            throw new InvalidParamException('profileId');
-        }
-
-        data.params[5] = data.params[5] !== '*' ? data.params[5] : undefined;
-        data.params[6] = data.params[6] !== '*' ? data.params[6] : undefined;
-
-        // if (!data.params[7] || typeof data.params[7] !== 'boolean') {
-        //   throw new InvalidParamException('hasItems');
-        // }
-
-        // TODO:
-        // - category exists?
+        // data.params[4] = profile;
+        data.params[5] = searchString !== '*' ? searchString : undefined;
+        data.params[6] = (categories && categories.length) > 0 ? categories : undefined;
+        // data.params[7] = !_.isNil(isBaseTemplate) ? isBaseTemplate : false;
+        data.params[8] = marketReceiveAddress;
+        // data.params[9] = !_.isNil(hasItems) ? hasItems : false;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <profileId>[<searchString> [<category> [<hasItems> ]]] ';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <profileId> [searchString] [categories] [isBaseTemplate] [market] [hasItems] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <page>                   - Numeric - The number page we want to view of searchBy \n'
-            + '                                listing item template results. \n'
+            + '    <page>                   - Numeric - The number of the page we want to view. \n'
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
-            + '    <order>                  - ENUM{ASC} - The order of the returned results. \n'
-            + '    <orderField>             - ENUM{STATE, TITLE, DATE} - The order field \n'
-            + '                                by which make sorting of templates. \n'
-            + '    <profileId>              - Numeric - The ID of the profile linked to the listing item \n'
-            + '                                templates we want to searchBy for. \n'
+            + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
+            + '    <orderField>             - ENUM{ListingItemTemplateSearchOrderField} - The field to use to sort results.\n'
+            + '    <profileId>              - Numeric - The ID of the profile linked to the ListingItemTemplates we want to searchBy for. \n'
             + '    <searchString>           - [optional] String - A string that is used to searchBy for \n'
-            + '                                listing item templats via title. \n'
-            + '    <category>               - [optional] String - The key identifying the category \n'
-            + '                                associated with the listing item templates we want to \n'
-            + '                                searchBy for. \n'
+            + '                                ListingItemTemplates via title. \n'
+            + '    <categories>             - [optional] Array - ItemCategory Ids or keys. \n'
+            + '    <isBaseTemplate>         - [optional] Boolean - if true then return only base ListingItemTemplates. \n'
+            + '    <market>                 - [optional] String - filter market ListingItemTemplates by the market\n'
             + '    <hasItems>               - [optional] Boolean - if true then filter ListingItemTemplates \n'
             + '                                by having or not having ListingItems. \n';
     }

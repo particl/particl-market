@@ -1,79 +1,118 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ItemCategorySearchParams } from '../requests/search/ItemCategorySearchParams';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemCategory> {
+    public static log: LoggerType = new LoggerType(__filename);
+
+    public static RELATIONS = [
+        'ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ChildItemCategories'
+    ];
+
+    public static CHILD_RELATIONS = [
+        'ParentItemCategory',
+        'ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories.ChildItemCategories',
+        'ChildItemCategories.ChildItemCategories.ChildItemCategories.ChildItemCategories'
+    ];
+
+    public static async fetchById(value: number, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
         if (withRelated) {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
+                withRelated: parentRelations ? this.RELATIONS : this.CHILD_RELATIONS
             });
         } else {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch();
         }
     }
 
-    public static async fetchByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
-        if (withRelated) {
-            return await ItemCategory.where<ItemCategory>({ key }).fetch({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
-            });
-        } else {
-            return await ItemCategory.where<ItemCategory>({ key }).fetch();
-        }
+    public static async fetchByKeyAndMarket(key: string, market: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            market,
+            key
+        } as ItemCategorySearchParams, withRelated, parentRelations);
+
+        return collection.first();
     }
 
-    public static async fetchRoot(): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ key: 'cat_ROOT' }).fetch({
-            withRelated: [
-                'ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories.ChildItemCategories',
-                'ChildItemCategories.ChildItemCategories.ChildItemCategories.ChildItemCategories'
-            ]
-        });
+    public static async fetchDefaultByKey(key: string, withRelated: boolean = true, parentRelations: boolean = true): Promise<ItemCategory> {
+        const collection: Collection<ItemCategory> = await this.searchBy({
+            key,
+            isDefault: true
+        } as ItemCategorySearchParams, withRelated, parentRelations);
+
+        return collection.first();
     }
 
-    public static async fetchAllByName(name: string, withRelated: boolean = true): Promise<Collection<ItemCategory>> {
-        const listingCollection = ItemCategory.forge<Model<ItemCategory>>()
+    public static async fetchRoot(market?: string, withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
+        const params = {
+            market,
+            isRoot: true,
+            isDefault: !!market
+        } as ItemCategorySearchParams;
+        // this.log.debug('fetchRoot, params:', JSON.stringify(params, null, 2));
+
+        // parentRelations = false, returns the child relations, so its easier to build the category tree
+        const collection: Collection<ItemCategory> = await this.searchBy(params, withRelated, parentRelations);
+        return collection.first();
+    }
+
+    public static async fetchDefaultRoot(withRelated: boolean = true, parentRelations: boolean = false): Promise<ItemCategory> {
+        const params = {
+            isRoot: true,
+            isDefault: true
+        } as ItemCategorySearchParams;
+        // this.log.debug('fetchDefaultRoot, params:', JSON.stringify(params, null, 2));
+
+        const collection: Collection<ItemCategory> = await this.searchBy(params, withRelated, parentRelations);
+        return collection.first();
+    }
+
+    public static async searchBy(options: ItemCategorySearchParams,
+                                 withRelated: boolean = false,
+                                 parentRelations: boolean = true): Promise<Collection<ItemCategory>> {
+        const collection = ItemCategory.forge<Model<ItemCategory>>()
             .query(qb => {
-                qb.where('name', 'LIKE', '%' + name + '%');
+                if (options.market) {
+                    qb.where('item_categories.market', '=', options.market);
+                } else if (!options.market && options.isDefault) {
+                    qb.whereNull('item_categories.market');
+                }
+
+                if (options.parentId) {
+                    qb.where('item_categories.parent_item_category_id', '=', options.parentId);
+                } else if (!options.parentId && options.isRoot) {
+                    qb.whereNull('item_categories.parent_item_category_id');
+                }
+
+                if (options.key) {
+                    qb.where('item_categories.key', '=', options.key);
+                }
+                if (options.name) {
+                    qb.where('item_categories.name', 'LIKE', '%' + options.name + '%');
+                }
+
             })
             .orderBy('id', 'ASC');
 
         if (withRelated) {
-            return await listingCollection.fetchAll({
-                withRelated: [
-                    'ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                    'ChildItemCategories'
-                ]
+            return await collection.fetchAll({
+                withRelated: parentRelations ? this.RELATIONS : this.CHILD_RELATIONS
             });
         } else {
-            return await listingCollection.fetchAll();
+            return await collection.fetchAll();
         }
-    }
-
-    public static async fetchCategoryByNameAndParentID(categoryName: string, parentCategoryId: number | null): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name: categoryName, parent_item_category_id: parentCategoryId }).fetch();
     }
 
     public get tableName(): string { return 'item_categories'; }

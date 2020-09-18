@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -11,8 +11,6 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -24,10 +22,9 @@ import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class SmsgResendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-    public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,6 +34,15 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.SMSG_RESEND);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('msgid', true),
+                new IdValidationRule('identityId', true, this.identityService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -68,7 +74,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
 
         this.log.debug('RESENDING: ', JSON.stringify(marketplaceMessage, null, 2));
         const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(identity.wallet, marketplaceMessage, sendParams);
-        await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
+        await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
 
         return smsgSendResponse;
     }
@@ -76,53 +82,41 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: msgid
+     *  [1]: identityId
      *
      * @param data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('msgid');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('msgid', 'string');
-        }
+        await super.validate(data);
 
         // make sure an outgoing SmsgMessage with the msgid exists
-        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(data.params[0],  ActionDirection.OUTGOING)
-            .then(value => {
-                return value.toJSON();
-            })
+        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(data.params[0],  ActionDirection.OUTGOING)
+            .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('SmsgMessage');
             });
 
         // then find the identity which was used to send the message
-        const identity: resources.Identity = await this.identityService.findOneByAddress(smsgMessage.from)
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('Identity');
-            });
+        // smsgMessage.from === market.publishAddress -> doesn't work here
+        // for MPA_LISTING_ADD we could find the seller address from the message, for others that's not possible.
+        // getting the identity using the market.publishAddress isn't possible since multiple profiles could have the same market.
+        // TODO: we could save the identity used to send the message and use that,
+        // but too lazy to add that now. -> add identityId param
 
         data.params[0] = smsgMessage;
-        data.params[1] = identity;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <msgid> ';
+        return this.getName() + ' <msgid> <identityId>';
     }
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <msgid>              -  The msgid of the SmsgMessage we want to resend. \n';
+            + '    <msgid>              -  The msgid of the SmsgMessage we want to resend. \n'
+            + '    <identityId>         -  The identityId used to resend the message. \n';
     }
 
     public description(): string {
@@ -130,6 +124,6 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'smsg ' + this.getName() + ' 000000005d699e34c2d6cb37f087f41170ce6e776e7052f15bf5ff14';
+        return 'smsg ' + this.getName() + ' 000000005d699e34c2d6cb37f087f41170ce6e776e7052f15bf5ff14 1';
     }
 }

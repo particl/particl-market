@@ -1,22 +1,24 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../../core/Logger';
-import {Core, Types} from '../../../constants';
-import {ProposalAddMessage} from '../../messages/action/ProposalAddMessage';
-import {ProposalCreateRequest} from '../../requests/model/ProposalCreateRequest';
-import {ProposalOptionCreateRequest} from '../../requests/model/ProposalOptionCreateRequest';
-import {ModelFactoryInterface} from './ModelFactoryInterface';
-import {ProposalCreateParams} from './ModelCreateParams';
-import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
-import {HashMismatchException} from '../../exceptions/HashMismatchException';
-import {HashableProposalCreateRequestConfig} from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
-import {HashableProposalAddField, HashableProposalOptionField} from '../hashableconfig/HashableField';
-import {HashableProposalOptionMessageConfig} from '../hashableconfig/message/HashableProposalOptionMessageConfig';
-import {ProposalCategory} from '../../enums/ProposalCategory';
+import * as _ from 'lodash';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Core, Types } from '../../../constants';
+import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
+import { ProposalCreateRequest } from '../../requests/model/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../../requests/model/ProposalOptionCreateRequest';
+import { ModelFactoryInterface } from '../ModelFactoryInterface';
+import { ProposalCreateParams } from '../ModelCreateParams';
+import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
+import { HashMismatchException } from '../../exceptions/HashMismatchException';
+import { HashableProposalCreateRequestConfig } from '../hashableconfig/createrequest/HashableProposalCreateRequestConfig';
+import { HashableProposalAddField, HashableProposalOptionField } from '../hashableconfig/HashableField';
+import { HashableProposalOptionMessageConfig } from '../hashableconfig/message/HashableProposalOptionMessageConfig';
+import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
+
 
 export class ProposalFactory implements ModelFactoryInterface {
 
@@ -28,75 +30,66 @@ export class ProposalFactory implements ModelFactoryInterface {
 
     /**
      *
-     * @param {ProposalAddMessage} proposalMessage
-     * @param smsgMessage
      * @param params
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async get(params: ProposalCreateParams, proposalMessage: ProposalAddMessage, smsgMessage?: resources.SmsgMessage): Promise<ProposalCreateRequest> {
+    public async get(params: ProposalCreateParams): Promise<ProposalCreateRequest> {
 
-        const smsgData: any = {
-            postedAt: Number.MAX_SAFE_INTEGER,
-            expiredAt: Number.MAX_SAFE_INTEGER,
-            receivedAt: Number.MAX_SAFE_INTEGER,
-            timeStart: Number.MAX_SAFE_INTEGER
-        };
+        // this.log.debug('get(), params: ', JSON.stringify(params, null, 2));
+        const actionMessage: ProposalAddMessage = params.actionMessage;
+        const smsgMessage: resources.SmsgMessage = params.smsgMessage!;
 
-        if (smsgMessage) {
-            smsgData.postedAt = smsgMessage.sent;
-            smsgData.receivedAt = smsgMessage.received;
-            smsgData.expiredAt = smsgMessage.expiration;
-            smsgData.timeStart = smsgMessage.sent;
-            smsgData.msgid = smsgMessage.msgid;
-        }
-
-        const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(proposalMessage.options);
+        const optionsList: ProposalOptionCreateRequest[] = this.getOptionCreateRequests(actionMessage.options);
 
         const createRequest = {
-            submitter: proposalMessage.submitter,
-            category: proposalMessage.category,
-            title: proposalMessage.title,
-            description: proposalMessage.description,
-            item: proposalMessage.item,
+            submitter: actionMessage.submitter,
+            category: actionMessage.category,
+            title: actionMessage.title,
+            description: actionMessage.description,
+            target: actionMessage.target,
             options: optionsList,
-            ...smsgData
+            postedAt: !_.isNil(smsgMessage) ? smsgMessage.sent : undefined,
+            receivedAt: !_.isNil(smsgMessage) ? smsgMessage.received : undefined,
+            expiredAt: !_.isNil(smsgMessage) ? smsgMessage.expiration : undefined,
+            timeStart: !_.isNil(smsgMessage) ? smsgMessage.sent : undefined,
+            msgid: !_.isNil(smsgMessage) ? smsgMessage.msgid : undefined,
+            market: !_.isNil(smsgMessage) ? smsgMessage.to : undefined
         } as ProposalCreateRequest;
-
-        // if ProposalCategory.ITEM_VOTE, the item hash is in the title
-        if (proposalMessage.category === ProposalCategory.ITEM_VOTE) {
-            createRequest.item = proposalMessage.title;
-        }
 
         // hash the proposal
         let hashableOptions = '';
         for (const option of createRequest.options) {
             hashableOptions = hashableOptions + option.optionId + ':' + option.description + ':';
         }
-
         createRequest.hash = ConfigurableHasher.hash(createRequest, new HashableProposalCreateRequestConfig([{
             value: hashableOptions,
             to: HashableProposalAddField.PROPOSAL_OPTIONS
-        }]));
+        }, {
+            value: createRequest.market,
+            to: HashableProposalAddField.PROPOSAL_MARKET
+        }] as HashableFieldValueConfig[]));
 
         // validate that the createRequest.hash should have a matching hash with the incoming or outgoing message
-        if (proposalMessage.hash !== createRequest.hash) {
-            const error = new HashMismatchException('ProposalCreateRequest', proposalMessage.hash, createRequest.hash);
+        if (actionMessage.hash !== createRequest.hash) {
+            const error = new HashMismatchException('ProposalCreateRequest', actionMessage.hash, createRequest.hash);
             this.log.error(error.getMessage());
             throw error;
         }
 
         // add hashes for the options too
-        for (const option of optionsList) {
+        for (const option of createRequest.options) {
             option.hash = ConfigurableHasher.hash(option, new HashableProposalOptionMessageConfig([{
                 value: createRequest.hash,
                 to: HashableProposalOptionField.PROPOSALOPTION_PROPOSAL_HASH
             }]));
         }
+        // createRequest.options = optionsList;
+        // this.log.debug('get(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         return createRequest;
     }
 
-
+    // todo: ProposalOptionFactory
     private getOptionCreateRequests(options: resources.ProposalOption[]): ProposalOptionCreateRequest[] {
         const optionsList: ProposalOptionCreateRequest[] = [];
 

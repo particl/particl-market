@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -10,7 +10,6 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Blacklist } from '../../src/api/models/Blacklist';
 import { BlacklistService } from '../../src/api/services/model/BlacklistService';
@@ -32,12 +31,16 @@ describe('Blacklist', () => {
 
     const testData = {
         type: BlacklistType.LISTINGITEM,
-        hash: Faker.random.uuid()
+        target: Faker.random.uuid(),
+        market: Faker.random.uuid()
+        // profile_id,
+        // listing_item_id
     } as BlacklistCreateRequest;
 
     const testDataUpdated = {
         type: BlacklistType.LISTINGITEM,
-        hash: Faker.random.uuid()
+        target: Faker.random.uuid(),
+        market: Faker.random.uuid()
     } as BlacklistUpdateRequest;
 
     beforeAll(async () => {
@@ -45,11 +48,6 @@ describe('Blacklist', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         blacklistService = app.IoC.getNamed<BlacklistService>(Types.Service, Targets.Service.model.BlacklistService);
-
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
-
     });
 
     afterAll(async () => {
@@ -62,7 +60,8 @@ describe('Blacklist', () => {
 
         // expect(result.value).toBe(testData.value);
         expect(result.type).toBe(testData.type);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.target).toBe(testData.target);
+        expect(result.market).toBe(testData.market);
     });
 
     test('Should list Blacklists with our new create one', async () => {
@@ -77,7 +76,8 @@ describe('Blacklist', () => {
 
         const result = blacklists[0];
         expect(result.type).toBe(testData.type);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.target).toBe(testData.target);
+        expect(result.market).toBe(testData.market);
     });
 
     test('Should list blacklists by type with our new create one', async () => {
@@ -86,19 +86,21 @@ describe('Blacklist', () => {
 
         const result = blacklists[0];
         expect(result.type).toBe(testData.type);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.target).toBe(testData.target);
+        expect(result.market).toBe(testData.market);
     });
 
     test('Should return one blacklist', async () => {
         const result: resources.Blacklist = await blacklistService.findOne(blacklist.id).then(value => value.toJSON());
         expect(result.type).toBe(testData.type);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.target).toBe(testData.target);
+        expect(result.market).toBe(testData.market);
     });
 
     test('Should update the blacklist', async () => {
         const result: resources.Blacklist = await blacklistService.update(blacklist.id, testDataUpdated).then(value => value.toJSON());
         expect(result.type).toBe(testDataUpdated.type);
-        expect(result.hash).toBe(testDataUpdated.hash);
+        expect(result.target).toBe(testDataUpdated.target);
     });
 
     test('Should delete the Blacklist', async () => {

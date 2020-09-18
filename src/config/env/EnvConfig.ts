@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -28,16 +28,12 @@ export class EnvConfig {
         INIT: true,
         MIGRATE: true,
         JASMINE_TIMEOUT: 100000,
-        // DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
-        // DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
-        // DEFAULT_MARKETPLACE_ADDRESS: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
-        PAID_MESSAGE_RETENTION_DAYS: 7,
-        FREE_MESSAGE_RETENTION_DAYS: 7,
         MARKET_RPC_AUTH_DISABLED: false,
         MARKET_RPC_USER: 'test',
         MARKET_RPC_PASSWORD: 'test',
         EXPRESS_ENABLED: true,
         SOCKETIO_ENABLED: true,
+        ZMQ_ENABLED: true,
         LOG_LEVEL: 'debug',
         LOG_PATH:  'market.log', // todo: separate log_path and log_file
         LOG_ADAPTER: 'winston',
@@ -54,8 +50,25 @@ export class EnvConfig {
         DATA_CHECK_DELAY: 60,
         CHASING_COINS_API: 'https://chasing-coins.com/api/v1/convert',
         CHASING_COINS_API_DELAY: 60,
-        LISTING_ITEMS_EXPIRED_INTERVAL: 10 // minutes
-    };
+
+        // APP_DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
+        // APP_DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
+
+        // https://github.com/tecnovert/particl-core/blob/f66e893f276e68fa8ece0054b443db61bbc9b5e7/src/smsg/smessage.cpp#L95
+        PAID_MESSAGE_RETENTION_DAYS: 7,
+        FREE_MESSAGE_RETENTION_DAYS: 7,
+
+        LISTING_ITEMS_EXPIRED_INTERVAL: 10,             // minutes
+        LISTING_ITEM_REMOVE_PERCENTAGE: 0.1,
+        PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30,     // minutes
+
+        // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
+        SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,
+        SMSG_MAX_AMSG_BYTES: 512,
+        SMSG_MAX_MSG_BYTES: 24000,
+
+        MPMESSAGE_DEBUG: false
+};
 
     /**
      * sets the environment configuration.
@@ -66,7 +79,6 @@ export class EnvConfig {
      * @param {string} envFileName
      */
     constructor(dataDirLocation?: string, envFileName?: string) {
-
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
             this.envFile = envFileName;
@@ -91,7 +103,9 @@ export class EnvConfig {
         if (!Environment.isTest()) {
             console.log('current env:');
             _.forOwn(process.env, (value: any, key: string) => {
-                console.log('process.env.' + key + ':', process.env[key]);
+                if (!_.startsWith(key, 'npm_')) {
+                    console.log('process.env.' + key + ':', process.env[key]);
+                }
             });
         }
 

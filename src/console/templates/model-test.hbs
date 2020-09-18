@@ -1,5 +1,7 @@
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
+import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -44,8 +46,6 @@ describe('{{name.capitalize}}', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         {{name.camelCase}}Service = app.IoC.getNamed<{{name.capitalize}}Service>(Types.Service, Targets.Service.model.{{name.capitalize}}Service);
 
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
 
 
     });

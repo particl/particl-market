@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Particl Market developers
+// Copyright (c) 2017-2020, The Particl Market developers
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
@@ -40,7 +40,7 @@ export class RpcController {
 
         let rpcRequest: RpcRequest = this.createRequest(body.method, body.params, body.id);
 
-        if (rpcRequest.method === Commands.ITEMIMAGE_ROOT.commandName && rpcRequest.params[0] === Commands.ITEMIMAGE_ADD.commandName) {
+        if (rpcRequest.method === Commands.IMAGE_ROOT.commandName && rpcRequest.params[0] === Commands.IMAGE_ADD.commandName) {
             this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params[0] + '...');
         } else {
             this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
@@ -97,7 +97,8 @@ export class RpcController {
                 return 'Invalid params';
             case RpcErrorCode.InternalError:
                 return 'Internal error';
+            default:
+                return 'Unknown Error';
         }
-        return 'Unknown Error';
     }
 }
