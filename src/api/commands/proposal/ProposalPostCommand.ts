@@ -20,7 +20,6 @@ import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
-import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
 import {
     BooleanValidationRule,
@@ -120,8 +119,6 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         const market: resources.Market = data.params[0];
-        const daysRetention: boolean = data.params[3];
-        const estimateFee: boolean = data.params[4];
 
         // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages

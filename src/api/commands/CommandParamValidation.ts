@@ -17,7 +17,7 @@ import { SearchOrder } from '../enums/SearchOrder';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { OrderStatus } from '../enums/OrderStatus';
 import { MPActionExtended } from '../enums/MPActionExtended';
-import {MessageException} from '../exceptions/MessageException';
+import { MessageException } from '../exceptions/MessageException';
 
 /**
  * used as custom validation function for params.
@@ -161,6 +161,27 @@ export class NumberOrStringValidationRule extends BaseParamValidationRule {
             throw new InvalidParamException(this.name, 'number|string');
         }
         return true;
+    }
+}
+
+
+export class NumberOrAsteriskValidationRule extends BaseParamValidationRule {
+    public type = undefined;
+
+    constructor(name: string, required: boolean = false, defaultValue?: number | string) {
+        super(name, required, defaultValue);
+    }
+
+    public async customValidate(value: any, index: number, allValues: any[]): Promise<any> {
+        if (!_.isNil(value) && !_.isNumber(value) && value !== '*') {
+            throw new InvalidParamException(this.name, 'number|*');
+        }
+
+        if (!_.isNil(value) && !_.isFinite(value) && value < 0) {
+            throw new InvalidParamException(this.name);
+        }
+        value = (value === '*') ? undefined : value;
+        return value;
     }
 }
 

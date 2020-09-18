@@ -2,15 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
 import { ProposalSearchParams } from '../requests/search/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
+import { Logger as LoggerType } from '../../core/Logger';
 
 
 export class Proposal extends Bookshelf.Model<Proposal> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'ProposalOptions',
@@ -34,6 +38,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
      */
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
 
+        // this.log.debug('options: ', JSON.stringify(options, null, 2));
+
         const collection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
@@ -45,11 +51,11 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                     qb.where('proposals.market', '=', options.market);
                 }
 
-                if (typeof options.timeStart === 'number' && typeof options.timeEnd === 'string') {
+                if (typeof options.timeStart === 'number' && _.isNil(options.timeEnd)) {
                     // searchBy all ending after options.timeStart
                     qb.where('proposals.expired_at', '>', options.timeStart - 1);
 
-                } else if (typeof options.timeStart === 'string' && typeof options.timeEnd === 'number') {
+                } else if (_.isNil(options.timeStart) && typeof options.timeEnd === 'number') {
                     // searchBy all ending before options.timeEnd
                     qb.where('proposals.expired_at', '<', options.timeEnd + 1);
 
@@ -87,7 +93,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
             .query(qb => {
                 qb.where('expired_at', '<=', Date.now());
             });
-        return await collection.fetchAll();
+        return collection.fetchAll();
     }
 
     public get tableName(): string { return 'proposals'; }

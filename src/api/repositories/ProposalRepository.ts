@@ -36,8 +36,6 @@ export class ProposalRepository {
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
-            timeStart: '*',
-            timeEnd: '*',
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -51,8 +49,6 @@ export class ProposalRepository {
     public async findAllByMarket(market: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         const searchParams = {
             market,
-            timeStart: '*',
-            timeEnd: '*',
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;

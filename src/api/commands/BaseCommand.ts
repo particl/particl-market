@@ -188,12 +188,14 @@ export abstract class BaseCommand {
 
                     if (!_.isNil(result) && _.isBoolean(result) && !result) {
                         // when returning boolean false -> the custom validation has failed
+                        // we should rather throw the detailed error in the customValidate than a generic one here
                         throw new InvalidParamException(rules.params[i].name,
                             !_.isNil(rules.params[i]['validEnumType']) ? rules.params[i]['validEnumType'] : undefined);
 
-                    } else if (!_.isNil(result) && !_.isBoolean(result)) {
-                        // not boolean result -> the custom validation changed the param value
+                    } else if (!_.isBoolean(result)) {
+                        // if not boolean result -> the custom validation changed the param value
                         // most likely id -> entity conversion
+                        // also NumberOrAsteriskValidationRule converts * -> undefined
                         data.params[i] = result;
                     } else {
                         // param value validated

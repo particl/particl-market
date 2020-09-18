@@ -32,7 +32,6 @@ describe('ProposalListCommand', () => {
     let pastProposals: resources.Proposal[];
     let activeProposals: resources.Proposal[];
 
-    const testTimeStamp = Date.now();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -42,6 +41,10 @@ describe('ProposalListCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
+    });
+
+
+    test('Should generate some old Proposals', async () => {
         const generatePastProposalParams = new GenerateProposalParams([
             undefined,                  // listingItemId,
             true,                       // generatePastProposal,
@@ -52,14 +55,16 @@ describe('ProposalListCommand', () => {
             false                       // generateResults
         ]).toParamsArray();
 
-        // generate past proposals
         pastProposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,    // what to generate
             2,                  // how many to generate
             true,            // return model
             generatePastProposalParams      // what kind of data to generate
         ) as resources.Proposal[];
+    });
 
+
+    test('Should generate some active Proposals', async () => {
         const generateActiveProposalParams = new GenerateProposalParams([
             undefined,                  // listingItemId,
             false,                      // generatePastProposal,
@@ -70,14 +75,12 @@ describe('ProposalListCommand', () => {
             false                       // generateResults
         ]).toParamsArray();
 
-        // generate active proposals
         activeProposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,        // what to generate
             1,                      // how many to generate
             true,               // return model
             generateActiveProposalParams    // what kind of data to generate
         ) as resources.Proposal[];
-
     });
 
 
@@ -86,6 +89,7 @@ describe('ProposalListCommand', () => {
             true,
             '*',
             ProposalCategory.PUBLIC_VOTE,
+            null,
             SearchOrder.ASC
         ]);
         response.expectJson();
@@ -99,6 +103,7 @@ describe('ProposalListCommand', () => {
             '*',
             true,
             ProposalCategory.PUBLIC_VOTE,
+            null,
             SearchOrder.ASC
         ]);
         response.expectJson();
@@ -112,6 +117,21 @@ describe('ProposalListCommand', () => {
             '*',
             '*',
             true,
+            null,
+            SearchOrder.ASC
+        ]);
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('proposalCategory', 'string').getMessage());
+    });
+
+
+    test('Should fail because invalid proposalCategory', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*',
+            'INVALID',
+            null,
             SearchOrder.ASC
         ]);
         response.expectJson();
@@ -120,21 +140,37 @@ describe('ProposalListCommand', () => {
     });
 
 
+    test('Should fail because invalid market', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            '*',
+            '*',
+            ProposalCategory.PUBLIC_VOTE,
+            true,
+            SearchOrder.ASC
+        ]);
+        response.expectJson();
+        response.expectStatusCode(400);
+        expect(response.error.error.message).toBe(new InvalidParamException('marketId', 'number').getMessage());
+    });
+
+
     test('Should list all Proposals', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
-            '*',
+            undefined,
             '*'
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
+        const results: resources.Proposal[] = res.getBody()['result'];
         // log.debug('result:', JSON.stringify(result, null, 2));
-        expect(result).toHaveLength(3);
+        expect(results).toHaveLength(3);
     });
 
 
     test('Should list past Proposals', async () => {
+        const testTimeStamp = Date.now();
+
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
             '*',
             testTimeStamp
@@ -142,23 +178,28 @@ describe('ProposalListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
-        // log.debug('result:', JSON.stringify(result, null, 2));
-        expect(result).toHaveLength(2);
+        const results: resources.Proposal[] = res.getBody()['result'];
+        for (const proposal of results) {
+            log.debug('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + testTimeStamp + ' = ' + (proposal.expiredAt < testTimeStamp));
+        }
+
+        expect(results).toHaveLength(2);
     });
 
 
     test('Should list active Proposals', async () => {
+        const testTimeStamp = Date.now();
+
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
             testTimeStamp,
-            '*'
+            null
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
+        const results: resources.Proposal[] = res.getBody()['result'];
         // log.debug('result:', JSON.stringify(result, null, 2));
-        expect(result).toHaveLength(1);
+        expect(results).toHaveLength(1);
     });
 
 
@@ -171,8 +212,22 @@ describe('ProposalListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(3);
+        const results: resources.Proposal[] = res.getBody()['result'];
+        expect(results).toHaveLength(3);
+    });
+
+
+    test('Should list 3 Proposals with category PUBLIC_VOTE', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand,
+            null,
+            undefined,
+            ProposalCategory.PUBLIC_VOTE
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const results: resources.Proposal[] = res.getBody()['result'];
+        expect(results).toHaveLength(3);
     });
 
 
@@ -185,8 +240,8 @@ describe('ProposalListCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(0);
+        const results: resources.Proposal[] = res.getBody()['result'];
+        expect(results).toHaveLength(0);
     });
 
 });
