@@ -17,12 +17,7 @@ import { SmsgMessageSearchParams } from '../../requests/search/SmsgMessageSearch
 import { BaseSearchCommand } from '../BaseSearchCommand';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { SmsgMessageSearchOrderField } from '../../enums/SearchOrderField';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MPActionExtended } from '../../enums/MPActionExtended';
-import { GovernanceAction } from '../../enums/GovernanceAction';
-import { CommentAction } from '../../enums/CommentAction';
 import { SmsgMessageStatus } from '../../enums/SmsgMessageStatus';
 import {
     ActionMessageTypesValidationRule,
@@ -31,7 +26,6 @@ import {
     ParamValidationRule,
     StringValidationRule
 } from '../CommandParamValidation';
-import {CommentType} from '../../enums/CommentType';
 
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
@@ -57,14 +51,6 @@ export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandIn
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
-/*
-     *  [4]: types, ActionMessageTypes[], * for all, optional
-     *  [5]: status, SmsgMessageStatus, ENUM{NEW, PARSING_FAILED, PROCESSING, PROCESSED, PROCESSING_FAILED, WAITING}, * for all
-     *  [6]: direction, ActionDirection, ENUM{INCOMING, OUTGOING, BOTH}, * for all
-     *  [7]: age, number, SmsgMessage SmsgMessage minimum message age in ms, default 2 min
-     *  [8]: msgid, string, * for all, optional
-
- */
 
     public getAllowedSearchOrderFields(): string[] {
         return EnumHelper.getValues(SmsgMessageSearchOrderField) as string[];

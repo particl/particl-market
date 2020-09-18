@@ -148,7 +148,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
     private async isCoreMessageAlreadyProcessed(msg: CoreSmsgMessage): Promise<boolean> {
 
         // check whether an SmsgMessage with the same msgid can already be found
-        const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msg.msgid, ActionDirection.INCOMING)
+        const existingSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(msg.msgid, ActionDirection.INCOMING)
             .then(value => value.toJSON())
             .catch(error => {
                 return undefined;
@@ -166,7 +166,7 @@ export class CoreMessageProcessor implements MessageProcessorInterface {
         if (resentMsgIdKVS) {
             this.log.debug('SmsgMessage was resent: ', resentMsgIdKVS.value);
 
-            existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgId(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
+            existingResentSmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(resentMsgIdKVS.value + '', ActionDirection.INCOMING)
                 .then(value => value.toJSON())
                 .catch(error => {
                     return undefined;

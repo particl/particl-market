@@ -251,7 +251,7 @@ export class BidService {
     }
 
     private async unlockOutputsFor(wallet: string, msgid: string, type: string): Promise<void>  {
-        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(msgid).then((b) => b.toJSON());
+        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(msgid).then((b) => b.toJSON());
         const bidMPM: MarketplaceMessage = JSON.parse(bidSmsgMessage.text);
         await this.coreRpcService.lockUnspent(wallet, true, bidMPM.action[type].payment.prevouts, true);
     }

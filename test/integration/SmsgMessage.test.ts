@@ -182,7 +182,7 @@ describe('SmsgMessage', () => {
     });
 
     test('Should find one SmsgMessage using msgid', async () => {
-        const result: resources.SmsgMessage = await smsgMessageService.findOneByMsgId(smsgMessages[0].msgid).then(value => value.toJSON());
+        const result: resources.SmsgMessage = await smsgMessageService.findOneByMsgIdAndDirection(smsgMessages[0].msgid).then(value => value.toJSON());
 
         expect(result.type).toBe(smsgMessages[0].type);
         expect(result.status).toBe(smsgMessages[0].status);

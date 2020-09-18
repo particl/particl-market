@@ -49,13 +49,13 @@ export class EscrowLockMessageFactory extends BaseMessageFactory {
         // this.log.debug('createMessage(), listingItemAddMPM: ', JSON.stringify(listingItemAddMPM, null, 2));
 
         // bidMessage is stored when received and so its msgid is stored with the bid, so we can just fetch it using the msgid
-        const bidMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgId(actionRequest.bid.msgid, ActionDirection.OUTGOING)
+        const bidMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(actionRequest.bid.msgid, ActionDirection.OUTGOING)
             .then(async value => {
                 const smsgMessage: resources.SmsgMessage = value.toJSON();
                 return JSON.parse(smsgMessage.text) as MarketplaceMessage;
             });
 
-        const bidAcceptMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgId(actionRequest.bidAccept.msgid, ActionDirection.INCOMING)
+        const bidAcceptMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(actionRequest.bidAccept.msgid, ActionDirection.INCOMING)
             .then(async value => {
                 const smsgMessage: resources.SmsgMessage = value.toJSON();
                 return JSON.parse(smsgMessage.text) as MarketplaceMessage;

@@ -144,7 +144,7 @@ describe('ProposalAddActionListener', () => {
         // - first ProposalResult should exist
         // - there is no FlaggedItem since ProposalCategory is PUBLIC_VOTE
 
-        smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
+        smsgMessage = await smsgMessageService.findOneByMsgIdAndDirection(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
         // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
         expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
         expect(smsgMessage.direction).toBe(ActionDirection.OUTGOING);
@@ -325,7 +325,7 @@ describe('ProposalAddActionListener', () => {
         // - Votes should have a relation to Proposal
         //   - no...
 
-        smsgMessage = await smsgMessageService.findOneByMsgId(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
+        smsgMessage = await smsgMessageService.findOneByMsgIdAndDirection(smsgSendResponse.msgid!, ActionDirection.OUTGOING).then(value => value.toJSON());
         // log.debug('smsgMessage: ', JSON.stringify(smsgMessage, null, 2));
         expect(smsgMessage.msgid).toBe(smsgSendResponse.msgid);
         expect(smsgMessage.direction).toBe(ActionDirection.OUTGOING);

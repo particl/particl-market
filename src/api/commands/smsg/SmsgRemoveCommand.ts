@@ -11,15 +11,12 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgMessageService } from '../../services/model/SmsgMessageService';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
-    public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -27,6 +24,14 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.SMSG_REMOVE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('msgid', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -39,7 +44,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
 
-        await this.smsgMessageService.findOneByMsgId(data.params[0], ActionDirection.OUTGOING)
+        await this.smsgMessageService.findOneByMsgIdAndDirection(data.params[0], ActionDirection.OUTGOING)
             .then(value => {
                 const smsgMessage: resources.SmsgMessage = value.toJSON();
                 this.smsgMessageService.destroy(smsgMessage.id);
@@ -48,7 +53,7 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
                 this.log.debug('OUTGOING SMSG with msgid not found');
             });
 
-        await this.smsgMessageService.findOneByMsgId(data.params[0], ActionDirection.INCOMING)
+        await this.smsgMessageService.findOneByMsgIdAndDirection(data.params[0], ActionDirection.INCOMING)
             .then(value => {
                 const smsgMessage: resources.SmsgMessage = value.toJSON();
                 this.smsgMessageService.destroy(smsgMessage.id);
@@ -66,19 +71,9 @@ export class SmsgRemoveCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('msgid');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('msgid', 'string');
-        }
-
-        // make sure an SmsgMessage with the msgid exists
-        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(data.params[0])
+        await this.smsgMessageService.findOneByMsgIdAndDirection(data.params[0], ActionDirection.INCOMING)
             .then(value => value.toJSON())
             .catch(reason => {
                 throw new ModelNotFoundException('SmsgMessage');

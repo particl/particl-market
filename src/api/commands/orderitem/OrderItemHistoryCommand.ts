@@ -54,18 +54,18 @@ export class OrderItemHistoryCommand extends BaseCommand implements RpcCommandIn
         const smsgMessages: resources.SmsgMessage[] = [];
 
         // get MPA_LISTING_ADD
-        const listingItemSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.ListingItem.msgid)
+        const listingItemSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(orderItem.Bid.ListingItem.msgid)
             .then(value => value.toJSON());
         smsgMessages.push(listingItemSmsgMessage);
 
         // get MPA_BID
-        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgId(orderItem.Bid.msgid)
+        const bidSmsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(orderItem.Bid.msgid)
             .then(value => value.toJSON());
         smsgMessages.push(bidSmsgMessage);
 
         // get the rest of the bid messages
         for (const childBid of orderItem.Bid.ChildBids) {
-            const childBidSmsgMessage = await this.smsgMessageService.findOneByMsgId(childBid.msgid).then(value => value.toJSON());
+            const childBidSmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(childBid.msgid).then(value => value.toJSON());
             smsgMessages.push(childBidSmsgMessage);
         }
 

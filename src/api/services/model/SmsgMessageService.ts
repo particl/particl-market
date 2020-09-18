@@ -58,7 +58,8 @@ export class SmsgMessageService {
         return smsgMessage;
     }
 
-    public async findOneByMsgId(msgId: string, direction: ActionDirection = ActionDirection.BOTH, withRelated: boolean = true): Promise<SmsgMessage> {
+    public async findOneByMsgIdAndDirection(msgId: string, direction: ActionDirection = ActionDirection.BOTH,
+                                            withRelated: boolean = true): Promise<SmsgMessage> {
         let smsgMessage;
         if (direction === ActionDirection.BOTH) {
             smsgMessage = await this.smsgMessageRepo.findOneByMsgIdAndDirection(msgId, ActionDirection.INCOMING, withRelated);
