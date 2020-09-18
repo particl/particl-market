@@ -111,6 +111,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         const target = data.params[6];              // optional
         const parentCommentHash = data.params[7];   // optional
 
+        // TODO: add support for other CommentTypes
         if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
 
             // make sure given the receiver (Market), exists
@@ -135,7 +136,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             }
 
         } else {
-            throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
+            throw new MessageException('CommentType not supported.');
         }
 
         if (!_.isNil(parentCommentHash) && parentCommentHash.length > 0) {

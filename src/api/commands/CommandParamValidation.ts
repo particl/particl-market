@@ -147,6 +147,22 @@ export class StringValidationRule extends BaseParamValidationRule {
     }
 }
 
+// TODO: IdOrHashValidationRule
+export class NumberOrStringValidationRule extends BaseParamValidationRule {
+    public type = undefined;
+
+    constructor(name: string, required: boolean = false, defaultValue?: string) {
+        super(name, required, defaultValue);
+    }
+
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
+        if (!_.isNumber(value) && !_.isString(value)) {
+            throw new InvalidParamException(this.name, 'number|string');
+        }
+        return true;
+    }
+}
+
 
 // Numeric
 

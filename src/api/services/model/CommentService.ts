@@ -76,13 +76,13 @@ export class CommentService {
      */
     @validate()
     public async search(@request(CommentSearchParams) options: CommentSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Comment>> {
-        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        // this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.commentRepo.search(options, withRelated);
     }
 
     @validate()
     public async count(@request(CommentSearchParams) options: CommentSearchParams): Promise<number> {
-        this.log.debug('count(), options: ', JSON.stringify(options, null, 2));
+        // this.log.debug('count(), options: ', JSON.stringify(options, null, 2));
         return await this.commentRepo.count(options);
     }
 

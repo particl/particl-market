@@ -33,15 +33,17 @@ describe('CommentSearchCommand', () => {
     let profile: resources.Profile;
     let market: resources.Market;
 
-    let listingItem: resources.ListingItem;
-    let comments: resources.Comment[];
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
+    let commentsAboutListingItem1: resources.Comment[];
+    let commentsAboutListingItem2: resources.Comment[];
 
     const PAGE = 0;
-    const PAGE_LIMIT = 10;
+    const PAGE_LIMIT = 1000;
     const ORDER = SearchOrder.ASC;
     const ORDER_FIELD = CommentSearchOrderField.ID;
 
-    const numGeneratedComments = 7;
+    const COMMENT_AMOUNT = 3;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -71,15 +73,16 @@ describe('CommentSearchCommand', () => {
 
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
+            2,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-        listingItem = listingItemTemplates[0].ListingItems[0];
+        listingItem1 = listingItemTemplates[0].ListingItems[0];
+        listingItem2 = listingItemTemplates[1].ListingItems[0];
     });
 
 
-    test('Should generate Comments about ListingItem', async () => {
+    test('Should generate Comments about ListingItem1', async () => {
 
         const generateCommentParams = new GenerateCommentParams([
             false,                                              // generateListingItemTemplate
@@ -88,16 +91,38 @@ describe('CommentSearchCommand', () => {
             market.Identity.address,                            // sender
             market.receiveAddress,                              // receiver
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
-            listingItem.hash                                    // target
+            listingItem1.hash                                   // target
         ]).toParamsArray();
 
-        comments = await testUtil.generateData(
+        commentsAboutListingItem1 = await testUtil.generateData(
             CreatableModel.COMMENT,     // what to generate
-            numGeneratedComments,       // how many to generate
+            COMMENT_AMOUNT,             // how many to generate
             true,            // return model
             generateCommentParams       // what kind of data to generate
         );
-        // log.debug('comments: ', JSON.stringify(comments, null, 2));
+        // log.debug('commentsAboutListingItem1: ', JSON.stringify(commentsAboutListingItem1, null, 2));
+    });
+
+
+    test('Should generate Comments about ListingItem2', async () => {
+
+        const generateCommentParams = new GenerateCommentParams([
+            false,                                              // generateListingItemTemplate
+            false,                                              // generateListingItem
+            false,                                              // generatePastComment
+            market.Identity.address,                            // sender
+            market.receiveAddress,                              // receiver
+            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            listingItem2.hash                                   // target
+        ]).toParamsArray();
+
+        commentsAboutListingItem2 = await testUtil.generateData(
+            CreatableModel.COMMENT,     // what to generate
+            COMMENT_AMOUNT,             // how many to generate
+            true,            // return model
+            generateCommentParams       // what kind of data to generate
+        );
+        // log.debug('commentsAboutListingItem1: ', JSON.stringify(commentsAboutListingItem1, null, 2));
     });
 
 
@@ -163,7 +188,7 @@ describe('CommentSearchCommand', () => {
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
-            listingItem.hash + 'NOTFOUND'
+            listingItem1.hash + 'NOTFOUND'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -174,13 +199,14 @@ describe('CommentSearchCommand', () => {
     test('Should fail because type not supported', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.MARKETPLACE_COMMENT,    // <--
+            CommentType.MARKETPLACE_COMMENT,
             market.receiveAddress,
-            listingItem.hash
+            listingItem1.hash
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.').getMessage());
+
+        expect(res.error.error.message).toBe(new MessageException('CommentType not supported.').getMessage());
     });
 
 
@@ -192,16 +218,15 @@ describe('CommentSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(comments.length);
+        const result: resources.Comment[] = res.getBody()['result'];
+        expect(result.length).toBe(COMMENT_AMOUNT * 2);
 
-        for (let i = 0; i < comments.length; i++) {
-            expect(result[i].sender).toBe(comments[i].sender);
-            expect(result[i].target).toBe(comments[i].target);
-            expect(result[i].receiver).toBe(comments[i].receiver);
-            expect(result[i].message).toBe(comments[i].message);
-            expect(result[i].type).toBe(comments[i].type);
-            expect(result[i].hash).toBe(comments[i].hash);
+        const allComments: resources.Comment = commentsAboutListingItem1.concat(commentsAboutListingItem2);
+
+        for (let i = 0; i < COMMENT_AMOUNT; i++) {
+            expect(result[i].sender).toBe(allComments[i].sender);
+            expect(result[i].receiver).toBe(allComments[i].receiver);
+            expect(result[i].type).toBe(allComments[i].type);
         }
     });
 
@@ -211,20 +236,20 @@ describe('CommentSearchCommand', () => {
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
             CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
-            listingItem.hash
+            listingItem1.hash
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(comments.length);
+        const result: resources.Comment[] = res.getBody()['result'];
+        expect(result.length).toBe(commentsAboutListingItem1.length);
 
-        for (let i = 0; i < comments.length; i++) {
-            expect(result[i].sender).toBe(comments[i].sender);
-            expect(result[i].target).toBe(comments[i].target);
-            expect(result[i].receiver).toBe(comments[i].receiver);
-            expect(result[i].message).toBe(comments[i].message);
-            expect(result[i].type).toBe(comments[i].type);
-            expect(result[i].hash).toBe(comments[i].hash);
+        for (let i = 0; i < COMMENT_AMOUNT; i++) {
+            expect(result[i].sender).toBe(commentsAboutListingItem1[i].sender);
+            expect(result[i].target).toBe(commentsAboutListingItem1[i].target);
+            expect(result[i].receiver).toBe(commentsAboutListingItem1[i].receiver);
+            expect(result[i].message).toBe(commentsAboutListingItem1[i].message);
+            expect(result[i].type).toBe(commentsAboutListingItem1[i].type);
+            expect(result[i].hash).toBe(commentsAboutListingItem1[i].hash);
         }
     });
 

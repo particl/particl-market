@@ -14,9 +14,8 @@ import { Comment } from '../../models/Comment';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CommandParamValidationRules, NumberOrStringValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 export class CommentGetCommand extends BaseCommand implements RpcCommandInterface<Comment> {
 
@@ -26,6 +25,14 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
     ) {
         super(Commands.COMMENT_GET);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new NumberOrStringValidationRule('id|hash', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -60,14 +67,7 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<ItemCategory>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('id|hash');
-        }
-
-        if (typeof data.params[0] !== 'number' && typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('id|hash', 'number|string');
-        }
-
+        await super.validate(data);
         return data;
     }
 
@@ -77,11 +77,11 @@ export class CommentGetCommand extends BaseCommand implements RpcCommandInterfac
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <hash>              - String - The hash of the Comment we want to retrieve. ';
+            + '    <id|hash>              - String - The id or hash of the Comment we want to retrieve. ';
     }
 
     public description(): string {
-        return 'Get a Comment via hash.';
+        return 'Get a Comment.';
     }
 
     public example(): string {

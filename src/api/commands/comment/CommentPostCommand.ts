@@ -12,7 +12,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { CommentService } from '../../services/model/CommentService';
 import { ProfileService } from '../../services/model/ProfileService';
@@ -24,11 +23,16 @@ import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { CommentAddActionService } from '../../services/action/CommentAddActionService';
 import { ListingItemService } from '../../services/model/ListingItemService';
-import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
 import { IdentityType } from '../../enums/IdentityType';
 import { ProposalService } from '../../services/model/ProposalService';
+import {
+    CommandParamValidationRules, EnumValidationRule,
+    IdValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -45,6 +49,20 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     ) {
         super(Commands.COMMENT_POST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('identityId', true, this.identityService),
+                new EnumValidationRule('commentType', true, 'CommentType', [CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT] as string[]),
+                new StringValidationRule('receiver', true),
+                new StringValidationRule('target', true),
+                new StringValidationRule('message', true),
+                new StringValidationRule('parentCommentHash', false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -102,51 +120,14 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('identityId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('type');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('receiver');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('target');
-        } else if (data.params.length < 5) {
-            throw new MissingParamException('message');
-        }
-
-        const identityId = data.params[0];
-        const type = data.params[1];
+        const identity: resources.Identity = data.params[0];
+        const type: CommentType = data.params[1];
         const receiver = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
-
-        if (typeof identityId !== 'number') {
-            throw new InvalidParamException('identityId', 'number');
-        } else if (!EnumHelper.containsName(CommentType, type)) {
-            throw new InvalidParamException('type', 'CommentType');
-        } else if (typeof receiver !== 'string') {
-            throw new InvalidParamException('receiver', 'string');
-        } else if (typeof target !== 'string') {
-            throw new InvalidParamException('target', 'string');
-        } else if (typeof message !== 'string') {
-            throw new InvalidParamException('message', 'string');
-        }
-
-        let parentHash;
-        if (data.params.length > 5) {
-            parentHash = data.params[5];
-            if (typeof parentHash !== 'string') {
-                throw new InvalidParamException('parentCommentHash', 'string');
-            }
-        }
-
-        // make sure Identity with the id exists, and that the Identity is linked to a Market
-        const identity: resources.Identity = await this.identityService.findOne(identityId)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Identity');
-            });
+        const parentCommentHash = data.params[5];
 
         // make sure the Identity is of type IdentityType.MARKET
         if (identity.type !== IdentityType.MARKET) {
@@ -183,13 +164,13 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                     });
                 break;
             default:
-                throw new MessageException('Only CommentType.LISTINGITEM_QUESTION_AND_ANSWERS is supported.');
+                throw new MessageException('CommentType not supported.');
 
         }
 
         // make sure Comment with the hash exists
-        if (parentHash) {
-            data.params[5] = await this.commentService.findOneByHash(parentHash)
+        if (parentCommentHash) {
+            data.params[5] = await this.commentService.findOneByHash(parentCommentHash)
                 .then(value => value.toJSON())
                 .catch(() => {
                     throw new ModelNotFoundException('Comment');
@@ -215,12 +196,12 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <identityId>             - Numeric - The id of the Identity. \n'
-            + '    <receiver>               - String - The receiver address. \n'
-            + '    <type>                   - ENUM{LISTINGITEM_QUESTION_AND_ANSWERS} - The type of Comment.\n'
-            + '    <target>                 - String - The Comments targets hash. \n'
-            + '    <message>                - String - The message passed in the Comment. \n'
-            + '    <parentHash>             - [optional] String - The hash of the parent Comment.\n';
+            + '    <identityId>                 - number, the ID of the Identity. \n'
+            + '    <receiver>                   - string, The receiver address. \n'
+            + '    <type>                       - CommentType, the type of Comment.\n'
+            + '    <target>                     - string, the Comments targets hash. \n'
+            + '    <message>                    - string, the message passed in the Comment. \n'
+            + '    <parentCommentHash>          - [optional] string, the hash of the parent Comment.\n';
     }
 
     public description(): string {
@@ -231,5 +212,4 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         return this.getName() + ' comment post 1 \'pVfK8M2jnyBoAwyWwKv1vUBWat8fQGaJNW\' \'LISTINGITEM_QUESTION_AND_ANSWERS\'' +
             ' \'e1ccdf1201676a0f56aa1c5f5c4c1a9c0cef205c9cf6b51a40a443da5d47aae4\' \'message\'';
     }
-
 }

@@ -24,7 +24,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('passphrase').nullable();
 
             table.integer('image_id').unsigned().nullable();
-            table.foreign('image_id').references('id').inTable('images');
+            table.foreign('image_id').references('id').inTable('images').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

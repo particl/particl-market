@@ -79,13 +79,13 @@ describe('CommentPostCommand', () => {
     });
 
 
-    test('Should fail because missing type', async () => {
+    test('Should fail because missing commentType', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id
         ]);
         response.expectJson();
         response.expectStatusCode(404);
-        expect(response.error.error.message).toBe(new MissingParamException('type').getMessage());
+        expect(response.error.error.message).toBe(new MissingParamException('commentType').getMessage());
     });
 
 
@@ -139,7 +139,7 @@ describe('CommentPostCommand', () => {
     });
 
 
-    test('Should fail because invalid type', async () => {
+    test('Should fail because invalid commentType', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
             true,
@@ -149,11 +149,11 @@ describe('CommentPostCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(400);
-        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+        expect(response.error.error.message).toBe(new InvalidParamException('commentType', 'string').getMessage());
     });
 
 
-    test('Should fail because invalid type', async () => {
+    test('Should fail because invalid commentType', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
             'ALSO_INVALID_TYPE',
@@ -163,7 +163,7 @@ describe('CommentPostCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(400);
-        expect(response.error.error.message).toBe(new InvalidParamException('type', 'CommentType').getMessage());
+        expect(response.error.error.message).toBe(new InvalidParamException('commentType', 'CommentType').getMessage());
     });
 
 

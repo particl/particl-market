@@ -80,7 +80,7 @@ import { ListingItemObjectCreateRequest } from '../requests/model/ListingItemObj
 import { ListingItemObjectDataCreateRequest } from '../requests/model/ListingItemObjectDataCreateRequest';
 import { ItemLocationCreateRequest } from '../requests/model/ItemLocationCreateRequest';
 import { OrderFactory } from '../factories/model/OrderFactory';
-import {CommentCreateParams, ImageCreateParams, OrderCreateParams} from '../factories/ModelCreateParams';
+import { CommentCreateParams, ImageCreateParams, OrderCreateParams } from '../factories/ModelCreateParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableBidCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import { HashableProposalCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableProposalCreateRequestConfig';
@@ -124,9 +124,7 @@ import { ImageFactory } from '../factories/model/ImageFactory';
 import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
 import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { CommentFactory } from '../factories/model/CommentFactory';
-import {CommentAddMessage} from '../messages/action/CommentAddMessage';
-import {MessageBody} from '../../core/api/MessageBody';
-import {IsEnum, IsNotEmpty} from 'class-validator';
+import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 
 
 export class TestDataService {
@@ -588,7 +586,9 @@ export class TestDataService {
 
         for (const table of tablesToClean) {
             await Database.knex.select().from(table).del();
+            this.log.debug(' ...cleaned:' + table);
         }
+
         return;
     }
 
@@ -1198,7 +1198,7 @@ export class TestDataService {
 
         commentCreateRequest.hash = ConfigurableHasher.hash(commentCreateRequest, new HashableCommentCreateRequestConfig());
 
-        this.log.debug('commentCreateRequest: ', JSON.stringify(commentCreateRequest, null, 2));
+        // this.log.debug('commentCreateRequest: ', JSON.stringify(commentCreateRequest, null, 2));
         return commentCreateRequest;
     }
 
