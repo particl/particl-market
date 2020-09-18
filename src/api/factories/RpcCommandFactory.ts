@@ -129,6 +129,7 @@ import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
+import { IdentityAddCommand } from '../commands/identity/IdentityAddCommand';
 import { IdentityListCommand } from '../commands/identity/IdentityListCommand';
 import { IdentityRootCommand } from '../commands/identity/IdentityRootCommand';
 import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
@@ -310,8 +311,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgResendCommand) private smsgResendCommand: SmsgResendCommand,
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.identity.IdentityListCommand) private walletListCommand: IdentityListCommand,
-        @inject(Types.Command) @named(Targets.Command.identity.IdentityRootCommand) private walletRootCommand: IdentityRootCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityAddCommand) private identityAddCommand: IdentityAddCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityListCommand) private identityListCommand: IdentityListCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityRootCommand) private identityRootCommand: IdentityRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistListCommand) private blacklistListCommand: BlacklistListCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistRootCommand) private blacklistRootCommand: BlacklistRootCommand,
@@ -485,8 +487,9 @@ export class RpcCommandFactory {
         this.commands.push(smsgResendCommand);
         this.commands.push(smsgRootCommand);
 
-        this.commands.push(walletListCommand);
-        this.commands.push(walletRootCommand);
+        this.commands.push(identityAddCommand);
+        this.commands.push(identityListCommand);
+        this.commands.push(identityRootCommand);
 
         this.commands.push(blacklistListCommand);
         this.commands.push(blacklistRootCommand);

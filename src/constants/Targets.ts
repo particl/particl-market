@@ -247,6 +247,7 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         identity: {
+            IdentityAddCommand: 'IdentityAddCommand',
             IdentityListCommand: 'IdentityListCommand',
             IdentityRootCommand: 'IdentityRootCommand'
         },

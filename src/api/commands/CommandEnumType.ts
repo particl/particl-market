@@ -212,8 +212,9 @@ export class CommandEnumType extends Enum<Command> {
         [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
     public IDENTITY_LIST: Command         = new Command('identitylist', 'list', false);
+    public IDENTITY_ADD: Command         = new Command('identityadd', 'add', false);
     public IDENTITY_ROOT: Command         = new Command('identity', 'identity', true,
-        [this.IDENTITY_LIST], EnvironmentType.ALL);
+        [this.IDENTITY_ADD, this.IDENTITY_LIST], EnvironmentType.ALL);
 
     public BLACKLIST_LIST: Command      = new Command('blacklistlist', 'list', false);
     public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,
