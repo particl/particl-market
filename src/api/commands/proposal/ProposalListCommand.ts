@@ -110,7 +110,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             + '    <startTime>              - number|*, the startTime of the Proposal. \n'
             + '    <endTime>                - number|*, the endTime of the Proposal. \n'
             + '    <category>               - ProposalCategory \n'
-            + '    <market>                 - string, market address to search from.\n'
+            + '    <marketId>               - string, market address to search from.\n'
             + '    <order>                  - SearchOrder \n';
     }
 

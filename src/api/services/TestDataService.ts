@@ -125,6 +125,7 @@ import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
 import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { CommentFactory } from '../factories/model/CommentFactory';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
+import {VoteTicket} from '../factories/message/VoteMessageFactory';
 
 
 export class TestDataService {
@@ -989,7 +990,7 @@ export class TestDataService {
 
             this.log.debug('generating ' + generateParams.voteCount + ' votes...');
             if (generateParams.voteCount > 0) {
-                const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
+                const votes = await this.generateVotesForProposal(generateParams, proposal);
             }
 
             if (generateParams.generateResults) {
@@ -1004,17 +1005,35 @@ export class TestDataService {
         return this.generateResponse(items, withRelated);
     }
 
-    private async generateVotesForProposal(amount: number, proposal: resources.Proposal): Promise<resources.Vote[]> {
+    private async generateVotesForProposal(generateParams: GenerateProposalParams, proposal: resources.Proposal): Promise<resources.Vote[]> {
+
+        let wallet: string;
+        if (!generateParams.submitter) {
+            const defaultProfile: resources.Profile = await this.profileService.getDefault().then(value => value.toJSON());
+            const defaultMarket = await this.defaultMarketService.getDefaultForProfile(defaultProfile.id).then(value => value.toJSON());
+            wallet = defaultMarket.Identity.wallet;
+        } else {
+            const identity: resources.Identity = await this.identityService.findOneByAddress(generateParams.submitter).then(value => value.toJSON());
+            wallet = identity.wallet;
+        }
 
         const items: resources.Vote[] = [];
-        for (let i = amount; i > 0; i--) {
+        for (let i = generateParams.voteCount; i > 0; i--) {
             const randomBoolean: boolean = Math.random() >= 0.5;
-            const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
+
+            const voter = await this.coreRpcService.getNewAddress(wallet);
             const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
+            const proposalOptionHash = proposal.ProposalOptions[randomBoolean ? 0 : 1].hash;
+
+            const signature = await this.coreRpcService.signMessage(wallet, voter, {
+                proposalHash: proposal.hash,
+                proposalOptionHash,
+                address: voter
+            } as VoteTicket);
 
             const voteCreateRequest = {
                 proposal_option_id: proposalOptionId,
-                signature: 'signature' + Faker.finance.bitcoinAddress(),
+                signature,
                 voter,
                 weight: 1,
                 postedAt: Date.now(),

@@ -10,9 +10,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import {SmsgSendResponse} from '../../../src/api/responses/SmsgSendResponse';
+import { SmsgSendResponse } from '../../../src/api/responses/SmsgSendResponse';
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;

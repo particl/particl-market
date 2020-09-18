@@ -302,7 +302,7 @@ export class BlackBoxTestUtil {
                                     waitForResult = (objectPropertyValue < waitForObjectPropertyValue);
                                     break;
                                 case '>':
-                                    waitForResult = (objectPropertyValue === waitForObjectPropertyValue);
+                                    waitForResult = (objectPropertyValue > waitForObjectPropertyValue);
                                     break;
                                 case '<=':
                                     waitForResult = (objectPropertyValue <= waitForObjectPropertyValue);

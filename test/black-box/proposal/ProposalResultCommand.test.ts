@@ -4,11 +4,10 @@
 
 import * from 'jest';
 import * as resources from 'resources';
+import * as Faker from 'faker';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 
@@ -23,14 +22,23 @@ describe('ProposalResultCommand', () => {
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
+    const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
+    const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
-
     let proposal: resources.Proposal;
 
+    const title = Faker.lorem.words();
+    const description = Faker.lorem.paragraph();
+    const options: string[] = [
+        'optionA1',
+        'optionB2'
+    ];
+    const daysRetention = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+
+    let sent = false;
     const testTimeStamp = Date.now();
-    const voteCount = 50;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -40,24 +48,28 @@ describe('ProposalResultCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const generateActiveProposalParams = new GenerateProposalParams([
-            undefined,                  // listingItemId,
-            false,                      // generatePastProposal,
-            voteCount,                  // voteCount
-            market.Identity.address,    // submitter
-            market.receiveAddress,      // market
-            true,                       // generateOptions
-            true                        // generateResults
-        ]).toParamsArray();
+    });
 
-        // generate active proposals
-        const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,        // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateActiveProposalParams    // what kind of data to generate
-        ) as resources.Proposal[];
-        proposal = proposals[0];
+
+    test('Should post a Proposal', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            market.id,
+            title,
+            description,
+            daysRetention,
+            false,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
     });
 
 
@@ -79,6 +91,34 @@ describe('ProposalResultCommand', () => {
     });
 
 
+    test('Should receive the posted Proposal', async () => {
+
+        expect(sent).toEqual(true);
+        const response = await testUtil.rpcWaitFor(proposalCommand, [proposalListCommand,
+                '*',
+                '*'
+            ],
+            30 * 60,                    // maxSeconds
+            200,                    // waitForStatusCode
+            '[0].receivedAt',   // property name
+            0,
+            '>'
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: resources.Proposal = response.getBody()['result'][0];
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+
+        expect(result.title).toBe(title);
+        expect(result.description).toBe(description);
+        expect(result.ProposalOptions[0].description).toBe(options[0]);
+        expect(result.ProposalOptions[1].description).toBe(options[1]);
+
+        proposal = result;
+    }, 600000); // timeout to 600s
+
+
+
     test('Should return ProposalResult', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand,
             proposal.hash
@@ -87,11 +127,9 @@ describe('ProposalResultCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ProposalResult = res.getBody()['result'];
-
         expect(result.calculatedAt).toBeGreaterThan(testTimeStamp);
-        expect(result.ProposalOptionResults[0].voters).toBeGreaterThan(0);
-        expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
-        expect(result.ProposalOptionResults[0].voters + result.ProposalOptionResults[1].voters).toBe(voteCount);
+        expect(result.ProposalOptionResults[0].voters).toBeGreaterThanOrEqual(0);
+        expect(result.ProposalOptionResults[0].weight).toBeGreaterThanOrEqual(0);
     });
 
 });

@@ -100,7 +100,6 @@ export class IdValidationRule extends BaseParamValidationRule {
 }
 
 
-
 // Misc
 
 export class AddressOrAddressIdValidationRule extends BaseParamValidationRule {
@@ -148,7 +147,6 @@ export class StringValidationRule extends BaseParamValidationRule {
     }
 }
 
-// TODO: IdOrHashValidationRule
 export class NumberOrStringValidationRule extends BaseParamValidationRule {
     public type = undefined;
 

@@ -69,7 +69,6 @@ export class ProposalService {
         return proposal;
     }
 
-    // todo: could Proposal with the same hash exist on another Market?
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {
         const proposal = await this.proposalRepo.findOneByHash(hash, withRelated);
         if (proposal === null) {
