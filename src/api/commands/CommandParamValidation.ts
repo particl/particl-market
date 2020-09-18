@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { MissingParamException } from '../exceptions/MissingParamException';
 import { InvalidParamException } from '../exceptions/InvalidParamException';
 import { BidDataValue } from '../enums/BidDataValue';
-import {MPAction, SaleType} from 'omp-lib/dist/interfaces/omp-enums';
+import { MPAction, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
 import { Cryptocurrency } from 'omp-lib/dist/interfaces/crypto';
 import { ModelServiceInterface } from '../services/ModelServiceInterface';
 import { ModelNotFoundException } from '../exceptions/ModelNotFoundException';
@@ -16,7 +16,8 @@ import { EnumHelper } from '../../core/helpers/EnumHelper';
 import { SearchOrder } from '../enums/SearchOrder';
 import { OrderItemStatus } from '../enums/OrderItemStatus';
 import { OrderStatus } from '../enums/OrderStatus';
-import {MPActionExtended} from '../enums/MPActionExtended';
+import { MPActionExtended } from '../enums/MPActionExtended';
+import {MessageException} from '../exceptions/MessageException';
 
 /**
  * used as custom validation function for params.
@@ -188,6 +189,13 @@ export class MessageRetentionValidationRule extends NumberValidationRule {
     }
 
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
+        if (value <= 0) {
+            throw new InvalidParamException(this.name, 'larger than 0');
+        }
+        if (value > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
+            throw new InvalidParamException(this.name, 'smaller than ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
+        }
+
         return value > 0 && value <= parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
     }
 }

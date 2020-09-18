@@ -22,7 +22,14 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { MessageException } from '../../exceptions/MessageException';
 import { IdentityService } from '../../services/model/IdentityService';
-import { CommandParamValidationRules, ParamValidationRule } from '../CommandParamValidation';
+import {
+    BooleanValidationRule,
+    CommandParamValidationRules,
+    IdValidationRule,
+    MessageRetentionValidationRule,
+    ParamValidationRule,
+    StringValidationRule
+} from '../CommandParamValidation';
 
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -39,35 +46,15 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
-            params: [{
-                name: 'marketId',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'proposalTitle',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'proposalDescription',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'daysRetention',
-                required: true,
-                type: 'number'
-            }, {
-                name: 'estimateFee',
-                required: true,
-                type: 'boolean'
-            }, {
-                name: 'option1Description',
-                required: true,
-                type: 'string'
-            }, {
-                name: 'option2Description',
-                required: true,
-                type: 'string'
-            }] as ParamValidationRule[]
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new StringValidationRule('proposalTitle', true),
+                new StringValidationRule('proposalDescription', true),
+                new MessageRetentionValidationRule('daysRetention', true),
+                new BooleanValidationRule('estimateFee', true),
+                new StringValidationRule('option1Description', true),
+                new StringValidationRule('option2Description', true)
+            ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
 
@@ -79,6 +66,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [3] daysRetention
      * [4] estimateFee
      * [5] option1Description
+     * [6] option2Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -122,6 +110,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [3] daysRetention
      * [4] estimateFee
      * [5] option1Description
+     * [6] option2Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -130,19 +119,12 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
+        const market: resources.Market = data.params[0];
+        const daysRetention: boolean = data.params[3];
+        const estimateFee: boolean = data.params[4];
+
         // TODO: set the max expiration for proposals of category PUBLIC_VOTE
         // to whatever is the max expiration for free smsg messages
-
-        if (data.params[3] > parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)) {
-            throw new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS);
-        }
-
-        // make sure the Market exists
-        const market: resources.Market = await this.marketService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
 
         // make sure Identity with the id exists
         await this.identityService.findOne(market.Identity.id)
@@ -158,17 +140,19 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     public usage(): string {
         return this.getName() + ' <marketId> <proposalTitle> <proposalDescription> <daysRetention> <estimateFee> '
-            + '<option1Description> ... <optionNDescription> ';
+            + '<option1Description> <option2Description> ... [optionNDescription] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <marketId>               - number, id of the Market. \n'
-            + '    <proposalTitle>          - string, Title for the Proposal. \n'
-            + '    <proposalDescription>    - string, Description for the Proposal. \n'
-            + '    <daysRetentions>         - number, Days retention. \n'
-            + '    <estimateFee>            - boolean, Just estimate the Fee, dont post the Proposal. \n'
-            + '    <optionNDescription>     - string, ProposalOption description. ';
+            + '    <proposalTitle>          - string, title for the Proposal. \n'
+            + '    <proposalDescription>    - string, description for the Proposal. \n'
+            + '    <daysRetentions>         - number, days retention. \n'
+            + '    <estimateFee>            - boolean, estimate the fee, dont post the Proposal. \n'
+            + '    <option1Description>     - string, first ProposalOption description. '
+            + '    <option2Description>     - string, second ProposalOption description. '
+            + '    <optionNDescription>     - [optional] string, ProposalOption description. ';
     }
 
     public description(): string {

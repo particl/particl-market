@@ -148,7 +148,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
                 return await this.smsgService.estimateFee(actionRequest.sendParams.wallet, marketplaceMessage, actionRequest.sendParams);
             } else {
                 return {
-                    result: 'No fee for free message.',
+                    result: 'No fee for FREE message.',
                     fee: 0
                 } as SmsgSendResponse;
             }

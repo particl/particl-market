@@ -12,6 +12,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import {SmsgSendResponse} from '../../../src/api/responses/SmsgSendResponse';
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
@@ -257,8 +258,9 @@ describe('ProposalPostCommand', () => {
             options[1]
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MessageException('daysRetention is too large, max: ' + process.env.PAID_MESSAGE_RETENTION_DAYS).getMessage());
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('daysRetention',
+            'smaller than ' + process.env.PAID_MESSAGE_RETENTION_DAYS).getMessage());
     });
 
 
@@ -292,10 +294,10 @@ describe('ProposalPostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
+        const result: SmsgSendResponse = res.getBody()['result'];
 
         log.debug('estimate fee result:', JSON.stringify(result));
-        expect(result.result).toEqual('Not Sent.');
+        expect(result.result).toEqual('No fee for FREE message.');
     });
 
 

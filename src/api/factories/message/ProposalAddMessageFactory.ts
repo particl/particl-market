@@ -50,7 +50,7 @@ export class ProposalAddMessageFactory extends BaseMessageFactory {
             description: actionRequest.description,
             options: optionsList,
             category: actionRequest.category,
-            target: actionRequest.target // ? actionRequest.target : '' // todo: allow undefined
+            target: actionRequest.target ? actionRequest.target : '' // todo: ffs, allow undefined in ConfigurableHasher
         } as ProposalAddMessage;
 
         // hash the proposal
