@@ -102,7 +102,8 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
     public async process(msgid: string): Promise<void> {
         this.log.debug('PROCESS msgid: ', msgid);
 
-        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(msgid, ActionDirection.INCOMING).then(value => value.toJSON());
+        const smsgMessage: resources.SmsgMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(msgid, ActionDirection.INCOMING)
+            .then(value => value.toJSON());
 
         // update status and processed count before the actual processing,
         // the message processing result will be updated in process()

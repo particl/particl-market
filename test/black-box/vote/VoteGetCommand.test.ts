@@ -13,6 +13,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { CombinedVote } from '../../../src/api/services/action/VoteActionService';
+import * as Faker from "faker";
 
 describe('VoteGetCommand', () => {
 
@@ -26,12 +27,23 @@ describe('VoteGetCommand', () => {
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
+    const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
+    const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
+    const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
 
     let proposal: resources.Proposal;
     let createdVote: resources.Vote;
+
+    const title = Faker.lorem.words();
+    const description = Faker.lorem.paragraph();
+    const daysRetention = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+    const options: string[] = [
+        'optionA1',
+        'optionB2'
+    ];
 
     let sent = false;
 
@@ -43,24 +55,28 @@ describe('VoteGetCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
         expect(market.id).toBeDefined();
 
-        const generateActiveProposalParams = new GenerateProposalParams([
-            undefined,                  // listingItemId,
-            false,                      // generatePastProposal,
-            0,                          // voteCount
-            market.Identity.address,    // submitter
-            market.receiveAddress,      // market
-            true,                       // generateOptions
-            false                       // generateResults
-        ]).toParamsArray();
+    });
 
-        // generate active proposals
-        const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,        // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateActiveProposalParams    // what kind of data to generate
-        ) as resources.Proposal[];
-        proposal = proposals[0];
+
+    test('Should post a Proposal', async () => {
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand,
+            market.id,
+            title,
+            description,
+            daysRetention,
+            false,
+            options[0],
+            options[1]
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
     });
 
 
@@ -85,7 +101,7 @@ describe('VoteGetCommand', () => {
     test('Should fail to add because invalid marketId', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             true,
-            proposal.hash
+            'proposal.hash'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -107,7 +123,7 @@ describe('VoteGetCommand', () => {
     test('Should fail to add because Market not found', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             0,
-            proposal.hash
+            'proposal.hash'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -118,13 +134,37 @@ describe('VoteGetCommand', () => {
     test('Should fail to add because Proposal not found', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             market.id,
-            0
+            'proposal.hash'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('Proposal').getMessage());
     });
 
+
+    test('Should receive the posted Proposal', async () => {
+
+        expect(sent).toEqual(true);
+        const response = await testUtil.rpcWaitFor(proposalCommand, [proposalListCommand,
+                '*',
+                '*'
+            ],
+            30 * 60, // maxSeconds
+            200, // waitForStatusCode
+            '[0].title', // property name
+            title
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: resources.Proposal = response.getBody()['result'][0];
+
+        expect(result.title).toBe(title);
+        expect(result.description).toBe(description);
+        expect(result.ProposalOptions[0].description).toBe(options[0]);
+        expect(result.ProposalOptions[1].description).toBe(options[1]);
+
+        proposal = result;
+    }, 600000); // timeout to 600s
 
     test('Should fail to return a Vote', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,

@@ -17,16 +17,14 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MarketService } from '../../services/model/MarketService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { IdentityService } from '../../services/model/IdentityService';
+import { CommandParamValidationRules, IdValidationRule, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -39,12 +37,21 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new StringValidationRule('proposalHash', true),
+                new NumberValidationRule('proposalOptionId', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * data.params[]:
      *   [0]: market: resources.Market
-     *   [1]: identity, resources.Identity
-     *   [2]: proposal: resources.Proposal
-     *   [3]: proposalOption: resources.ProposalOption
+     *   [1]: proposal: resources.Proposal
+     *   [2]: proposalOption: resources.ProposalOption
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -54,9 +61,15 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const market: resources.Market = data.params[0];
-        const identity: resources.Identity = data.params[1];
-        const proposal: resources.Proposal = data.params[2];
-        const proposalOption: resources.ProposalOption = data.params[3];
+        const proposal: resources.Proposal = data.params[1];
+        const proposalOption: resources.ProposalOption = data.params[2];
+
+        // fetch Market Identity
+        const identity: resources.Identity = await this.identityService.findOne(market.Identity.id)
+            .then(value => value.toJSON())
+            .catch(reason => {
+                throw new ModelNotFoundException('Identity');
+            });
 
         // const fromAddress = profile.address;     // send from the template profiles address
         const fromAddress = identity.address;
@@ -69,7 +82,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
         const postRequest = {
             sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
-            sender: identity,                       // todo: we could use sendParams.from?
+            sender: identity,                       // todo: could we use sendParams.from?
             market,
             proposal,
             proposalOption
@@ -86,41 +99,13 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      *  [1]: proposalHash
      *  [2]: proposalOptionId
      *
-     * TODO: maybe get rid of the proposalOptionId, replace it with hash
-     *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('proposalHash');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('proposalOptionId');
-        }
+        await super.validate(data);
 
-        if (data.params[0] && typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        } else if (data.params[1] && typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('proposalHash', 'string');
-        } else if (data.params[2] && typeof data.params[2] !== 'number') {
-            throw new InvalidParamException('proposalOptionId', 'number');
-        }
-
-        // make sure the Market exists
-        const market: resources.Market = await this.marketService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Market');
-            });
-
-        // make sure Identity with the id exists
-        const identity: resources.Identity = await this.identityService.findOne(market.Identity.id)
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Identity');
-            });
+        const market: resources.Market = data.params[0];
 
         // make sure Proposal with the id exists
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(data.params[1])
@@ -140,9 +125,8 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         data.params[0] = market;
-        data.params[1] = identity;
-        data.params[2] = proposal;
-        data.params[3] = proposalOption;
+        data.params[1] = proposal;
+        data.params[2] = proposalOption;
 
         return data;
     }
@@ -159,7 +143,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public description(): string {
-        return 'Vote on a Proposal specified via hash. ';
+        return 'Vote on a Proposal. ';
     }
 
     public example(): string {

@@ -31,12 +31,11 @@ describe('ProposalPostCommand', () => {
     const title = Faker.lorem.words();
     const description = Faker.lorem.paragraph();
     const daysRetention = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-    let estimateFee = true;
-
     const options: string[] = [
         'optionA1',
         'optionB2'
     ];
+    let estimateFee = true;
 
     let sent = false;
 

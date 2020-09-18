@@ -13,14 +13,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProposalOptionService } from '../../services/model/ProposalOptionService';
+import { CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+
 
 export class VoteListCommand extends BaseCommand implements RpcCommandInterface<resources.Vote[]> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
@@ -31,9 +29,17 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
         this.log = new Logger(__filename);
     }
 
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('proposalHash', true)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     /**
      * command description
-     *  [0]: proposalHash
+     *  [0]: proposal: resources.Proposal
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -42,12 +48,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.Vote[]> {
 
-        const proposalHash = data.params[0];
-
-        const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => value.toJSON());
-
-        this.log.debug('proposal: ', JSON.stringify(proposal, null, 2));
+        const proposal: resources.Proposal = data.params[0];
 
         const votes: resources.Vote[] = [];
         for (const proposalOption of proposal.ProposalOptions) {
@@ -65,16 +66,11 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('proposalHash');
-        }
+        await super.validate(data);
 
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('proposalHash', 'string');
-        }
-
-        // make sure proposal with the hash exists
-        await this.proposalService.findOneByHash(data.params[0])
+        // make sure Proposal with the hash exists
+        data.params[0] = await this.proposalService.findOneByHash(data.params[0])
+            .then(value => value.toJSON())
             .catch(reason => {
                 this.log.error('Proposal not found. ' + reason);
                 throw new ModelNotFoundException('Proposal');

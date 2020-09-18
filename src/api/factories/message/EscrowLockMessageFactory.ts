@@ -19,6 +19,7 @@ import { OmpService } from '../../services/OmpService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { EscrowLockRequest } from '../../requests/action/EscrowLockRequest';
 
+
 export class EscrowLockMessageFactory extends BaseMessageFactory {
 
     public log: LoggerType;
@@ -55,7 +56,8 @@ export class EscrowLockMessageFactory extends BaseMessageFactory {
                 return JSON.parse(smsgMessage.text) as MarketplaceMessage;
             });
 
-        const bidAcceptMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(actionRequest.bidAccept.msgid, ActionDirection.INCOMING)
+        const bidAcceptMPM: MarketplaceMessage = await this.smsgMessageService.findOneByMsgIdAndDirection(actionRequest.bidAccept.msgid,
+            ActionDirection.INCOMING)
             .then(async value => {
                 const smsgMessage: resources.SmsgMessage = value.toJSON();
                 return JSON.parse(smsgMessage.text) as MarketplaceMessage;

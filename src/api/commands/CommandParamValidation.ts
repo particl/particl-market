@@ -252,12 +252,13 @@ export class EscrowRatioValidationRule extends NumberValidationRule {
 // Enums
 
 export class EnumValidationRule extends BaseParamValidationRule {
-    public type? = 'string';
+    public type?: string;
     public validEnumType: string;
     public validEnumValues: string[];
 
     constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any) {
         super(name, required, defaultValue);
+        this.type = 'string';
         this.validEnumType = validEnumType;
         this.validEnumValues = validEnumValues;
     }
