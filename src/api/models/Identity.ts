@@ -14,8 +14,8 @@ export class Identity extends Bookshelf.Model<Identity> {
     public static RELATIONS = [
         'Markets',
         'Profile',
-        'ShoppingCarts',
-        'Bids'
+        'ShoppingCarts'
+        // 'Bids'
     ];
 
     public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Identity>> {
