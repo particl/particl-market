@@ -18,8 +18,6 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
 import { ListingItemSearchParams } from '../../requests/search/ListingItemSearchParams';
-import { ItemInformationCreateRequest } from '../../requests/model/ItemInformationCreateRequest';
-import { ItemInformationUpdateRequest } from '../../requests/model/ItemInformationUpdateRequest';
 import { PaymentInformationCreateRequest } from '../../requests/model/PaymentInformationCreateRequest';
 import { MessagingInformationCreateRequest } from '../../requests/model/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../requests/model/MessagingInformationUpdateRequest';

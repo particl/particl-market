@@ -33,23 +33,12 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
-        if (withRelated) {
-            return await ShoppingCartItem.where<ShoppingCartItem>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCartItem.where<ShoppingCartItem>({ id: value }).fetch();
-        }
+        return ShoppingCartItem.where<ShoppingCartItem>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchByCartIdAndListingItemId(cartId: number, listingItemId: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
-        if (withRelated) {
-            return await ShoppingCartItem.where<ShoppingCartItem>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCartItem.where<ShoppingCartItem>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch();
-        }
+        return ShoppingCartItem.where<ShoppingCartItem>({shopping_cart_id: cartId, listing_item_id: listingItemId}).fetch(withRelated
+            ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
@@ -58,14 +47,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
                 qb.where('shopping_cart_id', '=', cartId);
             })
             .orderBy('id', 'ASC');
-
-        if (withRelated) {
-            return await ShoppingCartItemCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCartItemCollection.fetchAll();
-        }
+        return ShoppingCartItemCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByListingItem(listingItemId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
@@ -74,14 +56,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
                 qb.where('listing_item_id', '=', listingItemId);
             })
             .orderBy('id', 'ASC');
-
-        if (withRelated) {
-            return await ShoppingCartItemCollection.fetchAll({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await ShoppingCartItemCollection.fetchAll();
-        }
+        return ShoppingCartItemCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async destroyByCartId(cartId: number): Promise<void> {
