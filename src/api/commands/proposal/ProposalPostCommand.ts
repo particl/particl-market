@@ -29,6 +29,7 @@ import {
     ParamValidationRule,
     StringValidationRule
 } from '../CommandParamValidation';
+import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -84,11 +85,16 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // rest of the data.params are option descriptions, and there are minimum of 2 of those
         const options: string[] = data.params;
 
-        const fromAddress = market.Identity.address;     // send from the template profiles address
-        const toAddress = market.receiveAddress;    // send to given market address
-
         const postRequest = {
-            sendParams: new SmsgSendParams(market.Identity.wallet, fromAddress, toAddress, true, daysRetention, estimateFee),
+            sendParams: {
+                wallet: market.Identity.wallet,
+                fromAddress: market.Identity.address,      // send from the given identity
+                toAddress: market.receiveAddress,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: market.Identity,                // todo: we could use sendParams.from?
             market,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command

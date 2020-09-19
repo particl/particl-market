@@ -50,6 +50,17 @@ export interface SmsgZmqPushResult {
     numsent: number;            // Number of notifications sent
 }
 
+/**
+ * {
+ *      "fromfile": bool,          (boolean, optional, default=false) Send file as message, path specified in "message".
+ *      "decodehex": bool,         (boolean, optional, default=false) Decode "message" from hex before sending.
+ *      "submitmsg": bool,         (boolean, optional, default=true) Submit smsg to network, if false POW is not set and hex encoded smsg returned.
+ *      "savemsg": bool,           (boolean, optional, default=true) Save smsg to outbox.
+ *      "ttl_is_seconds": bool,    (boolean, optional, default=false) If true days_retention parameter is interpreted as seconds to live.
+ *      "fund_from_rct": bool,     (boolean, optional, default=false) Fund message from anon balance.
+ *      "rct_ring_size": n,        (numeric, optional, default=5) Ring size to use with fund_from_rct.
+ * }
+ */
 export interface SmsgSendOptions {
     fromfile: boolean;          // (boolean, optional, default=false) Send file as message, path specified in "message".
     decodehex: boolean;         // (boolean, optional, default=false) Decode "message" from hex before sending.
@@ -257,6 +268,24 @@ export class SmsgService {
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                           estimateFee: boolean = false, options?: SmsgSendOptions, coinControl?: SmsgSendCoinControl): Promise<SmsgSendResponse> {
 
+        const max = 20;
+        const min = 5;
+        const ringSize = Math.floor(Math.random() * (max - min + 1)) + min;
+
+        // todo: switch to use ttl_is_seconds
+        // todo: dont save smsgs?
+        if (_.isNil(options)) {
+            options = {
+                fromfile: false,            // (boolean, optional, default=false) Send file as message, path specified in "message".
+                decodehex: false,           // (boolean, optional, default=false) Decode "message" from hex before sending.
+                submitmsg: true,            // (boolean, optional, default=true) Submit smsg to network, if false POW is not set and hex encoded smsg returned.'
+                savemsg: true,              // (boolean, optional, default=true) Save smsg to outbox.
+                ttl_is_seconds: false,      // (boolean, optional, default=false) If true days_retention parameter is interpreted as seconds to live.
+                fund_from_rct: true,        // (boolean, optional, default=false) Fund message from anon balance.
+                rct_ring_size: ringSize     // (numeric, optional, default=5) Ring size to use with fund_from_rct.
+                } as SmsgSendOptions;
+        }
+
         // set secure messaging to use the specified wallet
         await this.smsgSetWallet(wallet);
 
@@ -270,8 +299,8 @@ export class SmsgService {
             JSON.stringify(message),
             paidMessage,
             daysRetention,
-            estimateFee
-            // options,
+            estimateFee,
+            options
             // coinControl
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);

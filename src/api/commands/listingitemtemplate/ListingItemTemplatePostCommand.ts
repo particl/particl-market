@@ -21,8 +21,8 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import { CryptoAddress, CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
-import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
+import {CryptoAddress, CryptoAddressType, OutputType} from 'omp-lib/dist/interfaces/crypto';
+import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -35,11 +35,12 @@ import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 import {
     BooleanValidationRule,
-    CommandParamValidationRules,
+    CommandParamValidationRules, EnumValidationRule,
     IdValidationRule,
     MessageRetentionValidationRule,
     ParamValidationRule
 } from '../CommandParamValidation';
+import {EnumHelper} from '../../../core/helpers/EnumHelper';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -67,7 +68,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             params: [
                 new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
                 new MessageRetentionValidationRule('daysRetention', true),
-                new BooleanValidationRule('estimateFee', false, false)
+                new BooleanValidationRule('estimateFee', false, false),
+                new EnumValidationRule('feeType', false, 'OutputType',
+                    [OutputType.ANON, OutputType.PART] as string[], OutputType.ANON)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -80,6 +83,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [1]: daysRetention
      *  [2]: estimateFee
      *  [3]: market: resources.Market
+     *  [4]: anonFee: boolean
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -91,6 +95,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee: boolean = data.params[2];
         const market: resources.Market = data.params[3];
+        const anonFee: boolean = data.params[4];
 
         this.log.debug('execute(), estimateFee:', estimateFee);
 
@@ -114,7 +119,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 fromAddress,
                 toAddress,
                 daysRetention,
-                estimateFee
+                estimateFee,
+                anonFee: true
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
             sellerAddress: market.Identity.address,
@@ -151,6 +157,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: estimateFee (optional, default: false)
+     *  [3]: feeType (optional, default: ANON)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -159,6 +166,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const feeType: OutputType = data.params[4];
 
         // ListingItemTemplate should be a market template
         if (_.isEmpty(listingItemTemplate.market)) {
@@ -197,6 +205,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         data.params[0] = listingItemTemplate;
         data.params[3] = market;
+        data.params[4] = feeType === OutputType.ANON;
 
         return data;
     }

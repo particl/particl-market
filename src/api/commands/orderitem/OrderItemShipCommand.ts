@@ -26,6 +26,7 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 export class OrderItemShipCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -73,15 +74,16 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
             throw new MessageException('No accepted Bid found.');
         }
 
-        // const fromAddress = orderItem.Order.seller;
-        const fromAddress = identity.address;
-        const toAddress = orderItem.Order.buyer;
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: orderItem.Order.buyer,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid,
             memo
         } as OrderItemShipRequest;

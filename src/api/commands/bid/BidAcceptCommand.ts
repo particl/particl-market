@@ -62,14 +62,16 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         const bid: resources.Bid = data.params[0];
         const identity: resources.Identity = data.params[1];
 
-        const fromAddress = identity.address;   // send from the given identity
-        const toAddress = bid.bidder;           // send to the address that sent the bid
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,      // send from the given identity
+                toAddress: bid.bidder,              // send to the address that sent the bid
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid
         } as BidAcceptRequest;
 

@@ -110,7 +110,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 fromAddress,
                 toAddress,
                 daysRetention,
-                estimateFee
+                estimateFee,
+                anonFee: true
             } as SmsgSendParams,
             market: promotedMarket
         } as MarketAddRequest;

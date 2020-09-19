@@ -27,6 +27,7 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { VoteActionService } from '../../services/action/VoteActionService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -77,11 +78,15 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const market: resources.Market = await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, listingItem.market)
             .then(value => value.toJSON()); // throws if not found
 
-        const fromAddress = identity.address;
-        const toAddress = market.receiveAddress;
-
-        const proposalAddRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, true, daysRetention, false),
+        const postRequest = {
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: market.receiveAddress,
+                daysRetention,
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: identity,
             market,
             category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
@@ -92,7 +97,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         } as ProposalAddRequest;
 
         // first post the Proposal
-        const smsgSendResponse: SmsgSendResponse = await this.proposalAddActionService.post(proposalAddRequest);
+        const smsgSendResponse: SmsgSendResponse = await this.proposalAddActionService.post(postRequest);
 
         // then post the Votes for removal
         const proposal: resources.Proposal = await this.proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
@@ -110,9 +115,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
             // prepare the VoteRequest for sending votes
             const voteRequest = {
-                sendParams: proposalAddRequest.sendParams,
-                sender: proposalAddRequest.sender,          // Identity
-                market: proposalAddRequest.market,
+                sendParams: postRequest.sendParams,
+                sender: postRequest.sender,          // Identity
+                market: postRequest.market,
                 proposal,
                 proposalOption
             } as VoteRequest;

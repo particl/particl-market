@@ -24,6 +24,7 @@ import { BidService } from '../../services/model/BidService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -74,15 +75,16 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         }
         bidAccept = await this.bidService.findOne(bidAccept.id).then(value => value.toJSON());
 
-        // const fromAddress = orderItem.Order.buyer;  // we are the buyer
-        const fromAddress = identity.address;
-        const toAddress = orderItem.Order.seller;
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: orderItem.Order.seller,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid,
             bidAccept,
             memo

@@ -27,6 +27,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -81,15 +82,16 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
         const bidAccept = await this.bidService.findOne(childBid.id).then(value => value.toJSON());
 
-        // const fromAddress = orderItem.Order.buyer;
-        const fromAddress = identity.address;
-        const toAddress = orderItem.Order.seller;
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: orderItem.Order.seller,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid,
             bidAccept,
             objects: options

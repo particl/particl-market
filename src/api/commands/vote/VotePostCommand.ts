@@ -22,6 +22,7 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -71,17 +72,18 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
                 throw new ModelNotFoundException('Identity');
             });
 
-        // const fromAddress = profile.address;     // send from the template profiles address
-        const fromAddress = identity.address;
-        const toAddress = market.receiveAddress;    // send to given market address
-
         // TODO: validate that the !daysRetention > process.env.FREE_MESSAGE_RETENTION_DAYS
-        // const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const daysRetention = Math.ceil((proposal.expiredAt - Date.now()) / 1000 / 60 / 60 / 24);
-        const estimateFee = false;
 
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: market.receiveAddress,
+                paid: false,
+                daysRetention: Math.ceil((proposal.expiredAt - Date.now()) / 1000 / 60 / 60 / 24),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: identity,                       // todo: could we use sendParams.from?
             market,
             proposal,
