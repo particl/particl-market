@@ -10,5 +10,5 @@ export interface SmsgSendParams {
     daysRetention: number;          // = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
     estimateFee: boolean;
     anonFee: boolean;
-
+    ringSize?: number;
 }

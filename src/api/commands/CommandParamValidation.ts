@@ -198,11 +198,25 @@ export class NumberValidationRule extends BaseParamValidationRule {
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
             if (value < 0) {
-                throw new InvalidParamException('age', 'greater than 0');
+                throw new InvalidParamException(this.name, 'greater than 0');
             }
             return true;
         }
         return false;
+    }
+}
+
+export class RingSizeValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false, defaultValue: number = 24) {
+        super(name, required, defaultValue);
+    }
+
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<any> {
+        value = Math.round(value);
+        if (value < 1) {
+            throw new InvalidParamException(this.name, '1 or more');
+        }
+        return value;
     }
 }
 

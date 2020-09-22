@@ -76,7 +76,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         } as KVS);
 
         this.log.debug('RESENDING: ', JSON.stringify(marketplaceMessage, null, 2));
-        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(identity.wallet, marketplaceMessage, sendParams);
+        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, sendParams);
         await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
 
         return smsgSendResponse;
