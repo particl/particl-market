@@ -186,10 +186,11 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         await this.checkForDuplicateMarketName(profile.id, name);
 
-        // type === MARKETPLACE -> receive + publish keys are the same
+        // type === MARKETPLACE -> receive + publish keys are the same, both are private keys
         // type === STOREFRONT -> receive key is private key, publish key is public key
         //                        when adding a storefront, both keys should be given
-        // type === STOREFRONT_ADMIN -> receive + publish keys are different
+        //                        (because you cannot post here, so you are only joining markets that someone else created)
+        // type === STOREFRONT_ADMIN -> receive key is private key, publish key is private key, bot keys are different
         // the keys which are undefined should be generated
 
         // for STOREFRONT, both keys should have been given

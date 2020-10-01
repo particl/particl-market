@@ -226,7 +226,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             + '    <daysRetention>              - [optional] number, Days the listing will be retained by network.\n'
             + '    <estimateFee>                - [optional] boolean, estimate the fee, don\'t post. \n'
             + '    <feeType>                    - [optional] OutputType, default: PART. OutputType used to pay for the message fee.\n'
-            + '    <ringSize>                   - [optional] number, default: 24. Ring size used for the anon payment.\n';
+            + '    <ringSize>                   - [optional] number, default: 24. Ring size used if anon used for fee.\n';
     }
 
     public description(): string {
