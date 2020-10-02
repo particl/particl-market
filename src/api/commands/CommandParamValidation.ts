@@ -58,10 +58,14 @@ export abstract class BaseParamValidationRule implements ParamValidationRule {
     public type?: string;
     public defaultValue?: any;
 
-    constructor(name: string, required: boolean = false, defaultValue?: any) {
+    constructor(name: string, required: boolean = false, defaultValue?: any, customValidate?: ValidationFunction) {
         this.name = name;
         this.required = required;
         this.defaultValue = defaultValue;
+
+        if (!_.isNil(customValidate)) {
+            this.customValidate = customValidate;
+        }
     }
 
     public async customValidate(value: any, index: number, allValues: any[]): Promise<boolean> {
@@ -144,8 +148,8 @@ export class AddressOrAddressIdValidationRule extends BaseParamValidationRule {
 export class StringValidationRule extends BaseParamValidationRule {
     public type = 'string';
 
-    constructor(name: string, required: boolean = false, defaultValue?: string) {
-        super(name, required, defaultValue);
+    constructor(name: string, required: boolean = false, defaultValue?: string, customValidate?: ValidationFunction) {
+        super(name, required, defaultValue, customValidate);
     }
 }
 
@@ -190,19 +194,40 @@ export class NumberOrAsteriskValidationRule extends BaseParamValidationRule {
 
 export class NumberValidationRule extends BaseParamValidationRule {
     public type = 'number';
+    public minValue;
 
-    constructor(name: string, required: boolean = false, defaultValue?: number) {
-        super(name, required, defaultValue);
+    constructor(name: string, required: boolean = false, defaultValue?: number, customValidate?: ValidationFunction, minValue?: number) {
+        super(name, required, defaultValue, customValidate);
+
+        this.minValue = !_.isNil(minValue) ? minValue : 0;
+
+        if (!_.isNil(customValidate)) {
+            this.customValidate = customValidate;
+        }
     }
 
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
         if (!_.isNil(value)) {
-            if (value < 0) {
-                throw new InvalidParamException('age', 'greater than 0');
+            if (value < this.minValue) {
+                throw new InvalidParamException(this.name, 'greater than or equal to ' + this.minValue);
             }
             return true;
         }
         return false;
+    }
+}
+
+export class RingSizeValidationRule extends NumberValidationRule {
+    constructor(name: string, required: boolean = false, defaultValue: number = 24) {
+        super(name, required, defaultValue);
+    }
+
+    public async customValidate(value: number, index: number, allValues: any[]): Promise<any> {
+        value = Math.round(value);
+        if (value < 1) {
+            throw new InvalidParamException(this.name, '1 or more');
+        }
+        return value;
     }
 }
 
@@ -237,8 +262,8 @@ export class ScalingValueValidationRule extends NumberValidationRule {
 }
 
 export class PriceValidationRule extends NumberValidationRule {
-    constructor(name: string, required: boolean = false) {
-        super(name, required, 0);
+    constructor(name: string, required: boolean = false, customValidate?: ValidationFunction) {
+        super(name, required, undefined, customValidate);
     }
 }
 
@@ -256,11 +281,15 @@ export class EnumValidationRule extends BaseParamValidationRule {
     public validEnumType: string;
     public validEnumValues: string[];
 
-    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any) {
+    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any, customValidate?: ValidationFunction) {
         super(name, required, defaultValue);
         this.type = 'string';
         this.validEnumType = validEnumType;
         this.validEnumValues = validEnumValues;
+
+        if (!_.isNil(customValidate)) {
+            this.customValidate = customValidate;
+        }
     }
 
     public async customValidate(value: string, index: number, allValues: string[]): Promise<boolean> {

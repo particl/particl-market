@@ -33,6 +33,7 @@ import {
     ParamValidationRule,
     StringValidationRule
 } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 
 export class CommentPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -89,13 +90,16 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         const message = data.params[4];
         const parentComment = data.params.length > 5 ? data.params[5] : undefined;
 
-        const fromAddress = identity.address;   // send from the given identity
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
-        const commentRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+        const postRequest = {
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,   // send from the given identity
+                toAddress,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: identity,
             receiver: toAddress,
             type,
@@ -104,7 +108,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             parentComment
         } as CommentAddRequest;
 
-        return await this.commentActionService.post(commentRequest);
+        return await this.commentActionService.post(postRequest);
     }
 
     /**

@@ -23,6 +23,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 export class SmsgResendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -58,12 +59,14 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         const smsgMessage: resources.SmsgMessage = data.params[0];
         const identity: resources.Identity = data.params[1];
 
-        const fromAddress = smsgMessage.from;
-        const toAddress = smsgMessage.to;
-        const daysRetention: number = smsgMessage.daysretention;
-        const estimateFee = false;
-
-        const sendParams = new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee);
+        const sendParams = {
+            wallet: identity.wallet,
+            fromAddress: smsgMessage.from,
+            toAddress: smsgMessage.to,
+            daysRetention: smsgMessage.daysretention,
+            estimateFee: false,
+            anonFee: true
+        } as SmsgSendParams;
 
         const marketplaceMessage: MarketplaceMessage = JSON.parse(smsgMessage.text);
         marketplaceMessage.action.objects = marketplaceMessage.action.objects !== undefined ? marketplaceMessage.action.objects : [] as KVS[];
@@ -73,7 +76,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
         } as KVS);
 
         this.log.debug('RESENDING: ', JSON.stringify(marketplaceMessage, null, 2));
-        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(identity.wallet, marketplaceMessage, sendParams);
+        const smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage, sendParams);
         await this.smsgMessageService.updateStatus(smsgMessage.id, SmsgMessageStatus.RESENT);
 
         return smsgSendResponse;

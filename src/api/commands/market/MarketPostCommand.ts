@@ -35,6 +35,7 @@ import {
     MessageRetentionValidationRule,
     ParamValidationRule
 } from '../CommandParamValidation';
+import {OutputType} from 'omp-lib/dist/interfaces/crypto';
 
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -99,6 +100,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         const toMarket: resources.Market = data.params[4];              // to, optional
         const fromIdentity: resources.Identity = data.params[5];        // from, optional
         let toAddress: string = data.params[6];                       // to, optional
+        const anonFee: boolean = data.params[7];
+        const ringSize: number = data.params[8];
 
         const wallet = _.isNil(fromIdentity) ? fromMarket.Identity.wallet : fromIdentity.wallet;
         const fromAddress = _.isNil(fromIdentity) ? fromMarket.publishAddress : fromIdentity.address;
@@ -110,7 +113,9 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
                 fromAddress,
                 toAddress,
                 daysRetention,
-                estimateFee
+                estimateFee,
+                anonFee,
+                ringSize
             } as SmsgSendParams,
             market: promotedMarket
         } as MarketAddRequest;
@@ -138,6 +143,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
      *       if number: toMarketId, if string: toAddress, default: default Profiles default Market receiveAddress
      *  [4]: fromIdentityId, optional, overrides the toMarkets publishAddress,
      *       default: default Profiles default Market publishAddress,
+     *  [5]: feeType (optional, default: PART)
+     *  [6]:  ringSize (optional, default: 24)
      *
      * Promotes a Market.
      *
@@ -161,6 +168,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         const estimateFee = data.params[2];
         const toMarketIdOrAddress: number | string = data.params[3];
         const fromIdentity: resources.Identity = data.params[4];
+        const feeType: OutputType = data.params[5];
+        const ringSize: number = data.params[6];
 
         let toMarket: resources.Market | undefined;
         let toAddress: string | undefined;
@@ -220,6 +229,8 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
         data.params[4] = !_.isNil(toMarket) ? toMarket : undefined;
         data.params[5] = fromIdentity;
         data.params[6] = !_.isNil(toAddress) ? toMarket : undefined;
+        data.params[7] = feeType === OutputType.ANON;
+        data.params[8] = ringSize;
 
         return data;
     }

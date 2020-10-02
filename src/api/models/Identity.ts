@@ -28,6 +28,17 @@ export class Identity extends Bookshelf.Model<Identity> {
         return IdentityCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
+    public static async fetchAllByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Collection<Identity>> {
+        const IdentityCollection = Identity.forge<Model<Identity>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+                qb.andWhere('name', '=', name);
+            })
+            .orderBy('id', 'ASC');
+
+        return IdentityCollection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Identity> {
         return Identity.where<Identity>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
@@ -45,6 +56,9 @@ export class Identity extends Bookshelf.Model<Identity> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Name(): string { return this.get('name'); }
+    public set Name(value: string) { this.set('name', value); }
 
     public get Wallet(): string { return this.get('wallet'); }
     public set Wallet(value: string) { this.set('wallet', value); }

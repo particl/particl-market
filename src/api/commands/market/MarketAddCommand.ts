@@ -34,6 +34,8 @@ import {
     ParamValidationRule,
     StringValidationRule
 } from '../CommandParamValidation';
+import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
+import {InvalidParamException} from '../../exceptions/InvalidParamException';
 
 
 export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -57,9 +59,58 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 new IdValidationRule('profileId', true, this.profileService),
                 new StringValidationRule('name', true),
                 new EnumValidationRule('type', false, 'MarketType',
-                    EnumHelper.getValues(MarketType) as string[], MarketType.MARKETPLACE),
-                new StringValidationRule('receiveKey', false),
-                new StringValidationRule('publishKey', false),
+                    EnumHelper.getValues(MarketType) as string[], MarketType.MARKETPLACE,
+                    async (value, index, allValues) => {
+                        const validEnumValues = EnumHelper.getValues(MarketType) as string[];
+                        if (!_.isNil(value) && validEnumValues.indexOf(value) === -1) {
+                            return false;
+                        }
+
+                        let type = value;
+                        const receiveKey = allValues[index + 1];
+                        const publishKey = allValues[index + 2];
+
+                        if (!_.isNil(receiveKey) && !_.isNil(publishKey)) {
+                            if (receiveKey === publishKey) {
+                                // keys are same -> MARKETPLACE
+                                if (!this.isPrivateKey(receiveKey)) {
+                                    throw new MessageException('Invalid receiveKey for MARKETPLACE.');
+                                }
+                                if (!this.isPrivateKey(publishKey)) {
+                                    throw new MessageException('Invalid publishKey for MARKETPLACE.');
+                                }
+                                // type should be MARKETPLACE, just fix it if not
+                                type = MarketType.MARKETPLACE;
+                            } else {
+                                // different keys -> STOREFRONT / STOREFRONT_ADMIN
+                                if (this.isPrivateKey(receiveKey) && this.isPrivateKey(publishKey)) {
+                                    type = MarketType.STOREFRONT_ADMIN;
+                                } else if (this.isPrivateKey(receiveKey) && this.isPublicKey(publishKey)) {
+                                    type = MarketType.STOREFRONT;
+                                }
+                            }
+                        } else if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
+                            // in case of a STOREFRONT, both keys should have been given
+                            throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
+                        }
+                        return type;
+                    }),
+                new StringValidationRule('receiveKey', false, undefined,
+                    async (value, index, allValues) => {
+                            // if set, should be a valid public/private key
+                        if (!_.isNil(value) && !this.isPublicKey(value) && !this.isPrivateKey(value)) {
+                            throw new InvalidParamException('receiveKey');
+                        }
+                        return true;
+                    }),
+                new StringValidationRule('publishKey', false, undefined,
+                    async (value, index, allValues) => {
+                        // if set, should be a valid public/private key
+                        if (!_.isNil(value) && !this.isPublicKey(value) && !this.isPrivateKey(value)) {
+                            throw new InvalidParamException('publishKey');
+                        }
+                        return true;
+                    }),
                 new IdValidationRule('identityId', false, this.identityService),
                 new StringValidationRule('description', false),
                 new EnumValidationRule('region', false, 'MarketRegion',
@@ -186,17 +237,38 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
 
         await this.checkForDuplicateMarketName(profile.id, name);
 
-        // type === MARKETPLACE -> receive + publish keys are the same
+        // type === MARKETPLACE -> receive + publish keys are the same, both are private keys
         // type === STOREFRONT -> receive key is private key, publish key is public key
         //                        when adding a storefront, both keys should be given
-        // type === STOREFRONT_ADMIN -> receive + publish keys are different
+        //                        (because you cannot post here, so you are only joining markets that someone else created)
+        // type === STOREFRONT_ADMIN -> receive key is private key, publish key is private key, bot keys are different
         // the keys which are undefined should be generated
+/*
+        if (!_.isNil(receiveKey) && !_.isNil(publishKey)) {
+            if (receiveKey === publishKey) {
+                // keys are same -> MARKETPLACE
 
-        // for STOREFRONT, both keys should have been given
-        if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
+                if (!this.isPrivateKey(receiveKey)) {
+                    throw new MessageException('Invalid receiveKey for MARKETPLACE.');
+                }
+                if (!this.isPrivateKey(publishKey)) {
+                    throw new MessageException('Invalid publishKey for MARKETPLACE.');
+                }
+                // type should be MARKETPLACE, just fix it if not
+                type = MarketType.MARKETPLACE;
+            } else {
+                // different keys -> STOREFRONT / STOREFRONT_ADMIN
+                if (this.isPrivateKey(receiveKey) && this.isPrivateKey(publishKey)) {
+                    type = MarketType.STOREFRONT_ADMIN;
+                } else if (this.isPrivateKey(receiveKey) && this.isPublicKey(publishKey)) {
+                    type = MarketType.STOREFRONT;
+                }
+            }
+        } else if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
+            // in case of a STOREFRONT, both keys should have been given
             throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
         }
-
+*/
         // make sure Identity belongs to the given Profile
         if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
             throw new MessageException('Identity does not belong to the Profile.');
@@ -255,5 +327,31 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                     throw new MessageException('Market with the name: ' + name + ' already exists.');
                 }
             });
+    }
+
+    // TODO: move to util
+    /**
+     * @param key, in wif
+     */
+    private isPrivateKey(key: string): boolean {
+        try {
+            PrivateKey.fromWIF(key);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
+    // TODO: move to util
+    /**
+     * @param key, should be der hex string
+     */
+    private isPublicKey(key: string): boolean {
+        try {
+            PublicKey.fromString(key);
+        } catch (e) {
+            return false;
+        }
+        return true;
     }
 }

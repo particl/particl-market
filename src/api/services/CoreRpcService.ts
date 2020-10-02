@@ -143,12 +143,13 @@ export class CoreRpcService extends CtRpc {
     public async loadWallets(walletNames: string[]): Promise<string[]> {
         const loaded: string[] = [];
         for (const walletName of walletNames) {
-            const isLoaded = await this.walletLoaded(walletName);
-            if (!isLoaded) {
-                const loadedWallet = await this.loadWallet(walletName);
-                if (loadedWallet) { // false if already loaded
-                    loaded.push((loadedWallet as RpcWallet).name);
-                }
+            const loadedWallet = await this.loadWallet(walletName)
+                .catch(reason => {
+                    this.log.error('Error loading wallet: ' + walletName + ', reason: ' + reason);
+                    return false;
+                });
+            if (loadedWallet) { // false if already loaded
+                loaded.push((loadedWallet as RpcWallet).name);
             }
         }
         return loaded;

@@ -50,6 +50,17 @@ export interface SmsgZmqPushResult {
     numsent: number;            // Number of notifications sent
 }
 
+/**
+ * {
+ *      "fromfile": bool,          (boolean, optional, default=false) Send file as message, path specified in "message".
+ *      "decodehex": bool,         (boolean, optional, default=false) Decode "message" from hex before sending.
+ *      "submitmsg": bool,         (boolean, optional, default=true) Submit smsg to network, if false POW is not set and hex encoded smsg returned.
+ *      "savemsg": bool,           (boolean, optional, default=true) Save smsg to outbox.
+ *      "ttl_is_seconds": bool,    (boolean, optional, default=false) If true days_retention parameter is interpreted as seconds to live.
+ *      "fund_from_rct": bool,     (boolean, optional, default=false) Fund message from anon balance.
+ *      "rct_ring_size": n,        (numeric, optional, default=5) Ring size to use with fund_from_rct.
+ * }
+ */
 export interface SmsgSendOptions {
     fromfile: boolean;          // (boolean, optional, default=false) Send file as message, path specified in "message".
     decodehex: boolean;         // (boolean, optional, default=false) Decode "message" from hex before sending.
@@ -138,26 +149,29 @@ export class SmsgService {
 
     /**
      *
-     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async canAffordToSendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<boolean> {
-        const estimate: SmsgSendResponse = await this.estimateFee(wallet, marketplaceMessage, sendParams);
-        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(wallet);
-        return (walletInfo.balance > estimate.fee! || walletInfo.blind_balance > estimate.fee! || walletInfo.anon_balance > estimate.fee!);
+    public async canAffordToSendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<boolean> {
+        const estimate: SmsgSendResponse = await this.estimateFee(marketplaceMessage, sendParams);
+        const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(sendParams.wallet);
+
+        if (sendParams.anonFee) {
+            return walletInfo.anon_balance > estimate.fee!;
+        } else {
+            return walletInfo.balance > estimate.fee!;
+        }
     }
 
     /**
      *
-     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async estimateFee(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+    public async estimateFee(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
         const estimateFee = sendParams.estimateFee;
         sendParams.estimateFee = true; // forcing estimation just in case someone calls this directly with incorrect params
-        const smsgSendResponse: SmsgSendResponse = await this.sendMessage(wallet, marketplaceMessage, sendParams);
+        const smsgSendResponse: SmsgSendResponse = await this.sendMessage(marketplaceMessage, sendParams);
         sendParams.estimateFee = estimateFee;
         return smsgSendResponse;
     }
@@ -168,11 +182,24 @@ export class SmsgService {
      * @param marketplaceMessage
      * @param sendParams
      */
-    public async sendMessage(wallet: string, marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
+    public async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
         const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
         const paidMessage = messageVersion === CoreMessageVersion.PAID;
-        return await this.smsgSend(wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, paidMessage,
-            sendParams.daysRetention, sendParams.estimateFee);
+
+        // todo: switch to use ttl_is_seconds
+        // todo: savemsg false?
+        const options = {
+            fromfile: false,            // (boolean, optional, default=false) Send file as message, path specified in "message".
+            decodehex: false,           // (boolean, optional, default=false) Decode "message" from hex before sending.
+            submitmsg: true,            // (boolean, optional, default=true) Submit smsg to network, if false POW is not set and hex encoded smsg returned.'
+            savemsg: true,              // (boolean, optional, default=true) Save smsg to outbox.
+            ttl_is_seconds: false,      // (boolean, optional, default=false) If true days_retention parameter is interpreted as seconds to live.
+            fund_from_rct: sendParams.anonFee ? sendParams.anonFee : false, // (boolean, optional, default=false) Fund message from anon balance.
+            rct_ring_size: sendParams.ringSize ? sendParams.ringSize : 12   // (numeric, optional, default=5) Ring size to use with fund_from_rct.
+        } as SmsgSendOptions;
+
+        return await this.smsgSend(sendParams.wallet, sendParams.fromAddress, sendParams.toAddress, marketplaceMessage, paidMessage,
+            sendParams.daysRetention, sendParams.estimateFee, options);
     }
 
     /**
@@ -270,8 +297,8 @@ export class SmsgService {
             JSON.stringify(message),
             paidMessage,
             daysRetention,
-            estimateFee
-            // options,
+            estimateFee,
+            options
             // coinControl
         ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params, wallet);

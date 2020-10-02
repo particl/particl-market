@@ -23,6 +23,7 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import {BidRequest} from '../../requests/action/BidRequest';
 
 
 export class MarketFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -66,11 +67,16 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
         const daysRetention = data.params[3];
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
-        const fromAddress = identity.address;
-        const toAddress = market.receiveAddress;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, true, daysRetention, false),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: market.receiveAddress,
+                paid: false,
+                daysRetention,
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: identity,
             market,
             category: ProposalCategory.MARKET_VOTE,

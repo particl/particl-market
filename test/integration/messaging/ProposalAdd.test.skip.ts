@@ -21,22 +21,17 @@ import { SmsgMessageService } from '../../../src/api/services/model/SmsgMessageS
 import { ActionDirection } from '../../../src/api/enums/ActionDirection';
 import { ProposalService } from '../../../src/api/services/model/ProposalService';
 import { ProposalAddActionMessageProcessor } from '../../../src/api/messageprocessors/action/ProposalAddActionMessageProcessor';
-import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
-import { MarketplaceMessageEvent } from '../../../src/api/messages/MarketplaceMessageEvent';
 import { SmsgMessageFactory } from '../../../src/api/factories/model/SmsgMessageFactory';
 import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 import { GovernanceAction } from '../../../src/api/enums/GovernanceAction';
 import { CoreMessageProcessor } from '../../../src/api/messageprocessors/CoreMessageProcessor';
-import { CoreSmsgMessage } from '../../../src/api/messages/CoreSmsgMessage';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../../src/api/requests/testdata/TestDataGenerateRequest';
-import { GenerateListingItemParams } from '../../../src/api/requests/testdata/GenerateListingItemParams';
 import { ItemVote } from '../../../src/api/enums/ItemVote';
 import { VoteService } from '../../../src/api/services/model/VoteService';
 import { VoteActionMessageProcessor } from '../../../src/api/messageprocessors/action/VoteActionMessageProcessor';
 import { DefaultMarketService } from '../../../src/api/services/DefaultMarketService';
 import { ListingItemTemplateService } from '../../../src/api/services/model/ListingItemTemplateService';
 import { MarketplaceMessageProcessor } from '../../../src/api/messageprocessors/MarketplaceMessageProcessor';
+
 
 describe('ProposalAddActionListener', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -109,16 +104,17 @@ describe('ProposalAddActionListener', () => {
         log.debug('create and post MPA_PROPOSAL_ADD (PUBLIC_VOTE), create Proposal');
         log.debug('===================================================================================');
 
-        const wallet = bidderMarket.Identity.wallet;
-        const fromAddress = bidderMarket.Identity.address;  // send from the default profile address
-        const toAddress = bidderMarket.receiveAddress;      // send to the default market address
-        const paid = true;                              // paid message
-        const daysRetention = 1;                        // days retention
-        const estimateFee = false;                      // estimate fee
-
         // create a ProposalAddRequest, sendParams skipping the actual send
         const postRequest = {
-            sendParams: new SmsgSendParams(wallet, fromAddress, toAddress, paid, daysRetention, estimateFee),
+            sendParams: {
+                wallet: bidderMarket.Identity.wallet,
+                fromAddress: bidderMarket.Identity.address,      // send from the given identity
+                toAddress: bidderMarket.receiveAddress,
+                paid: false,
+                daysRetention: 1,
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: bidderMarket.Identity,
             market: bidderMarket,
             category: ProposalCategory.PUBLIC_VOTE, // type should always be PUBLIC_VOTE when using this command
@@ -283,18 +279,18 @@ describe('ProposalAddActionListener', () => {
 
         // we have the listingitem, we can post the msg to flag it
 
-        const wallet = bidderMarket.Identity.wallet;
-        const fromAddress = bidderMarket.Identity.address;  // send from the default profile address
-        const toAddress = bidderMarket.receiveAddress;      // send to the default market address
-        const paid = false;                                 // paid message
-        const daysRetention = 1;                            // days retention
-        const estimateFee = false;                          // estimate fee
-
         const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         // create a ProposalAddRequest, sendParams skipping the actual send
         const postRequest = {
-            sendParams: new SmsgSendParams(wallet, fromAddress, toAddress, paid, daysRetention, estimateFee),
+            sendParams: {
+                wallet: bidderMarket.Identity.wallet,
+                fromAddress: bidderMarket.Identity.address,
+                toAddress: bidderMarket.receiveAddress,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             sender: bidderMarket.Identity,
             market: bidderMarket,
             category: ProposalCategory.ITEM_VOTE,
@@ -303,6 +299,7 @@ describe('ProposalAddActionListener', () => {
             options,
             target: listingItem.hash
         } as ProposalAddRequest;
+
 
         const smsgSendResponse: SmsgSendResponse = await proposalAddActionService.post(postRequest);
         // log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));

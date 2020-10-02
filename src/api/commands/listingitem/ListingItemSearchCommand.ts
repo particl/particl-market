@@ -38,44 +38,37 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new StringValidationRule('market', true), {
+                new StringValidationRule('market', true),
+                {
                     name: 'categories',
                     required: false,
                     type: undefined     // todo: number[]|string[], template search has this too
                 },
-                new StringValidationRule('seller', false), {
-                    name: 'minPrice',
-                    required: false,
-                    type: 'number',
-                    customValidate: (value, index, allValues) => {
-                        if (!_.isNil(value)) {
-                            const maxPrice = allValues[index + 1];
-                            // if set, must be >= 0
-                            // if maxPrice set, must be < maxPrice
-                            const largerThanZero = !_.isNil(value) ? value >= 0 : true;
-                            const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
-                            this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
-                            return largerThanZero && smallerThanMaxPrice;
-                        }
-                        return true;
+                new StringValidationRule('seller', false),
+                new PriceValidationRule('minPrice', false, async (value, index, allValues) => {
+                    if (!_.isNil(value)) {
+                        const maxPrice = allValues[index + 1];
+                        // if set, must be >= 0
+                        // if maxPrice set, must be < maxPrice
+                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                        const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
+                        this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
+                        return largerThanZero && smallerThanMaxPrice;
                     }
-                }, {
-                    name: 'maxPrice',
-                    required: false,
-                    type: 'number',
-                    customValidate: (value, index, allValues) => {
-                        if (!_.isNil(value)) {
-                            const minPrice = allValues[index - 1];
-                            // if set, must be >= 0
-                            // if minPrice set, must be > minPrice
-                            const largerThanZero = !_.isNil(value) ? value >= 0 : true;
-                            const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
-                            this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
-                            return largerThanZero && largerThanMinPrice;
-                        }
-                        return true;
+                    return true;
+                }),
+                new PriceValidationRule('maxPrice', false, async (value, index, allValues) => {
+                    if (!_.isNil(value)) {
+                        const minPrice = allValues[index - 1];
+                        // if set, must be >= 0
+                        // if minPrice set, must be > minPrice
+                        const largerThanZero = !_.isNil(value) ? value >= 0 : true;
+                        const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
+                        this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
+                        return largerThanZero && largerThanMinPrice;
                     }
-                },
+                    return true;
+                }),
                 new StringValidationRule('country', false),             // todo: validate&convert
                 new StringValidationRule('shippingDestination', false), // todo: validate&convert
                 new StringValidationRule('searchString', false),

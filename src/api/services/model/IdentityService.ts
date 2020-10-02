@@ -48,6 +48,10 @@ export class IdentityService {
         return await this.identityRepository.findAllByProfileId(profileId, withRelated);
     }
 
+    public async findAllByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Identity>> {
+        return await this.identityRepository.findAllByProfileIdAndName(profileId, name, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Identity> {
         const identity = await this.identityRepository.findOne(id, withRelated);
         if (identity === null) {
@@ -105,9 +109,11 @@ export class IdentityService {
      *     - extkey setdefaultaccount account_from_previous_step
      *
      * @param profile
-     * @param marketName
+     * @param name
      */
-    public async createMarketIdentityForProfile(profile: resources.Profile, marketName: string): Promise<Identity> {
+    public async createMarketIdentityForProfile(profile: resources.Profile, name: string): Promise<Identity> {
+
+        // todo: finish/fix/cleanthisup
 
         // first get the Profile Identity
         const profileIdentity: resources.Identity = await this.findProfileIdentity(profile.id).then(value => value.toJSON());
@@ -129,7 +135,7 @@ export class IdentityService {
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
-        const marketWalletName = 'profiles/' + profile.name + '/' + marketName;
+        const marketWalletName = 'profiles/' + profile.name + '/' + name;
         const marketWalletExists = await this.coreRpcService.walletExists(marketWalletName);
 
         if (marketWalletExists) {
@@ -159,7 +165,7 @@ export class IdentityService {
             })
             .catch(reason => {
                 if (reason.message.error.message === 'ExtKeyImportLoose failed, Derived key already exists in wallet') {
-                    this.log.warn(JSON.stringify(reason.message.error.message, null, 2));
+                    this.log.warn(reason.message.error.message);
                 } else {
                     throw reason;
                 }
@@ -177,15 +183,20 @@ export class IdentityService {
         const walletInfo: RpcWalletInfo = await this.coreRpcService.getWalletInfo(marketWalletName);
         // this.log.debug('createMarketIdentityForProfile(), walletInfo: ', JSON.stringify(walletInfo, null, 2));
 
-        // create Identity for Market, using the created wallet
-        const marketIdentity: resources.Identity = await this.create({
+        // todo: IdentityFactory
+        const createRequest: IdentityCreateRequest = {
+            name,
             profile_id: profile.id,
             wallet: marketWalletName,
             address,
             hdseedid: walletInfo.hdseedid,
             path: keyInfo.key_info.path,
             type: IdentityType.MARKET
-        } as IdentityCreateRequest).then(value => value.toJSON());
+        } as IdentityCreateRequest;
+
+        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+        // create Identity for Market, using the created wallet
+        const marketIdentity: resources.Identity = await this.create(createRequest).then(value => value.toJSON());
 
         // create default shoppingCart
         await this.shoppingCartService.create({
@@ -262,6 +273,7 @@ export class IdentityService {
 
         // create Identity for Profile, using the created wallet
         return await this.create({
+            name: profile.name,
             profile_id: profile.id,
             wallet: walletName,
             address,

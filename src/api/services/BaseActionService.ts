@@ -145,7 +145,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         // return smsg fee estimate, if thats what was requested
         if (actionRequest.sendParams.estimateFee) {
             if (messageVersion === CoreMessageVersion.PAID) {
-                return await this.smsgService.estimateFee(actionRequest.sendParams.wallet, marketplaceMessage, actionRequest.sendParams);
+                return await this.smsgService.estimateFee(marketplaceMessage, actionRequest.sendParams);
             } else {
                 return {
                     result: 'No fee for FREE message.',
@@ -156,7 +156,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // if message is paid, make sure we have enough balance to pay for it
         if (messageVersion === CoreMessageVersion.PAID) {
-            const canAfford = await this.smsgService.canAffordToSendMessage(actionRequest.sendParams.wallet, marketplaceMessage, actionRequest.sendParams);
+            const canAfford = await this.smsgService.canAffordToSendMessage(marketplaceMessage, actionRequest.sendParams);
             if (!canAfford) {
                 throw new MessageException('Not enough balance to send the message.');
             }
@@ -167,7 +167,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         marketplaceMessage = strip(marketplaceMessage);
 
         // finally send the message
-        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(actionRequest.sendParams.wallet, marketplaceMessage,
+        let smsgSendResponse: SmsgSendResponse = await this.smsgService.sendMessage(marketplaceMessage,
             actionRequest.sendParams);
 
         if (smsgSendResponse.result === 'Sent.') {

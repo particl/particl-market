@@ -106,7 +106,7 @@ export class MarketFactory implements ModelFactoryInterface {
 
             case MarketType.STOREFRONT_ADMIN:
                 // receive + publish keys are different, both private keys
-                // if publishKey is given and is different use that, else create a new one
+                // if publishKey is given and is different, use that, else create a new one
                 marketAddMessage.publishKey = (!_.isNil(marketAddMessage.publishKey) && marketAddMessage.publishKey !== marketAddMessage.receiveKey)
                     ? marketAddMessage.publishKey
                     : PrivateKey.fromRandom(network).toWIF();

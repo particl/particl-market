@@ -220,7 +220,7 @@ describe('Happy Buy Flow', () => {
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
-                '*',
+                null,
                 undefined,
                 undefined,
                 undefined,
@@ -263,7 +263,7 @@ describe('Happy Buy Flow', () => {
                 PAGE, PAGE_LIMIT, SEARCHORDER, LISTINGITEM_SEARCHORDERFIELD,
                 buyerMarket.receiveAddress,
                 [],
-                '*',
+                undefined,
                 undefined,
                 undefined,
                 undefined,
@@ -638,7 +638,7 @@ describe('Happy Buy Flow', () => {
                 sellerMarket.Identity.id,                   // identityId
                 listingItemReceivedOnSellerNode.id,         // listingItemId
                 MPAction.MPA_ACCEPT,                        // type
-                '*',                                        // search string
+                null,                                        // search string
                 sellerMarket.receiveAddress,                // market
                 buyerMarket.Identity.address                // bidder
             ],
@@ -676,7 +676,7 @@ describe('Happy Buy Flow', () => {
         mpaAcceptOnSellerNode = result;
 
         log.debug('==> Bid updated on SELLER node.');
-    });
+    }, 600000); // timeout to 600s
 
 
     test('Should have updated Order on SELLER node: OrderItemStatus.AWAITING_ESCROW, OrderStatus.PROCESSING', async () => {
@@ -755,7 +755,7 @@ describe('Happy Buy Flow', () => {
                 buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPAction.MPA_ACCEPT,                        // type
-                '*',                                        // search string
+                null,                                       // search string
                 buyerMarket.receiveAddress,                 // market
                 buyerMarket.Identity.address                // bidder
             ],
@@ -1405,7 +1405,7 @@ describe('Happy Buy Flow', () => {
                 buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPActionExtended.MPA_COMPLETE,              // type
-                '*',                                        // search string
+                null,                                       // search string
                 buyerMarket.receiveAddress,                 // market
                 buyerMarket.Identity.address                // bidder
             ],
@@ -1746,7 +1746,7 @@ describe('Happy Buy Flow', () => {
                 buyerMarket.Identity.id,                    // identityId
                 listingItemReceivedOnBuyerNode.id,          // listingItemId
                 MPActionExtended.MPA_SHIP,                  // type
-                '*',                                        // search string
+                null,                                       // search string
                 buyerMarket.receiveAddress,                 // market
                 buyerMarket.Identity.address                // bidder
             ],

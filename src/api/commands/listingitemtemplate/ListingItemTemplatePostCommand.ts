@@ -21,7 +21,7 @@ import { ListingItemTemplateService } from '../../services/model/ListingItemTemp
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableListingItemTemplateConfig } from '../../factories/hashableconfig/model/HashableListingItemTemplateConfig';
-import { CryptoAddress, CryptoAddressType } from 'omp-lib/dist/interfaces/crypto';
+import { CryptoAddress, CryptoAddressType, OutputType } from 'omp-lib/dist/interfaces/crypto';
 import { EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 import { NotImplementedException } from '../../exceptions/NotImplementedException';
 import { CoreRpcService } from '../../services/CoreRpcService';
@@ -35,10 +35,10 @@ import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
 import {
     BooleanValidationRule,
-    CommandParamValidationRules,
+    CommandParamValidationRules, EnumValidationRule,
     IdValidationRule,
-    MessageRetentionValidationRule,
-    ParamValidationRule
+    MessageRetentionValidationRule, NumberValidationRule,
+    ParamValidationRule, RingSizeValidationRule
 } from '../CommandParamValidation';
 
 
@@ -67,7 +67,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             params: [
                 new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
                 new MessageRetentionValidationRule('daysRetention', true),
-                new BooleanValidationRule('estimateFee', false, false)
+                new BooleanValidationRule('estimateFee', false, false),
+                new EnumValidationRule('feeType', false, 'OutputType',
+                    [OutputType.ANON, OutputType.PART] as string[], OutputType.PART),
+                new RingSizeValidationRule('ringSize', false, 24)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -80,6 +83,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [1]: daysRetention
      *  [2]: estimateFee
      *  [3]: market: resources.Market
+     *  [4]: anonFee: boolean
+     *  [5]: ringSize (optional, default: 24)
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -91,6 +96,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee: boolean = data.params[2];
         const market: resources.Market = data.params[3];
+        const anonFee: boolean = data.params[4];
+        const ringSize: number = data.params[5];
 
         this.log.debug('execute(), estimateFee:', estimateFee);
 
@@ -114,7 +121,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 fromAddress,
                 toAddress,
                 daysRetention,
-                estimateFee
+                estimateFee,
+                anonFee,
+                ringSize
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
             sellerAddress: market.Identity.address,
@@ -151,6 +160,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: estimateFee (optional, default: false)
+     *  [3]: feeType (optional, default: PART)
+     *  [4]: ringSize (optional, default: 24)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -159,6 +170,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        const feeType: OutputType = data.params[3];
+        const ringSize: number = data.params[4];
 
         // ListingItemTemplate should be a market template
         if (_.isEmpty(listingItemTemplate.market)) {
@@ -197,19 +210,23 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         data.params[0] = listingItemTemplate;
         data.params[3] = market;
+        data.params[4] = feeType === OutputType.ANON;
+        data.params[5] = ringSize;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] ';
+        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] [feeType] [ringSize]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number, The ID of the ListingItemTemplate that we want to post. \n'
-            + '    <daysRetention>               - [optional] number, Days the listing will be retained by network.\n'
-            + '    <estimateFee>                 - [optional] boolean, estimate the fee, don\'t post. \n';
+            + '    <listingTemplateId>          - number, The ID of the ListingItemTemplate that we want to post. \n'
+            + '    <daysRetention>              - [optional] number, Days the listing will be retained by network.\n'
+            + '    <estimateFee>                - [optional] boolean, estimate the fee, don\'t post. \n'
+            + '    <feeType>                    - [optional] OutputType, default: PART. OutputType used to pay for the message fee.\n'
+            + '    <ringSize>                   - [optional] number, default: 24. Ring size used if anon used for fee.\n';
     }
 
     public description(): string {

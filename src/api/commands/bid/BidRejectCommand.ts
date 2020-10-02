@@ -25,6 +25,7 @@ import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -65,15 +66,16 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         const identity: resources.Identity = data.params[1];
         const reason: BidRejectReason = data.params[2];
 
-        const fromAddress = identity.address;              // send from the given identity
-        // const fromAddress = bid.OrderItem.Order.seller;     // we are the seller
-        const toAddress = bid.OrderItem.Order.buyer;
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: bid.OrderItem.Order.buyer,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid,
             reason
         } as BidRejectRequest;

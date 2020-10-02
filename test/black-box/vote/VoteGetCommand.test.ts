@@ -7,13 +7,11 @@ import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateProposalParams } from '../../../src/api/requests/testdata/GenerateProposalParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { CombinedVote } from '../../../src/api/services/action/VoteActionService';
-import * as Faker from "faker";
+import * as Faker from 'faker';
 
 describe('VoteGetCommand', () => {
 

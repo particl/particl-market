@@ -24,6 +24,7 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import {BidAcceptRequest} from '../../requests/action/BidAcceptRequest';
 
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -62,19 +63,24 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         const bid: resources.Bid = data.params[0];
         const identity: resources.Identity = data.params[1];
 
-        const fromAddress = identity.address;
         let toAddress = bid.bidder;
         if (identity.address === bid.bidder) {      // if we are the bidder, then send to seller
             toAddress = bid.OrderItem.Order.seller;
         }
 
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
         const postRequest = {
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,      // send from the given identity
+                toAddress,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             bid
         } as BidCancelRequest;
+
         return this.bidCancelActionService.post(postRequest);
     }
 

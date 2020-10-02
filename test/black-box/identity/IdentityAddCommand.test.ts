@@ -18,6 +18,7 @@ import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoun
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
+
 describe('IdentityAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -27,14 +28,11 @@ describe('IdentityAddCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
 
-    const identityCommand = Commands.IMAGE_ROOT.commandName;
-    const identityAddCommand = Commands.IMAGE_ADD.commandName;
+    const identityCommand = Commands.IDENTITY_ROOT.commandName;
+    const identityAddCommand = Commands.IDENTITY_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
-
-    let listingItemTemplate: resources.ListingItemTemplate;
-    let image: resources.Image;
 
 
     beforeAll(async () => {
@@ -47,17 +45,12 @@ describe('IdentityAddCommand', () => {
 
     });
 
-    test('Not implemented yet', async () => {
-        //
-    });
 
-
-    /*
     test('Should fail because missing profileId', async () => {
         const res: any = await testUtil.rpc(identityCommand, [identityAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('xxx').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
     });
 
     test('Should fail because missing name', async () => {
@@ -66,7 +59,7 @@ describe('IdentityAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('xxx').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('name').getMessage());
     });
 
     test('Should fail because invalid profileId', async () => {
@@ -94,7 +87,7 @@ describe('IdentityAddCommand', () => {
     test('Should fail because Profile not found', async () => {
         const res: any = await testUtil.rpc(identityCommand, [identityAddCommand,
             0,
-            'name'
+            'particl-market'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -105,7 +98,7 @@ describe('IdentityAddCommand', () => {
     test('Should fail because duplicate name', async () => {
         const res: any = await testUtil.rpc(identityCommand, [identityAddCommand,
             profile.id,
-            'name'
+            'particl-market'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -121,10 +114,8 @@ describe('IdentityAddCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Identity = res.getBody()['result'];
-        identity = result;
 
-        // log.debug('image: ', JSON.stringify(image, null, 2));
-        expect(identity.name).toBe('X');
+        expect(result.name).toBe('name');
     });
-    */
+
 });

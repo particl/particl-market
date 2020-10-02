@@ -36,6 +36,7 @@ import {
     IdValidationRule,
     ParamValidationRule
 } from '../CommandParamValidation';
+import {BidRejectRequest} from '../../requests/action/BidRejectRequest';
 
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -114,18 +115,22 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             }
         }
 
-        const fromAddress = identity.address;   // send from the given identity
-        const toAddress = listingItem.seller;   // send to listingItem sellers address
-
-        const daysRetention: number = parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10);
-        const estimateFee = false;
-
-        const response: SmsgSendResponse = await this.bidActionService.post({
-            sendParams: new SmsgSendParams(identity.wallet, fromAddress, toAddress, false, daysRetention, estimateFee),
+        const postRequest = {
+            sendParams: {
+                wallet: identity.wallet,
+                fromAddress: identity.address,
+                toAddress: listingItem.seller,
+                paid: false,
+                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee: false,
+                anonFee: true
+            } as SmsgSendParams,
             listingItem,
             market,
             address
-        } as BidRequest);
+        } as BidRequest;
+
+        const response: SmsgSendResponse = await this.bidActionService.post(postRequest);
         // this.log.debug('response: ', JSON.stringify(response, null, 2));
 
         return response;

@@ -181,6 +181,22 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('receiveKey', 'string').getMessage());
     });
 
+    test('Should fail because invalid receiveKey for MARKETPLACE', async () => {
+
+        const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            marketData.name,
+            MarketType.MARKETPLACE,
+            'INVALID',
+            'INVALID',
+            market.Identity.id,
+            marketData.description
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Invalid receiveKey for MARKETPLACE.').getMessage());
+    });
+
     test('Should fail because invalid publishKey', async () => {
 
         const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
@@ -197,12 +213,28 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('publishKey', 'string').getMessage());
     });
 
-    test('Should create a new market (MARKETPLACE)', async () => {
+    test('Should fail because STOREFRONT requires keys', async () => {
+
+        const res: any = await testUtil.rpc(marketCommand, [marketAddCommand,
+            profile.id,
+            marketData.name,
+            MarketType.STOREFRONT,
+            null,
+            undefined,
+            market.Identity.id,
+            marketData.description
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MessageException('Adding a STOREFRONT requires both receive and publish keys.').getMessage());
+    });
+
+    test('Should create a new market (MARKETPLACE), changing STOREFRONT_ADMIN -> MARKETPLACE', async () => {
 
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
             marketData.name,
-            marketData.type,
+            MarketType.STOREFRONT_ADMIN,
             marketData.receiveKey,
             marketData.publishKey,
             market.Identity.id,
