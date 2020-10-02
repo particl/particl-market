@@ -215,8 +215,10 @@ export class ImageService {
 
         const rawImage = imageDataOriginal.data;
         const maxSize = MessageVersions.maxSize(messageVersionToFit);
+
         const resizedImage = await ImageProcessing.resizeImageToSize(rawImage, maxSize, scalingFraction, qualityFraction, maxIterations);
 
+        this.log.debug('resized image size: ', resizedImage.length);
         const versionCreateRequest = {
             image_id: image.id,
             protocol: imageDataOriginal.protocol,

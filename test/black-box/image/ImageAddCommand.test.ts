@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -16,6 +17,7 @@ import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNo
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
 
 describe('ImageAddCommand', () => {
 
@@ -28,6 +30,7 @@ describe('ImageAddCommand', () => {
 
     const imageCommand = Commands.IMAGE_ROOT.commandName;
     const imageAddCommand = Commands.IMAGE_ADD.commandName;
+    const imageListCommand = Commands.IMAGE_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -276,6 +279,53 @@ describe('ImageAddCommand', () => {
     });
 
 
+    test('Should add a larger (than free msg size limit) Image to Market', async () => {
+
+        log.debug('ImageProcessing.milkcat: ', ImageProcessing.milkcat.length);
+
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'market',
+            market.id,
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcat,
+            false,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Image = res.getBody()['result'];
+
+        market = await testUtil.getDefaultMarket(profile.id);
+
+        expect(result).toBeDefined();
+        expect(result.id).toBe(market.Image.id);
+    });
+
+
+    test('Should have resized the Image', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+
+        expect(result.length).toBe(1);
+        const original: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        const resized: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        expect(result[0].ImageDatas.length).toBe(5);
+        expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
+        expect(original.data.length).toBeGreaterThan(resized.data.length);
+    });
+
     test('Should add Image to Market', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             'market',
@@ -289,14 +339,34 @@ describe('ImageAddCommand', () => {
         res.expectStatusCode(200);
         const result: resources.Image = res.getBody()['result'];
 
-        log.debug('result: ', JSON.stringify(result, null, 2));
-
         market = await testUtil.getDefaultMarket(profile.id);
 
         expect(market.id).toBeDefined();
         expect(result).toBeDefined();
         expect(result.id).toBe(market.Image.id);
-
     });
 
+
+    test('Should not have resized the Image', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        const original: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        const resized: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        expect(result[0].ImageDatas.length).toBe(5);
+        expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
+        expect(original.data.length).toBe(resized.data.length);
+    });
 });
