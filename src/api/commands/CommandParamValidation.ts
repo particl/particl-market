@@ -201,9 +201,9 @@ export class NumberValidationRule extends BaseParamValidationRule {
 
         this.minValue = !_.isNil(minValue) ? minValue : 0;
 
-        // if (!_.isNil(customValidate)) {
-        //    this.customValidate = customValidate;
-        // }
+        if (!_.isNil(customValidate)) {
+            this.customValidate = customValidate;
+        }
     }
 
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
@@ -281,11 +281,15 @@ export class EnumValidationRule extends BaseParamValidationRule {
     public validEnumType: string;
     public validEnumValues: string[];
 
-    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any) {
+    constructor(name: string, required: boolean, validEnumType: string, validEnumValues: string[], defaultValue?: any, customValidate?: ValidationFunction) {
         super(name, required, defaultValue);
         this.type = 'string';
         this.validEnumType = validEnumType;
         this.validEnumValues = validEnumValues;
+
+        if (!_.isNil(customValidate)) {
+            this.customValidate = customValidate;
+        }
     }
 
     public async customValidate(value: string, index: number, allValues: string[]): Promise<boolean> {
