@@ -113,6 +113,8 @@ export class IdentityService {
      */
     public async createMarketIdentityForProfile(profile: resources.Profile, marketName: string): Promise<Identity> {
 
+        // todo: finish/fix/cleanthisup
+
         // first get the Profile Identity
         const profileIdentity: resources.Identity = await this.findProfileIdentity(profile.id).then(value => value.toJSON());
 
