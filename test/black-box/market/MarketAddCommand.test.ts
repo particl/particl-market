@@ -229,12 +229,12 @@ describe('MarketAddCommand', () => {
         expect(res.error.error.message).toBe(new MessageException('Adding a STOREFRONT requires both receive and publish keys.').getMessage());
     });
 
-    test('Should create a new market (MARKETPLACE)', async () => {
+    test('Should create a new market (MARKETPLACE), changing STOREFRONT_ADMIN -> MARKETPLACE', async () => {
 
         const res = await testUtil.rpc(marketCommand, [marketAddCommand,
             profile.id,
             marketData.name,
-            marketData.type,
+            MarketType.STOREFRONT_ADMIN,
             marketData.receiveKey,
             marketData.publishKey,
             market.Identity.id,
