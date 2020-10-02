@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 import * from 'jest';
+import * as jpeg from 'jpeg-js';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -18,6 +19,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
+
 
 describe('ImageAddCommand', () => {
 
@@ -281,7 +283,8 @@ describe('ImageAddCommand', () => {
 
     test('Should add a larger (than free msg size limit) Image to Market', async () => {
 
-        log.debug('ImageProcessing.milkcat: ', ImageProcessing.milkcat.length);
+        const randomImage = await generateRandomImage();
+        log.debug('randomImage.length: ', randomImage.length);
 
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             'market',
@@ -324,6 +327,9 @@ describe('ImageAddCommand', () => {
         expect(result[0].ImageDatas.length).toBe(5);
         expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
         expect(original.data.length).toBeGreaterThan(resized.data.length);
+
+        log.debug('resized randomImage.length: ', resized.data.length);
+
     });
 
     test('Should add Image to Market', async () => {
@@ -369,4 +375,26 @@ describe('ImageAddCommand', () => {
         expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
         expect(original.data.length).toBe(resized.data.length);
     });
+
+    /**
+     * Generates an random colored image with specified width, height and quality
+     * @param width width of the image
+     * @param height height of the image
+     * @param quality quality of the image
+     */
+    const generateRandomImage = async (width: number = 800, height: number = 600, quality: number = 50): Promise<string> => {
+        const frameData = Buffer.alloc(width * height * 4);
+        let i = 0;
+        while (i < frameData.length) {
+            frameData[i++] = Math.floor(Math.random() * 256);
+        }
+        const rawImageData = {
+            data: frameData,
+            width,
+            height
+        };
+        const generatedImage: jpeg.RawImageData<Buffer> = jpeg.encode(rawImageData, quality);
+        return generatedImage.data.toString('base64');
+    };
+
 });

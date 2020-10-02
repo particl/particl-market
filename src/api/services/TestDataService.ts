@@ -125,7 +125,7 @@ import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
 import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { CommentFactory } from '../factories/model/CommentFactory';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
-import {VoteTicket} from '../factories/message/VoteMessageFactory';
+import { VoteTicket } from '../factories/message/VoteMessageFactory';
 
 
 export class TestDataService {
