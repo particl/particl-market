@@ -109,10 +109,10 @@ export abstract class BaseActionService implements ActionServiceInterface {
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
         // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
 
-        const messageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
+        const messageSize: MessageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
         if (!messageSize.fits) {
             this.log.error('messageDataSize:', JSON.stringify(messageSize, null, 2));
-            throw new MessageSizeException(marketplaceMessage.action.type);
+            throw new MessageSizeException(marketplaceMessage.action.type, messageSize);
         }
         // this.log.debug('post(), messageSize:', JSON.stringify(messageSize, null, 2));
 
