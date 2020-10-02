@@ -38,6 +38,10 @@ export class IdentityRepository {
         return await this.IdentityModel.fetchAllByProfileId(profileId, withRelated);
     }
 
+    public async findAllByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Identity>> {
+        return await this.IdentityModel.fetchAllByProfileIdAndName(profileId, name, withRelated);
+    }
+
     public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Identity> {
         return await this.IdentityModel.fetchByAddress(name, withRelated);
     }

@@ -13,6 +13,8 @@ export class IdentityCreateRequest extends RequestBody implements ModelRequestIn
     @IsNotEmpty()
     public profile_id: number;
 
+    public name: string;
+
     // the default wallet name is empty :/
     // @IsNotEmpty()
     public wallet: string;

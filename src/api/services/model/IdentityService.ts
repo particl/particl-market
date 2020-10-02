@@ -48,6 +48,10 @@ export class IdentityService {
         return await this.identityRepository.findAllByProfileId(profileId, withRelated);
     }
 
+    public async findAllByProfileIdAndName(profileId: number, name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Identity>> {
+        return await this.identityRepository.findAllByProfileIdAndName(profileId, name, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Identity> {
         const identity = await this.identityRepository.findOne(id, withRelated);
         if (identity === null) {
@@ -179,6 +183,7 @@ export class IdentityService {
 
         // create Identity for Market, using the created wallet
         const marketIdentity: resources.Identity = await this.create({
+            name: marketWalletName,
             profile_id: profile.id,
             wallet: marketWalletName,
             address,
@@ -262,6 +267,7 @@ export class IdentityService {
 
         // create Identity for Profile, using the created wallet
         return await this.create({
+            name: profile.name,
             profile_id: profile.id,
             wallet: walletName,
             address,
