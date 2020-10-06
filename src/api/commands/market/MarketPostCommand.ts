@@ -144,7 +144,7 @@ export class MarketPostCommand extends BaseCommand implements RpcCommandInterfac
      *  [4]: fromIdentityId, optional, overrides the toMarkets publishAddress,
      *       default: default Profiles default Market publishAddress,
      *  [5]: feeType (optional, default: PART)
-     *  [6]:  ringSize (optional, default: 24)
+     *  [6]: ringSize (optional, default: 24)
      *
      * Promotes a Market.
      *

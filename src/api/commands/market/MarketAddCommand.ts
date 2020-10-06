@@ -162,7 +162,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
                 publishKey,
                 // todo: add logo for the default market
                 // image: ContentReference,
-                generated: Date.now()
+                generated: Date.now()   // why to set generated here?
             } as MarketAddMessage,
             identity,   // Identity required to create keys
             skipJoin
