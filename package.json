@@ -68,6 +68,7 @@
     "dist/**/*"
   ],
   "dependencies": {
+    "@types/mathjs": "^6.0.5",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.4",
@@ -103,6 +104,7 @@
     "knex": "^0.12.9",
     "lodash": "^4.17.4",
     "lokijs": "^1.5.3",
+    "mathjs": "^7.3.0",
     "merge": "1.2.1",
     "morgan": "^1.9.1",
     "multer": "^1.4.1",

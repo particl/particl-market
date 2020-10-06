@@ -9,5 +9,10 @@ export class SmsgSendResponse {
     public fee?: number;
     public error?: string;
 
+    public childResults?: SmsgSendResponse[];   // all the other SmsgSendResponses related to the main one
+    public totalFees?: number;
+    public availableUtxos: number;
+
+    // deprecated
     public msgids?: string[]; // custom, for vote msgids
 }

@@ -65,10 +65,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
      * @param marketplaceMessage
+     * @param messageType, optional, override the default message version
      */
-    public async getMarketplaceMessageSize(marketplaceMessage: MarketplaceMessage): Promise<MessageSize> {
+    public async getMarketplaceMessageSize(marketplaceMessage: MarketplaceMessage, messageType?: CoreMessageVersion): Promise<MessageSize> {
 
-        const messageVersion: CoreMessageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        const messageVersion: CoreMessageVersion = messageType ? messageType : MessageVersions.get(marketplaceMessage.action.type);
         const maxSize = MessageVersions.maxSize(messageVersion);
 
         const messageSize = JSON.stringify(marketplaceMessage).length;
@@ -109,7 +110,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
         // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
 
-        const messageSize: MessageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
+        const messageSize: MessageSize = await this.getMarketplaceMessageSize(marketplaceMessage, actionRequest.sendParams.messageType);
         if (!messageSize.fits) {
             this.log.error('messageDataSize:', JSON.stringify(messageSize, null, 2));
             throw new MessageSizeException(marketplaceMessage.action.type, messageSize);
@@ -141,7 +142,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
         // TODO: also validate the sequence?
         // await this.validator.validateSequence(marketplaceMessage, ActionDirection.OUTGOING);
 
-        const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        // optionally override the default messageVersion to the one set in sendParams
+        const messageVersion = actionRequest.sendParams.messageType
+            ? actionRequest.sendParams.messageType
+            : MessageVersions.get(marketplaceMessage.action.type);
+
         // return smsg fee estimate, if thats what was requested
         if (actionRequest.sendParams.estimateFee) {
             if (messageVersion === CoreMessageVersion.PAID) {

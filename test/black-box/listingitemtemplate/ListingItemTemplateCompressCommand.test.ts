@@ -134,7 +134,7 @@ describe('ListingItemTemplateCompressCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('maxIterations', 'number').getMessage());
     });
 
-    test('Should compress Images to fit given size in bytes', async () => {
+    test('Should compress Images to fit given message size', async () => {
         const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.id,
             CoreMessageVersion.FREE,
@@ -149,7 +149,6 @@ describe('ListingItemTemplateCompressCommand', () => {
         for (const image of result.ItemInformation.Images) {
             expect(image.ImageDatas).toHaveLength(5);
         }
-
     });
 
 });

@@ -17,10 +17,15 @@ export class HashableMarketCreateRequestConfig extends BaseHashableConfig {
     }, {
         from: HashableMarketField.MARKET_DESCRIPTION,
         to: HashableMarketField.MARKET_DESCRIPTION
-    }, {
+    },
+/*
+    {
         from: HashableMarketField.MARKET_TYPE,
         to: HashableMarketField.MARKET_TYPE
-    }, {
+    },
+ */
+    // TODO: use address
+    {
         from: HashableMarketField.MARKET_RECEIVE_KEY,
         to: HashableMarketField.MARKET_RECEIVE_KEY
     }, {

@@ -178,12 +178,13 @@ export class SmsgService {
 
     /**
      *
-     * @param wallet
      * @param marketplaceMessage
      * @param sendParams
      */
     public async sendMessage(marketplaceMessage: MarketplaceMessage, sendParams: SmsgSendParams): Promise<SmsgSendResponse> {
-        const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
+
+        // messageVersion can be overriden with sendParams.messageType
+        const messageVersion = sendParams.messageType ? sendParams.messageType : MessageVersions.get(marketplaceMessage.action.type);
         const paidMessage = messageVersion === CoreMessageVersion.PAID;
 
         // todo: switch to use ttl_is_seconds

@@ -206,6 +206,9 @@ export class ImageService {
         const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
+        const imageDataResized: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.RESIZED.propName;
+        });
 
         if (_.isNil(imageDataOriginal)) {
             throw new ModelNotFoundException('ImageData');
@@ -219,7 +222,8 @@ export class ImageService {
         const resizedImage = await ImageProcessing.resizeImageToSize(rawImage, maxSize, scalingFraction, qualityFraction, maxIterations);
 
         this.log.debug('resized image size: ', resizedImage.length);
-        const versionCreateRequest = {
+
+        const versionCreateOrUpdateRequest = {
             image_id: image.id,
             protocol: imageDataOriginal.protocol,
             imageVersion: ImageVersions.RESIZED.propName,
@@ -227,7 +231,13 @@ export class ImageService {
             encoding: imageDataOriginal.encoding,
             data: resizedImage
         } as ImageDataCreateRequest;
-        return await this.imageDataService.create(versionCreateRequest).then(value => value.toJSON());
+
+        // resized could already exist, so create/update
+        if (_.isNil(imageDataResized)) {
+            return await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
+        } else {
+            return await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+        }
     }
 
     @validate()

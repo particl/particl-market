@@ -16,6 +16,8 @@ export class Market extends Bookshelf.Model<Market> {
 
     public static RELATIONS = [
         'FlaggedItem',
+        'FlaggedItem.Proposal',
+        'FlaggedItem.Proposal.ProposalOptions',
         'Profile',
         'Identity',
         'Identity.ShoppingCarts',

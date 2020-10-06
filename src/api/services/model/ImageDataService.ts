@@ -48,6 +48,15 @@ export class ImageDataService {
         return imageData;
     }
 
+    public async findOneByImageIdAndVersion(imageId: number, version: string, withRelated: boolean = true): Promise<ImageData> {
+        const imageData = await this.imageDataRepo.findOneByImageIdAndVersion(imageId, version, withRelated);
+        if (imageData === null) {
+            this.log.warn(`ImageData with the imageId=${imageId} and version=${version} was not found!`);
+            throw new NotFoundException(imageId);
+        }
+        return imageData;
+    }
+
     @validate()
     public async create( @request(ImageDataCreateRequest) data: ImageDataCreateRequest): Promise<ImageData> {
         const body = JSON.parse(JSON.stringify(data));

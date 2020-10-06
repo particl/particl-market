@@ -105,7 +105,7 @@ export class ListingItemImageAddValidator implements ActionMessageValidatorInter
             target: listingItemImageAddMessage.target       // item hash
         } as ImageAddMessage;
 
-        this.log.debug('message:', JSON.stringify(message, null, 2));
+        // this.log.debug('message:', JSON.stringify(message, null, 2));
         return await this.coreRpcService.verifyMessage(listingItemImageAddMessage.seller, listingItemImageAddMessage.signature, message);
     }
 

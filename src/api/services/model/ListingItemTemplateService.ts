@@ -362,12 +362,9 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id).then(value => value.toJSON());
 
         // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
-        // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
-        // this.log.debug('listingItemTemplate.ChildListingItemTemplates: ' + listingItemTemplate.ChildListingItemTemplates);
-
         // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplates));
 
         // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash

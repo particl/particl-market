@@ -290,7 +290,7 @@ describe('ImageAddCommand', () => {
             'market',
             market.id,
             ProtocolDSN.REQUEST,
-            ImageProcessing.milkcat,
+            randomImage,
             false,
             false
         ]);

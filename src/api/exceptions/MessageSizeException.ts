@@ -4,7 +4,7 @@
 
 import { Exception } from '../../core/api/Exception';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
-import {MessageSize} from '../responses/MessageSize';
+import { MessageSize } from '../responses/MessageSize';
 
 
 export class MessageSizeException extends Exception {

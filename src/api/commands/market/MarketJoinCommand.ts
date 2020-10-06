@@ -131,7 +131,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
         const identity: resources.Identity = data.params[2];
 
         // make sure Identity belongs to the given Profile
-        if (!_.isNil(identity) && identity!.Profile.id !== profile.id) {
+        if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
             throw new MessageException('Identity does not belong to the Profile.');
         }
 
