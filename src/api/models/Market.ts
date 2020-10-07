@@ -68,6 +68,15 @@ export class Market extends Bookshelf.Model<Market> {
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
+    public static async fetchAllExpired(): Promise<Collection<Market>> {
+        const collection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('expired_at', '<=', Date.now());
+                qb.whereNull('id');
+            });
+        return collection.fetchAll();
+    }
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {
         return Market.where<Market>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }

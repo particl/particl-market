@@ -175,6 +175,7 @@ export const Targets = {
             CoreCookieService: 'CoreCookieService',
             CoreConnectionStatusService: 'CoreConnectionStatusService',
             ExpiredListingItemService: 'ExpiredListingItemService',
+            ExpiredMarketService: 'ExpiredMarketService',
             ExpiredProposalService: 'ExpiredProposalService',
             ProposalResultRecalcService: 'ProposalResultRecalcService',
             WaitingMessageService: 'WaitingMessageService'

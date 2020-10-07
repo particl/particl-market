@@ -11,6 +11,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { MarketSearchParams } from '../requests/search/MarketSearchParams';
 
+
 export class MarketRepository {
 
     public log: LoggerType;
@@ -41,6 +42,10 @@ export class MarketRepository {
 
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Market>> {
         return await this.MarketModel.fetchAllByHash(hash, withRelated);
+    }
+
+    public async findAllExpired(): Promise<Bookshelf.Collection<Market>> {
+        return this.MarketModel.fetchAllExpired();
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {

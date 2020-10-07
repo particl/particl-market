@@ -113,7 +113,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.andWhereRaw('bid_totals.bid_totals IS NULL');
                 qb.groupBy('listing_items.id');
             });
-        return await listingCollection.fetchAll();
+        return listingCollection.fetchAll();
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {

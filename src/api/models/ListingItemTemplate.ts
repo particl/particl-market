@@ -75,6 +75,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
      * @param templateId
      * @param market
      * @param allVersions
+     * @param withRelated
      */
     public static async fetchByParentTemplateAndMarket(templateId?: number, market?: string,
                                                        allVersions: boolean = false, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {

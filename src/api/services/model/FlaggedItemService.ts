@@ -122,6 +122,9 @@ export class FlaggedItemService {
                         break;
                     case ProposalCategory.MARKET_VOTE:
                         // await this.marketService.setRemovedFlag(flaggedItem.Market!.id);
+
+
+
                         // TODO: Blacklist
                         break;
                     default:

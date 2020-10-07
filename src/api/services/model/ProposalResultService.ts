@@ -115,7 +115,7 @@ export class ProposalResultService {
                 removalPercentage = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE);
                 break;
             case ProposalCategory.MARKET_VOTE:
-                removalPercentage = 1;  // TODO: create LISTING_MARKET_REMOVE_PERCENTAGE
+                removalPercentage = parseFloat(process.env.MARKET_REMOVE_PERCENTAGE);
                 break;
             case ProposalCategory.PUBLIC_VOTE:
             default:

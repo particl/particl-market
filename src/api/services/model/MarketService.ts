@@ -61,6 +61,10 @@ export class MarketService {
         return await this.marketRepo.findAllByHash(hash, withRelated);
     }
 
+    public async findAllExpired(): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.findAllExpired();
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
