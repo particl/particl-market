@@ -155,7 +155,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         if (!_.isNil(smsgSendResponse.childResults)) {
             let childSum: BigNumber = math.bignumber(0);
             for (const childResult of smsgSendResponse.childResults) {
-                childSum = math.add(childSum, math.bignumber(childResult.fee)) as BigNumber;
+                childSum = math.add(childSum, math.bignumber(childResult.fee));
             }
             smsgSendResponse.totalFees = +math.format(math.add(childSum, math.bignumber(smsgSendResponse.fee ? smsgSendResponse.fee : 0)), {precision: 8});
             minRequiredUtxos = minRequiredUtxos + (paidImageMessages ? smsgSendResponse.childResults.length : 0);
