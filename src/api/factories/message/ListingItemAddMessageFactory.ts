@@ -25,7 +25,7 @@ import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { HashableListingItemTemplateConfig } from '../hashableconfig/model/HashableListingItemTemplateConfig';
 

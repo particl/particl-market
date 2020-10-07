@@ -84,7 +84,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
                 publishKey: marketToJoin.publishKey,
                 image: marketToJoin.Image ? {
                     hash: marketToJoin.Image.hash,
-                    data: marketToJoin.Image.ImageDatas ? [{
+                    data: !_.isEmpty(marketToJoin.Image.ImageDatas) ? [{
                         protocol: ProtocolDSN.FILE,
                         dataId: marketToJoin.Image.ImageDatas[0].dataId,
                         encoding: marketToJoin.Image.ImageDatas[0].encoding,

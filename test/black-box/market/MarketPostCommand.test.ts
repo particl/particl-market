@@ -11,6 +11,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
+
 describe('MarketPostCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -141,7 +142,6 @@ describe('MarketPostCommand', () => {
             log.debug(JSON.stringify(result, null, 2));
         }
         expect(result.result).toBe('Sent.');
-
     });
 
 

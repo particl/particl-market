@@ -16,7 +16,7 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableMarketAddMessageConfig } from '../hashableconfig/message/HashableMarketAddMessageConfig';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import {HashableBidCreateRequestConfig} from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
 import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';

@@ -12,7 +12,7 @@ import { HashableCommentAddMessageConfig } from '../hashableconfig/message/Hasha
 import { CommentAddRequest } from '../../requests/action/CommentAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 // todo: move

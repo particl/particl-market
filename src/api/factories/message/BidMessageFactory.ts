@@ -8,7 +8,7 @@ import { Core, Targets, Types } from '../../../constants';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { BidRequest } from '../../requests/action/BidRequest';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';

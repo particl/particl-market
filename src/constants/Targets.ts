@@ -420,8 +420,8 @@ export const Targets = {
         ModelCreateParams: 'ModelCreateParams',
         ModelFactoryInterface: 'ModelFactoryInterface',
         RpcCommandFactory: 'RpcCommandFactory',
+        BaseMessageFactory: 'BaseMessageFactory',
         message: {
-            BaseMessageFactory: 'BaseMessageFactory',
             BidMessageFactory: 'BidMessageFactory',
             BidAcceptMessageFactory: 'BidAcceptMessageFactory',
             BidCancelMessageFactory: 'BidCancelMessageFactory',

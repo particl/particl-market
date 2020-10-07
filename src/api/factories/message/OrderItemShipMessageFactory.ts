@@ -12,7 +12,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { OrderItemShipRequest } from '../../requests/action/OrderItemShipRequest';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 export class OrderItemShipMessageFactory extends BaseMessageFactory {

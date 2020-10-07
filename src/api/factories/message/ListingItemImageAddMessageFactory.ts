@@ -15,7 +15,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
 

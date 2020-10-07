@@ -17,7 +17,7 @@ import { HashableFieldValueConfig } from 'omp-lib/dist/interfaces/configs';
 import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 
 export class ProposalAddMessageFactory extends BaseMessageFactory {
 

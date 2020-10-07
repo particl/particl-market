@@ -14,7 +14,7 @@ import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageF
 import { MarketImageAddMessage } from '../../messages/action/MarketImageAddMessage';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
 import { MissingParamException } from '../../exceptions/MissingParamException';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 export class MarketImageAddMessageFactory extends BaseMessageFactory {
