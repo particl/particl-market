@@ -280,27 +280,6 @@ describe('MarketJoinCommand', () => {
     }, 600000); // timeout to 600s
 
 
-/*
-    test('Should list the created Market', async () => {
-        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketListCommand]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        const markets: resources.Market[] = res.getBody()['result'];
-        // log.debug('markets: ', JSON.stringify(markets, null, 2));
-        expect(markets).toHaveLength(1);
-
-        const result: resources.Market = markets[0];
-        expect(result.name).toBe(newMarket.name);
-        expect(result.description).toBe(newMarket.description);
-        expect(result.region).toBe(newMarket.region);
-        expect(result.receiveKey).toBe(result.publishKey);
-        expect(result.Profile).toBeUndefined();
-        expect(result.Identity).toBeUndefined();
-        expect(result.Image).toBeUndefined();
-    }, 600000); // timeout to 600s
-*/
-
     test('Should join the created Market', async () => {
 
         const res: any = await testUtilBuyerNode.rpc(marketCommand, [marketJoinCommand,

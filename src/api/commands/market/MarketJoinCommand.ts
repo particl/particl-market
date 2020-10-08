@@ -25,6 +25,7 @@ import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
 
 
 export class MarketJoinCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -89,7 +90,9 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
                         dataId: marketToJoin.Image.ImageDatas[0].dataId,
                         encoding: marketToJoin.Image.ImageDatas[0].encoding,
                         data: marketToJoin.Image.ImageDatas[0].data
-                    }] as DSN[] : undefined,
+                    }] as DSN[] : [{
+                        protocol: ProtocolDSN.SMSG
+                    }] as DSN[],
                     featured: marketToJoin.Image.featured
                 } as ContentReference : undefined,
                 generated: Date.now()

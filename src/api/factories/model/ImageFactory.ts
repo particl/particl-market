@@ -48,7 +48,7 @@ export class ImageFactory implements ModelFactoryInterface {
         const hash = actionMessage.hash ? actionMessage.hash : dataCreateRequest.imageHash;
 
         const createRequest = {
-            item_information_id: params.listingItemTemplate && !_.isNil(params.listingItemTemplate.ItemInformation)
+            item_information_id: (params.listingItemTemplate && !_.isNil(params.listingItemTemplate.ItemInformation))
                 ? params.listingItemTemplate.ItemInformation.id : undefined,
             data: [dataCreateRequest],
             hash,

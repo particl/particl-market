@@ -19,9 +19,10 @@ import { BlacklistService } from '../model/BlacklistService';
 import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../../enums/BlacklistType';
 
+
 export class ProposalResultRecalcService extends BaseObserverService {
 
-    // interval to recalculate ProposalResults in milliseconds (passed by minutes)
+    // interval to recalculate ProposalResults in milliseconds
     private recalculationInterval = process.env.PROPOSAL_RESULT_RECALCULATION_INTERVAL * 60 * 1000;
 
     constructor(
@@ -84,50 +85,58 @@ export class ProposalResultRecalcService extends BaseObserverService {
         return ObserverStatus.RUNNING;
     }
 
+    /**
+     *
+     * @param flaggedItemId
+     * @param proposalResult
+     * @param flagOnly
+     */
     public async removeIfNeeded(flaggedItemId: number, proposalResult: resources.ProposalResult, flagOnly: boolean = false): Promise<void> {
 
-        // fetch the FlaggedItem and remove if thresholds are hit
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
-            const flaggedItem: resources.FlaggedItem = await this.flaggedItemService.findOne(flaggedItemId)
-                .then(value => value.toJSON())
+
+            // fetch the FlaggedItem and remove if thresholds are hit
+            await this.flaggedItemService.findOne(flaggedItemId)
+                .then(async value => {
+                    const flaggedItem: resources.FlaggedItem = value.toJSON();
+
+                    const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
+                    if (shouldRemove) {
+                        switch (proposalResult.Proposal.category) {
+                            case ProposalCategory.ITEM_VOTE:
+                                await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
+
+                                const blacklistListingCreateRequest = {
+                                    type: BlacklistType.LISTINGITEM,
+                                    target: flaggedItem.ListingItem!.hash,
+                                    market: flaggedItem.Proposal.market,
+                                    listing_item_id: flaggedItem.ListingItem!.id
+                                } as BlacklistCreateRequest;
+
+                                // todo: remove existing Blacklists with relation to Profile
+                                return await this.blacklistService.create(blacklistListingCreateRequest).then(value => value.toJSON());
+
+                            case ProposalCategory.MARKET_VOTE:
+                                await this.marketService.destroy(flaggedItem.Market!.id);
+
+                                const blacklistMarketCreateRequest = {
+                                    type: BlacklistType.MARKET,
+                                    target: flaggedItem.Proposal.market,
+                                    market: flaggedItem.Proposal.market
+                                } as BlacklistCreateRequest;
+
+                                // todo: remove existing Blacklists with relation to Profile
+                                return await this.blacklistService.create(blacklistMarketCreateRequest).then(value => value.toJSON());
+
+                            default:
+                                break;
+                        }
+                    }
+                })
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
                 });
 
-            if (flaggedItem) {
-                const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
-                if (shouldRemove) {
-                    switch (proposalResult.Proposal.category) {
-                        case ProposalCategory.ITEM_VOTE:
-                            await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
-
-                            const blacklistListingCreateRequest = {
-                                type: BlacklistType.LISTINGITEM,
-                                target: flaggedItem.ListingItem!.hash,
-                                market: flaggedItem.Proposal.market,
-                                listing_item_id: flaggedItem.ListingItem!.id
-                            } as BlacklistCreateRequest;
-
-                            // todo: remove existing Blacklists with relation to Profile
-                            return await this.blacklistService.create(blacklistListingCreateRequest).then(value => value.toJSON());
-
-                        case ProposalCategory.MARKET_VOTE:
-                            await this.marketService.destroy(flaggedItem.Market!.id);
-
-                            const blacklistMarketCreateRequest = {
-                                type: BlacklistType.MARKET,
-                                target: flaggedItem.Proposal.market,
-                                market: flaggedItem.Proposal.market
-                            } as BlacklistCreateRequest;
-
-                            // todo: remove existing Blacklists with relation to Profile
-                            return await this.blacklistService.create(blacklistMarketCreateRequest).then(value => value.toJSON());
-
-                        default:
-                            break;
-                    }
-                }
-            }
         }
     }
 }
