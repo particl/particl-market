@@ -12,15 +12,14 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('reason').notNullable();
 
+            table.integer('proposal_id').unsigned().nullable(); // todo: notNullable()?
+            table.foreign('proposal_id').references('id')
+                .inTable('proposals');
+
             table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')
                 .inTable('listing_items').onDelete('cascade');
 
-            table.integer('proposal_id').unsigned().nullable();
-            table.foreign('proposal_id').references('id')
-                .inTable('proposals');
-
-            // adding relation to markets
             table.integer('market_id').unsigned().nullable();
             table.foreign('market_id').references('id')
                 .inTable('markets');

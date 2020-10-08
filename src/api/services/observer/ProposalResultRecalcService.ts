@@ -53,12 +53,11 @@ export class ProposalResultRecalcService extends BaseObserverService {
         //      - get its latest ProposalResult
         //      - if enough time has passed since last recalculation -> call recalculateProposalResult
         //          - if ProposalCategory.ITEM_VOTE
-        //              - remove listingitems which have been voted off
-        //              - TODO: blacklist
-        //          - TODO: if ProposalCategory.MARKET_VOTE
-        //              - TODO: remove markets which have been voted off
-        //              - TODO: blacklist
-        //
+        //              - remove listingitems which have been voted off (if possible)
+        //              - blacklist the listingitem hash
+        //          - if ProposalCategory.MARKET_VOTE
+        //              - remove markets which have been voted off (if possible)
+        //              - blacklist the market hash
 
         const activeProposals: resources.Proposal[] = await this.proposalService.search(proposalSearchParams).then(value => value.toJSON());
 
@@ -70,7 +69,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
                     this.log.error('ERROR: ', reason);
                 });
 
-            // recalculate if there is no ProposalResult yet or its time to recalculate
+            // recalculate if there is no ProposalResult yet or if its time to recalculate
             if (!proposalResult || (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now())) {
 
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
@@ -86,12 +85,12 @@ export class ProposalResultRecalcService extends BaseObserverService {
     }
 
     /**
+     * todo: this does not yet consider different local profiles
      *
      * @param flaggedItemId
      * @param proposalResult
-     * @param flagOnly
      */
-    public async removeIfNeeded(flaggedItemId: number, proposalResult: resources.ProposalResult, flagOnly: boolean = false): Promise<void> {
+    public async removeIfNeeded(flaggedItemId: number, proposalResult: resources.ProposalResult): Promise<void> {
 
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
 
@@ -99,34 +98,32 @@ export class ProposalResultRecalcService extends BaseObserverService {
             await this.flaggedItemService.findOne(flaggedItemId)
                 .then(async value => {
                     const flaggedItem: resources.FlaggedItem = value.toJSON();
-
                     const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
+
                     if (shouldRemove) {
+
                         switch (proposalResult.Proposal.category) {
                             case ProposalCategory.ITEM_VOTE:
+                                // todo: the actual removal of items related to the blacklist could be a separate task
                                 await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
 
                                 const blacklistListingCreateRequest = {
                                     type: BlacklistType.LISTINGITEM,
                                     target: flaggedItem.ListingItem!.hash,
-                                    market: flaggedItem.Proposal.market,
-                                    listing_item_id: flaggedItem.ListingItem!.id
+                                    market: flaggedItem.Proposal.market
                                 } as BlacklistCreateRequest;
 
-                                // todo: remove existing Blacklists with relation to Profile
-                                return await this.blacklistService.create(blacklistListingCreateRequest).then(value => value.toJSON());
+                                return await this.blacklistService.create(blacklistListingCreateRequest).then(bl => bl.toJSON());
 
                             case ProposalCategory.MARKET_VOTE:
                                 await this.marketService.destroy(flaggedItem.Market!.id);
 
                                 const blacklistMarketCreateRequest = {
                                     type: BlacklistType.MARKET,
-                                    target: flaggedItem.Proposal.market,
-                                    market: flaggedItem.Proposal.market
+                                    target: flaggedItem.Proposal.market
                                 } as BlacklistCreateRequest;
 
-                                // todo: remove existing Blacklists with relation to Profile
-                                return await this.blacklistService.create(blacklistMarketCreateRequest).then(value => value.toJSON());
+                                return await this.blacklistService.create(blacklistMarketCreateRequest).then(bl => bl.toJSON());
 
                             default:
                                 break;

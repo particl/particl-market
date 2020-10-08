@@ -172,6 +172,16 @@ export class MarketService {
     }
 
     /**
+     * Set the removed flag
+     *
+     * @returns {Promise<void>}
+     */
+    public async setRemovedFlag(id: number, removed: boolean): Promise<void> {
+        const market: resources.Market = await this.findOne(id).then(value => value.toJSON());
+        await this.marketRepo.update(market.id, { removed });
+    }
+
+    /**
      *
      *
      * type === MARKETPLACE -> receive + publish keys are the same
@@ -209,20 +219,11 @@ export class MarketService {
     }
 
     private getHash(market: resources.Market): string {
-        const createRequest = {
-            generatedAt: market.generatedAt,
+        return ConfigurableHasher.hash({
             name: market.name,
             description: market.description,
-            type: market.type,
-            receiveKey: market.receiveKey,
-            publishKey: market.publishKey,
-            image: !_.isNil(market.Image)
-                ? {
-                    hash: market.Image.hash
-                }
-                : undefined
-        } as MarketCreateRequest;
-
-        return ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());
+            receiveAddress: market.receiveAddress,
+            publishAddress: market.publishAddress,
+        } as MarketCreateRequest, new HashableMarketCreateRequestConfig());
     }
 }

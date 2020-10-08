@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -19,6 +20,7 @@ import { ProposalResultService } from './ProposalResultService';
 import { MarketService } from './MarketService';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
+
 
 export class FlaggedItemService {
 
@@ -79,9 +81,18 @@ export class FlaggedItemService {
         await this.flaggedItemRepo.destroy(id);
     }
 
-
-    // todo: refactor
-    public async flagAsRemovedIfNeeded(id: number, proposalResult: resources.ProposalResult, vote: resources.Vote): Promise<void> {
+    /**
+     * called from VoteActionService to set the removed flag if needed after processing the incoming vote
+     * todo: this is propably unnecessary, we can do this when periodically running the new proposal results
+     *
+     * todo: setting the removed flag is also problematic with multiple profiles as not all voted to remove the listing
+     * the whole idea of removing anything before the voting is done is stupid.
+     *
+     * @param id
+     * @param proposalResult
+     * @param vote
+     */
+    public async setRemovedFlagIfNeeded(id: number, proposalResult: resources.ProposalResult, vote: resources.Vote): Promise<void> {
 
         // fetch the FlaggedItem and remove if thresholds are hit
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
@@ -93,35 +104,36 @@ export class FlaggedItemService {
 
             if (flaggedItem) {
 
-                const listingItemId = flaggedItem.ListingItem!.id;
                 const remove = vote.ProposalOption.description === ItemVote.REMOVE.toString();
                 const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
 
                 switch (proposalResult.Proposal.category) {
 
                     case ProposalCategory.ITEM_VOTE:
-                        if (shouldRemove) {
-                            // if we should remove, remove only if we voted so
-                            await this.listingItemService.setRemovedFlag(listingItemId, remove);
+                        // if this vote is "mine" lets set the removed flag to whatever the vote is for
+                        if (_.isNil(flaggedItem.ListingItem)) {
+                            return; // should not happen
                         }
 
-                        // if this vote is mine lets set/unset the removed flag
-                        // todo: this is problematic with multiple profiles, we can have multiple profiles and the one didnt vote to remove the item?
-                        const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(proposalResult.Proposal.market)
+                        const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(flaggedItem.ListingItem.market)
                             .then(value => value.toJSON());
 
                         for (const market of markets) {
                             const addressInfo = await this.coreRpcService.getAddressInfo(market.Identity.wallet, vote.voter);
-                            if (addressInfo && addressInfo.ismine) {
-                                this.log.debug('isMine: ', addressInfo.ismine);
-                                await this.listingItemService.setRemovedFlag(listingItemId, remove);
+                            if (addressInfo && addressInfo.ismine
+                                && shouldRemove
+                                && !_.isNil(flaggedItem.ListingItem)) {
+                                await this.listingItemService.setRemovedFlag(flaggedItem.ListingItem.id, remove);
                             }
                         }
 
-                        // TODO: Blacklist
                         break;
+
                     case ProposalCategory.MARKET_VOTE:
-                        // await this.marketService.setRemovedFlag(flaggedItem.Market!.id);
+                        if (shouldRemove && !_.isNil(flaggedItem.Market)) {
+                            await this.marketService.setRemovedFlag(flaggedItem.Market.id, remove);
+                        }
+
 
 
 

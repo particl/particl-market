@@ -248,7 +248,6 @@ export class VoteActionService extends BaseActionService {
         const voteMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
         // TODO: dont return undefined
-        // TODO: way too long method, needs to be refactored
 
         // get the address balance
         // TODO: balance can be checked later
@@ -303,7 +302,7 @@ export class VoteActionService extends BaseActionService {
         const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
         // after recalculating the ProposalResult, we can now flag the ListingItem/Market as removed, if needed
-        await this.flaggedItemService.flagAsRemovedIfNeeded(proposal.FlaggedItem.id, proposalResult, vote);
+        await this.flaggedItemService.setRemovedFlagIfNeeded(proposal.FlaggedItem.id, proposalResult, vote);
 
         return smsgMessage;
     }
@@ -396,10 +395,6 @@ export class VoteActionService extends BaseActionService {
             .then(value => value.toJSON());
 
         // this.log.debug('getCombinedVote(), votes:', JSON.stringify(votes, null, 2));
-
-        if (_.isEmpty(votes)) {
-            throw new MessageException('No Votes found.');
-        }
 
         const combinedVote = {
             voter: identity.address,

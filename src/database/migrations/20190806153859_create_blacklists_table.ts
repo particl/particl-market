@@ -16,10 +16,12 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('market').nullable();  // optional market to be blacklisted on
 
             // this is to easily be able to remove blacklisted listings from searches by a profile
-            table.integer('listing_item_id').unsigned().nullable();  // listingitem to blacklist
-            table.foreign('listing_item_id').references('id').inTable('listing_items').onDelete('CASCADE');
+            // for now, if there is a blacklist for listing, the listing is already gone
+            // table.integer('listing_item_id').unsigned().nullable();
+            // table.foreign('listing_item_id').references('id').inTable('listing_items').onDelete('CASCADE');
 
-            table.integer('profile_id').unsigned().nullable();  // profile to blacklist for
+            // for which profile this blacklist applies to
+            table.integer('profile_id').unsigned().nullable();
             table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());

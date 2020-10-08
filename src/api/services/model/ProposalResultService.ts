@@ -104,7 +104,7 @@ export class ProposalResultService {
      */
     public async shouldRemoveFlaggedItem(proposalResult: resources.ProposalResult, flaggedItem: resources.FlaggedItem): Promise<boolean> {
 
-        let removalPercentage = 0.1;
+        let removalPercentage = 0.1;    // default
 
         switch (proposalResult.Proposal.category) {
             case ProposalCategory.ITEM_VOTE:

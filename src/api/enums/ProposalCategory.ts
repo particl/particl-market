@@ -12,5 +12,5 @@ export enum ProposalCategory {
     PUBLIC_VOTE = 'PUBLIC_VOTE',
     ITEM_VOTE = 'ITEM_VOTE',
     MARKET_VOTE = 'MARKET_VOTE'
-
+    // IMAGE_VOTE = 'IMAGE_VOTE'
 }
