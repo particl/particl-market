@@ -32,7 +32,6 @@ import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketNotification } from '../../messages/notification/MarketNotification';
 import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
-import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { ImageService } from '../model/ImageService';
 import { MarketType } from '../../enums/MarketType';
 import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
