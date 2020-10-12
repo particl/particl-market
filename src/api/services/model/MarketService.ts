@@ -223,7 +223,7 @@ export class MarketService {
             name: market.name,
             description: market.description,
             receiveAddress: market.receiveAddress,
-            publishAddress: market.publishAddress,
+            publishAddress: market.publishAddress
         } as MarketCreateRequest, new HashableMarketCreateRequestConfig());
     }
 }

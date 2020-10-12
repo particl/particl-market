@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,6 +19,7 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { BlacklistService } from '../model/BlacklistService';
 import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
 import { BlacklistType } from '../../enums/BlacklistType';
+import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchParams';
 
 
 export class ProposalResultRecalcService extends BaseObserverService {
@@ -42,24 +44,22 @@ export class ProposalResultRecalcService extends BaseObserverService {
      */
     public async run(currentStatus: ObserverStatus): Promise<ObserverStatus> {
 
-        // return Proposals ending after Date.now()
-        const proposalSearchParams = {
-            timeStart: Date.now(),
-            timeEnd: '*'
-        } as ProposalSearchParams;
-
         //  - find all currently active Proposals
-        //  - for each Proposal
+        //  - for each active Proposal
         //      - get its latest ProposalResult
         //      - if enough time has passed since last recalculation -> call recalculateProposalResult
-        //          - if ProposalCategory.ITEM_VOTE
-        //              - remove listingitems which have been voted off (if possible)
-        //              - blacklist the listingitem hash
-        //          - if ProposalCategory.MARKET_VOTE
-        //              - remove markets which have been voted off (if possible)
-        //              - blacklist the market hash
+        //
+        //  - find all expired Proposals have no FinalProposalResult set
+        //  - for each expired Proposal
+        //       - calculate final ProposalResult
+        //          - add blacklists if needed
+        //
+        //  - remove all items matching with blacklists
 
-        const activeProposals: resources.Proposal[] = await this.proposalService.search(proposalSearchParams).then(value => value.toJSON());
+        const activeProposals: resources.Proposal[] = await this.proposalService.search({
+            // return Proposals ending after timeStart
+            timeStart: Date.now()
+        } as ProposalSearchParams).then(value => value.toJSON());
 
         for (const proposal of activeProposals) {
             // get the latest ProposalResult for the Proposal to check whether its time to recalculate it (process.env.PROPOSAL_RESULT_RECALCULATION_INTERVAL)
@@ -70,70 +70,97 @@ export class ProposalResultRecalcService extends BaseObserverService {
                 });
 
             // recalculate if there is no ProposalResult yet or if its time to recalculate
-            if (!proposalResult || (proposalResult && proposalResult.calculatedAt + this.recalculationInterval < Date.now())) {
-
+            if (!proposalResult || (proposalResult && (proposalResult.calculatedAt + this.recalculationInterval) < Date.now())) {
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
-                await this.removeIfNeeded(proposal.FlaggedItem.id, proposalResult);
-
-            } else {
-                this.log.debug('process(), skip proposal.hash: ', proposal.hash);
-                this.log.debug('process(), proposalResult.calculatedAt: ', proposalResult.calculatedAt);
             }
-        } // for
+        }
+
+        const expiredProposals: resources.Proposal[] = await this.proposalService.search({
+            // return Proposals ending before timeEnd, having no FinalProposalResult set
+            timeEnd: Date.now(),
+            hasFinalResult: false
+        } as ProposalSearchParams).then(value => value.toJSON());
+
+        const newBlacklists: resources.Blacklist[] = [];
+        for (const proposal of expiredProposals) {
+            // calculate the final ProposalResult
+            const proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+            await this.proposalService.setFinalProposalResult(proposal.id, proposalResult.id);
+
+            for (const flaggedItem of proposal.FlaggedItems) {
+                const blacklist = await this.addBlacklistAndRemoveFlagged(flaggedItem.id, proposalResult);
+                if (blacklist) {
+                    newBlacklists.push(blacklist);
+                }
+            }
+        }
+
+        this.log.debug('process(), activeProposals: ' + activeProposals.length + ', expiredProposals: ' + expiredProposals.length
+            + ', newBlacklists: ' + newBlacklists.length);
 
         return ObserverStatus.RUNNING;
     }
 
     /**
-     * todo: this does not yet consider different local profiles
      *
      * @param flaggedItemId
      * @param proposalResult
      */
-    public async removeIfNeeded(flaggedItemId: number, proposalResult: resources.ProposalResult): Promise<void> {
+    public async addBlacklistAndRemoveFlagged(flaggedItemId: number, proposalResult: resources.ProposalResult): Promise<resources.Blacklist | undefined> {
+
+        let blacklist: resources.Blacklist | undefined;
 
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
 
-            // fetch the FlaggedItem and remove if thresholds are hit
-            await this.flaggedItemService.findOne(flaggedItemId)
-                .then(async value => {
-                    const flaggedItem: resources.FlaggedItem = value.toJSON();
+            blacklist = await this.flaggedItemService.findOne(flaggedItemId)
+                .then(async valueFlagged => {
+                    const flaggedItem: resources.FlaggedItem = valueFlagged.toJSON();
                     const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
 
                     if (shouldRemove) {
 
-                        switch (proposalResult.Proposal.category) {
-                            case ProposalCategory.ITEM_VOTE:
-                                // todo: the actual removal of items related to the blacklist could be a separate task
-                                await this.listingItemService.destroy(flaggedItem.ListingItem!.id);
+                        // check if blacklist exists
+                        const type = ProposalCategory.ITEM_VOTE
+                            ? BlacklistType.LISTINGITEM
+                            : ProposalCategory.MARKET_VOTE
+                                ? BlacklistType.MARKET
+                                : undefined;
+                        const target = flaggedItem.Proposal.target;
+                        const market = flaggedItem.Proposal.market;
 
-                                const blacklistListingCreateRequest = {
-                                    type: BlacklistType.LISTINGITEM,
-                                    target: flaggedItem.ListingItem!.hash,
-                                    market: flaggedItem.Proposal.market
-                                } as BlacklistCreateRequest;
+                        const found: resources.Blacklist[] = await this.blacklistService.search({
+                            type,
+                            target,
+                            market
+                        } as BlacklistSearchParams).then(valueBL => valueBL.toJSON());
 
-                                return await this.blacklistService.create(blacklistListingCreateRequest).then(bl => bl.toJSON());
+                        if (found.length === 0) {
+                            // nothing found -> create
+                            blacklist = await this.blacklistService.create({
+                                type,
+                                target,
+                                market
+                            } as BlacklistCreateRequest).then(bl => bl.toJSON());
+                        }
 
-                            case ProposalCategory.MARKET_VOTE:
-                                await this.marketService.destroy(flaggedItem.Market!.id);
-
-                                const blacklistMarketCreateRequest = {
-                                    type: BlacklistType.MARKET,
-                                    target: flaggedItem.Proposal.market
-                                } as BlacklistCreateRequest;
-
-                                return await this.blacklistService.create(blacklistMarketCreateRequest).then(bl => bl.toJSON());
-
-                            default:
-                                break;
+                        // remove flagged items
+                        await this.flaggedItemService.destroy(flaggedItem.id);
+                        if (!_.isNil(flaggedItem.ListingItem)) {
+                            await this.listingItemService.destroy(flaggedItem.ListingItem.id);
+                        }
+                        if (!_.isNil(flaggedItem.Market)) {
+                            await this.marketService.destroy(flaggedItem.Market.id);
                         }
                     }
+                    return blacklist;
+
                 })
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
+                    return undefined;
                 });
-
         }
+
+        return undefined;
     }
 }

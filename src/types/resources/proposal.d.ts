@@ -27,7 +27,7 @@ declare module 'resources' {
 
         ProposalOptions: ProposalOption[];
         ProposalResults: ProposalResult[];
-        FlaggedItem: FlaggedItem;
+        FlaggedItems: FlaggedItem[];
 
     }
 

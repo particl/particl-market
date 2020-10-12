@@ -15,7 +15,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('submitter').notNullable();
             table.string('hash').notNullable().unique();
-            table.string('target').nullable();    // item hash
+            table.string('target').nullable();    // proposal target hash
             table.string('category').notNullable();
             table.text('title').nullable();
             table.text('description').nullable();
@@ -24,6 +24,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('posted_at').notNullable();
             table.integer('received_at').notNullable();
             table.integer('expired_at').notNullable();
+
+            table.integer('final_result_id').unsigned().nullable(); // set to final result after proposal expires
+            table.foreign('final_result_id').references('id')
+                .inTable('proposal_results');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

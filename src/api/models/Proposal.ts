@@ -22,9 +22,10 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ProposalResults',
         'ProposalResults.ProposalOptionResults',
         'ProposalResults.ProposalOptionResults.ProposalOption',
-        'FlaggedItem',
-        'FlaggedItem.ListingItem',
-        'FlaggedItem.Market'
+        'FlaggedItems',
+        'FlaggedItems.ListingItem',
+        'FlaggedItems.Market',
+        'FinalProposalResult'
     ];
 
     /**
@@ -64,6 +65,13 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                     qb.where('proposals.time_start', '<', options.timeEnd + 1);
                     qb.where('proposals.expired_at', '>', options.timeStart - 1);
                 }
+
+                if (options.hasFinalResult) {
+                    qb.whereNotNull('proposals.final_result_id');
+                } else {
+                    qb.whereNull('proposals.final_result_id');
+                }
+
                 // qb.debug(true);
 
             })
@@ -152,8 +160,13 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         return this.hasMany(ProposalResult, 'proposal_id', 'id');
     }
 
-    public FlaggedItem(): FlaggedItem {
-        return this.hasOne(FlaggedItem);
+    public FlaggedItems(): Collection<FlaggedItem> {
+        return this.hasMany(FlaggedItem, 'proposal_id', 'id');
+    }
+
+    // set to the final ProposalResult after Proposal expires
+    public FinalProposalResult(): ProposalResult {
+        return this.belongsTo(ProposalResult, 'final_result_id', 'id');
     }
 
 }

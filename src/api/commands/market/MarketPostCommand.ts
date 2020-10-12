@@ -28,14 +28,9 @@ import { MarketAddActionService } from '../../services/action/MarketAddActionSer
 import { MarketImageAddActionService } from '../../services/action/MarketImageAddActionService';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
 import { MarketImageAddRequest } from '../../requests/action/MarketImageAddRequest';
-import {
-    BooleanValidationRule,
-    CommandParamValidationRules,
-    IdValidationRule,
-    MessageRetentionValidationRule,
-    ParamValidationRule
-} from '../CommandParamValidation';
-import {OutputType} from 'omp-lib/dist/interfaces/crypto';
+import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, MessageRetentionValidationRule,
+    ParamValidationRule } from '../CommandParamValidation';
+import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 
 
 export class MarketPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {

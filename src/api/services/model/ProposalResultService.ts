@@ -18,6 +18,7 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
 
+
 export class ProposalResultService {
 
     public log: LoggerType;
@@ -104,23 +105,17 @@ export class ProposalResultService {
      */
     public async shouldRemoveFlaggedItem(proposalResult: resources.ProposalResult, flaggedItem: resources.FlaggedItem): Promise<boolean> {
 
-        let removalPercentage = 0.1;    // default
-
-        switch (proposalResult.Proposal.category) {
-            case ProposalCategory.ITEM_VOTE:
-                // we dont want to remove ListingItems that have related Bids
-                if (!_.isEmpty(flaggedItem.ListingItem!.Bids)) {
-                    return false;
-                }
-                removalPercentage = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE);
-                break;
-            case ProposalCategory.MARKET_VOTE:
-                removalPercentage = parseFloat(process.env.MARKET_REMOVE_PERCENTAGE);
-                break;
-            case ProposalCategory.PUBLIC_VOTE:
-            default:
-                return false;
+        if (ProposalCategory.ITEM_VOTE === proposalResult.Proposal.category
+            && !_.isEmpty(flaggedItem.ListingItem!.Bids)) {
+            // we dont want to remove ListingItems that have related Bids
+            return false;
         }
+
+        const removalPercentage = ProposalCategory.ITEM_VOTE === proposalResult.Proposal.category
+            ? parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE)
+            : ProposalCategory.MARKET_VOTE === proposalResult.Proposal.category
+                ? parseFloat(process.env.MARKET_REMOVE_PERCENTAGE)
+                : 0.1;    // default
 
         const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();

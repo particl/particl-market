@@ -35,13 +35,7 @@ export class ProposalAddMessageFactory extends BaseMessageFactory {
      */
     public async get(actionRequest: ProposalAddRequest): Promise<MarketplaceMessage> {
 
-        // this.log.debug('actionRequest: ', JSON.stringify(actionRequest, null, 2));
-
         const optionsList: resources.ProposalOption[] = this.createOptionsList(actionRequest.options);
-
-        if (_.isEmpty(actionRequest.category)) {
-            throw new MissingParamException('category');
-        }
 
         const message: ProposalAddMessage = {
             type: GovernanceAction.MPA_PROPOSAL_ADD,

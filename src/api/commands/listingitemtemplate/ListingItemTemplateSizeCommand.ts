@@ -82,7 +82,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
                 toAddress: market.receiveAddress,
                 daysRetention: 1,
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             listingItem: listingItemTemplate,
             sellerAddress: market.Identity.address,

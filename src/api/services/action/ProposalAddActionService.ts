@@ -12,14 +12,12 @@ import { SmsgService } from '../SmsgService';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { EventEmitter } from 'events';
 import { ProposalService } from '../model/ProposalService';
-import { MessageException } from '../../exceptions/MessageException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddMessage } from '../../messages/action/ProposalAddMessage';
 import { ListingItemService } from '../model/ListingItemService';
 import { SmsgMessageService } from '../model/SmsgMessageService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
-import { FlaggedItemCreateRequest } from '../../requests/model/FlaggedItemCreateRequest';
 import { VoteActionService } from './VoteActionService';
 import { ProposalAddMessageFactory } from '../../factories/message/ProposalAddMessageFactory';
 import { ProposalFactory } from '../../factories/model/ProposalFactory';
@@ -34,6 +32,7 @@ import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ProposalNotification } from '../../messages/notification/ProposalNotification';
+
 
 export class ProposalAddActionService extends BaseActionService {
 
@@ -121,7 +120,6 @@ export class ProposalAddActionService extends BaseActionService {
 
         // this.log.debug('processProposal(), proposalAddMessage:', JSON.stringify(proposalAddMessage, null, 2));
 
-        // if Proposal doesnt exist yet, create it
         const proposal: resources.Proposal = await this.proposalService.findOneByHash(proposalAddMessage.hash)
             .then(value => value.toJSON())
             .catch(async reason => {
@@ -131,19 +129,16 @@ export class ProposalAddActionService extends BaseActionService {
                     smsgMessage
                 } as ProposalCreateParams);
 
-                const createdProposal: resources.Proposal = await this.proposalService.create(proposalRequest).then(value => value.toJSON());
+                return await this.proposalService.create(proposalRequest).then(async value => {
+                    const createdProposal: resources.Proposal = value.toJSON();
 
-                // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
-                if (ProposalCategory.ITEM_VOTE === createdProposal.category || ProposalCategory.MARKET_VOTE === createdProposal.category) {
-                    await this.createFlaggedItemForProposal(createdProposal);
-                    this.log.debug('processProposal(), created FlaggedItem');
-                }
+                    await this.flaggedItemService.createFlaggedItemsForProposal(createdProposal);
+                    await this.proposalService.createEmptyProposalResult(createdProposal);
 
-                // also create the first ProposalResult
-                await this.proposalService.createEmptyProposalResult(createdProposal);
-                this.log.debug('processProposal(), created ProposalResult');
+                    // removed flag set/blacklists created with votes
 
-                return await this.proposalService.findOne(createdProposal.id).then(value => value.toJSON());
+                    return await this.proposalService.findOne(createdProposal.id).then(result => result.toJSON());
+                });
             });
 
         // in case of INCOMING message, update the times
@@ -152,9 +147,8 @@ export class ProposalAddActionService extends BaseActionService {
             await this.proposalService.updateTimes(proposal.id, smsgMessage.sent, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
                 .then(value => value.toJSON());
             this.log.debug('processProposal(), proposal updated');
-        } else {
-            // called from send(), we already created the Proposal so nothing else needs to be done
         }
+
         return smsgMessage;
     }
 
@@ -191,60 +185,6 @@ export class ProposalAddActionService extends BaseActionService {
             return notification;
         }
         return undefined;
-    }
-
-    /**
-     *
-     * @param proposal
-     */
-    public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
-
-        let listingItem: resources.ListingItem;
-        let markets: resources.Market[];
-
-        const flaggedItemCreateRequest = {
-            proposal_id: proposal.id,
-            reason: proposal.description
-        } as FlaggedItemCreateRequest;
-
-        if (ProposalCategory.ITEM_VOTE === proposal.category) {
-            listingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(proposal.title, proposal.market).then(value => value.toJSON());
-
-            // this is called from processProposal, so FlaggedItem could already exist for the one who flagged it
-            if (_.isEmpty(listingItem.FlaggedItem)) {
-                // only create if FlaggedItem doesnt already exist
-                flaggedItemCreateRequest.listing_item_id = listingItem.id;
-                return await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-            } else {
-                // else just return the existing
-                return await this.flaggedItemService.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
-            }
-        } else if (ProposalCategory.MARKET_VOTE === proposal.category) {
-
-            const createdFlaggedItems: resources.FlaggedItem[] = [];
-            markets = await this.marketService.findAllByReceiveAddress(proposal.title).then(value => value.toJSON());
-            this.log.debug('markets: ', JSON.stringify(markets, null, 2));
-
-            // create FlaggedItem for all the Markets
-            for (const market of markets) {
-                let flaggedItem: resources.FlaggedItem;
-                if (_.isEmpty(market.FlaggedItem)) {
-                    // only create if FlaggedItem doesnt already exist
-                    flaggedItemCreateRequest.market_id = market.id;
-                    flaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest).then(value => value.toJSON());
-                } else {
-                    // else just return the existing
-                    flaggedItem = await this.flaggedItemService.findOne(market.FlaggedItem.id).then(value => value.toJSON());
-                }
-                createdFlaggedItems.push(flaggedItem);
-            }
-
-            // the result is not used for anything so just return the [0]
-            return createdFlaggedItems[0];
-
-        } else {
-            throw new MessageException('Unsupported ProposalCategory.');
-        }
     }
 
 }

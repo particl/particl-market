@@ -45,8 +45,6 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
     /**
      * handles the received VoteMessage and returns SmsgMessageStatus as a result
      *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
-     *
      * @param event
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {

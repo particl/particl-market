@@ -126,6 +126,7 @@ import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig
 import { CommentFactory } from '../factories/model/CommentFactory';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
 import { VoteTicket } from '../factories/message/VoteMessageFactory';
+import { FlaggedItemService } from './model/FlaggedItemService';
 
 
 export class TestDataService {
@@ -156,6 +157,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.BlacklistService) private blacklistService: BlacklistService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
@@ -984,7 +986,7 @@ export class TestDataService {
 
             // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
             if (ProposalCategory.ITEM_VOTE === proposal.category || ProposalCategory.MARKET_VOTE === proposal.category) {
-                await this.proposalAddActionService.createFlaggedItemForProposal(proposal);
+                await this.flaggedItemService.createFlaggedItemsForProposal(proposal);
                 this.log.debug('created FlaggedItem');
             }
 

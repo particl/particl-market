@@ -12,10 +12,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { OrderItemService } from '../../services/model/OrderItemService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { MessageException } from '../../exceptions/MessageException';
@@ -26,7 +24,7 @@ import { MPActionExtended } from '../../enums/MPActionExtended';
 import { OrderItemShipActionService } from '../../services/action/OrderItemShipActionService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
+
 
 export class OrderItemShipCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -82,7 +80,7 @@ export class OrderItemShipCommand extends BaseCommand implements RpcCommandInter
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid,
             memo

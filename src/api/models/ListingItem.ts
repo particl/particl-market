@@ -18,6 +18,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../enums/SearchOrderField';
+import {Blacklist} from './Blacklist';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -54,9 +55,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'FavoriteItems.Profile',
         'FlaggedItem',
         'FlaggedItem.Proposal',
-        'FlaggedItem.Proposal.ProposalOptions'
+        'FlaggedItem.Proposal.ProposalOptions',
         // 'FlaggedItem.Proposal.ProposalOptions.Votes'
         // 'FlaggedItem.Proposal.ProposalResults'
+        'Blacklists'
     ];
 
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
@@ -328,4 +330,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public ShoppingCartItem(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }
+
+    public Blacklists(): Collection<Blacklist> {
+        return this.hasMany(Blacklist, 'listing_item_id', 'id');
+    }
+
 }

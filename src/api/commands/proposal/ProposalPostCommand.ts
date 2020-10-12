@@ -29,7 +29,6 @@ import {
     ParamValidationRule,
     StringValidationRule
 } from '../CommandParamValidation';
-import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -91,9 +90,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
                 fromAddress: market.Identity.address,      // send from the given identity
                 toAddress: market.receiveAddress,
                 paid: false,
-                daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
-                estimateFee: false,
-                anonFee: true
+                daysRetention: daysRetention || parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
+                estimateFee,
+                anonFee: false
             } as SmsgSendParams,
             sender: market.Identity,                // todo: we could use sendParams.from?
             market,

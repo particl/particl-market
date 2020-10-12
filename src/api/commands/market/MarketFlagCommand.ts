@@ -23,7 +23,9 @@ import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
+import { ProposalService } from '../../services/model/ProposalService';
+import { VoteRequest } from '../../requests/action/VoteRequest';
+import {VoteActionService} from '../../services/action/VoteActionService';
 
 
 export class MarketFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -32,7 +34,9 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService
+        @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public proposalAddActionService: ProposalAddActionService,
+        @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public voteActionService: VoteActionService
     ) {
         super(Commands.MARKET_FLAG);
         this.log = new Logger(__filename);
@@ -65,28 +69,48 @@ export class MarketFlagCommand extends BaseCommand implements RpcCommandInterfac
         const title = market.receiveAddress;
         const description = data.params[2];
         const daysRetention = data.params[3];
-        const options: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
 
         const postRequest = {
             sendParams: {
                 wallet: identity.wallet,
                 fromAddress: identity.address,
                 toAddress: market.receiveAddress,
-                paid: false,
                 daysRetention,
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             sender: identity,
             market,
-            category: ProposalCategory.MARKET_VOTE,
+            category: ProposalCategory.MARKET_VOTE,  // type should always be MARKET_VOTE when using this command
             title,
             description,
-            options,
+            options: [ItemVote.KEEP, ItemVote.REMOVE] as string[],
             target: market.receiveAddress
         } as ProposalAddRequest;
 
-        return await this.proposalAddActionService.post(postRequest);
+        // todo: cleanup this duplicate code
+
+        const smsgSendResponse: SmsgSendResponse = await this.proposalAddActionService.post(postRequest);
+
+        const proposal: resources.Proposal = await this.proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
+        const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+            return o.description === ItemVote.REMOVE;
+        });
+
+        // prepare the VoteRequest for sending votes
+        const voteRequest = {
+            sendParams: postRequest.sendParams,
+            sender: postRequest.sender,          // Identity
+            market: postRequest.market,
+            proposal,
+            proposalOption
+        } as VoteRequest;
+
+        // then post the Votes for removal (+create Blacklist)
+        smsgSendResponse.childResults = await this.voteActionService.vote(voteRequest);
+
+        return smsgSendResponse;
+
     }
 
     /**

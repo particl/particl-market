@@ -5,23 +5,22 @@
 import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { SearchOrder } from '../../enums/SearchOrder';
-import * as _ from 'lodash';
-import { ProposalCategory } from '../../enums/ProposalCategory';
+import { BlacklistType } from '../../enums/BlacklistType';
+
 
 // tslint:disable:variable-name
-export class ProposalSearchParams extends RequestBody {
+export class BlacklistSearchParams extends RequestBody {
 
     @IsEnum(SearchOrder)
     public order: SearchOrder = SearchOrder.ASC;
 
-    @IsEnum(ProposalCategory)
-    public category: ProposalCategory;
-
+    @IsEnum(BlacklistType)
+    public type: BlacklistType;
+    public target: string;
     public market: string;
 
-    public timeStart: number | string;
-    public timeEnd: number | string;
+    public profileId: number;
+    public listingItemId: number;
 
-    public hasFinalResult: boolean;
 }
 // tslint:enable:variable-name

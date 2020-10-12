@@ -36,7 +36,6 @@ import {
     IdValidationRule,
     ParamValidationRule
 } from '../CommandParamValidation';
-import {BidRejectRequest} from '../../requests/action/BidRejectRequest';
 
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -123,7 +122,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             listingItem,
             market,

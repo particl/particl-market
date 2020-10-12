@@ -25,6 +25,7 @@ import { VoteService } from './VoteService';
 import { VoteUpdateRequest } from '../../requests/model/VoteUpdateRequest';
 import { MarketService } from './MarketService';
 
+
 export class ProposalService {
 
     public log: LoggerType;
@@ -43,9 +44,7 @@ export class ProposalService {
     }
 
     public async search(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        const result = await this.proposalRepo.search(options, withRelated);
-        // this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
-        return result;
+        return await this.proposalRepo.search(options, withRelated);
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
@@ -167,17 +166,6 @@ export class ProposalService {
         await this.proposalRepo.destroy(id);
     }
 
-/*
-    // there should be no need for this anymore
-    public async updateMsgId(hash: string, msgid: string): Promise<Proposal> {
-        let proposal = await this.findOneByHash(hash, false);
-        proposal.Msgid = msgid;
-        proposal =  await this.proposalRepo.update(proposal.Id, proposal.toJSON());
-
-        // finally find and return the created proposal
-        return await this.findOne(proposal.Id, true);
-    }
-*/
 
     /**
      * creates empty ProposalResult for the Proposal
@@ -293,8 +281,7 @@ export class ProposalService {
             // this.log.debug('recalculateProposalResult(), updatedProposalOptionResult: ', JSON.stringify(updatedProposalOptionResult, null, 2));
         }
 
-        proposalResult = await this.proposalResultService.findOne(proposalResult.id)
-            .then(value => value.toJSON());
+        proposalResult = await this.proposalResultService.findOne(proposalResult.id).then(value => value.toJSON());
 
         // this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
         // this.log.debug('recalculateProposalResult(), proposal: ' + proposalResult.id);
@@ -302,6 +289,18 @@ export class ProposalService {
             this.log.debug('recalculateProposalResult(), proposal: ' + proposalOptionResult.ProposalOption.description + ': ' + proposalOptionResult.weight);
         }
         return proposalResult;
+    }
+
+    /**
+     *
+     * @param proposalId
+     * @param proposalResultId
+     */
+    public async setFinalProposalResult(proposalId: number, proposalResultId: number): Promise<Proposal> {
+        const proposal: Proposal = await this.findOne(proposalId, false);
+        proposal.set('finalResultId', proposalResultId);
+        await this.proposalRepo.update(proposalId, proposal.toJSON());
+        return await this.findOne(proposalId);
     }
 
 }

@@ -24,7 +24,6 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
-import {BidAcceptRequest} from '../../requests/action/BidAcceptRequest';
 
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -76,7 +75,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid
         } as BidCancelRequest;
