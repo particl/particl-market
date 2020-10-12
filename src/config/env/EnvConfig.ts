@@ -63,6 +63,7 @@ export class EnvConfig {
         MARKETS_EXPIRED_INTERVAL: 60,                   // minutes
         MARKET_REMOVE_PERCENTAGE: 0.1,
         PROPOSAL_RESULT_RECALCULATION_INTERVAL: 30,     // minutes
+        PROPOSALS_EXPIRED_INTERVAL: 65,                 // minutes
 
         // https://github.com/particl/particl-core/blob/master/src/smsg/smessage.h#L78
         SMSG_MAX_MSG_BYTES_PAID: 512 * 1024,

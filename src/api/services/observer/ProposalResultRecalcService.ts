@@ -25,7 +25,7 @@ import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchPara
 export class ProposalResultRecalcService extends BaseObserverService {
 
     // interval to recalculate ProposalResults in milliseconds
-    private recalculationInterval = process.env.PROPOSAL_RESULT_RECALCULATION_INTERVAL * 60 * 1000;
+    private recalculationWaitInterval = process.env.PROPOSAL_RESULT_RECALCULATION_WAIT_INTERVAL * 60 * 1000;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -36,7 +36,8 @@ export class ProposalResultRecalcService extends BaseObserverService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalResultService) public proposalResultService: ProposalResultService
     ) {
-        super(__filename, 60 * 1000, Logger);
+        // run every minute
+        super(__filename, process.env.PROPOSAL_RESULT_RECALCULATION_INTERVAL * 60 * 1000, Logger);
     }
 
     /**
@@ -70,7 +71,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
                 });
 
             // recalculate if there is no ProposalResult yet or if its time to recalculate
-            if (!proposalResult || (proposalResult && (proposalResult.calculatedAt + this.recalculationInterval) < Date.now())) {
+            if (!proposalResult || (proposalResult && (proposalResult.calculatedAt + this.recalculationWaitInterval) < Date.now())) {
                 proposalResult = await this.proposalService.recalculateProposalResult(proposal);
             }
         }

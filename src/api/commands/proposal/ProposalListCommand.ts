@@ -82,8 +82,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      *
-     * list * 100 -> return all proposals which ended before block 100
-     * list 100 * -> return all proposals ending after block 100
+     * list * 100 -> return all proposals which ended before 100
+     * list 100 * -> return all proposals ending after 100
      * list 100 200 -> return all which are active and closed between 100 200
      *
      * data.params[]:

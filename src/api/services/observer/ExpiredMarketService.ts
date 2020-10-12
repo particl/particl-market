@@ -29,12 +29,10 @@ export class ExpiredMarketService extends BaseObserverService {
 
         const markets: resources.Market[] = await this.marketService.findAllExpired().then(value => value.toJSON());
         for (const market of markets) {
-            if (market.expiredAt <= Date.now()) {
-                await this.marketService.destroy(market.id)
-                    .catch(reason => {
-                        this.log.error('Failed to remove expired Market (' + market.hash + '): ', reason);
-                    });
-            }
+            await this.marketService.destroy(market.id)
+                .catch(reason => {
+                    this.log.error('Failed to remove expired Market (' + market.hash + '): ', reason);
+                });
         }
 
         return ObserverStatus.RUNNING;

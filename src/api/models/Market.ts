@@ -72,7 +72,7 @@ export class Market extends Bookshelf.Model<Market> {
         const collection = Market.forge<Model<Market>>()
             .query(qb => {
                 qb.where('expired_at', '<=', Date.now());
-                qb.whereNull('id');
+                qb.whereNull('profile_id');
             });
         return collection.fetchAll();
     }
