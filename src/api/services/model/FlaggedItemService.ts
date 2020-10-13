@@ -154,7 +154,7 @@ export class FlaggedItemService {
 
         // fetch the FlaggedItem and remove if thresholds are hit
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
-            const flaggedItem: resources.FlaggedItem = await this.findOne(id)
+            const flaggedItem: resources.FlaggedItem = await this.findOne(id, true)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);

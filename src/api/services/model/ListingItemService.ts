@@ -312,18 +312,12 @@ export class ListingItemService {
             || !_.isEmpty(listingItem.FavoriteItems)
             || !_.isEmpty(listingItem.ShoppingCartItem)) {
             // Prevent ListingItems with associated Bids or FavoriteItems or ShoppingCartItems from being removed
-            return;
-        }
-
-        // Temporarily prevent deletion of an ListingItem still stuck in the cart
-        const shoppingCartItems = await this.shoppingCartItemService.findAllByListingItem(listingItem.id);
-        if (shoppingCartItems.length > 0) {
-            this.log.debug('destroy(), skipping ListingItem (still in cart): ', listingItem.id);
+            // todo: is there reason why we aren't throwing here?
             return;
         }
 
         // Comments dont have a hard link to ListinItems
-        // TODO: we might not want to delete Comments just yet since the LstingItem might get relisted
+        // TODO: we might not want to delete Comments just yet since the ListingItem might get relisted
         const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {

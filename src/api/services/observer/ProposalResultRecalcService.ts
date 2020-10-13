@@ -113,7 +113,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
 
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
 
-            blacklist = await this.flaggedItemService.findOne(flaggedItemId)
+            blacklist = await this.flaggedItemService.findOne(flaggedItemId, true)
                 .then(async valueFlagged => {
                     const flaggedItem: resources.FlaggedItem = valueFlagged.toJSON();
                     const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
