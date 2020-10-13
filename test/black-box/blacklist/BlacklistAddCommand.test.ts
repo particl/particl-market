@@ -2,20 +2,27 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * from 'jest';
+import * as _ from 'lodash';
 import * as resources from 'resources';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Commands} from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
-import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { MarketType } from '../../../src/api/enums/MarketType';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import { MarketRegion } from '../../../src/api/enums/MarketRegion';
+import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import {ListingItemSearchOrderField} from '../../../src/api/enums/SearchOrderField';
+import {CreatableModel} from '../../../src/api/enums/CreatableModel';
+import {GenerateListingItemTemplateParams} from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
+import {BlacklistType} from '../../../src/api/enums/BlacklistType';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
-describe('ListingItemFlagCommand', () => {
+
+describe('BlacklistAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -24,6 +31,10 @@ describe('ListingItemFlagCommand', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
+
+    const blacklistCommand = Commands.BLACKLIST_ROOT.commandName;
+    const blacklistAddCommand = Commands.BLACKLIST_ADD.commandName;
+    const blacklistListCommand = Commands.BLACKLIST_LIST.commandName;
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemFlagCommand = Commands.ITEM_FLAG.commandName;
@@ -42,12 +53,13 @@ describe('ListingItemFlagCommand', () => {
     let randomCategoryOnSellerNode: resources.ItemCategory;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
 
+    let blacklists: resources.Blacklist[];
+
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const SEARCHORDER = SearchOrder.ASC;
     const LISTINGITEM_SEARCHORDERFIELD = ListingItemSearchOrderField.CREATED_AT;
     const DAYS_RETENTION = 2;
-
     let sent = false;
 
     beforeAll(async () => {
@@ -100,6 +112,7 @@ describe('ListingItemFlagCommand', () => {
 
     });
 
+
     test('Should post MPA_LISTING_ADD from SELLER node', async () => {
 
         log.debug('========================================================================================');
@@ -135,6 +148,7 @@ describe('ListingItemFlagCommand', () => {
         log.debug('========================================================================================');
     });
 
+
     test('Should have updated ListingItemTemplate hash on SELLER node', async () => {
         // sending should have succeeded for this test to work
         expect(sent).toBeTruthy();
@@ -147,6 +161,7 @@ describe('ListingItemFlagCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
         expect(listingItemTemplateOnSellerNode.hash).toBeDefined();
     });
+
 
     test('Should have received MPA_LISTING_ADD on BUYER node', async () => {
 
@@ -190,114 +205,80 @@ describe('ListingItemFlagCommand', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should fail because missing listingItemId', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand]);
+
+    test('Should fail because missing type', async () => {
+        const res = await testUtilSellerNode.rpc(blacklistCommand, [blacklistAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('listingItemId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('type').getMessage());
     });
 
-    test('Should fail because missing identityId', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            listingItemReceivedOnBuyerNode.id
+    test('Should fail because missing target', async () => {
+        const res = await testUtilSellerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            BlacklistType.LISTINGITEM
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new MissingParamException('identityId').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('target').getMessage());
     });
 
-    test('Should fail because invalid listingItemId', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            'INVALID',
-            buyerProfile.id
+    test('Should fail because invalid type', async () => {
+
+        const res: any = await testUtilSellerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            false,
+            'target'
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('listingItemId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('type', 'string').getMessage());
     });
 
-    test('Should fail because invalid identityId (string)', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            listingItemReceivedOnBuyerNode.id,
-            'INVALID-PROFILE-ID'
+    test('Should fail because invalid target', async () => {
+
+        const res: any = await testUtilSellerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            BlacklistType.LISTINGITEM,
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('identityId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('target', 'string').getMessage());
     });
 
-    test('Should fail because Identity not found', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            listingItemReceivedOnBuyerNode.id,
-            0
+    test('Should fail because missing marketId', async () => {
+        const res = await testUtilSellerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            BlacklistType.LISTINGITEM,
+            'target'
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new ModelNotFoundException('Identity').getMessage());
+        expect(res.error.error.message).toBe(new MissingParamException('marketId').getMessage());
     });
 
     test('Should fail because ListingItem not found', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            0,
-            buyerProfile.id
+        const res = await testUtilBuyerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            BlacklistType.LISTINGITEM,
+            'target',
+            buyerMarket.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
     });
 
-    test('Should get empty FlaggedItem relation for the ListingItem, because ListingItem is not flagged yet', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemGetCommand,
-            listingItemReceivedOnBuyerNode.id
+    test('Should add a Blacklist for ListingItem hash', async () => {
+        const res = await testUtilBuyerNode.rpc(blacklistCommand, [blacklistAddCommand,
+            BlacklistType.LISTINGITEM,
+            listingItemReceivedOnBuyerNode.hash,
+            buyerMarket.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.FlaggedItem).toMatchObject({});
-    });
+        const result: resources.Blacklist = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        expect(result.type).toBe(BlacklistType.LISTINGITEM);
+        expect(result.target).toBe(listingItemReceivedOnBuyerNode.hash);
+        expect(result.market).toBe(buyerMarket.receiveAddress);
 
-    test('Should flag the ListingItem using listingItemId and identityId', async () => {
-        const response = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            listingItemReceivedOnBuyerNode.id,
-            buyerMarket.Identity.id
-        ]);
-        response.expectJson();
-        response.expectStatusCode(200);
-
-        // make sure we got the expected result from posting the proposal
-        const result: any = response.getBody()['result'];
-        expect(result.result).toBe('Sent.');
-
-        log.debug('==> PROPOSAL SENT.');
-
-    }, 600000); // timeout to 600s
-
-    test('Should have flagged the ListingItem', async () => {
-        const response = await testUtilBuyerNode.rpcWaitFor(itemCommand, [itemGetCommand,
-                listingItemReceivedOnBuyerNode.id
-            ],
-            8 * 60,
-            200,
-            'FlaggedItem.reason',
-            'This ListingItem should be removed.'
-        );
-        response.expectJson();
-        response.expectStatusCode(200);
-
-        const item: resources.ListingItem = response.getBody()['result'];
-        // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-
-        expect(item.FlaggedItem.Proposal.title).toBe(listingItemReceivedOnBuyerNode.hash);
-    }, 600000); // timeout to 600s
-
-    test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
-        const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
-            listingItemReceivedOnBuyerNode.id,
-            buyerMarket.Identity.id
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
 
 });
