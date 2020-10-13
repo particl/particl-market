@@ -17,6 +17,7 @@ import { ProposalResultUpdateRequest } from '../../requests/model/ProposalResult
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
+import { ShoppingCartItemService } from './ShoppingCartItemService';
 
 
 export class ProposalResultService {
@@ -25,6 +26,7 @@ export class ProposalResultService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) public shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalResultRepository) public proposalResultRepo: ProposalResultRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -106,8 +108,10 @@ export class ProposalResultService {
     public async shouldRemoveFlaggedItem(proposalResult: resources.ProposalResult, flaggedItem: resources.FlaggedItem): Promise<boolean> {
 
         if (ProposalCategory.ITEM_VOTE === proposalResult.Proposal.category
-            && !_.isEmpty(flaggedItem.ListingItem!.Bids)) {
-            // we dont want to remove ListingItems that have related Bids
+            && (!_.isEmpty(flaggedItem.ListingItem!.Bids)
+                || !_.isEmpty(flaggedItem.ListingItem!.FavoriteItems)
+                || !_.isEmpty(flaggedItem.ListingItem!.ShoppingCartItem))) {
+            // we dont want to remove ListingItems that have related Bids or FavoriteItems or ShoppingCartItems
             return false;
         }
 

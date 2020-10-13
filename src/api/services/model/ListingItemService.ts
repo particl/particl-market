@@ -28,6 +28,8 @@ import { CommentService } from './CommentService';
 import { CommentType } from '../../enums/CommentType';
 import { ImageService } from './ImageService';
 import { ShoppingCartItemService } from './ShoppingCartItemService';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+
 
 export class ListingItemService {
 
@@ -306,15 +308,17 @@ export class ListingItemService {
 
         const listingItem: resources.ListingItem = await this.findOne(id, true).then(value => value.toJSON());
 
-        if (listingItem.Bids.length > 0) {
-            // Prevent listings with associated bids from being removed
+        if (!_.isEmpty(listingItem.Bids)
+            || !_.isEmpty(listingItem.FavoriteItems)
+            || !_.isEmpty(listingItem.ShoppingCartItem)) {
+            // Prevent ListingItems with associated Bids or FavoriteItems or ShoppingCartItems from being removed
             return;
         }
 
-        // Temporarily prevent deletion of an item still stuck in the cart
+        // Temporarily prevent deletion of an ListingItem still stuck in the cart
         const shoppingCartItems = await this.shoppingCartItemService.findAllByListingItem(listingItem.id);
         if (shoppingCartItems.length > 0) {
-            this.log.debug('destroy(), skipping listing item (item still in cart): ', listingItem.id);
+            this.log.debug('destroy(), skipping ListingItem (still in cart): ', listingItem.id);
             return;
         }
 
@@ -375,7 +379,7 @@ export class ListingItemService {
      * @returns {Promise<any>}
      */
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
-        return await _.find(objectArray, (object) => {
+        return _.find(objectArray, (object) => {
             return ( object[fieldName] === value );
         });
     }

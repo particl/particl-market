@@ -327,6 +327,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.hasOne(FlaggedItem);
     }
 
+    // todo: ShoppingCartItems
     public ShoppingCartItem(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }

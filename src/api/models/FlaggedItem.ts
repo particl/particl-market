@@ -7,22 +7,19 @@ import { ListingItem } from './ListingItem';
 import { Proposal } from './Proposal';
 import { Market } from './Market';
 
+
 export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
     public static RELATIONS = [
         'ListingItem',
+        'ListingItem.FavoriteItems',
+        'ListingItem.ShoppingCartItem',
         'Proposal',
         'Market'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FlaggedItem> {
-        if (withRelated) {
-            return await FlaggedItem.where<FlaggedItem>({ id: value }).fetch({
-                withRelated: this.RELATIONS
-            });
-        } else {
-            return await FlaggedItem.where<FlaggedItem>({ id: value }).fetch();
-        }
+        return FlaggedItem.where<FlaggedItem>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'flagged_items'; }
