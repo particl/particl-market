@@ -31,7 +31,7 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
             .query(qb => {
 
                 if (options.type) {
-                    qb.where('blacklists.category', '=', options.type.toString());
+                    qb.where('blacklists.type', '=', options.type.toString());
                 }
 
                 if (options.target) {

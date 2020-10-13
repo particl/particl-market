@@ -144,6 +144,7 @@ import { CommentGetCommand } from '../commands/comment/CommentGetCommand';
 import { CommentCountCommand } from '../commands/comment/CommentCountCommand';
 import { BlacklistListCommand } from '../commands/blacklist/BlacklistListCommand';
 import { BlacklistRootCommand } from '../commands/blacklist/BlacklistRootCommand';
+import { BlacklistAddCommand } from '../commands/blacklist/BlacklistAddCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -315,6 +316,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.identity.IdentityListCommand) private identityListCommand: IdentityListCommand,
         @inject(Types.Command) @named(Targets.Command.identity.IdentityRootCommand) private identityRootCommand: IdentityRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistAddCommand) private blacklistAddCommand: BlacklistAddCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistListCommand) private blacklistListCommand: BlacklistListCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistRootCommand) private blacklistRootCommand: BlacklistRootCommand,
 
@@ -491,6 +493,7 @@ export class RpcCommandFactory {
         this.commands.push(identityListCommand);
         this.commands.push(identityRootCommand);
 
+        this.commands.push(blacklistAddCommand);
         this.commands.push(blacklistListCommand);
         this.commands.push(blacklistRootCommand);
 
