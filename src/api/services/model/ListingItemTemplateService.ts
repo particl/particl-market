@@ -561,7 +561,8 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
                     title: templateToClone.ItemInformation.title,
                     shortDescription: templateToClone.ItemInformation.shortDescription,
                     longDescription: templateToClone.ItemInformation.longDescription,
-                    item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
+                    // for now, we are not cloning the categories
+                    // item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
                     shippingDestinations,
                     images,
                     itemLocation: templateToClone.ItemInformation.ItemLocation

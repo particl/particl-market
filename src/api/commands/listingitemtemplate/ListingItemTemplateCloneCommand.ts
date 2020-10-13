@@ -22,8 +22,6 @@ import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } fr
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
-    public debug = true;
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
@@ -31,6 +29,8 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     ) {
         super(Commands.TEMPLATE_CLONE);
         this.log = new Logger(__filename);
+
+        this.debug = true;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
