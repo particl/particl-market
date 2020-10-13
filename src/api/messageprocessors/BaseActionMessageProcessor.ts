@@ -17,6 +17,12 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { unmanaged } from 'inversify';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import { MPActionExtended } from '../enums/MPActionExtended';
+import {ListingItemAddActionService} from '../services/action/ListingItemAddActionService';
+import {BaseActionService} from '../services/BaseActionService';
+
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -50,6 +56,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
      * @param event
      */
     public abstract async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus>;
+
 
     /**
      * - validate the received MarketplaceMessage

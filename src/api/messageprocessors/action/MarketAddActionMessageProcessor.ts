@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../../constants';
@@ -21,6 +22,11 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddActionService } from '../../services/action/MarketAddActionService';
+import { BlacklistService } from '../../services/model/BlacklistService';
+import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchParams';
+import { BlacklistType } from '../../enums/BlacklistType';
+import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
+
 
 export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -33,6 +39,7 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketAddValidator) public validator: MarketAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
@@ -57,6 +64,11 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
+        const blacklisted = await this.isBlacklisted(event);
+        if (blacklisted) {
+            return SmsgMessageStatus.BLACKLISTED;
+        }
+
         // processMessage will create the ListingItem
         return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
@@ -69,4 +81,24 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
+
+    /**
+     * todo: move this to baseactionmessageprocessor
+     * todo: actionservices need some refactoring first
+     * @param event
+     */
+    public async isBlacklisted(event: MarketplaceMessageEvent): Promise<boolean> {
+
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const actionMessage: MarketAddMessage = marketplaceMessage.action as MarketAddMessage;
+
+        const found: resources.Blacklist[] = await this.blacklistService.search({
+            type: BlacklistType.MARKET,
+            target: actionMessage.hash
+        } as BlacklistSearchParams).then(valueBL => valueBL.toJSON());
+
+        return !_.isEmpty(found);
+    }
+
 }
