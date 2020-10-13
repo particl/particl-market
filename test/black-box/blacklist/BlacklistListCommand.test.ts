@@ -44,7 +44,6 @@ describe('BlacklistListCommand', () => {
     });
 
     test('Should fail to list Blacklists because invalid type', async () => {
-
         const res: any = await testUtil.rpc(blacklistCommand, [blacklistListCommand,
             true
         ]);

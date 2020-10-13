@@ -278,7 +278,16 @@ describe('BlacklistAddCommand', () => {
         expect(result.type).toBe(BlacklistType.LISTINGITEM);
         expect(result.target).toBe(listingItemReceivedOnBuyerNode.hash);
         expect(result.market).toBe(buyerMarket.receiveAddress);
+    });
 
+    test('Should list all Blacklists by type', async () => {
+        const res = await testUtilBuyerNode.rpc(blacklistCommand, [blacklistListCommand,
+            BlacklistType.LISTINGITEM
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(1);
     });
 
 });
