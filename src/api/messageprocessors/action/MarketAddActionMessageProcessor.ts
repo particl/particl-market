@@ -64,11 +64,6 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        const blacklisted = await this.isBlacklisted(event);
-        if (blacklisted) {
-            return SmsgMessageStatus.BLACKLISTED;
-        }
-
         // processMessage will create the ListingItem
         return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
