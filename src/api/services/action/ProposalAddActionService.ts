@@ -32,6 +32,7 @@ import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ProposalNotification } from '../../messages/notification/ProposalNotification';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class ProposalAddActionService extends BaseActionService {
@@ -45,6 +46,7 @@ export class ProposalAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) private marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ProposalAddMessageFactory) private actionMessageFactory: ProposalAddMessageFactory,
@@ -56,9 +58,11 @@ export class ProposalAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
-            Logger);
+            Logger
+        );
     }
 
     /**

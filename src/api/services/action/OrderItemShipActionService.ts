@@ -30,6 +30,8 @@ import { ListingItemService } from '../model/ListingItemService';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class OrderItemShipActionService extends BaseBidActionService {
 
@@ -41,6 +43,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.OrderItemShipMessageFactory) public actionMessageFactory: OrderItemShipMessageFactory,
@@ -52,6 +55,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

@@ -29,6 +29,8 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { BidNotification } from '../messages/notification/BidNotification';
 import { unmanaged } from 'inversify';
+import { BlacklistService } from './model/BlacklistService';
+
 
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
@@ -43,6 +45,7 @@ export abstract class BaseBidActionService extends BaseActionService {
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
                 @unmanaged() notificationService: NotificationService,
+                @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType,
@@ -53,6 +56,7 @@ export abstract class BaseBidActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger

@@ -13,7 +13,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MarketType } from '../../../src/api/enums/MarketType';
-import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
+import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
 
 
 describe('ItemInformationUpdateCommand', () => {

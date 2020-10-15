@@ -38,6 +38,7 @@ import { AddressType } from '../../enums/AddressType';
 import { ProfileService } from '../model/ProfileService';
 import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
 import { IdentityService } from '../model/IdentityService';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class BidActionService extends BaseActionService {
@@ -51,6 +52,7 @@ export class BidActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
@@ -63,6 +65,7 @@ export class BidActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger

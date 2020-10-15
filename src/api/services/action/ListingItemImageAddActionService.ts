@@ -39,6 +39,7 @@ import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { ImageFactory } from '../../factories/model/ImageFactory';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class ListingItemImageAddActionService extends BaseActionService {
@@ -57,6 +58,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private actionMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
@@ -70,6 +72,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger

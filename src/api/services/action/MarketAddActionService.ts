@@ -35,6 +35,7 @@ import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
 import { ImageService } from '../model/ImageService';
 import { MarketType } from '../../enums/MarketType';
 import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class MarketAddActionService extends BaseActionService {
@@ -50,6 +51,7 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private actionMessageFactory: MarketAddMessageFactory,
@@ -61,6 +63,7 @@ export class MarketAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger

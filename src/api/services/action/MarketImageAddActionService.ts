@@ -35,6 +35,7 @@ import { MarketImageAddValidator } from '../../messagevalidators/MarketImageAddV
 import { MarketImageNotification } from '../../messages/notification/MarketImageNotification';
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class MarketImageAddActionService extends BaseActionService {
@@ -50,6 +51,7 @@ export class MarketImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketImageAddMessageFactory) private actionMessageFactory: MarketImageAddMessageFactory,
@@ -62,6 +64,7 @@ export class MarketImageAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger

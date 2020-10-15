@@ -15,7 +15,6 @@ import { VoteFactory } from '../../factories/model/VoteFactory';
 import { VoteService } from '../model/VoteService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { CoreRpcService } from '../CoreRpcService';
-import { MessageException } from '../../exceptions/MessageException';
 import { VoteMessage } from '../../messages/action/VoteMessage';
 import { ProposalService } from '../model/ProposalService';
 import { ProposalOptionService } from '../model/ProposalOptionService';
@@ -87,10 +86,11 @@ export class VoteActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
-            Logger);
-        this.log = new Logger(__filename);
+            Logger
+        );
     }
 
     /**

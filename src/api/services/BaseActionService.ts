@@ -31,7 +31,10 @@ import { MessageSizeException } from '../exceptions/MessageSizeException';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MessageWebhooks } from '../messages/MessageWebhooks';
 import { AuthOptions, RequestOptions, Headers} from 'web-request';
-import {Environment} from '../../core/helpers/Environment';
+import { Environment } from '../../core/helpers/Environment';
+import { BlacklistService } from './model/BlacklistService';
+import { BlacklistSearchParams } from '../requests/search/BlacklistSearchParams';
+import { BlacklistType } from '../enums/BlacklistType';
 
 
 export abstract class BaseActionService implements ActionServiceInterface {
@@ -43,11 +46,13 @@ export abstract class BaseActionService implements ActionServiceInterface {
     public notificationService: NotificationService;
     public smsgMessageFactory: SmsgMessageFactory;
     public validator: ActionMessageValidatorInterface;
+    public blacklistService: BlacklistService;
 
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
                 @unmanaged() notificationService: NotificationService,
+                @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType
@@ -56,6 +61,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.notificationService = notificationService;
+        this.blacklistService = blacklistService;
         this.smsgMessageFactory = smsgMessageFactory;
         this.validator = validator;
     }
@@ -105,6 +111,8 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param actionRequest
      */
     public async post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse> {
+
+        this.validateRecipient(actionRequest.sendParams.toAddress);
 
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
@@ -309,6 +317,23 @@ export abstract class BaseActionService implements ActionServiceInterface {
                         return await this.smsgMessageService.create(createRequest).then(value => value.toJSON());
                     });
             });
+    }
+
+    private async validateRecipient(recipient: string): Promise<boolean> {
+        // todo: validate the to address
+
+        // todo: doesnt consider blacklists by profile
+        await this.blacklistService.search({
+            type: BlacklistType.MARKET,
+            target: recipient
+        } as BlacklistSearchParams).then(async value => {
+            const blacklists: resources.Blacklist[] = value.toJSON();
+            if (blacklists.length > 0) {
+                throw new MessageException('Blacklisted recipient.');
+            }
+        });
+
+        return true;
     }
 
     private getOptions(): RequestOptions {

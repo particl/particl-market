@@ -35,6 +35,8 @@ import { BaseBidActionService } from '../BaseBidActionService';
 import { NotificationService } from '../NotificationService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { EscrowLockMessageFactory } from '../../factories/message/EscrowLockMessageFactory';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class EscrowLockActionService extends BaseBidActionService {
 
@@ -50,6 +52,7 @@ export class EscrowLockActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowLockMessageFactory) public actionMessageFactory: EscrowLockMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
@@ -60,6 +63,7 @@ export class EscrowLockActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

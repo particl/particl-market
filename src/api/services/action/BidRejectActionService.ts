@@ -5,7 +5,6 @@
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
-import { ompVersion } from 'omp-lib';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { EventEmitter } from 'events';
@@ -32,6 +31,8 @@ import { BaseBidActionService } from '../BaseBidActionService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class BidRejectActionService extends BaseBidActionService {
 
@@ -44,6 +45,7 @@ export class BidRejectActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidRejectMessageFactory) public actionMessageFactory: BidRejectMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidRejectValidator) public validator: BidRejectValidator,
@@ -54,6 +56,7 @@ export class BidRejectActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

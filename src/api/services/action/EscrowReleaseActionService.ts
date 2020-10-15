@@ -35,6 +35,8 @@ import { BaseBidActionService } from '../BaseBidActionService';
 import { NotificationService } from '../NotificationService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class EscrowReleaseActionService extends BaseBidActionService {
 
@@ -49,6 +51,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowReleaseMessageFactory) public actionMessageFactory: EscrowReleaseMessageFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
@@ -60,6 +63,7 @@ export class EscrowReleaseActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

@@ -27,6 +27,7 @@ import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
 import { CommentAction } from '../../enums/CommentAction';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class CommentAddActionService extends BaseActionService {
@@ -38,6 +39,7 @@ export class CommentAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private actionMessageFactory: CommentAddMessageFactory,
@@ -48,6 +50,7 @@ export class CommentAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
