@@ -63,12 +63,10 @@ describe('ItemCategoryAddCommand', () => {
 
         // storefront admin
         const network = Networks.testnet;
-        let privateKey: PrivateKey = PrivateKey.fromRandom(Networks.testnet);
-
-        privateKey = PrivateKey.fromRandom(network);
+        let privateKey: PrivateKey = PrivateKey.fromRandom(network);
         storeFrontAdminData.receiveKey = privateKey.toWIF();
         privateKey = PrivateKey.fromRandom(network);
-        storeFrontAdminData.publishKey = privateKey.toWIF();    // but different
+        storeFrontAdminData.publishKey = privateKey.toWIF();
         storeFrontAdminData.name = storeFrontAdminData.receiveKey;
         // log.debug('storeFrontAdminData: ', JSON.stringify(storeFrontAdminData, null, 2));
 

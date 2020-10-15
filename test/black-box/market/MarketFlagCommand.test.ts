@@ -9,10 +9,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
-import {InvalidParamException} from '../../../src/api/exceptions/InvalidParamException';
-import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
-import {MarketRegion} from '../../../src/api/enums/MarketRegion';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
+import { MarketRegion } from '../../../src/api/enums/MarketRegion';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('MarketFlagCommand', () => {
 
@@ -84,7 +84,7 @@ describe('MarketFlagCommand', () => {
             null,
             null,
             market.Identity.id,
-            marketData.description,
+            'description',
             MarketRegion.WORLDWIDE,
             false
         ]);

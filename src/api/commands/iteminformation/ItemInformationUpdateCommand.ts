@@ -16,16 +16,16 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ItemCategoryUpdateRequest } from '../../requests/model/ItemCategoryUpdateRequest';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ModelNotModifiableException } from '../../exceptions/ModelNotModifiableException';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import { MessageException } from '../../exceptions/MessageException';
+
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,104 +35,81 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
     ) {
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);
+
+        this.debug = true;
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
+                new StringValidationRule('title', true),
+                new StringValidationRule('shortDescription', true, undefined,
+                    async (value, index, allValues) => {
+                        if (value.length > 500) {   // todo: check
+                            throw new InvalidParamException('shortDescription');
+                        }
+                        return true;
+                    }),
+                new StringValidationRule('longDescription', true),
+                new IdValidationRule('itemCategoryId', false, this.itemCategoryService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplate, resources.ListingItemTemplate
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: itemCategory, resources.ItemCategory
+     *  [4]: itemCategory: resources.ItemCategory, optional
      *
      * @param data
      * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const itemCategory: resources.ItemCategory = data.params[4];
-
-        let category;
-        if (!_.isEmpty(itemCategory)) {
-            category = {
-                key: itemCategory.key
-            } as ItemCategoryUpdateRequest;
-        }
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];  // required
+        const title = data.params[1];                                               // required
+        const shortDescription = data.params[2];                                    // required
+        const longDescription = data.params[3];                                     // required
+        const itemCategory: resources.ItemCategory = data.params[4];                // optional
 
         return this.itemInformationService.update(listingItemTemplate.ItemInformation.id, {
-            title: data.params[1],
-            shortDescription: data.params[2],
-            longDescription: data.params[3],
-            itemCategory: category
+            title,
+            shortDescription,
+            longDescription,
+            itemCategory: !_.isEmpty(itemCategory) ? {
+                key: itemCategory.key,
+                market: itemCategory.market
+            } as ItemCategoryUpdateRequest : undefined
         } as ItemInformationUpdateRequest);
     }
 
     /**
      * data.params[]:
-     *  [0]: listingItemTemplateId
+     *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: title
      *  [2]: shortDescription
      *  [3]: longDescription
-     *  [4]: categoryId (optional)
+     *  [4]: itemCategory: resources.ItemCategory, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('title');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('shortDescription');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('longDescription');
-        }
+        await super.validate(data);
 
-        const listingItemTemplateId = data.params[0];   // required
-        const title = data.params[1];                   // required
-        const shortDescription = data.params[2];        // required
-        const longDescription = data.params[3];         // required
-        const categoryId = data.params[4];              // optional
-
-        if (typeof listingItemTemplateId !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        } else if (typeof title !== 'string') {
-            throw new InvalidParamException('title', 'string');
-        } else if (typeof shortDescription !== 'string') {
-            throw new InvalidParamException('shortDescription', 'string');
-        } else if (typeof longDescription !== 'string') {
-            throw new InvalidParamException('longDescription', 'string');
-        } else if (!_.isNil(categoryId) && typeof categoryId !== 'number') {
-            throw new InvalidParamException('categoryId', 'number');
-        }
-
-        // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => {
-                return value.toJSON();
-            })
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];  // required
+        const title = data.params[1];                                               // required
+        const shortDescription = data.params[2];                                    // required
+        const longDescription = data.params[3];                                     // required
+        const itemCategory: resources.ItemCategory = data.params[4];                    // optional
 
         // make sure ItemInformation exists
         if (_.isEmpty(listingItemTemplate.ItemInformation)) {
             throw new ModelNotFoundException('ItemInformation');
-        }
-
-        // make sure ItemCategory with the id exists
-        if (!_.isNil(categoryId)) {
-            const itemCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[4])
-                .then(value => {
-                    return value.toJSON();
-                })
-                .catch(reason => {
-                    throw new ModelNotFoundException('ItemCategory');
-                });
-            data.params[4] = itemCategory;
         }
 
         const isModifiable = await this.listingItemTemplateService.isModifiable(listingItemTemplate.id);
@@ -140,7 +117,14 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
-        data.params[0] = listingItemTemplate;
+        this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+        this.log.debug('listingItemTemplate.market: ', JSON.stringify(listingItemTemplate.market, null, 2));
+
+        // allow adding a default category to market template
+        if ((!_.isNil(itemCategory) && !_.isNil(itemCategory.market) && !_.isNil(listingItemTemplate.market))
+            && itemCategory.market !== listingItemTemplate.market) {
+            throw new MessageException('ItemCategory market does not match the ListingItemTemplates market.');
+        }
 
         return data;
     }

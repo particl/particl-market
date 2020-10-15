@@ -14,6 +14,10 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
+import { MarketType } from '../../../src/api/enums/MarketType';
+import {MarketRegio, MarketRegion} from '../../../src/api/enums/MarketRegion';
+import { PrivateKey, Networks } from 'particl-bitcore-lib';
+
 
 export class BlackBoxTestUtil {
 
@@ -153,11 +157,6 @@ export class BlackBoxTestUtil {
         return result;
     }
 
-    /**
-     * get default market
-     *
-     * @returns {Promise<any>}
-     */
     public async getDefaultMarket(profileId: number): Promise<resources.Market> {
         const res: any = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_DEFAULT.commandName, profileId]);
         res.expectJson();
@@ -165,11 +164,6 @@ export class BlackBoxTestUtil {
         return res.getBody()['result'];
     }
 
-    /**
-     * get default market
-     *
-     * @returns {Promise<any>}
-     */
     public async getRandomCategory(): Promise<resources.ItemCategory> {
         const res: any = await this.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
         res.expectJson();
@@ -186,10 +180,62 @@ export class BlackBoxTestUtil {
         return Faker.random.arrayElement(childCat.ChildItemCategories);
     }
 
-    /**
-     *
-     * @param wallet
-     */
+    public async createMarketplace(type: MarketType, profileId: number, identityId: number): Promise<resources.Market> {
+
+        const network = Networks.testnet;
+        let privateKey: PrivateKey = PrivateKey.fromRandom(network);
+
+        const marketData = {
+            name: 'TEST-1',
+            description: 'test market desc',
+            type: MarketType.MARKETPLACE,
+            region: MarketRegion.WORLDWIDE,
+            receiveKey: privateKey.toWIF(),
+            publishKey: privateKey.toWIF()
+            // publishKey === receiveKey
+        };
+
+        switch (type) {
+            case MarketType.MARKETPLACE:
+                marketData.name = 'TEST-1';
+                marketData.type = MarketType.MARKETPLACE;
+                break;
+
+            case MarketType.STOREFRONT_ADMIN:
+                marketData.name = 'TEST-2';
+                marketData.type = MarketType.STOREFRONT_ADMIN;
+                privateKey = PrivateKey.fromRandom(network);
+                marketData.publishKey = privateKey.toWIF();
+                break;
+
+            case MarketType.STOREFRONT:
+                marketData.name = 'TEST-3';
+                marketData.type = MarketType.STOREFRONT;
+                privateKey = PrivateKey.fromRandom(network);
+                marketData.receiveKey = privateKey.toWIF();
+                privateKey = PrivateKey.fromRandom(network);
+                marketData.publishKey = privateKey.toPublicKey().toString();
+                break;
+
+            default:
+                break;
+        }
+
+        const res = await this.rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_ADD.commandName,
+            profileId,
+            marketData.name,
+            marketData.type,
+            marketData.receiveKey,
+            marketData.publishKey,
+            identityId,
+            marketData.description
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        return res.getBody()['result'];
+    }
+
+
     public async unlockLockedOutputs(wallet: string): Promise<resources.Market> {
 
         let response: any = await this.rpc(Commands.DAEMON_ROOT.commandName, [wallet, 'listlockunspent']);
