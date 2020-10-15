@@ -97,6 +97,12 @@ export interface ActionServiceInterface {
                        actionDirection: ActionDirection,
                        smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined>;
 
+    /**
+     * check whether the target are blacklisted
+     * @param targets
+     */
+    isBlacklisted(targets: string[]): Promise<boolean>;
+
     sendNotification(notification: MarketplaceNotification): Promise<void>;
     callWebHooks(action: ActionMessageInterface, direction: ActionDirection): Promise<void>;
     marketplaceMessageDebug(direction: ActionDirection, actionRequest: ActionMessageInterface): void;

@@ -16,7 +16,7 @@ export class BlacklistSearchParams extends RequestBody {
 
     @IsEnum(BlacklistType)
     public type: BlacklistType;
-    public target: string;
+    public targets: string[];
     public market: string;
 
     public profileId: number;

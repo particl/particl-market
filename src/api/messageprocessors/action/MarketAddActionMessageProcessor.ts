@@ -82,23 +82,4 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
             });
     }
 
-    /**
-     * todo: move this to baseactionmessageprocessor
-     * todo: actionservices need some refactoring first
-     * @param event
-     */
-    public async isBlacklisted(event: MarketplaceMessageEvent): Promise<boolean> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: MarketAddMessage = marketplaceMessage.action as MarketAddMessage;
-
-        const found: resources.Blacklist[] = await this.blacklistService.search({
-            type: BlacklistType.MARKET,
-            target: actionMessage.hash
-        } as BlacklistSearchParams).then(valueBL => valueBL.toJSON());
-
-        return !_.isEmpty(found);
-    }
-
 }

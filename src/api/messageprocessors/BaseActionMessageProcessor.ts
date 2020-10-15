@@ -17,11 +17,11 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { unmanaged } from 'inversify';
-import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
-import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { MPActionExtended } from '../enums/MPActionExtended';
-import {ListingItemAddActionService} from '../services/action/ListingItemAddActionService';
-import {BaseActionService} from '../services/BaseActionService';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {MarketAddMessage} from '../messages/action/MarketAddMessage';
+import {BlacklistType} from '../enums/BlacklistType';
+import {BlacklistSearchParams} from '../requests/search/BlacklistSearchParams';
+import {MessageException} from '../exceptions/MessageException';
 
 
 // @injectable()
@@ -69,6 +69,14 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
      * @returns {Promise<void>}
      */
     public async process(event: MarketplaceMessageEvent): Promise<void> {
+
+        const isBlacklisted = await this.actionService.isBlacklisted([event.smsgMessage.to]);
+
+        if (isBlacklisted) {
+            this.log.error('Blacklisted recipient address.');
+            await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.BLACKLISTED).then(value => value.toJSON());
+            return;
+        }
 
         // set process.env.MPMESSAGE_DEBUG=true to enable this
         this.actionService.marketplaceMessageDebug(ActionDirection.INCOMING, event.marketplaceMessage.action);

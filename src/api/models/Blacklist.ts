@@ -34,8 +34,10 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
                     qb.where('blacklists.type', '=', options.type.toString());
                 }
 
-                if (options.target) {
-                    qb.where('blacklists.target', '=', options.target);
+                if (!_.isEmpty(options.targets)) {
+                    // qb.where('blacklists.target', '=', options.target);
+                    qb.whereIn('blacklists.target', options.targets);
+
                 }
                 if (options.market) {
                     qb.where('blacklists.market', '=', options.market);

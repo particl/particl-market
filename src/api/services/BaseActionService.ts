@@ -35,6 +35,7 @@ import { Environment } from '../../core/helpers/Environment';
 import { BlacklistService } from './model/BlacklistService';
 import { BlacklistSearchParams } from '../requests/search/BlacklistSearchParams';
 import { BlacklistType } from '../enums/BlacklistType';
+import {MarketAddMessage} from '../messages/action/MarketAddMessage';
 
 
 export abstract class BaseActionService implements ActionServiceInterface {
@@ -112,11 +113,14 @@ export abstract class BaseActionService implements ActionServiceInterface {
      */
     public async post(actionRequest: ActionRequestInterface): Promise<SmsgSendResponse> {
 
-        this.validateRecipient(actionRequest.sendParams.toAddress);
-
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
         // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
+
+        const isBlacklisted = await this.isBlacklisted([actionRequest.sendParams.toAddress, marketplaceMessage.action.hash]);
+        if (isBlacklisted) {
+            throw new MessageException('Blacklisted recipient.');
+        }
 
         const messageSize: MessageSize = await this.getMarketplaceMessageSize(marketplaceMessage, actionRequest.sendParams.messageType);
         if (!messageSize.fits) {
@@ -293,6 +297,19 @@ export abstract class BaseActionService implements ActionServiceInterface {
         return;
     }
 
+    /**
+     * check whether the targets are blacklisted
+     * @param targets
+     */
+    public async isBlacklisted(targets: string[]): Promise<boolean> {
+        return await this.blacklistService.search({
+            targets
+        } as BlacklistSearchParams).then(async value => {
+            const blacklists: resources.Blacklist[] = value.toJSON();
+            return blacklists.length > 0;
+        });
+    }
+
     public marketplaceMessageDebug(direction: ActionDirection, actionRequest: ActionMessageInterface): void {
         if (Environment.isTruthy(process.env.MPMESSAGE_DEBUG)) {
             this.log.debug(direction + ': ', JSON.stringify(actionRequest, null, 2));
@@ -317,23 +334,6 @@ export abstract class BaseActionService implements ActionServiceInterface {
                         return await this.smsgMessageService.create(createRequest).then(value => value.toJSON());
                     });
             });
-    }
-
-    private async validateRecipient(recipient: string): Promise<boolean> {
-        // todo: validate the to address
-
-        // todo: doesnt consider blacklists by profile
-        await this.blacklistService.search({
-            type: BlacklistType.MARKET,
-            target: recipient
-        } as BlacklistSearchParams).then(async value => {
-            const blacklists: resources.Blacklist[] = value.toJSON();
-            if (blacklists.length > 0) {
-                throw new MessageException('Blacklisted recipient.');
-            }
-        });
-
-        return true;
     }
 
     private getOptions(): RequestOptions {
