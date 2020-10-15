@@ -18,7 +18,6 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('proposal_option_id').references('id')
                 .inTable('proposal_options');
 
-            // todo: should be decimal later, but that didnt work
             table.integer('weight').notNullable();
             table.integer('voters').notNullable();
 

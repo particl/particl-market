@@ -12,7 +12,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.integer('profile_id').unsigned().notNullable();
-            table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
+            table.foreign('profile_id').references('id').inTable('profiles');
 
             table.string('type').notNullable();
 
@@ -25,7 +25,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('passphrase').nullable();
 
             table.integer('image_id').unsigned().nullable();
-            table.foreign('image_id').references('id').inTable('images').onDelete('CASCADE');
+            table.foreign('image_id').references('id').inTable('images');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

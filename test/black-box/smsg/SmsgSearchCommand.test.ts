@@ -18,6 +18,7 @@ import { SmsgMessageSearchOrderField } from '../../../src/api/enums/SearchOrderF
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ListingItemAddRequest } from '../../../src/api/requests/action/ListingItemAddRequest';
 
+
 describe('SmsgSearchCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -241,7 +242,7 @@ describe('SmsgSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('age', 'greater than 0').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('age', 'greater than or equal to 0').getMessage());
     });
 
 

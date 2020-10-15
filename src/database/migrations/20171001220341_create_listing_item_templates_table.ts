@@ -17,7 +17,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('profile_id').notNullable();
             table.foreign('profile_id').references('id')
-                .inTable('profiles').onDelete('RESTRICT');
+                .inTable('profiles').onDelete('CASCADE');
 
             table.integer('parent_listing_item_template_id').unsigned().nullable();
             table.foreign('parent_listing_item_template_id').references('id')
