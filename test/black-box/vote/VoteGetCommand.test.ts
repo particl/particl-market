@@ -13,6 +13,7 @@ import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoun
 import { CombinedVote } from '../../../src/api/services/action/VoteActionService';
 import * as Faker from 'faker';
 
+
 describe('VoteGetCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -164,14 +165,18 @@ describe('VoteGetCommand', () => {
         proposal = result;
     }, 600000); // timeout to 600s
 
-    test('Should fail to return a Vote', async () => {
+    test('Should return CombinedVote with 0 weight', async () => {
         const res = await testUtil.rpc(voteCommand, [voteGetCommand,
             market.id,
             proposal.hash
         ]);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('No Votes found.');
+        res.expectStatusCode(200);
+        const result: CombinedVote = res.getBody()['result'];
+        expect(result.weight).toBe(0);
+        expect(result.count).toBe(0);
+        expect(result.proposalOptions[0].description).toBe(options[0]);
+        expect(result.proposalOptions[1].description).toBe(options[1]);
     });
 
 

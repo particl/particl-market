@@ -273,7 +273,7 @@ describe('ListingItemFlagCommand', () => {
 
     }, 600000); // timeout to 600s
 
-/*
+
     test('Should have flagged the ListingItem', async () => {
         const response = await testUtilBuyerNode.rpcWaitFor(itemCommand, [itemGetCommand,
                 listingItemReceivedOnBuyerNode.id
@@ -302,5 +302,5 @@ describe('ListingItemFlagCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
-*/
+
 });
