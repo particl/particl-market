@@ -13,6 +13,7 @@ import { NotFoundException } from '../../../src/api/exceptions/NotFoundException
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { MarketType } from '../../../src/api/enums/MarketType';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import {ModelNotFoundException} from '../../../src/api/exceptions/ModelNotFoundException';
 
 
 describe('ItemCategoryAddCommand', () => {
@@ -118,7 +119,7 @@ describe('ItemCategoryAddCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(new NotFoundException(0).getMessage());
+        expect(res.error.error.message).toBe(new ModelNotFoundException('ParentItemCategory').getMessage());
     });
 
     test('Should fail to create the ItemCategory because invalid parentCategoryId', async () => {
