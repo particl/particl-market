@@ -99,6 +99,7 @@ export class BlacklistService {
      */
     public async updateBlacklistsByVote(voteRequest: VoteRequest): Promise<resources.Blacklist[]> {
 
+        this.log.debug('updateBlacklistsByVote(), voteRequest: ', JSON.stringify(voteRequest, null, 2));
         const blacklisted: resources.Blacklist[] = [];
 
         if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
@@ -139,9 +140,14 @@ export class BlacklistService {
             }
 
         } else {
+            // remove blacklists
             const target = voteRequest.proposal.target;
             const profileId = voteRequest.sender.Profile.id;
-            const blacklists: resources.Blacklist[] = await this.findAllByTargetAndProfileId(target, profileId).then(value => value.toJSON());
+            const blacklists: resources.Blacklist[] = await this.search({
+                targets: [target],
+                profileId
+            } as BlacklistSearchParams).then(value => value.toJSON());
+
             for (const blacklist of blacklists) {
                 await this.destroy(blacklist.id);
             }

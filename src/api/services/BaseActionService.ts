@@ -115,7 +115,10 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
-        // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
+        this.log.debug('post(), marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+
+        this.log.debug('post(), actionRequest.sendParams.toAddress: ', actionRequest.sendParams.toAddress);
+        this.log.debug('post(), marketplaceMessage.action.hash: ', marketplaceMessage.action.hash);
 
         const isBlacklisted = await this.isBlacklisted([actionRequest.sendParams.toAddress, marketplaceMessage.action.hash]);
         if (isBlacklisted) {
@@ -302,6 +305,9 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * @param targets
      */
     public async isBlacklisted(targets: string[]): Promise<boolean> {
+        // filter out possible nulls, as not all types of messages have hash
+        targets = targets.filter(value => value !== undefined && value !== null);
+
         return await this.blacklistService.search({
             targets
         } as BlacklistSearchParams).then(async value => {

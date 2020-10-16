@@ -150,7 +150,6 @@ export class ProposalAddActionService extends BaseActionService {
             // means processMessage was called from onEvent() and we should update the Proposal data
             await this.proposalService.updateTimes(proposal.id, smsgMessage.sent, smsgMessage.sent, smsgMessage.received, smsgMessage.expiration)
                 .then(value => value.toJSON());
-            this.log.debug('processProposal(), proposal updated');
         }
 
         return smsgMessage;

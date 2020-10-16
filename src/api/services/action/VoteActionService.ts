@@ -164,13 +164,10 @@ export class VoteActionService extends BaseActionService {
             }
         }
 
-        if (voteRequest.proposal.category !== ProposalCategory.PUBLIC_VOTE) {
-            for (const flaggedItem of voteRequest.proposal.FlaggedItems) {
-                const proposalResult: resources.ProposalResult = await this.proposalResultService.findLatestByProposalHash(voteRequest.proposal.hash)
-                    .then(value => value.toJSON());
-                await this.setRemovedFlags(voteRequest); // todo: remove, sets the removed on ListingItem or Market
-            }
+        this.log.debug('DO WE GET HERE?!?!?');
 
+        if (voteRequest.proposal.category !== ProposalCategory.PUBLIC_VOTE) {
+            await this.setRemovedFlags(voteRequest); // todo: remove, sets the removed on ListingItem or Market
             await this.blacklistService.updateBlacklistsByVote(voteRequest);
         }
 

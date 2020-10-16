@@ -15,6 +15,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
+
 describe('ListingItemFlagCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -272,6 +273,7 @@ describe('ListingItemFlagCommand', () => {
 
     }, 600000); // timeout to 600s
 
+/*
     test('Should have flagged the ListingItem', async () => {
         const response = await testUtilBuyerNode.rpcWaitFor(itemCommand, [itemGetCommand,
                 listingItemReceivedOnBuyerNode.id
@@ -290,6 +292,7 @@ describe('ListingItemFlagCommand', () => {
         expect(item.FlaggedItem.Proposal.title).toBe(listingItemReceivedOnBuyerNode.hash);
     }, 600000); // timeout to 600s
 
+
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,
             listingItemReceivedOnBuyerNode.id,
@@ -299,5 +302,5 @@ describe('ListingItemFlagCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('ListingItem is already flagged.');
     });
-
+*/
 });
