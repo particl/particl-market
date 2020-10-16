@@ -28,6 +28,7 @@ import {
 } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
+
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     constructor(
@@ -43,10 +44,10 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
         return {
             params: [
                 new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
-                new EnumValidationRule('escrowType', false, 'EscrowType',
+                new EnumValidationRule('escrowType', true, 'EscrowType',
                     [EscrowType.MAD_CT] as string[], EscrowType.MAD_CT),
-                new EscrowRatioValidationRule('buyerRatio', false, 100),
-                new EscrowRatioValidationRule('sellerRatio', false, 100),
+                new EscrowRatioValidationRule('buyerRatio', true, 100),
+                new EscrowRatioValidationRule('sellerRatio', true, 100),
                 new EnumValidationRule('escrowReleaseType', false, 'EscrowReleaseType',
                     EnumHelper.getValues(EscrowReleaseType) as string[], EscrowReleaseType.ANON)
             ] as ParamValidationRule[]

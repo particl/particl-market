@@ -16,6 +16,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
 
+
 describe('EscrowUpdateCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -70,7 +71,8 @@ describe('EscrowUpdateCommand', () => {
         res.expectJson();
         expect(res.error.error.message).toBe(new MissingParamException('listingItemTemplateId').getMessage());
     });
-
+/*
+    // not required for now...
     test('Should fail to update Escrow because of missing escrowType', async () => {
         const testData = [escrowUpdateCommand,
             listingItemTemplate.id
@@ -100,7 +102,7 @@ describe('EscrowUpdateCommand', () => {
         res.expectJson();
         expect(res.error.error.message).toBe(new MissingParamException('sellerRatio').getMessage());
     });
-
+*/
     test('Should fail to update Escrow because of invalid listingItemTemplateId', async () => {
         const testData = [escrowUpdateCommand,
             'not a number',
@@ -161,6 +163,20 @@ describe('EscrowUpdateCommand', () => {
             100,
             100,
             false
+        ];
+
+        const res: any = await testUtil.rpc(escrowCommand, testData);
+        res.expectJson();
+        expect(res.error.error.message).toBe(new InvalidParamException('escrowReleaseType', 'string').getMessage());
+    });
+
+    test('Should fail to update Escrow because of invalid escrowReleaseType', async () => {
+        const testData = [escrowUpdateCommand,
+            listingItemTemplate.id,
+            EscrowType.MAD_CT,
+            100,
+            100,
+            'invalid'
         ];
 
         const res: any = await testUtil.rpc(escrowCommand, testData);
@@ -273,6 +289,5 @@ describe('EscrowUpdateCommand', () => {
         res.expectJson();
         expect(res.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
-
 
 });
