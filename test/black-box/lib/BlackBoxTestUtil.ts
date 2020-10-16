@@ -402,7 +402,6 @@ export class BlackBoxTestUtil {
                             // do not throw here for now.
                             // for example bid searchBy will not throw an exception like findOne so the statusCode === 200,
                             // but we need to keep on querying until correct value is returned.
-                            // todo: it should be configurable how this works
                             // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                         }
                     } else {

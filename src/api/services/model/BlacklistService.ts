@@ -99,7 +99,7 @@ export class BlacklistService {
      */
     public async updateBlacklistsByVote(voteRequest: VoteRequest): Promise<resources.Blacklist[]> {
 
-        this.log.debug('updateBlacklistsByVote(), voteRequest: ', JSON.stringify(voteRequest, null, 2));
+        // this.log.debug('updateBlacklistsByVote(), voteRequest: ', JSON.stringify(voteRequest, null, 2));
         const blacklisted: resources.Blacklist[] = [];
 
         if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {

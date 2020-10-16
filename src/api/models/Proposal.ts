@@ -72,7 +72,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                     qb.whereNull('proposals.final_result_id');
                 }
 
-                // qb.debug(true);
+                qb.debug(true);
 
             })
             .orderBy('time_start', options.order);
