@@ -13,6 +13,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
+
 describe('ListingItemTemplateAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -404,7 +405,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
         const result: any = res.getBody()['result'];
 
-        // log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.Profile.id).toBe(profile.id);
         expect(result.ItemInformation.title).toBe(title);
         expect(result.ItemInformation.shortDescription).toBe(shortDescription);

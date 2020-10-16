@@ -145,7 +145,6 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create(), body:', JSON.stringify(body, null, 2));
 
-        // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
@@ -155,39 +154,29 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
-        // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
 
-        // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
-            const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
-                .then(value => value.toJSON());
-            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
+            await this.itemInformationService.create(itemInformation).then(value => value.toJSON());
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
-            const createdPaymentInfo: resources.PaymentInformation = await this.paymentInformationService.create(paymentInformation)
-                .then(value => value.toJSON());
-            // this.log.debug('paymentInformation, result:', JSON.stringify(createdPaymentInfo, null, 2));
+            await this.paymentInformationService.create(paymentInformation).then(value => value.toJSON());
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
-                const createdMsgInfo: resources.MessagingInformation = await this.messagingInformationService.create(msgInfo)
-                    .then(value => value.toJSON());
-                // this.log.debug('msgInfo, result:', JSON.stringify(createdMsgInfo, null, 2));
+                await this.messagingInformationService.create(msgInfo).then(value => value.toJSON());
             }
         }
 
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_template_id = listingItemTemplate.id;
-                const createdListingItemObject: resources.ListingItemObject = await this.listingItemObjectService.create(object)
-                    .then(value => value.toJSON());
-                // this.log.debug('object, result:', JSON.stringify(createdListingItemObject, null, 2));
+                await this.listingItemObjectService.create(object).then(value => value.toJSON());
             }
         }
 
@@ -215,17 +204,12 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     @validate()
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
-
-        // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
-        // ListingItemTemplates with a hash or ListingItems are not supposed to be modified anymore
         if (!_.isEmpty(listingItemTemplate.Hash) || !_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
-        // update listingItemTemplate record
-        // todo: ListingItemTemplate has no changeable data?
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
         // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.

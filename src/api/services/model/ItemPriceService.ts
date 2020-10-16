@@ -21,6 +21,7 @@ import { CryptocurrencyAddressUpdateRequest } from '../../requests/model/Cryptoc
 import { ShippingPriceCreateRequest } from '../../requests/model/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../requests/model/ShippingPriceUpdateRequest';
 
+
 export class ItemPriceService {
 
     public log: LoggerType;
@@ -51,6 +52,7 @@ export class ItemPriceService {
     public async create( @request(ItemPriceCreateRequest) data: ItemPriceCreateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         const shippingPrice = body.shippingPrice || {};
         const cryptocurrencyAddress = body.cryptocurrencyAddress || {};
@@ -58,7 +60,6 @@ export class ItemPriceService {
         delete body.shippingPrice;
         delete body.cryptocurrencyAddress;
 
-        // create related models, cryptocurrencyAddress
         if (!_.isEmpty(cryptocurrencyAddress)) {
             if (cryptocurrencyAddress.id) {
                 body.cryptocurrency_address_id = cryptocurrencyAddress.id;
@@ -68,37 +69,25 @@ export class ItemPriceService {
             }
         }
 
-        // create the itemPrice
         const itemPrice: resources.ItemPrice = await this.itemPriceRepo.create(body).then(value => value.toJSON());
 
-        // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
             shippingPrice.item_price_id = itemPrice.id;
-            const result: resources.ShippingPrice = await this.shippingPriceService.create(shippingPrice as ShippingPriceCreateRequest)
-                .then(value => value.toJSON());
-            // this.log.debug('ShippingPrice, result:', JSON.stringify(result, null, 2));
-
+            await this.shippingPriceService.create(shippingPrice as ShippingPriceCreateRequest).then(value => value.toJSON());
         }
-        // finally find and return the created itemPrice
         return await this.findOne(itemPrice.id);
     }
 
     @validate()
     public async update(id: number, @request(ItemPriceUpdateRequest) data: ItemPriceUpdateRequest): Promise<ItemPrice> {
-
         const body = JSON.parse(JSON.stringify(data));
-
-        // find the existing one without related
         const itemPrice = await this.findOne(id, false);
 
-        // set new values
         itemPrice.Currency = body.currency;
         itemPrice.BasePrice = body.basePrice;
 
-        // update itemPrice record
         const updatedItemPrice = await this.itemPriceRepo.update(id, itemPrice.toJSON());
 
-        // find related ShippingPrice
         let relatedShippingPrice = updatedItemPrice.related('ShippingPrice').toJSON() || {};
         if (!_.isEmpty(relatedShippingPrice)) {
             const shippingPriceId = relatedShippingPrice.id;
@@ -111,10 +100,8 @@ export class ItemPriceService {
             await this.shippingPriceService.create(relatedShippingPrice as ShippingPriceCreateRequest);
         }
 
-        // find related CryptocurrencyAddress
         let relatedCryptocurrencyAddress = updatedItemPrice.related('CryptocurrencyAddress').toJSON() || {};
 
-        // TODO: this doesnt work!!! there is no item_price_id
         if (!_.isEmpty(relatedCryptocurrencyAddress)) {
             const cryptocurrencyAddressId = relatedCryptocurrencyAddress.id;
             relatedCryptocurrencyAddress = body.cryptocurrencyAddress;
@@ -125,9 +112,7 @@ export class ItemPriceService {
             relatedCryptocurrencyAddress.item_price_id = id;
             await this.cryptocurrencyAddressService.create(relatedCryptocurrencyAddress as CryptocurrencyAddressCreateRequest);
         }
-        // finally find and return the updated item price
-        const newItemPrice = await this.findOne(id);
-        return newItemPrice;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {

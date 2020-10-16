@@ -20,8 +20,6 @@ export class ItemPriceCreateRequest extends RequestBody implements ModelRequestI
     @IsNotEmpty()
     public currency: Cryptocurrency;
 
-    @IsNotEmpty()
-    @Min(0)
     public basePrice: number;
 
     public shippingPrice: ShippingPriceCreateRequest;

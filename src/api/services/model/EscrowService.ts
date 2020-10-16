@@ -17,6 +17,7 @@ import { EscrowUpdateRequest } from '../../requests/model/EscrowUpdateRequest';
 import { EscrowRatioService } from './EscrowRatioService';
 import { AddressService } from './AddressService';
 
+
 export class EscrowService {
 
     public log: LoggerType;
@@ -45,32 +46,24 @@ export class EscrowService {
 
     @validate()
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
-
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
         const escrowRatio = body.ratio;
         delete body.ratio;
 
-        // If the request body was valid we will create the escrow
         const escrow: resources.Escrow = await this.escrowRepo.create(body).then(value => value.toJSON());
-        // this.log.debug('escrow, result:', JSON.stringify(escrow, null, 2));
-
-        // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {
             escrowRatio.escrow_id = escrow.id;
             await this.escrowRatioService.create(escrowRatio);
         }
 
-        // finally find and return the created escrow
         return await this.findOne(escrow.id);
     }
 
     @validate()
     public async update(id: number, @request(EscrowUpdateRequest) data: EscrowUpdateRequest): Promise<Escrow> {
-
         const body: EscrowUpdateRequest = JSON.parse(JSON.stringify(data));
-
         const escrow = await this.findOne(id, false);
 
         escrow.Type = body.type;
@@ -79,7 +72,6 @@ export class EscrowService {
 
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());
 
-        // find related escrowratio and update
         let relatedRatio = updatedEscrow.related('Ratio').toJSON();
         await this.escrowRatioService.destroy(relatedRatio.id);
         relatedRatio = body.ratio;
