@@ -149,8 +149,7 @@ export class VoteActionService extends BaseActionService {
 
         const smsgSendResponses: SmsgSendResponse[] = [];
         for (const addressInfo of addressInfos) {
-            this.log.debug('================================================');
-            this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
+            // this.log.debug('vote(), addressInfo: ', JSON.stringify(addressInfo, null, 2));
 
             if (addressInfo.balance > 0) {
                 // change sender to be the output address, then post the vote
@@ -163,8 +162,6 @@ export class VoteActionService extends BaseActionService {
                 });
             }
         }
-
-        this.log.debug('DO WE GET HERE?!?!?');
 
         if (voteRequest.proposal.category !== ProposalCategory.PUBLIC_VOTE) {
             await this.setRemovedFlags(voteRequest); // todo: remove, sets the removed on ListingItem or Market

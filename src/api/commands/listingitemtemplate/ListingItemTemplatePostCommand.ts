@@ -133,18 +133,17 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
 
-        // if post was succesful, update the hash
-        // once listingItemTemplate.hash is created, it cannot be modified anymore
         if (!estimateFee && smsgSendResponse.result === 'Sent.') {
-
-            // hash should not be saved unless ListingItemTemplate is actually posted.
+            // if post was succesful ad were not just estimating, update the hash
+            // once listingItemTemplate.hash is created, it cannot be modified anymore
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
-                .then(value => value.toJSON());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
 
         // then post the Images related to the ListingItem
         smsgSendResponse.childResults = await this.postListingImages(listingItemTemplate, postRequest, paidImageMessages);
+
+        this.log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
 
         // then create the response, add totalFees and availableUtxos
         const unspentUtxos: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(postRequest.sendParams.wallet,
@@ -155,7 +154,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         if (!_.isNil(smsgSendResponse.childResults)) {
             let childSum: BigNumber = math.bignumber(0);
             for (const childResult of smsgSendResponse.childResults) {
-                childSum = math.add(childSum, math.bignumber(childResult.fee));
+                childSum = math.add(childSum, math.bignumber(childResult.fee ? childResult.fee : 0));
             }
             smsgSendResponse.totalFees = +math.format(math.add(childSum, math.bignumber(smsgSendResponse.fee ? smsgSendResponse.fee : 0)), {precision: 8});
             minRequiredUtxos = minRequiredUtxos + (paidImageMessages ? smsgSendResponse.childResults.length : 0);
@@ -334,7 +333,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
                 results.push(smsgSendResponse);
             }
-            this.log.debug('postListingImages(), results: ', JSON.stringify(results, null, 2));
+            // this.log.debug('postListingImages(), results: ', JSON.stringify(results, null, 2));
             return results;
         } else {
             return undefined;

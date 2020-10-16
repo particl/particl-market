@@ -17,6 +17,7 @@ import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
+
 describe('ListingItemTemplateCloneCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

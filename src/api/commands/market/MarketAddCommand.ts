@@ -243,32 +243,7 @@ export class MarketAddCommand extends BaseCommand implements RpcCommandInterface
         //                        (because you cannot post here, so you are only joining markets that someone else created)
         // type === STOREFRONT_ADMIN -> receive key is private key, publish key is private key, bot keys are different
         // the keys which are undefined should be generated
-/*
-        if (!_.isNil(receiveKey) && !_.isNil(publishKey)) {
-            if (receiveKey === publishKey) {
-                // keys are same -> MARKETPLACE
 
-                if (!this.isPrivateKey(receiveKey)) {
-                    throw new MessageException('Invalid receiveKey for MARKETPLACE.');
-                }
-                if (!this.isPrivateKey(publishKey)) {
-                    throw new MessageException('Invalid publishKey for MARKETPLACE.');
-                }
-                // type should be MARKETPLACE, just fix it if not
-                type = MarketType.MARKETPLACE;
-            } else {
-                // different keys -> STOREFRONT / STOREFRONT_ADMIN
-                if (this.isPrivateKey(receiveKey) && this.isPrivateKey(publishKey)) {
-                    type = MarketType.STOREFRONT_ADMIN;
-                } else if (this.isPrivateKey(receiveKey) && this.isPublicKey(publishKey)) {
-                    type = MarketType.STOREFRONT;
-                }
-            }
-        } else if (type === MarketType.STOREFRONT && (_.isNil(receiveKey) || _.isNil(publishKey))) {
-            // in case of a STOREFRONT, both keys should have been given
-            throw new MessageException('Adding a STOREFRONT requires both receive and publish keys.');
-        }
-*/
         // make sure Identity belongs to the given Profile
         if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
             throw new MessageException('Identity does not belong to the Profile.');

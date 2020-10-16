@@ -238,13 +238,13 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
                 // already exists
                 const updateRequest: ItemInformationUpdateRequest = body.itemInformation;
                 //  updateRequest.listing_item_template_id = id;
-                this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
+                // this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
                 await this.itemInformationService.update(itemInformation.id, updateRequest);
             } else {
                 // doesnt exist
                 const createRequest: ItemInformationCreateRequest = body.itemInformation;
                 createRequest.listing_item_template_id = id;
-                this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+                // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
                 await this.itemInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(itemInformation)) {

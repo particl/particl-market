@@ -115,10 +115,10 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
-        this.log.debug('post(), marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
 
-        this.log.debug('post(), actionRequest.sendParams.toAddress: ', actionRequest.sendParams.toAddress);
-        this.log.debug('post(), marketplaceMessage.action.hash: ', marketplaceMessage.action.hash);
+        // this.log.debug('post(), marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+        // this.log.debug('post(), actionRequest.sendParams.toAddress: ', actionRequest.sendParams.toAddress);
+        // this.log.debug('post(), marketplaceMessage.action.hash: ', marketplaceMessage.action.hash);
 
         const isBlacklisted = await this.isBlacklisted([actionRequest.sendParams.toAddress, marketplaceMessage.action.hash]);
         if (isBlacklisted) {
