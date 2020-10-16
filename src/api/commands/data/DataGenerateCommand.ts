@@ -18,6 +18,7 @@ import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { CreatableModel } from '../../enums/CreatableModel';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
+
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;

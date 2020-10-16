@@ -6,24 +6,20 @@ import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Escrow } from './Escrow';
 import { ItemPrice } from './ItemPrice';
-import { CryptocurrencyAddress } from './CryptocurrencyAddress';
+
 
 export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
 
+    public static RELATIONS = [
+        'Escrow',
+        'Escrow.Ratio',
+        'ItemPrice',
+        'ItemPrice.ShippingPrice',
+        'ItemPrice.CryptocurrencyAddress'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<PaymentInformation> {
-        if (withRelated) {
-            return await PaymentInformation.where<PaymentInformation>({ id: value }).fetch({
-                withRelated: [
-                    'Escrow',
-                    'Escrow.Ratio',
-                    'ItemPrice',
-                    'ItemPrice.ShippingPrice',
-                    'ItemPrice.CryptocurrencyAddress'
-                ]
-            });
-        } else {
-            return await PaymentInformation.where<PaymentInformation>({ id: value }).fetch();
-        }
+        return PaymentInformation.where<PaymentInformation>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'payment_informations'; }
@@ -34,9 +30,6 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
 
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
-
-    // public get ListingItemTemplateId(): number { return this.get('listing_item_template_id'); }
-    // public set ListingItemTemplateId(value: number) { this.set('listing_item_template_id', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
