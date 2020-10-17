@@ -126,7 +126,6 @@ export const Targets = {
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
         DefaultSettingService: 'DefaultSettingService',
-        ImageHttpUploadService: 'ImageHttpUploadService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',

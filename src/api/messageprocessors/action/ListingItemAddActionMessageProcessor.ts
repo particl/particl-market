@@ -25,6 +25,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { BlacklistService } from '../../services/model/BlacklistService';
 import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchParams';
 import { BlacklistType } from '../../enums/BlacklistType';
+import {SearchOrder} from '../../enums/SearchOrder';
 
 
 export class ListingItemAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -63,11 +64,6 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
 
-        const blacklisted = await this.isBlacklisted(event);
-        if (blacklisted) {
-            return SmsgMessageStatus.BLACKLISTED;
-        }
-
         return await this.actionService.processMessage(marketplaceMessage, ActionDirection.INCOMING, smsgMessage)
             .then(value => {
                 this.log.debug('PROCESSED: ' + smsgMessage.msgid);
@@ -78,25 +74,5 @@ export class ListingItemAddActionMessageProcessor extends BaseActionMessageProce
                 this.log.error('PROCESSING FAILED: ', smsgMessage.msgid);
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
-    }
-
-    /**
-     * todo: move this to baseactionmessageprocessor
-     * todo: actionservices need some refactoring first
-     * @param event
-     */
-    public async isBlacklisted(event: MarketplaceMessageEvent): Promise<boolean> {
-
-        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
-        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
-        const actionMessage: ListingItemAddMessage = marketplaceMessage.action as ListingItemAddMessage;
-
-        const found: resources.Blacklist[] = await this.blacklistService.search({
-            type: BlacklistType.LISTINGITEM,
-            target: actionMessage.hash
-            // market: smsgMessage.to       // dont care about the market for now
-        } as BlacklistSearchParams).then(valueBL => valueBL.toJSON());
-
-        return !_.isEmpty(found);
     }
 }

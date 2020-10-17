@@ -4,7 +4,6 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
-import * as fs from 'fs';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,19 +16,14 @@ import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ImageDataService } from './ImageDataService';
-import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ImageDataRepository } from '../../repositories/ImageDataRepository';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { MessageVersions } from '../../messages/MessageVersions';
-import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
 
 
 export class ImageService {
@@ -41,8 +35,6 @@ export class ImageService {
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ImageRepository) public imageRepository: ImageRepository,
         @inject(Types.Repository) @named(Targets.Repository.ImageDataRepository) public imageDataRepository: ImageDataRepository,
-        @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) public imageDataFactory: ImageDataFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) public listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
     ) {
@@ -79,42 +71,6 @@ export class ImageService {
 
     public async findAllByHashAndTarget(hash: string, target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
         return await this.imageRepository.findAllByHashAndTarget(hash, target, withRelated);
-    }
-
-    /**
-     * create(), but get data from a local file instead.
-     * used to create the ORIGINAL image version from the uploaded file
-     *
-     * @param imageFile
-     * @param itemInformationId
-     * @returns {Promise<Image>}
-     */
-    @validate()
-    public async createFromFile(imageFile: any, itemInformationId: number): Promise<Image> {
-        // TODO: ADD TYPE TO imageFile!!
-
-        const dataStr = fs.readFileSync(imageFile.path, 'base64');
-
-        // TODO: use factory
-        const imageDataCreateRequest = {
-            dataId: imageFile.fieldname, // replaced with local url in factory
-            protocol: ProtocolDSN.FILE,
-            imageVersion: ImageVersions.ORIGINAL.propName,
-            encoding: 'BASE64',
-            data: dataStr,
-            originalMime: imageFile.mimetype,
-            originalName: imageFile.originalname
-        } as ImageDataCreateRequest;
-
-        // TODO: use factory
-        const imageCreateRequest = {
-            item_information_id: itemInformationId,
-            data: [imageDataCreateRequest]
-        } as ImageCreateRequest;
-
-        imageCreateRequest.hash = ConfigurableHasher.hash(imageCreateRequest, new HashableImageCreateRequestConfig());
-
-        return await this.create(imageCreateRequest);
     }
 
     /**

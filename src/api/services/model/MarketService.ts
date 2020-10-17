@@ -111,7 +111,7 @@ export class MarketService {
         if (!_.isEmpty(imageCreateRequest)) {
             await this.imageService.create(imageCreateRequest).then(async value => {
                 const image: resources.Image = value.toJSON();
-                await this.updateImage(market.id, image.id);
+                await this.setImage(market.id, image.id);
             });
         }
 
@@ -151,7 +151,7 @@ export class MarketService {
         return await this.findOne(id, true);
     }
 
-    public async updateImage(id: number, imageId: number): Promise<Market> {
+    public async setImage(id: number, imageId: number): Promise<Market> {
         const market = await this.findOne(id, false);
         market.set('imageId', imageId);
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());

@@ -155,7 +155,7 @@ export class MarketAddActionService extends BaseActionService {
 
             const market: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
             for (const existingImage of existingImages) {
-                await this.marketService.updateImage(market.id, existingImage.id).then(value => {
+                await this.marketService.setImage(market.id, existingImage.id).then(value => {
                     this.log.debug('updated, image: ' + existingImage.id + ', for market: ' + market.id + '.');
                 });
             }

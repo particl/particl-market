@@ -122,7 +122,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         if (typeSpecifier === 'market') {
-            await this.marketService.updateImage(type.id, image.id);
+            await this.marketService.setImage(type.id, image.id);
         }
 
         if (!skipResize && typeSpecifier === 'template') {

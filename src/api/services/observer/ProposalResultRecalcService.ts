@@ -131,7 +131,7 @@ export class ProposalResultRecalcService extends BaseObserverService {
 
                         const found: resources.Blacklist[] = await this.blacklistService.search({
                             type,
-                            target,
+                            targets: [target],
                             market
                         } as BlacklistSearchParams).then(valueBL => valueBL.toJSON());
 
