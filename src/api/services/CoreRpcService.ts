@@ -662,7 +662,7 @@ export class CoreRpcService extends CtRpc {
         if (estimateFee) {
             params = params.concat([null, null, 5, 1, true]);  // comment, comment_to, ringsize, inputs_per_sig, test_fee
         }
-        this.log.debug('params: ', JSON.stringify(params, null, 2));
+        // this.log.debug('params: ', JSON.stringify(params, null, 2));
         return await this.call('sendtypeto', params, wallet);
     }
 

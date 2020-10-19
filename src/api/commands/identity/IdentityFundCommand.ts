@@ -81,14 +81,6 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
         const outputs: RpcBlindSendToOutput[] = [];
         const singleTxAmount: number = +math.format(math.divide(amount, outputCount), {precision: 8});
 
-/*
-        let childSum: BigNumber = math.bignumber(0);
-        for (const childResult of smsgSendResponse.childResults) {
-            childSum = math.add(childSum, math.bignumber(childResult.fee ? childResult.fee : 0));
-        }
-        smsgSendResponse.totalFees = +math.format(math.add(childSum, math.bignumber(smsgSendResponse.fee ? smsgSendResponse.fee : 0)), {precision: 8});
-        minRequiredUtxos = minRequiredUtxos + (paidImageMessages ? smsgSendResponse.childResults.length : 0);
-*/
         for (let i = 0; i < outputCount; i++) {
             const addr: CryptoAddress = await this.coreRpcService.getNewStealthAddress(identity.wallet);
             const output = {
@@ -99,7 +91,6 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
             outputs.push(output);
         }
 
-        this.log.debug('estimateFee: ', estimateFee);
         const result = await this.coreRpcService.sendTypeTo(walletFrom, OutputType.PART, OutputType.ANON, outputs, estimateFee);
         if (estimateFee) {
             return result;
