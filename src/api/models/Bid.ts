@@ -45,7 +45,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ItemInformation.ItemLocation',
         'ListingItem.ItemInformation.ItemLocation.LocationMarker',
         'ListingItem.ItemInformation.Images',
-        'ListingItem.ItemInformation.Images.ItemImageDatas',
+        'ListingItem.ItemInformation.Images.ImageDatas',
         'ListingItem.ItemInformation.ShippingDestinations',
         'ListingItem.PaymentInformation',
         'ListingItem.PaymentInformation.Escrow',

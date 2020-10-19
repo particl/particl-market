@@ -648,11 +648,22 @@ export class CoreRpcService extends CtRpc {
      * @param typeIn        (OutputType, required) part/blind/anon
      * @param typeOut       (OutputType, required) part/blind/anon
      * @param outputs       (json array, required) A json array of json objects
+     * @param estimateFee
      */
-    public async sendTypeTo(wallet: string, typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[]): Promise<string> {
-        const txid =  await this.call('sendtypeto', [typeIn.toString().toLowerCase(), typeOut.toString().toLowerCase(), outputs], wallet);
-        this.log.debug('sendTypeTo(), txid: ', txid);
-        return txid;
+    public async sendTypeTo(wallet: string, typeIn: OutputType, typeOut: OutputType, outputs: RpcBlindSendToOutput[],
+                            estimateFee: boolean = false): Promise<string | any> {
+
+        let params: any[] = [
+            typeIn.toString().toLowerCase(),
+            typeOut.toString().toLowerCase(),
+            outputs
+        ];
+
+        if (estimateFee) {
+            params = params.concat([null, null, 5, 1, true]);  // comment, comment_to, ringsize, inputs_per_sig, test_fee
+        }
+        this.log.debug('params: ', JSON.stringify(params, null, 2));
+        return await this.call('sendtypeto', params, wallet);
     }
 
     /**

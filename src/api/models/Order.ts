@@ -21,7 +21,7 @@ export class Order extends Bookshelf.Model<Order> {
         'OrderItems.Bid.ListingItem',
         'OrderItems.Bid.ListingItem.ItemInformation',
         'OrderItems.Bid.ListingItem.ItemInformation.Images',
-        'OrderItems.Bid.ListingItem.ItemInformation.Images.ItemImageDatas',
+        'OrderItems.Bid.ListingItem.ItemInformation.Images.ImageDatas',
         'OrderItems.Bid.ListingItem.PaymentInformation.ItemPrice',
         'OrderItems.Bid.ListingItem.PaymentInformation.ItemPrice.ShippingPrice',
         'OrderItems.Bid.ListingItem.ListingItemTemplate',
