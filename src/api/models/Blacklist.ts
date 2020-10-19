@@ -14,7 +14,9 @@ import { BlacklistSearchParams } from '../requests/search/BlacklistSearchParams'
 export class Blacklist extends Bookshelf.Model<Blacklist> {
 
     public static RELATIONS = [
-        'Profile'
+        'Profile',
+        'ListingItem'
+        // 'Market'
     ];
 
     /**
@@ -122,5 +124,9 @@ export class Blacklist extends Bookshelf.Model<Blacklist> {
     public ListingItem(): ListingItem {
         return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
-
+/*
+    public Market(): Market {
+        return this.belongsTo(Market, 'market_id', 'id');
+    }
+*/
 }

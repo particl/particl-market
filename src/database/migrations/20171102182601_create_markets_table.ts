@@ -40,12 +40,12 @@ exports.up = (db: Knex): Promise<any> => {
             // the market isn't joined, its just been promoted
 
             table.integer('profile_id').unsigned().nullable();
-            table.foreign('profile_id').references('id')
-                .inTable('profiles').onDelete('SET NULL');
+            // table.foreign('profile_id').references('id')
+            //    .inTable('profiles').onDelete('SET NULL');
 
             table.integer('identity_id').unsigned().nullable();
-            table.foreign('identity_id').references('id')
-                .inTable('identities').onDelete('CASCADE');
+            // table.foreign('identity_id').references('id')
+            //    .inTable('identities').onDelete('SET NULL');
 
             // table.unique(['receive_address', 'profile_id']);
             table.unique(['name', 'profile_id']);

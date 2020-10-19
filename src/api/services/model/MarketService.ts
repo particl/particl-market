@@ -101,7 +101,6 @@ export class MarketService {
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
         const body: MarketCreateRequest = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
 
         const imageCreateRequest = body.image;
         delete body.image;

@@ -18,7 +18,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../enums/SearchOrderField';
-import {Blacklist} from './Blacklist';
+import { Blacklist } from './Blacklist';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 

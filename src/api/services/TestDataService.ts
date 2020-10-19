@@ -564,13 +564,9 @@ export class TestDataService {
             'addresses',
             'favorite_items',
             'cryptocurrency_addresses',
-            'identities',
-            'profiles',
             'shopping_cart_items',
             'shopping_carts',
             'item_categories',
-            'markets',
-            'identities',
             'settings',
             'price_ticker', // todo: price_tickers
             'flagged_items',
@@ -582,7 +578,10 @@ export class TestDataService {
             'votes',
             'smsg_messages',
             'comments',
-            'blacklists'
+            'blacklists',
+            'markets',
+            'identities',
+            'profiles'
         ];
 
         this.log.debug('cleaning ' + tablesToClean.length + ' tables...');

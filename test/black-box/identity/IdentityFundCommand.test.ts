@@ -11,6 +11,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 
 
 describe('IdentityFundCommand', () => {
@@ -127,6 +128,7 @@ describe('IdentityFundCommand', () => {
             market.Identity.wallet,
             1,
             3,
+            OutputType.PART,
             true
         ]);
         res.expectJson();

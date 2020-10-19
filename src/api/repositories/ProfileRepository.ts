@@ -10,6 +10,7 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 
+
 export class ProfileRepository {
 
     public log: LoggerType;

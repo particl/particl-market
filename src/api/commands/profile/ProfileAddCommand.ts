@@ -11,20 +11,17 @@ import { Types, Core, Targets } from '../../../constants';
 import { ProfileService } from '../../services/model/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ProfileCreateRequest } from '../../requests/model/ProfileCreateRequest';
-import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { MissingParamException } from '../../exceptions/MissingParamException';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { SettingService } from '../../services/model/SettingService';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { IdentityService } from '../../services/model/IdentityService';
+import { BooleanValidationRule, CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -38,49 +35,34 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     /**
-     * data.params[]:
+     * params[]:
      *  [0]: name
-     *
-     * @param data
-     * @returns {Promise<Profile>}
+     *  [1]: force, optional, force creation even if wallet exists
      */
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new StringValidationRule('name', true),
+                new BooleanValidationRule('force', false, false)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
+    }
+
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Profile> {
-
         const profile: resources.Profile = await this.profileService.create({
             name: data.params[0]
         } as ProfileCreateRequest).then(value => value.toJSON());
 
-        // create Identity for default Profile
         await this.identityService.createProfileIdentity(profile).then(value => value.toJSON());
-
         return await this.profileService.findOne(profile.id).then(value => value.toJSON());
     }
 
-    /**
-     * data.params[]:
-     *  [0]: name
-     *  [1]: force, optional, force creation even if wallet exists
-     *
-     * @param data
-     * @returns {Promise<Profile>}
-     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+        await super.validate(data);
 
-        if (data.params.length < 1) {
-            throw new MissingParamException('name');
-        }
-
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('name', 'string');
-        }
-
-        let force = false;
-        if (!_.isNil(data.params[1]) && typeof data.params[1] !== 'boolean') {
-            throw new InvalidParamException('force', 'boolean');
-        } else if (!_.isNil(data.params[1])) {
-            force = data.params[1];
-        }
+        const name = data.params[0];
+        const force = data.params[1];
 
         // check if profile already exists for the given name
         let exists = await this.profileService.findOneByName(data.params[0])
@@ -106,12 +88,14 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' <name> ';
+        return this.getName() + ' <name> [force]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <name>            - The name of the Profile we want to create. \n';
+            + '    <name>            - string, The name of the Profile we want to create. \n'
+            + '    <force>           - boolean, [optional] Force creation even if wallet exists. \n';
+
     }
 
     public description(): string {

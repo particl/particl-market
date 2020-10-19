@@ -6,19 +6,16 @@ import { Bookshelf } from '../../config/Database';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
 import { ShippingPrice } from './ShippingPrice';
 
+
 export class ItemPrice extends Bookshelf.Model<ItemPrice> {
 
+    public static RELATIONS = [
+        'ShippingPrice',
+        'CryptocurrencyAddress'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemPrice> {
-        if (withRelated) {
-            return await ItemPrice.where<ItemPrice>({ id: value }).fetch({
-                withRelated: [
-                    'ShippingPrice',
-                    'CryptocurrencyAddress'
-                ]
-            });
-        } else {
-            return await ItemPrice.where<ItemPrice>({ id: value }).fetch();
-        }
+        return ItemPrice.where<ItemPrice>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public get tableName(): string { return 'item_prices'; }

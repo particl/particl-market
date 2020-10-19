@@ -17,7 +17,7 @@ import { ProfileService } from '../../services/model/ProfileService';
 import { IdentityService } from '../../services/model/IdentityService';
 import {
     BooleanValidationRule,
-    CommandParamValidationRules,
+    CommandParamValidationRules, EnumValidationRule,
     IdValidationRule,
     NumberValidationRule,
     ParamValidationRule,
@@ -57,6 +57,8 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
      *  [1]: walletFrom: string
      *  [2]: amount: number
      *  [3]: outputCount: number, optional, default: 10
+     *  [3]: fromType: OutputType, optional, default: OutputType.PART
+     *  [3]: estimateFee: boolean, optional, default: false
      */
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
@@ -65,6 +67,8 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
                 new StringValidationRule('walletFrom', true),
                 new PriceValidationRule('amount', true),
                 new NumberValidationRule('outputCount', false, 10),
+                new EnumValidationRule('fromType', false, 'OutputType',
+                    [OutputType.ANON, OutputType.BLIND, OutputType.PART] as string[], OutputType.PART),
                 new BooleanValidationRule('estimateFee', false, false)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
@@ -76,7 +80,8 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
         const walletFrom: string = data.params[1];
         const amount: number = data.params[2];
         const outputCount: number = Math.floor(data.params[3]);
-        const estimateFee: boolean = data.params[4];
+        const fromType: OutputType = data.params[4];
+        const estimateFee: boolean = data.params[5];
 
         const outputs: RpcBlindSendToOutput[] = [];
         const singleTxAmount: number = +math.format(math.divide(amount, outputCount), {precision: 8});
@@ -91,7 +96,7 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
             outputs.push(output);
         }
 
-        const result = await this.coreRpcService.sendTypeTo(walletFrom, OutputType.PART, OutputType.ANON, outputs, estimateFee);
+        const result = await this.coreRpcService.sendTypeTo(walletFrom, fromType, OutputType.ANON, outputs, estimateFee);
         if (estimateFee) {
             return result;
         } else {
@@ -120,7 +125,7 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public usage(): string {
-        return this.getName() + ' <identityId> <walletFrom> <amount> [outputCount] [estimateFee]';
+        return this.getName() + ' <identityId> <walletFrom> <amount> [outputCount] [typeIn] [estimateFee]';
     }
 
     public help(): string {
@@ -129,6 +134,7 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
             + '    <walletFrom>             - string, Wallet used for funding. \n'
             + '    <amount>                 - number, Amount to be funded. \n'
             + '    <outputCount>            - number, [optional] Amount of utxos to create, default: 10. \n'
+            + '    <typeIn>                 - OutputType, [optional] Output type to send funds from, default: PART.'
             + '    <estimateFee>            - boolean, [optional] Estimate the fee, default: false. \n';
     }
 

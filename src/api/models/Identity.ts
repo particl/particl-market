@@ -8,6 +8,7 @@ import { Collection, Model } from 'bookshelf';
 import { Market } from './Market';
 import { ShoppingCart } from './ShoppingCart';
 import { Bid } from './Bid';
+import { Image } from './Image';
 
 
 export class Identity extends Bookshelf.Model<Identity> {
@@ -102,6 +103,10 @@ export class Identity extends Bookshelf.Model<Identity> {
 
     public Bids(): Collection<Bid> {
         return this.hasMany(Bid, 'identity_id', 'id');
+    }
+
+    public Image(): Image {
+        return this.belongsTo(Image, 'image_id', 'id');
     }
 
 }

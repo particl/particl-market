@@ -12,10 +12,10 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('name').notNullable().unique();
 
-            // todo: add relation to the Profile Identity here
+            // todo: add relation to the Profile Identity?
 
             table.integer('image_id').unsigned().nullable();
-            table.foreign('image_id').references('id').inTable('images');
+            // table.foreign('image_id').references('id').inTable('images');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
