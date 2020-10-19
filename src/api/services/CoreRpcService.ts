@@ -998,6 +998,7 @@ export class CoreRpcService extends CtRpc {
         if (wallet === undefined) {
             return url;
         } else {
+            wallet = wallet.replace(/\\/g, '%5C');
             return url + '/wallet/' + wallet;
         }
     }
