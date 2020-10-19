@@ -21,7 +21,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('parent_listing_item_template_id').unsigned().nullable();
             table.foreign('parent_listing_item_template_id').references('id')
-                .inTable('listing_item_templates').onDelete('cascade');
+                .inTable('listing_item_templates').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

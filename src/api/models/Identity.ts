@@ -9,6 +9,7 @@ import { Market } from './Market';
 import { ShoppingCart } from './ShoppingCart';
 import { Bid } from './Bid';
 
+
 export class Identity extends Bookshelf.Model<Identity> {
 
     public static RELATIONS = [

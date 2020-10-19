@@ -14,10 +14,12 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('value').notNullable();
 
             table.integer('profile_id').unsigned().nullable();
-            table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
+            table.foreign('profile_id').references('id')
+                .inTable('profiles').onDelete('CASCADE');
 
             table.integer('market_id').unsigned().nullable();
-            table.foreign('market_id').references('id').inTable('markets').onDelete('CASCADE');
+            table.foreign('market_id').references('id')
+                .inTable('markets').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

@@ -12,7 +12,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.integer('profile_id').unsigned().notNullable();
-            table.foreign('profile_id').references('id').inTable('profiles');
+            // table.foreign('profile_id').references('id')
+            //    .inTable('profiles').onDelete('SET NULL');
 
             table.string('type').notNullable();
 

@@ -11,6 +11,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('name').notNullable().unique();
+
+            // todo: add relation to the Profile Identity here
+
             table.integer('image_id').unsigned().nullable();
             table.foreign('image_id').references('id').inTable('images');
 
