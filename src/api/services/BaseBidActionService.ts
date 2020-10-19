@@ -41,6 +41,7 @@ export abstract class BaseBidActionService extends BaseActionService {
     public bidService: BidService;
     public bidFactory: BidFactory;
 
+    // tslint:disable:parameters-max-number
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
@@ -60,7 +61,8 @@ export abstract class BaseBidActionService extends BaseActionService {
             smsgMessageFactory,
             validator,
             Logger
-    );
+        );
+        // tslint:enable:parameters-max-number
 
         this.listingItemService = listingItemService;
         this.bidService = bidService;

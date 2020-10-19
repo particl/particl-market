@@ -324,14 +324,14 @@ export class VoteActionService extends BaseActionService {
                     if (_.isNil(flaggedItem.ListingItem)) {
                         return; // should not happen
                     }
-                    await this.listingItemService.setRemovedFlag(flaggedItem.ListingItem!.id, remove);
+                    await this.listingItemService.setRemovedFlag(flaggedItem.ListingItem.id, remove);
                     break;
 
                 case ProposalCategory.MARKET_VOTE:
                     if (_.isNil(flaggedItem.Market)) {
                         return; // should not happen
                     }
-                    await this.marketService.setRemovedFlag(flaggedItem.Market!.id, remove);
+                    await this.marketService.setRemovedFlag(flaggedItem.Market.id, remove);
                     break;
 
                 default:

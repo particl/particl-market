@@ -130,6 +130,7 @@ import { SmsgRemoveCommand } from '../commands/smsg/SmsgRemoveCommand';
 import { SmsgResendCommand } from '../commands/smsg/SmsgResendCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 import { IdentityAddCommand } from '../commands/identity/IdentityAddCommand';
+import { IdentityFundCommand } from '../commands/identity/IdentityFundCommand';
 import { IdentityListCommand } from '../commands/identity/IdentityListCommand';
 import { IdentityRootCommand } from '../commands/identity/IdentityRootCommand';
 import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
@@ -313,6 +314,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.identity.IdentityAddCommand) private identityAddCommand: IdentityAddCommand,
+        @inject(Types.Command) @named(Targets.Command.identity.IdentityFundCommand) private identityFundCommand: IdentityFundCommand,
         @inject(Types.Command) @named(Targets.Command.identity.IdentityListCommand) private identityListCommand: IdentityListCommand,
         @inject(Types.Command) @named(Targets.Command.identity.IdentityRootCommand) private identityRootCommand: IdentityRootCommand,
 
@@ -490,6 +492,7 @@ export class RpcCommandFactory {
         this.commands.push(smsgRootCommand);
 
         this.commands.push(identityAddCommand);
+        this.commands.push(identityFundCommand);
         this.commands.push(identityListCommand);
         this.commands.push(identityRootCommand);
 
