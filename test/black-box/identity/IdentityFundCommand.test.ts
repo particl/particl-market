@@ -20,26 +20,39 @@ describe('IdentityFundCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const identityCommand = Commands.IDENTITY_ROOT.commandName;
     const identityFundCommand = Commands.IDENTITY_FUND.commandName;
 
-    let profile: resources.Profile;
-    let market: resources.Market;
+    let sellerProfile: resources.Profile;
+    let buyerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let buyerMarket: resources.Market;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
 
-        profile = await testUtil.getDefaultProfile();
-        expect(profile.id).toBeDefined();
-        market = await testUtil.getDefaultMarket(profile.id);
-        expect(market.id).toBeDefined();
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        expect(buyerProfile.id).toBeDefined();
+        // log.debug('sellerProfile.id: ', sellerProfile.id);
+        // log.debug('buyerProfile.id: ', buyerProfile.id);
+
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
+        expect(buyerMarket.id).toBeDefined();
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
     });
 
 
     test('Should fail because missing identityId', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -47,8 +60,8 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should fail because missing walletFrom', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -56,9 +69,9 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should fail because missing amount', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id,
-            market.Identity.wallet
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
+            sellerMarket.Identity.wallet
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -67,9 +80,9 @@ describe('IdentityFundCommand', () => {
 
 
     test('Should fail because invalid identityId', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
             false,
-            market.Identity.wallet,
+            sellerMarket.Identity.wallet,
             1
         ]);
         res.expectJson();
@@ -78,8 +91,8 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should fail because invalid walletFrom', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id,
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
             false,
             1
         ]);
@@ -89,9 +102,9 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should fail because invalid amount', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id,
-            market.Identity.wallet,
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
+            sellerMarket.Identity.wallet,
             false
         ]);
         res.expectJson();
@@ -101,9 +114,9 @@ describe('IdentityFundCommand', () => {
 
 
     test('Should fail because Identity not found', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
             0,
-            market.Identity.wallet,
+            sellerMarket.Identity.wallet,
             1
         ]);
         res.expectJson();
@@ -112,9 +125,9 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should fail because wallet not found', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id,
-            market.Identity.wallet + '_NOT_FOUND',
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
+            sellerMarket.Identity.wallet + '_NOT_FOUND',
             1
         ]);
         res.expectJson();
@@ -123,9 +136,9 @@ describe('IdentityFundCommand', () => {
     });
 
     test('Should estimate the funding fee', async () => {
-        const res: any = await testUtil.rpc(identityCommand, [identityFundCommand,
-            market.Identity.id,
-            market.Identity.wallet,
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
+            sellerMarket.Identity.wallet,
             1,
             3,
             OutputType.PART,
@@ -139,4 +152,37 @@ describe('IdentityFundCommand', () => {
         expect(result.fee).toBeGreaterThan(0);
     });
 
+    test('Should fund from sellerMarket Identity with ANON', async () => {
+        const res: any = await testUtilSellerNode.rpc(identityCommand, [identityFundCommand,
+            sellerMarket.Identity.id,
+            sellerMarket.Identity.wallet,
+            2,
+            8,
+            OutputType.ANON,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        log.debug('txid:', result.txid);
+        expect(result.txid).not.toBeNull();
+    });
+
+    test('Should fund from buyerMarket Identity with ANON', async () => {
+        const res: any = await testUtilBuyerNode.rpc(identityCommand, [identityFundCommand,
+            buyerMarket.Identity.id,
+            buyerMarket.Identity.wallet,
+            2,
+            8,
+            OutputType.ANON,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        log.debug('txid:', result.txid);
+        expect(result.txid).not.toBeNull();
+    });
 });

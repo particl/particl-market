@@ -49,6 +49,8 @@ export class IdentityFundCommand extends BaseCommand implements RpcCommandInterf
     ) {
         super(Commands.IDENTITY_FUND);
         this.log = new Logger(__filename);
+
+        this.debug = true;
     }
 
     /**
