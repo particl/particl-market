@@ -9,8 +9,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryService } from './model/ItemCategoryService';
 import { ItemCategoryCreateRequest } from '../requests/model/ItemCategoryCreateRequest';
-import { ItemCategoryUpdateRequest } from '../requests/model/ItemCategoryUpdateRequest';
-import { hash } from 'omp-lib/dist/hasher/hash';
 
 export class DefaultItemCategoryService {
 
@@ -30,8 +28,7 @@ export class DefaultItemCategoryService {
      */
     public async seedDefaultCategories(market?: string): Promise<void> {
 
-        this.log.debug('seedDefaultCategories(), market: ', market);
-
+        // this.log.debug('seedDefaultCategories(), market: ', market);
         const ROOT: resources.ItemCategory = await this.itemCategoryService.insertOrUpdateCategory( { name: 'ROOT', description: 'root item category', market } as ItemCategoryCreateRequest);
 
         let LEVEL1CHILD = await this.itemCategoryService.insertOrUpdateCategory({ name: 'Particl', description: '', market } as ItemCategoryCreateRequest, [ROOT]);

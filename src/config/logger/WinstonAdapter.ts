@@ -16,18 +16,17 @@ import * as winston from 'winston';
 import { Environment } from '../../core/helpers/Environment';
 import { DataDir } from '../../core/helpers/DataDir';
 
-
 export class WinstonAdapter implements interfaces.LoggerAdapter {
 
     private logger: winston.LoggerInstance;
 
     constructor(private scope: string) {
+
         const logs: any = [
             new winston.transports.Console({
                 level: process.env.LOG_LEVEL,
                 timestamp: true,
                 handleExceptions: Environment.isProduction(),
-                // json: Environment.isProduction(),
                 json: false,
                 colorize: !Environment.isProduction()
             })
@@ -39,10 +38,9 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                     level: process.env.LOG_LEVEL,
                     filename: DataDir.getLogFile(),
                     handleExceptions: Environment.isProduction(),
-                    // json: Environment.isProduction(),
                     json: false,
                     maxsize: 52428800, // 50MB
-                    maxFiles: 5,
+                    maxFiles: 1,
                     colorize: false
                 }));
         }

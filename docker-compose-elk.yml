@@ -1,0 +1,80 @@
+version: '2.4'
+
+services:
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.1
+    volumes:
+        - ./data/elkf/elasticsearch/data:/usr/share/elasticsearch/data:cached
+        - ./data/elkf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+        - 9200:9200
+        - 9300:9300
+    environment:
+        ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+        ELASTIC_PASSWORD: changeme
+#    networks:
+#        - elk
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.3.1
+    volumes:
+        - ./data/elkf/logstash/pipeline:/usr/share/logstash/pipeline:ro
+        - ./data/elkf/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+    ports:
+        - 5000:5000
+        - 9600:9600
+    expose:
+        - 5044
+    environment:
+        LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+#    networks:
+#        - elk
+    depends_on:
+        - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.3.1
+    volumes:
+        - ./data/elkf/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+        - 5601:5601
+#    networks:
+#        - elk
+    depends_on:
+        - elasticsearch
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+        - ./data/elkf/nginx/config:/etc/nginx/conf.d
+        - ./data/elkf/nginx/log:/var/log/nginx
+    ports:
+        - "80:80"
+        - "443:443"
+    links:
+        - app1:app1
+    depends_on:
+        - app1
+#    networks:
+#        - elk
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.3.2
+    entrypoint: "filebeat -e -strict.perms=false"
+    volumes:
+        - ./data/elkf/filebeat.yml:/usr/share/filebeat/filebeat.yml
+        - ./data/elkf/nginx/log:/var/log/nginx
+        - ./data/app1:/var/log/app1
+        - ./data/app2:/var/log/app2
+#    networks:
+#        - elk
+    depends_on:
+        - app1
+        - app2
+        - nginx
+        - logstash
+        - elasticsearch
+        - kibana
+    links:
+        - logstash

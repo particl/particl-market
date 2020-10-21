@@ -19,6 +19,7 @@ import { CoreRpcService } from '../../services/CoreRpcService';
 import { SettingService } from '../../services/model/SettingService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { BooleanValidationRule, CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import * as path from "path";
 
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
@@ -78,9 +79,10 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         // check if wallet file already exists for the given name
-        const walletName = 'profiles/' + data.params[0];
+        const walletName = path.join('profiles', name);
+
         exists = await this.coreRpcService.walletExists(walletName);
-        if ((exists && !force) || data.params[0] === 'wallet') {
+        if ((exists && !force) || name === 'wallet') {
             throw new MessageException('Wallet with the same name already exists.');
         }
 

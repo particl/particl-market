@@ -17,6 +17,7 @@ import { IdentityService } from '../../src/api/services/model/IdentityService';
 import { IdentityCreateRequest } from '../../src/api/requests/model/IdentityCreateRequest';
 import { IdentityUpdateRequest } from '../../src/api/requests/model/IdentityUpdateRequest';
 import { IdentityType } from '../../src/api/enums/IdentityType';
+import * as path from "path";
 
 describe('Identity', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -77,8 +78,8 @@ describe('Identity', () => {
         const identities: resources.Identity[] = await identityService.findAll().then(value => value.toJSON());
         expect(identities.length).toBe(3);
 
-        expect(identities[0].wallet).toBe('profiles/DEFAULT');
-        expect(identities[1].wallet).toBe('profiles/DEFAULT/particl-market');
+        expect(identities[0].wallet).toBe(path.join('profiles', 'DEFAULT'));
+        expect(identities[1].wallet).toBe(path.join('profiles', 'DEFAULT', 'particl-market'));
         expect(identities[2].wallet).toBe(testData.wallet);
     });
 

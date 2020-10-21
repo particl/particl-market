@@ -92,7 +92,6 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
         const marketplaceMessage = await this.listingItemAddActionService.createMarketplaceMessage(actionRequest);
 
         return await this.listingItemAddActionService.getMarketplaceMessageSize(marketplaceMessage);
-
     }
 
     /**
