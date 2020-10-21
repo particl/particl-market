@@ -53,14 +53,6 @@ export class VoteValidator implements ActionMessageValidatorInterface {
 
         const actionMessage: VoteMessage = marketplaceMessage.action as VoteMessage;
 
-        const proposal: resources.Proposal = await this.proposalService.findOneByHash(actionMessage.proposalHash).then(value => value.toJSON());
-        if (actionMessage && actionMessage.generated > proposal.expiredAt) {
-            this.log.error('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + actionMessage.generated);
-            // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
-            // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
-            throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
-        }
-
         // verify that the Vote was actually sent by the owner of the address
         const verified = await this.verifyVote(actionMessage);
         if (!verified) {
@@ -69,14 +61,17 @@ export class VoteValidator implements ActionMessageValidatorInterface {
             this.log.debug('Vote verified!');
         }
 
-        // address needs to have balance for the Vote to matter
-        const balance = await this.coreRpcService.getAddressBalance(actionMessage.voter).then(value => parseInt(value.balance, 10));
-        this.log.debug('balance: ', JSON.stringify(balance, null, 2));
+        // TODO: propably fails validation here if Proposal is not received yet
+/*
+        const proposal: resources.Proposal = await this.proposalService.findOneByHash(actionMessage.proposalHash).then(value => value.toJSON());
 
-        // if (balance <= 0) {
-        //    throw new MessageException('Vote address has no balance.');
-        // }
-
+        if (actionMessage && actionMessage.generated > proposal.expiredAt) {
+            this.log.error('proposal.expiredAt: ' + proposal.expiredAt + ' < ' + 'smsgMessage.sent: ' + actionMessage.generated);
+            // smsgMessage -> message was received, there's no smsgMessage if the vote was just saved locally
+            // smsgMessage.sent > proposal.expiredAt -> message was sent after expiration
+            throw new MessageException('Vote is invalid, it was sent after Proposal expiration.');
+        }
+*/
         return true;
     }
 

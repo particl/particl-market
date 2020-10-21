@@ -202,6 +202,7 @@ export class VoteActionService extends BaseActionService {
 
         let proposal: resources.Proposal = await this.proposalService.findOneByHash(voteMessage.proposalHash).then(value => value.toJSON());
 
+        // proposal is not quaranteed to be received when the validator is first run, so we check this here
         if (smsgMessage && smsgMessage.sent > proposal.expiredAt) {
             this.log.error('Vote is invalid, it was sent after Proposal expiration.');
             return smsgMessage;

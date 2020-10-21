@@ -498,7 +498,7 @@ describe('Happy ListingItem Vote Flow', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should have flagged ListingItem on SELLER node', async () => {
+    test('Should have also flagged the ListingItem on SELLER node', async () => {
 
         log.debug('proposalReceivedOnBuyerNode: ', JSON.stringify(proposalReceivedOnBuyerNode, null, 2));
         log.debug('proposalReceivedOnSellerNode: ', JSON.stringify(proposalReceivedOnSellerNode, null, 2));
