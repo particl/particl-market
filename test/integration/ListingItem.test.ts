@@ -61,8 +61,8 @@ import { DefaultMarketService } from '../../src/api/services/DefaultMarketServic
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
-import {SellerMessage} from '../../src/api/services/action/ListingItemAddActionService';
-import {CoreRpcService} from '../../src/api/services/CoreRpcService';
+import { CoreRpcService } from '../../src/api/services/CoreRpcService';
+import { SellerMessage } from '../../src/api/factories/message/ListingItemAddMessageFactory';
 // tslint:enable:max-line-length
 
 describe('ListingItem', () => {
@@ -158,6 +158,7 @@ describe('ListingItem', () => {
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
 
+
     test('Should findOne ListingItem by id', async () => {
         const result: resources.ListingItem = await listingItemService.findOne(createdListingItem1.id).then(value => value.toJSON());
         expect(result.hash).toBe(createdListingItem1.hash);
@@ -210,7 +211,6 @@ describe('ListingItem', () => {
     });
 
 /*
-    TODO: skipping update because I'm not sure we even need this...
     test('Should update previously created ListingItem', async () => {
         const testDataToSave: ListingItemUpdateRequest = await generateListingItemCreateRequest();
 
@@ -296,6 +296,7 @@ describe('ListingItem', () => {
         await expectListingItemWasDeleted(createdListingItem1);
         createdListingItem1 = undefined;
     });
+
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
 
@@ -483,7 +484,6 @@ describe('ListingItem', () => {
         // ListingItemObjects
         if (!_.isEmpty(item.ListingItemObjects)) {
             for (const listingItemObject of item.ListingItemObjects) {
-                const listintItemObjectId = ;
                 // ListingItemObjectDatas
                 const listintItemObjectDatas = listingItemObject.ListingItemObjectDatas;
                 if (!_.isEmpty(listintItemObjectDatas)) {
@@ -506,6 +506,7 @@ describe('ListingItem', () => {
 
         const createRequest = {
             hash: Faker.random.uuid(),
+            removed: false,
             msgid: Faker.random.uuid(),
             seller: market.Identity.address,
             market: market.receiveAddress,
@@ -548,6 +549,7 @@ describe('ListingItem', () => {
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
+                        imageHash: 'TEST-IMAGEHASH1',
                         data: randomImageData
                     }] as ImageDataCreateRequest[],
                     featured: false,
@@ -560,6 +562,7 @@ describe('ListingItem', () => {
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
+                        imageHash: 'TEST-IMAGEHASH2',
                         data: randomImageData
                     }] as ImageDataCreateRequest[],
                     featured: false,
@@ -611,6 +614,7 @@ describe('ListingItem', () => {
             address: market.Identity.address,
             hash: createRequest.hash
         } as SellerMessage;
+
         const signature = await coreRpcService.signMessage(market.Identity.wallet, market.Identity.address, message);
         createRequest.signature = signature;
 
