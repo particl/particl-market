@@ -205,6 +205,7 @@ export class ImageService {
         });
         delete body.data;
 
+        this.log.debug('imageDataUpdateRequestOriginal:', imageDataUpdateRequestOriginal);
         if (imageDataUpdateRequestOriginal) {
             const image = await this.findOne(id, false);
             image.Hash = body.hash;

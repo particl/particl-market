@@ -40,13 +40,26 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         this.log = new Logger(__filename);
     }
 
+    /**
+     * params[]:
+     *  [0]: page, number, 0-based
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
+     *  [4]: type, CommentType (only LISTINGITEM_QUESTION_AND_ANSWERS supported for now)
+     *  [5]: receiver, string (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> Market.receiveAddress)
+     *  [6]: target, string, optional (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash)
+     *  [7]: sender, string
+     *  [8]: parentComment, resources.Comment, optional
+     */
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
                 new EnumValidationRule('commentType', true, 'CommentType', EnumHelper.getValues(CommentType) as string[]),
                 new StringValidationRule('receiver', true),
-                new StringValidationRule('target', false),              // todo: HashValidationRule
-                new StringValidationRule('parentCommentHash', false)    // todo: HashValidationRule
+                new StringValidationRule('target', false),
+                new StringValidationRule('sender', false),
+                new StringValidationRule('parentCommentHash', false)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -55,61 +68,38 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         return EnumHelper.getValues(CommentSearchOrderField) as string[];
     }
 
-    /**
-     * data.params[]:
-     *  [0]: page, number, 0-based
-     *  [1]: pageLimit, number
-     *  [2]: order, SearchOrder
-     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: type, CommentType (only LISTINGITEM_QUESTION_AND_ANSWERS supported for now)
-     *  [5]: receiver, string (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> Market.receiveAddress)
-     *  [6]: target, string, optional (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash)
-     *  [7]: parentComment, resources.Comment, optional
-     *
-     * @param data
-     * @returns {Promise<Bookshelf.Collection<Comment>>}
-     */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
 
-        const parentComment: resources.Comment = data.params[7];
+        const type: CommentType = data.params[4];
+        const receiver: string = data.params[5];
+        const target: string = data.params[6];                      // optional
+        const sender: string = data.params[7];                      // optional
+        const parentComment: resources.Comment = data.params[8];    // optional
 
         const searchParams = {
             page: data.params[0],
             pageLimit: data.params[1],
             order: data.params[2],
             orderField: data.params[3],
-            type: data.params[4],
-            receiver: data.params[5],
-            target: data.params[6],
+            type,
+            receiver,
+            target,
+            sender,
             parentCommentId: parentComment ? parentComment.id : undefined
-
         } as CommentSearchParams;
 
         return await this.commentService.search(searchParams);
     }
 
-    /**
-     * data.params[]:
-     *  [0]: page, number, 0-based
-     *  [1]: pageLimit, number
-     *  [2]: order, SearchOrder
-     *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: type, CommentType (LISTINGITEM_QUESTION_AND_ANSWERS)
-     *  [5]: receiver, string, this would be the marketReceiveAddress, or when private messaging, the receiving profile address
-     *  [6]: target, string, optional, when type === LISTINGITEM_QUESTION_AND_ANSWERS, ListingItem.hash
-     *  [7]: parentCommentHash, string, optional
-     *
-     * @param data
-     * @returns {Promise<RpcRequest>}
-     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const type = data.params[4];
-        const receiver = data.params[5];
-        const target = data.params[6];              // optional
-        const parentCommentHash = data.params[7];   // optional
+        const type: CommentType = data.params[4];
+        const receiver: string = data.params[5];
+        const target: string = data.params[6];      // optional
+        const sender: string = data.params[7];      // optional
+        const parentCommentHash = data.params[8];   // optional
 
         // TODO: add support for other CommentTypes
         if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
@@ -152,7 +142,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [parentCommentHash]';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [sender] [parentCommentHash]';
     }
 
     public help(): string {
@@ -164,6 +154,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             + '    <type>                   - CommentType - The type of Comment.\n'
             + '    <receiver>               - string - The receiver of the Comment (Market receiveAddress for example).\n'
             + '    <target>                 - [optional] string - The target of the Comment (ListingItem hash for example).\n'
+            + '    <sender>                 - [optional] string - The Comment sender address.\n'
             + '    <parentCommentHash>      - [optional] string - The hash of the parent Comment.\n';
     }
 
