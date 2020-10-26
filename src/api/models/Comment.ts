@@ -95,6 +95,10 @@ export class Comment extends Bookshelf.Model<Comment> {
                     qb.andWhere('comments.sender', '=', options.sender);
                 }
 
+                if (options.ignoreSenders) {
+                    qb.whereNotIn('comments.sender', options.ignoreSenders);
+                }
+
                 if (options.receiver) {
                     qb.andWhere('comments.receiver', '=', options.receiver);
                 }

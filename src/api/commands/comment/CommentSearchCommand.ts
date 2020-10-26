@@ -51,6 +51,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      *  [6]: target, string, optional (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash)
      *  [7]: sender, string
      *  [8]: parentComment, resources.Comment, optional
+     *  [9]: ignoreSenders, string[]
      */
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
@@ -76,6 +77,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         const target: string = data.params[6];                      // optional
         const sender: string = data.params[7];                      // optional
         const parentComment: resources.Comment = data.params[8];    // optional
+        const ignoreSenders: string[] = data.params[9];    // optional
 
         const searchParams = {
             page: data.params[0],
@@ -86,7 +88,8 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             receiver,
             target,
             sender,
-            parentCommentId: parentComment ? parentComment.id : undefined
+            parentCommentId: parentComment ? parentComment.id : undefined,
+            ignoreSenders
         } as CommentSearchParams;
 
         return await this.commentService.search(searchParams);
@@ -142,7 +145,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     }
 
     public usage(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [sender] [parentCommentHash]';
+        return this.getName() + ' <page> <pageLimit> <order> <orderField> <type> <receiver> [target] [sender] [parentCommentHash] [ignoreSenders]';
     }
 
     public help(): string {
@@ -155,7 +158,8 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
             + '    <receiver>               - string - The receiver of the Comment (Market receiveAddress for example).\n'
             + '    <target>                 - [optional] string - The target of the Comment (ListingItem hash for example).\n'
             + '    <sender>                 - [optional] string - The Comment sender address.\n'
-            + '    <parentCommentHash>      - [optional] string - The hash of the parent Comment.\n';
+            + '    <parentCommentHash>      - [optional] string - The hash of the parent Comment.\n'
+            + '    <ignoreSenders>          - [optional] string[] - Ignore comments from senders.\n';
     }
 
     public description(): string {
