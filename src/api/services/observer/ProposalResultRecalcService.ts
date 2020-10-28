@@ -67,7 +67,8 @@ export class ProposalResultRecalcService extends BaseObserverService {
             let proposalResult: resources.ProposalResult = await this.proposalResultService.findLatestByProposalHash(proposal.hash)
                 .then(async proposalResultModel => proposalResultModel.toJSON())
                 .catch(reason => {
-                    this.log.error('ERROR: ', reason);
+                    this.log.warn('ERROR: ', reason);
+                    this.log.debug('Did not find a ProposalResult, it will be calculed.');
                 });
 
             // recalculate if there is no ProposalResult yet or if its time to recalculate

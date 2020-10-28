@@ -18,7 +18,7 @@
     "test:single": "npm run banner test && cross-env NODE_ENV=test NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --verbose --testPathPattern=unit/$TEST",
     "test:coverage": "npm run test -- --coverage",
     "pretest:black-box": "./node_modules/.bin/tslint --project tsconfig.json --config ./tslint.json -t stylish './test/black-box/**/*.ts'",
-    "test:black-box": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --testPathPattern=black-box --runInBand",
+    "test:black-box": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --detectOpenHandles --testPathPattern=black-box --runInBand",
     "test:black-box:pretty": "npm run test:black-box -- --verbose",
     "test:black-box:single": "npm run banner test && cross-env NODE_ENV=blackbox NODE_OPTIONS=--max_old_space_size=8192 \"./node_modules/.bin/jest\" --forceExit --detectOpenHandles --verbose --testPathPattern=black-box/$TEST --runInBand",
     "test:black-box:coverage": "npm run test:black-box -- --coverage",

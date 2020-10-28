@@ -26,8 +26,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('expired_at').notNullable();
 
             table.integer('final_result_id').unsigned().nullable(); // set to final result after proposal expires
-            table.foreign('final_result_id').references('id')
-                .inTable('proposal_results');
+            // table.foreign('final_result_id').references('id').inTable('proposal_results');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
