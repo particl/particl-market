@@ -15,5 +15,5 @@ export class CommentSearchParams extends BaseSearchParams {
     public receiver: string;
     public target: string;
     public parentCommentId: number;
-    public ignoreSenders: string[]
+    public ignoreSenders: string[];
 }

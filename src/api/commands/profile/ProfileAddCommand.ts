@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as path from 'path';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -19,7 +20,6 @@ import { CoreRpcService } from '../../services/CoreRpcService';
 import { SettingService } from '../../services/model/SettingService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { BooleanValidationRule, CommandParamValidationRules, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import * as path from "path";
 
 
 export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<resources.Profile> {
