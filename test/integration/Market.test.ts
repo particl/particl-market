@@ -200,7 +200,8 @@ describe('Market', () => {
             receiveKey,
             receiveAddress,
             publishKey: receiveKey,
-            publishAddress: receiveAddress
+            publishAddress: receiveAddress,
+            description: '' // todo: fix this, hashing breaks when description === undefined
         } as MarketCreateRequest;
 
         testData.hash = ConfigurableHasher.hash(testData, new HashableMarketCreateRequestConfig());
