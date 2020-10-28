@@ -13,7 +13,6 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ProposalService } from '../../src/api/services/model/ProposalService';
 import { ProposalCreateRequest } from '../../src/api/requests/model/ProposalCreateRequest';
-import { ProposalUpdateRequest } from '../../src/api/requests/model/ProposalUpdateRequest';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/model/ProposalOptionCreateRequest';
 import { ProposalSearchParams } from '../../src/api/requests/search/ProposalSearchParams';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';

@@ -10,7 +10,6 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Targets, Types } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { Market } from '../../src/api/models/Market';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { MarketCreateRequest } from '../../src/api/requests/model/MarketCreateRequest';
 import { MarketUpdateRequest } from '../../src/api/requests/model/MarketUpdateRequest';

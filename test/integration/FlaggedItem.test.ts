@@ -22,7 +22,6 @@ import { GenerateProposalParams } from '../../src/api/requests/testdata/Generate
 import { FlaggedItemCreateRequest } from '../../src/api/requests/model/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../../src/api/models/FlaggedItem';
 import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedItemUpdateRequest';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
 
