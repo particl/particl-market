@@ -22,6 +22,9 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableProposalAddMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalAddMessageConfig';
 import { HashableProposalAddField, HashableProposalOptionField } from '../../src/api/factories/hashableconfig/HashableField';
 import { HashableProposalOptionMessageConfig } from '../../src/api/factories/hashableconfig/message/HashableProposalOptionMessageConfig';
+import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import { ProfileService } from '../../src/api/services/model/ProfileService';
+
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -31,18 +34,27 @@ describe('Proposal', () => {
 
     let testDataService: TestDataService;
     let proposalService: ProposalService;
+    let profileService: ProfileService;
+    let defaultMarketService: DefaultMarketService;
+
+    let profile: resources.Profile;
+    let market: resources.Market;
 
     let proposal1: resources.Proposal;
     let proposal2: resources.Proposal;
     let proposal3: resources.Proposal;
+    let proposal4: resources.Proposal;
 
     const time = Date.now();
+
     const testData = {
         submitter: 'partaddress',
         msgid: 'msgid11111',
+        market: 'marketreceiveaddress',
         category: ProposalCategory.PUBLIC_VOTE,
+        target:  'targethashforproposal',
         title:  'proposal x title',
-        description: 'proposal to x',
+        description: 'proposal x description',
         timeStart: time,
         postedAt: time,
         receivedAt: time + 10,
@@ -50,23 +62,33 @@ describe('Proposal', () => {
     } as ProposalCreateRequest;
 
     const testDataOptions = [{
-        description: 'one'
+        optionId: 0,
+        description: 'one',
+        hash: 'hash'
     }, {
-        description: 'two'
+        optionId: 1,
+        description: 'two',
+        hash: 'hash'
     }, {
-        description: 'three'
+        optionId: 2,
+        description: 'three',
+        hash: 'hash'
     }] as ProposalOptionCreateRequest[];
 
     const testDataUpdated = {
         submitter: 'UPDATE',
+        msgid: 'msgid22222',
+        market: 'marketreceiveaddress',
         category: ProposalCategory.PUBLIC_VOTE,
+        target:  'targethashforproposal',
         title:  'proposal y title',
         description: 'proposal to y',
+        hash: '',
         timeStart: time + 200,
         postedAt: time + 200,
         receivedAt: time + 210,
         expiredAt: time + 300
-    } as ProposalUpdateRequest;
+    };
 
 
     beforeAll(async () => {
@@ -74,6 +96,13 @@ describe('Proposal', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+
+        defaultMarketService = app.IoC.getNamed<DefaultMarketService>(Types.Service, Targets.Service.DefaultMarketService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.model.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.model.ProfileService);
+
+        profile = await profileService.getDefault().then(value => value.toJSON());
+        market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
     });
 
@@ -130,10 +159,6 @@ describe('Proposal', () => {
     });
 
     test('Should update the Proposal', async () => {
-        testDataUpdated.postedAt = new Date().getTime();
-        testDataUpdated.expiredAt = new Date().getTime() + 100000000;
-        testDataUpdated.receivedAt = new Date().getTime();
-
         const result: resources.Proposal = await proposalService.update(proposal1.id, addHashToCreateRequests(testDataUpdated)).then(value => value.toJSON());
 
         expect(result.category).toBe(testDataUpdated.category);
@@ -144,16 +169,9 @@ describe('Proposal', () => {
         expect(result.postedAt).toBe(testDataUpdated.postedAt);
         expect(result.receivedAt).toBe(testDataUpdated.receivedAt);
         expect(result.expiredAt).toBe(testDataUpdated.expiredAt);
+        proposal1 = result;
 
         // log.debug('first proposal: ', JSON.stringify(result, null, 2));
-    });
-
-    test('Should delete the Proposal', async () => {
-        expect.assertions(1);
-        await proposalService.destroy(proposal1.id);
-        await proposalService.findOne(proposal1.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(proposal1.id))
-        );
     });
 
     test('Should create a new Proposal with ProposalOptions', async () => {
@@ -165,9 +183,7 @@ describe('Proposal', () => {
 
         testData.options = testDataOptions;
 
-        proposal1 = await proposalService.create(addHashToCreateRequests(testData, testDataOptions)).then(value => value.toJSON());
-        const result: resources.Proposal = proposal1;
-
+        const result: resources.Proposal = await proposalService.create(addHashToCreateRequests(testData, testDataOptions)).then(value => value.toJSON());
         expect(result.category).toBe(testData.category);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -180,7 +196,7 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toBeDefined();
         expect(result.ProposalOptions).toHaveLength(3);
 
-        proposal1 = result;
+        proposal2 = result;
     });
 
     test('Should create another Proposal with different timeStart and expiredAt', async () => {
@@ -206,14 +222,21 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toBeDefined();
         expect(result.ProposalOptions).toHaveLength(3);
 
-        proposal2 = result;
+        proposal3 = result;
     });
 
-    test('Should find one Proposal ending after createdProposal2.timeStart time', async () => {
+    test('Should find one Proposal ending after time + 151', async () => {
+
+        // proposal1.expiredAt: time + 300 (after update)
+        // proposal2.expiredAt: time + 50
+        // proposal3.expiredAt: time + 150
+        expect(proposal1.expiredAt).toBe(time + 300);
+        expect(proposal2.expiredAt).toBe(time + 50);
+        expect(proposal3.expiredAt).toBe(time + 150);
 
         const searchParams = {
-            timeStart: proposal2.postedAt,
-            timeEnd: '*',
+            timeStart: time + 151,
+            // timeEnd: '*',
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -223,12 +246,18 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(1);
     });
 
-    test('Should find no Proposals ending after createdProposal2.expiredAt time + 10', async () => {
+    test('Should find no Proposals ending after time + 301', async () => {
 
-        const timeStart = proposal2.expiredAt + 10;
+        // proposal1.expiredAt: time + 300 (after update)
+        // proposal2.expiredAt: time + 50
+        // proposal3.expiredAt: time + 150
+        expect(proposal1.expiredAt).toBe(time + 300);
+        expect(proposal2.expiredAt).toBe(time + 50);
+        expect(proposal3.expiredAt).toBe(time + 150);
+
         const searchParams = {
-            timeStart,
-            timeEnd: '*',
+            timeStart: time + 301,
+            // timeEnd: '*',
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -238,11 +267,18 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(0);
     });
 
-    test('Should find two Proposals ending before or at createdProposal2.expiredAt', async () => {
+    test('Should find two Proposals ending before time + 151', async () => {
+
+        // proposal1.expiredAt: time + 300 (after update)
+        // proposal2.expiredAt: time + 50
+        // proposal3.expiredAt: time + 150
+        expect(proposal1.expiredAt).toBe(time + 300);
+        expect(proposal2.expiredAt).toBe(time + 50);
+        expect(proposal3.expiredAt).toBe(time + 150);
 
         const searchParams = {
-            timeStart: '*',
-            timeEnd: proposal2.expiredAt,
+            // timeStart: '*',
+            timeEnd: time + 151,
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -252,11 +288,18 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(2);
     });
 
-    test('Should find one Proposal ending before or at createdProposal1.expiredAt', async () => {
+    test('Should find one Proposal ending before or at time + 50', async () => {
+
+        // proposal1.expiredAt: time + 300 (after update)
+        // proposal2.expiredAt: time + 50
+        // proposal3.expiredAt: time + 150
+        expect(proposal1.expiredAt).toBe(time + 300);
+        expect(proposal2.expiredAt).toBe(time + 50);
+        expect(proposal3.expiredAt).toBe(time + 150);
 
         const searchParams = {
-            timeStart: '*',
-            timeEnd: proposal1.expiredAt,
+            // timeStart: '*',
+            timeEnd: time + 50,
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
@@ -266,18 +309,25 @@ describe('Proposal', () => {
         expect(proposals).toHaveLength(1);
     });
 
-    test('Should find two Proposals starting and ending between createdProposal1.startTime and createdProposal2.expiredAt', async () => {
+    test('Should find three Proposals starting and ending between 0 and time + 301', async () => {
+
+        // proposal1.expiredAt: time + 300 (after update)
+        // proposal2.expiredAt: time + 50
+        // proposal3.expiredAt: time + 150
+        expect(proposal1.expiredAt).toBe(time + 300);
+        expect(proposal2.expiredAt).toBe(time + 50);
+        expect(proposal3.expiredAt).toBe(time + 150);
 
         const searchParams = {
-            timeStart: proposal1.startTime,
-            timeEnd: proposal2.expiredAt,
+            timeStart: 0,
+            timeEnd: time + 301,
             order: SearchOrder.ASC,
             category: ProposalCategory.PUBLIC_VOTE
         } as ProposalSearchParams;
 
         const proposals: resources.Proposal[] = await proposalService.search(searchParams, true)
             .then(value => value.toJSON());
-        expect(proposals).toHaveLength(2);
+        expect(proposals).toHaveLength(3);
     });
 
     test('Should create another Proposal with category ITEM_VOTE', async () => {
@@ -299,14 +349,22 @@ describe('Proposal', () => {
         expect(result.ProposalOptions).toBeDefined();
         expect(result.ProposalOptions).toHaveLength(3);
 
-        proposal3 = result;
+        proposal4 = result;
+    });
+
+    test('Should delete the Proposal', async () => {
+        expect.assertions(1);
+        await proposalService.destroy(proposal1.id);
+        await proposalService.findOne(proposal1.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(proposal1.id))
+        );
     });
 
     test('Should searchBy Proposals with category ITEM_VOTE', async () => {
 
         const searchParams = {
-            timeStart: '*',
-            timeEnd: '*',
+            // timeStart: '*',
+            // timeEnd: '*',
             order: SearchOrder.ASC,
             category: ProposalCategory.ITEM_VOTE
         } as ProposalSearchParams;
@@ -355,4 +413,6 @@ describe('Proposal', () => {
 
         return optionsList;
     };
+
 });
+

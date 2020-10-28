@@ -67,7 +67,7 @@ describe('FlaggedItem', () => {
 
         listingItem = await testDataService.generateListingItemWithTemplate(profile, market);
 
-        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         const generateProposalParams = new GenerateProposalParams([
             false,                                      // generateListingItemTemplate

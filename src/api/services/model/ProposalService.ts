@@ -120,9 +120,7 @@ export class ProposalService {
             await this.proposalOptionService.create(optionCreateRequest);
         }
 
-        // finally find and return the created proposal
-        const result = await this.findOne(proposal.id, true);
-        return result;
+        return await this.findOne(proposal.id, true);
     }
 
     @validate()
@@ -130,10 +128,8 @@ export class ProposalService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // find the existing one without related
         const proposal = await this.findOne(id, false);
 
-        // set new values
         proposal.Submitter = body.submitter;
         proposal.Hash = body.hash;
         proposal.Target = body.target;
@@ -141,15 +137,12 @@ export class ProposalService {
         proposal.Title = body.title;
         proposal.Description = body.description;
         proposal.Market = body.market;
-
         proposal.TimeStart = body.timeStart;
         proposal.PostedAt = body.postedAt;
         proposal.ExpiredAt = body.expiredAt;
         proposal.ReceivedAt = body.receivedAt;
 
-        // update proposal record
-        const updatedProposal = await this.proposalRepo.update(id, proposal.toJSON());
-        return updatedProposal;
+        return await this.proposalRepo.update(id, proposal.toJSON());
     }
 
     public async updateTimes(id: number, timeStart: number, postedAt: number, receivedAt: number, expiredAt: number): Promise<Proposal> {
