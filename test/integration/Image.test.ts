@@ -25,6 +25,8 @@ import { DefaultMarketService } from '../../src/api/services/DefaultMarketServic
 import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
 import { ImageCreateRequest } from '../../src/api/requests/model/ImageCreateRequest';
 import { ImageUpdateRequest } from '../../src/api/requests/model/ImageUpdateRequest';
+import {ConfigurableHasher} from 'omp-lib/dist/hasher/hash';
+import {HashableImageCreateRequestConfig} from '../../src/api/factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 
 
 describe('Image', () => {
@@ -169,6 +171,10 @@ describe('Image', () => {
             featured: true
         } as ImageUpdateRequest;
 
+        const hash = ConfigurableHasher.hash(testDataUpdated, new HashableImageCreateRequestConfig());
+        testDataUpdated.hash = hash;
+        testDataUpdated.data[0].imageHash = hash;
+
         const randomImageData1 = await testDataService.generateRandomImage(20, 20);
         testDataUpdated.data[0].data = randomImageData1;
 
@@ -177,47 +183,47 @@ describe('Image', () => {
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.featured).toBeTruthy();
-        expect(result.ImageDatas[0].dataId).toBe(testDataUpdated.data[0].dataId);
-        expect(result.ImageDatas[0].protocol).toBe(testDataUpdated.data[0].protocol);
-        expect(result.ImageDatas[0].imageVersion).toBe(testDataUpdated.data[0].imageVersion);
-        expect(result.ImageDatas[0].encoding).toBe(testDataUpdated.data[0].encoding);
-
+        const originalData: resources.ImageData | undefined = _.find(result.ImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        expect(originalData).toBeDefined();
+        expect(originalData.protocol).toBe(testDataUpdated.data[0].protocol);
+        expect(originalData.imageVersion).toBe(testDataUpdated.data[0].imageVersion);
+        expect(originalData.encoding).toBe(testDataUpdated.data[0].encoding);
         expect(result.ImageDatas.length).toBe(4);
 
         itemImage = result;
     });
 
-/*
     test('Should delete the Image', async () => {
         expect.assertions(7);
 
-        // find the listing item
-        listingItem = await listingItemService.findOne(listingItem.id).then(value => value.toJSON());
-        expect(listingItem.ItemInformation.Images.length).toBe(1);
+        // find the listingItemTemplate
+        listingItemTemplate = await listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
+        expect(listingItemTemplate.ItemInformation.Images.length).toBe(1);
 
         // destroy the create image
-        await imageService.destroy(listingItem.ItemInformation.Images[0].id);
+        await imageService.destroy(listingItemTemplate.ItemInformation.Images[0].id);
 
         // make sure the image is destroyed
-        await imageService.findOne(listingItem.ItemInformation.Images[0].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.Images[0].id))
+        await imageService.findOne(listingItemTemplate.ItemInformation.Images[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplate.ItemInformation.Images[0].id))
         );
 
-        // make sure that the related imagedatas were also destroyed
-        for (const imageData of listingItem.ItemInformation.Images[0].ImageDatas) {
+        // make sure that the related ImageDatas (4) were also destroyed
+        for (const imageData of listingItemTemplate.ItemInformation.Images[0].ImageDatas) {
             await imageDataService.findOne(imageData.id).catch(e =>
                 expect(e).toEqual(new NotFoundException(imageData.id))
             );
         }
 
-        // destroy the created item
-        await listingItemService.destroy(listingItem.id);
-        await listingItemService.findOne(listingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(listingItem.id))
+        // destroy the created listingItemTemplate
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
         );
 
     });
-*/
 
 });
 

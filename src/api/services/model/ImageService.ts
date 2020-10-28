@@ -205,7 +205,7 @@ export class ImageService {
         });
         delete body.data;
 
-        this.log.debug('imageDataUpdateRequestOriginal:', imageDataUpdateRequestOriginal);
+        // this.log.debug('imageDataUpdateRequestOriginal:', imageDataUpdateRequestOriginal);
         if (imageDataUpdateRequestOriginal) {
             const image = await this.findOne(id, false);
             image.Hash = body.hash;
@@ -216,6 +216,10 @@ export class ImageService {
             for (const imageData of updatedImage.ImageDatas) {
                 await this.imageDataService.destroy(imageData.id);
             }
+
+            // create the original
+            imageDataUpdateRequestOriginal.image_id = id;
+            await this.imageDataService.create(imageDataUpdateRequestOriginal).then(value => value.toJSON());
 
             // then recreate the other ImageDatas from the original data
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];

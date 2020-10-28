@@ -66,7 +66,7 @@ export class ImageDataService {
             delete body.data;
         }
 
-        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const imageData: resources.ImageData = await this.imageDataRepo.create(body).then(value => value.toJSON());
         return await this.findOne(imageData.id);
     }
