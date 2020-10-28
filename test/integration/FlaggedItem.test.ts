@@ -25,6 +25,7 @@ import { FlaggedItemUpdateRequest } from '../../src/api/requests/model/FlaggedIt
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
+
 describe('FlaggedItem', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -46,6 +47,7 @@ describe('FlaggedItem', () => {
     let listingItem: resources.ListingItem;
     let proposal: resources.Proposal;
     let flaggedItem: resources.FlaggedItem;
+    let randomCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -61,38 +63,19 @@ describe('FlaggedItem', () => {
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
-        const generateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateImages
-            false,      // generatePaymentInformation
-            false,      // generateEscrow
-            false,      // generateItemPrice
-            false,      // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            true,       // generateListingItem
-            market.id   // marketId
-        ]).toParamsArray();
-        const listingItemTemplates = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,
-            amount: 1,
-            withRelated: true,
-            generateParams
-        } as TestDataGenerateRequest);
-        listingItem = listingItemTemplates[0].ListingItems[0];
+        randomCategory = await testDataService.getRandomCategory();
 
-        // create Proposal
+        listingItem = await testDataService.generateListingItemWithTemplate(profile, market);
+
+        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+
         const generateProposalParams = new GenerateProposalParams([
             false,                                      // generateListingItemTemplate
             false,                                      // generateListingItem
-            listingItem.hash,                    // listingItemHash,
+            listingItem.hash,                           // listingItemHash,
             false,                                      // generatePastProposal,
             0,                                          // voteCount
-            // TODO: there is no profile.address anymore, use identity.adress
-            profile.address                      // submitter
+            market.Identity.address                     // submitter
         ]).toParamsArray();
 
         const proposals = await testDataService.generate({

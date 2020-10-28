@@ -710,13 +710,13 @@ export class TestDataService {
         const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
-            this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
+            // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // const fromAddress = await this.coreRpcService.getNewAddress();
             // const market: resources.Market = await this.marketService.getDefaultForProfile().then(value => value.toJSON());
 
-            this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
+            // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
 
             // this.log.debug('savedListingItem: ', JSON.stringify(savedListingItem, null, 2));

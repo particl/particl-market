@@ -88,6 +88,7 @@ describe('MessagingInformation', () => {
             market.id,                  // marketId
             randomCategory.id
         ]).toParamsArray();
+
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
             amount: 1,
