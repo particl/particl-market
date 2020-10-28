@@ -22,6 +22,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { MessagingProtocol } from 'omp-lib/dist/interfaces/omp-enums';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
+import {GenerateListingItemParams} from '../../src/api/requests/testdata/GenerateListingItemParams';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,6 +41,8 @@ describe('MessagingInformation', () => {
     let market: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
+    let randomCategory: resources.ItemCategory;
 
     let messagingInformationForListingItem: resources.MessagingInformation;
     let messagingInformationForTemplate: resources.MessagingInformation;
@@ -67,20 +70,23 @@ describe('MessagingInformation', () => {
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
 
+        randomCategory = await testDataService.getRandomCategory();
+
         const generateParams = new GenerateListingItemTemplateParams([
-            true,       // generateItemInformation
-            true,       // generateItemLocation
-            false,      // generateShippingDestinations
-            false,      // generateImages
-            false,      // generatePaymentInformation
-            false,      // generateEscrow
-            false,      // generateItemPrice
-            false,      // generateMessagingInformation
-            false,      // generateListingItemObjects
-            false,      // generateObjectDatas
-            profile.id, // profileId
-            true,       // generateListingItem
-            market.id   // marketId
+            true,                       // generateItemInformation
+            true,                       // generateItemLocation
+            false,                      // generateShippingDestinations
+            false,                      // generateImages
+            false,                      // generatePaymentInformation
+            false,                      // generateEscrow
+            false,                      // generateItemPrice
+            false,                      // generateMessagingInformation
+            false,                      // generateListingItemObjects
+            false,                      // generateObjectDatas
+            profile.id,                 // profileId
+            false,                      // generateListingItem
+            market.id,                  // marketId
+            randomCategory.id
         ]).toParamsArray();
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
@@ -89,6 +95,32 @@ describe('MessagingInformation', () => {
             generateParams
         } as TestDataGenerateRequest);
         listingItemTemplate = listingItemTemplates[0];
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                       // generateItemInformation
+            true,                       // generateItemLocation
+            true,                       // generateShippingDestinations
+            false,                      // generateImages
+            true,                       // generatePaymentInformation
+            true,                       // generateEscrow
+            true,                       // generateItemPrice
+            false,                      // generateMessagingInformation
+            false,                      // generateListingItemObjects
+            false,                      // generateObjectDatas
+            undefined,                  // listingItemTemplateHash
+            market.Identity.address,    // seller
+            randomCategory.id,          // categoryId
+            market.id                   // soldOnMarketId
+        ]).toParamsArray();
+
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,          // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,
+            generateParams: generateListingItemParams   // what kind of data to generate
+        } as TestDataGenerateRequest);
+        listingItem = listingItems[0];
+
     });
 
     afterAll(async () => {
@@ -106,7 +138,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should create a new MessagingInformation for ListingItem', async () => {
-        testData.listing_item_id = listingItemTemplate.ListingItems[0].id;
+        testData.listing_item_id = listingItem.id;
 
         messagingInformationForListingItem = await messagingInformationService.create(testData).then(value => value.toJSON());
         const result = messagingInformationForListingItem;

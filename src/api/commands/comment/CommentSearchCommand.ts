@@ -77,7 +77,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
         const target: string = data.params[6];                      // optional
         const sender: string = data.params[7];                      // optional
         const parentComment: resources.Comment = data.params[8];    // optional
-        const ignoreSenders: string[] = data.params[9];    // optional
+        const ignoreSenders: string[] = data.params[9];             // optional
 
         const searchParams = {
             page: data.params[0],
