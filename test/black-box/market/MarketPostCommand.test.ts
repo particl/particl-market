@@ -24,7 +24,6 @@ describe('MarketPostCommand', () => {
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
     const marketPostCommand = Commands.MARKET_POST.commandName;
-    const marketAddCommand = Commands.MARKET_ADD.commandName;
     const marketListCommand = Commands.MARKET_LIST.commandName;
 
     let profile: resources.Profile;
@@ -42,7 +41,6 @@ describe('MarketPostCommand', () => {
         market = await testUtil.getDefaultMarket(profile.id);
 
     });
-
 
     test('Should fail to post because missing promotedMarketId', async () => {
         const res = await testUtil.rpc(marketCommand, [marketPostCommand]);
@@ -109,7 +107,6 @@ describe('MarketPostCommand', () => {
 
 
     test('Should estimate post cost without actually posting', async () => {
-
         expect(market.id).toBeDefined();
         const res: any = await testUtil.rpc(marketCommand, [marketPostCommand,
             market.id,
@@ -122,8 +119,34 @@ describe('MarketPostCommand', () => {
         const result: any = res.getBody()['result'];
         log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Not Sent.');
+        expect(result.fee).toBeGreaterThan(0);
+        expect(result.childResults[0].result).toBe('No fee for FREE message.');
+        expect(result.childResults[0].fee).toBe(0);
     });
 
+    test('Should estimate post cost without actually posting, paid image', async () => {
+        expect(market.id).toBeDefined();
+        const res: any = await testUtil.rpc(marketCommand, [marketPostCommand,
+            market.id,
+            DAYS_RETENTION,
+            true,
+            null,
+            null,
+            true
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        expect(result.result).toBe('Not Sent.');
+        expect(result.fee).toBeGreaterThan(0);
+        expect(result.childResults[0].result).toBe('Not Sent.');
+        expect(result.childResults[0].fee).toBeGreaterThan(0);
+
+        const total = result.fee + result.childResults[0].fee;
+        expect(result.totalFees).toBe(total);
+    });
 
     test('Should post Market', async () => {
 
@@ -167,6 +190,5 @@ describe('MarketPostCommand', () => {
         expect(result.Profile).toBeUndefined();
 
     }, 600000); // timeout to 600s
-
 
 });

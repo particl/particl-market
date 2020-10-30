@@ -136,10 +136,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
             this.log.debug('images exist:', images.length);
 
             if (!_.isEmpty(images)) {
-
                 for (const image of images) {
-
-                    // todo: factory
                     const updateRequest = {
                         data: [{
                             dataId: actionMessage.data[0].dataId,

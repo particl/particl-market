@@ -302,8 +302,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * @param listingItemAddRequest
      * @param usePaid, use paid messages to send images
      */
-    private async postListingImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest, usePaid: boolean = false):
-        Promise<SmsgSendResponse[] | undefined> {
+    private async postListingImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest,
+                                    usePaid: boolean = false): Promise<SmsgSendResponse[] | undefined> {
 
         if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
 

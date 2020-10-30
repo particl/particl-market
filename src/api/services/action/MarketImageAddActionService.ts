@@ -156,7 +156,7 @@ export class MarketImageAddActionService extends BaseActionService {
                     });
                 }
             } else {
-                this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
+                // this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
                 const createRequest = await this.imageFactory.get({
                     actionMessage,
                     smsgMessage
