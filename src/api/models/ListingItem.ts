@@ -209,11 +209,15 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('item_locations.country', options.country);
                 }
 
-                // searchBy by shipping destination
+                // searchBy by shippingDestination
                 if (options.shippingDestination) {
-                    qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
-                    qb.where('shipping_destinations.country', options.shippingDestination);
-                    qb.andWhere('shipping_destinations.shipping_availability', 'SHIPS');
+                    qb.leftJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
+                    qb.where( qbInner => {
+                       return qbInner.where( qbInnerInner => {
+                           qbInnerInner.where('shipping_destinations.country', options.shippingDestination)
+                               .andWhere('shipping_destinations.shipping_availability', 'SHIPS');
+                       }).orWhereNull('shipping_destinations.country');
+                    });
                 }
 
                 if (options.searchString) {
