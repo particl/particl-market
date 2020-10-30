@@ -85,7 +85,29 @@ describe('ListingItemTemplateSizeCommand', () => {
     });
 
     test('Should return MessageSize for ListingItemTemplate, fits', async () => {
-        const res = await testUtil.rpc(templateCommand, [templateSizeCommand, listingItemTemplate.id]);
+        const res = await testUtil.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplate.id,
+            false                   // usePaidImageMessages
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: MessageSize = res.getBody()['result'];
+        expect(result.messageVersion).toBe(CoreMessageVersion.PAID);
+        expect(result.size).toBeGreaterThan(0);
+        expect(result.maxSize).toBe(process.env.SMSG_MAX_MSG_BYTES_PAID);
+        expect(result.spaceLeft).toBeGreaterThan(0);
+        expect(result.fits).toBe(true);
+        expect(result.identifier).toBe(listingItemTemplate.id);
+        expect(result.childMessageSizes![0].messageVersion).toBe(CoreMessageVersion.FREE);
+        expect(result.childMessageSizes![0].identifier).toBe(listingItemTemplate.ItemInformation.Images[0].id);
+    });
+
+    test('Should return MessageSize for ListingItemTemplate, fits, usePaidImageMessages', async () => {
+        const res = await testUtil.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplate.id,
+            true                    // usePaidImageMessages
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -96,8 +118,11 @@ describe('ListingItemTemplateSizeCommand', () => {
         expect(result.maxSize).toBe(process.env.SMSG_MAX_MSG_BYTES_PAID);
         expect(result.spaceLeft).toBeGreaterThan(0);
         expect(result.fits).toBe(true);
-
+        expect(result.identifier).toBe(listingItemTemplate.id);
+        expect(result.childMessageSizes![0].messageVersion).toBe(CoreMessageVersion.PAID);
+        expect(result.childMessageSizes![0].identifier).toBe(listingItemTemplate.ItemInformation.Images[0].id);
     });
+
 /*
     TODO: fix
     test('Should return MessageSize for ListingItemTemplate, doesnt fit', async () => {

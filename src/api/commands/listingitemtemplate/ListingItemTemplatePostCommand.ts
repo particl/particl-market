@@ -34,15 +34,8 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
-import {
-    BooleanValidationRule,
-    CommandParamValidationRules,
-    EnumValidationRule,
-    IdValidationRule,
-    MessageRetentionValidationRule,
-    ParamValidationRule,
-    RingSizeValidationRule
-} from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, EnumValidationRule, IdValidationRule, MessageRetentionValidationRule,
+    ParamValidationRule, RingSizeValidationRule } from '../CommandParamValidation';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
 import { BigNumber } from 'mathjs';
