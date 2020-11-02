@@ -107,11 +107,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItem: resources.OrderItem = data.params[0];
         const memo: string = data.params[1];
 
-        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
-        // TODO: check that we are the buyer
-        // TODO: check these
         const validOrderItemStatuses = [
-            OrderItemStatus.SHIPPING
+            OrderItemStatus.ESCROW_COMPLETED,   // seller completed the escrow (MPA_COMPLETE)
+            OrderItemStatus.SHIPPING            // seller sent the item (MPA_SHIP), this is now "optional"
         ];
 
         // check if in the right state.
