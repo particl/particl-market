@@ -13,6 +13,7 @@ import { MessageSize } from '../../../src/api/responses/MessageSize';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 
 
 describe('ListingItemTemplateSizeCommand', () => {
@@ -26,6 +27,9 @@ describe('ListingItemTemplateSizeCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templateSizeCommand = Commands.TEMPLATE_SIZE.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+    const imageCommand = Commands.IMAGE_ROOT.commandName;
+    const imageAddCommand = Commands.IMAGE_ADD.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -53,7 +57,7 @@ describe('ListingItemTemplateSizeCommand', () => {
             false,                          // generateListingItemObjects
             false,                          // generateObjectDatas
             profile.id,                     // profileId
-            true,                           // generateListingItem
+            false,                          // generateListingItem
             market.id,                      // soldOnMarketId
             randomCategory.id               // categoryId
         ]).toParamsArray();
@@ -123,39 +127,55 @@ describe('ListingItemTemplateSizeCommand', () => {
         expect(result.childMessageSizes![0].identifier).toBe(listingItemTemplate.ItemInformation.Images[0].id);
     });
 
-/*
-    TODO: fix
-    test('Should return MessageSize for ListingItemTemplate, doesnt fit', async () => {
+    test('Should add a too large Image for PAID msg to the ListingItemTemplate', async () => {
 
-        const filename = path.join('test', 'testdata', 'images', 'testimage2.jpg');
-        log.debug('loadImageFile(): ', filename);
-        const filedata = fs.readFileSync(filename, { encoding: 'base64' });
+        expect(listingItemTemplate.id).toBeDefined();
 
-        let res = await testUtil.rpc(itemImageCommand, [itemImageAddCommand,
+        const imageCount = listingItemTemplate.ItemInformation.Images.length;
+        const randomImage = await testUtil.generateRandomImage(1000, 800);
+        log.debug('randomImage.length: ', randomImage.length);
+
+        let res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'template',
             listingItemTemplate.id,
-            'TEST-DATA-ID',
-            ProtocolDSN.FILE,
-            'BASE64',
-            filedata,
-            true        // skip resize
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,              // featured
+            true                // skipResize
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        let result: resources.Image = res.getBody()['result'];
+        const addImageResult: resources.Image = res.getBody()['result'];
 
-        log.debug('added image: ', result);
+        res = await testUtil.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplate.id,
+            true        // returnImageData
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplate = res.getBody()['result'];
 
-        res = await testUtil.rpc(templateCommand, [templateSizeCommand, listingItemTemplate.id]);
+        expect(addImageResult.id).toBe(listingItemTemplate.ItemInformation.Images[imageCount].id);
+    });
+
+
+    test('Should return MessageSize for ListingItemTemplate, FREE msg, doesnt fit', async () => {
+
+        const res = await testUtil.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplate.id,
+            false
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
-        result = res.getBody()['result'];
+        const result = res.getBody()['result'];
         log.debug('MessageSize: ', JSON.stringify(result, null, 2));
-        expect(result.messageData).toBeGreaterThan(0);
-        expect(result.imageData).toBeGreaterThan(0);
-        expect(result.spaceLeft).toBeLessThan(0);
-        expect(result.fits).toBe(false);
+        expect(result.spaceLeft).toBeGreaterThan(0);
+        expect(result.fits).toBe(true);
+
+        const imageCount = listingItemTemplate.ItemInformation.Images.length;
+        expect(result.childMessageSizes[imageCount - 1].fits).toBe(false);
+        expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeLessThan(0);
     });
-*/
 
 });

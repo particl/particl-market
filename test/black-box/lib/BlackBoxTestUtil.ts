@@ -15,8 +15,9 @@ import { AddressType } from '../../../src/api/enums/AddressType';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 import { MarketType } from '../../../src/api/enums/MarketType';
-import {MarketRegio, MarketRegion} from '../../../src/api/enums/MarketRegion';
+import { MarketRegion } from '../../../src/api/enums/MarketRegion';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
+import * as jpeg from 'jpeg-js';
 
 
 export class BlackBoxTestUtil {
@@ -155,6 +156,27 @@ export class BlackBoxTestUtil {
             }
         });
         return result;
+    }
+
+    /**
+     * Generates an random colored image with specified width, height and quality
+     * @param width width of the image
+     * @param height height of the image
+     * @param quality quality of the image
+     */
+    public async generateRandomImage(width: number = 800, height: number = 600, quality: number = 50): Promise<string> {
+        const frameData = Buffer.alloc(width * height * 4);
+        let i = 0;
+        while (i < frameData.length) {
+            frameData[i++] = Math.floor(Math.random() * 256);
+        }
+        const rawImageData = {
+            data: frameData,
+            width,
+            height
+        };
+        const generatedImage: jpeg.RawImageData<Buffer> = jpeg.encode(rawImageData, quality);
+        return generatedImage.data.toString('base64');
     }
 
     public async getDefaultMarket(profileId: number): Promise<resources.Market> {

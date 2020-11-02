@@ -13,15 +13,12 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/tes
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import { EscrowReleaseType, EscrowType, SaleType } from 'omp-lib/dist/interfaces/omp-enums';
-import {Cryptocurrency, OutputType} from 'omp-lib/dist/interfaces/crypto';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { OutputType } from 'omp-lib/dist/interfaces/crypto';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
-import {SmsgSendResponse} from '../../../src/api/responses/SmsgSendResponse';
-import {CoreMessageVersion} from '../../../src/api/enums/CoreMessageVersion';
+import { SmsgSendResponse } from '../../../src/api/responses/SmsgSendResponse';
+import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -38,9 +35,14 @@ describe('ListingItemTemplatePostCommand', () => {
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
     const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
+    const templateSizeCommand = Commands.TEMPLATE_SIZE.commandName;
     const templateCompressCommand = Commands.TEMPLATE_COMPRESS.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemSearchCommand = Commands.ITEM_SEARCH.commandName;
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
+    const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
+    const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
     const imageCommand = Commands.IMAGE_ROOT.commandName;
     const imageAddCommand = Commands.IMAGE_ADD.commandName;
 
@@ -289,7 +291,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
-        const randomImage = await generateRandomImage(800, 400);
+        const randomImage = await testUtilSellerNode.generateRandomImage(800, 400);
         log.debug('randomImage.length: ', randomImage.length);
 
         let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
@@ -361,12 +363,12 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should add a too large Image for PAID msg to the ListingItemTemplate', async () => {
+    test('Should add a too large Image 1 for PAID msg to the ListingItemTemplate', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
-        const randomImage = await generateRandomImage(1000, 800);
+        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
         log.debug('randomImage.length: ', randomImage.length);
 
         let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
@@ -392,6 +394,88 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
     });
 
+
+    test('Should add a too large Image 2 for PAID msg to the ListingItemTemplate', async () => {
+
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
+        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
+        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
+        log.debug('randomImage.length: ', randomImage.length);
+
+        let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
+            'template',
+            listingItemTemplateOnSellerNode.id,
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,              // featured
+            true                // skipResize
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const addImageResult: resources.Image = res.getBody()['result'];
+
+        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id,
+            true        // returnImageData
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateOnSellerNode = res.getBody()['result'];
+
+        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+    });
+
+    test('Should add a too large Image 3 for PAID msg to the ListingItemTemplate', async () => {
+
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
+        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
+        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
+        log.debug('randomImage.length: ', randomImage.length);
+
+        let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
+            'template',
+            listingItemTemplateOnSellerNode.id,
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,              // featured
+            true                // skipResize
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const addImageResult: resources.Image = res.getBody()['result'];
+
+        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id,
+            true        // returnImageData
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateOnSellerNode = res.getBody()['result'];
+
+        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+    });
+
+    test('Should return MessageSize for ListingItemTemplate, FREE msg, doesnt fit', async () => {
+
+        const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplateOnSellerNode.id,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result = res.getBody()['result'];
+        log.debug('MessageSize: ', JSON.stringify(result, null, 2));
+        expect(result.spaceLeft).toBeGreaterThan(0);
+        expect(result.fits).toBe(true);
+
+        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
+        expect(result.childMessageSizes[imageCount - 1].fits).toBe(false);
+        expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeLessThan(0);
+
+    });
 
     test('Should fail to estimate post cost because Image too large for PAID message', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
@@ -651,5 +735,7 @@ describe('ListingItemTemplatePostCommand', () => {
             }
         }
     }, 600000); // timeout to 600s
+
+
 
 });
