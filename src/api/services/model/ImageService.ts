@@ -170,14 +170,12 @@ export class ImageService {
             throw new ModelNotFoundException('ImageData');
         }
 
-        imageDataOriginal.data = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
-
-        const rawImage = imageDataOriginal.data;
+        const rawImageData = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
         const maxSize = MessageVersions.maxSize(messageVersionToFit);
 
-        const resizedImage = await ImageProcessing.resizeImageToSize(rawImage, maxSize, scalingFraction, qualityFraction, maxIterations);
+        const resizedImageData = await ImageProcessing.resizeImageToSize(rawImageData, maxSize, scalingFraction, qualityFraction, maxIterations);
 
-        this.log.debug('resized image size: ', resizedImage.length);
+        this.log.debug('resized image size: ', resizedImageData.length);
 
         const versionCreateOrUpdateRequest = {
             image_id: image.id,
@@ -185,7 +183,7 @@ export class ImageService {
             imageVersion: ImageVersions.RESIZED.propName,
             imageHash: image.hash,
             encoding: imageDataOriginal.encoding,
-            data: resizedImage
+            data: resizedImageData
         } as ImageDataCreateRequest;
 
         // resized could already exist, so create/update

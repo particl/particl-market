@@ -12,6 +12,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
 
 describe('ListingItemTemplateCompressCommand', () => {
@@ -148,6 +149,10 @@ describe('ListingItemTemplateCompressCommand', () => {
         const result: resources.ListingItemTemplate = res.getBody()['result'];
         for (const image of result.ItemInformation.Images) {
             expect(image.ImageDatas).toHaveLength(5);
+            for (const imageData of image.ImageDatas) {
+                expect(imageData.data).toBeNull();
+                expect(imageData.protocol).toBe(ProtocolDSN.FILE);
+            }
         }
     });
 

@@ -14,14 +14,8 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
-import {
-    CommandParamValidationRules,
-    EnumValidationRule,
-    IdValidationRule,
-    NumberValidationRule,
-    ParamValidationRule,
-    ScalingValueValidationRule
-} from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, NumberValidationRule, ParamValidationRule,
+    ScalingValueValidationRule } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
@@ -66,7 +60,7 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         const scalingFraction: number = data.params[2];
         const qualityFraction: number = data.params[3];
         const maxIterations: number = data.params[4];
-        return await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+        return await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
             qualityFraction, maxIterations);
     }
 

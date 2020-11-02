@@ -373,14 +373,14 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
      * @param maxIterations
      * @returns {Promise<ListingItemTemplate>}
      */
-    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
-                                      scalingFraction: number = 0.9, qualityFraction: number = 0.95,
-                                      maxIterations: number = 10): Promise<ListingItemTemplate> {
+    public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
+                                             scalingFraction: number = 0.9, qualityFraction: number = 0.95,
+                                             maxIterations: number = 10): Promise<ListingItemTemplate> {
 
         const images = listingItemTemplate.ItemInformation.Images;
         for (const image of images) {
             await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-            this.log.debug('compressed image.hash: ' + image.hash);
+            // this.log.debug('compressed image.hash: ' + image.hash);
         }
 
         return await this.findOne(listingItemTemplate.id);

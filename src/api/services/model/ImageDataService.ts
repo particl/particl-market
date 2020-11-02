@@ -79,6 +79,7 @@ export class ImageDataService {
 
         await this.removeImageFile(imageData.ImageHash, imageData.ImageVersion);
         body.dataId = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
+        delete body.data;
 
         // set new values
         if (body.dataId) {

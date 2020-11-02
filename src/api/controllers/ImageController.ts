@@ -124,7 +124,7 @@ export class ImageController {
         const maxIterations = 10;
 
         if (!_.isNil(uploadRequest.listingItemTemplateId)) {
-            await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate!, messageVersionToFit, scalingFraction,
+            await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate!, messageVersionToFit, scalingFraction,
                 qualityFraction, maxIterations);
         } else if (!_.isNil(uploadRequest.marketId)) {
             await this.imageService.createResizedVersion(createdImages[0].id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
