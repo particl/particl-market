@@ -128,9 +128,9 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
                     });
             }
 
-        } else {
-            throw new MessageException('CommentType not supported.');
-        }
+        } // else {
+        //    throw new MessageException('CommentType not supported.');
+        // }
 
         if (!_.isNil(parentCommentHash) && parentCommentHash.length > 0) {
             // make sure the parent Comment exists

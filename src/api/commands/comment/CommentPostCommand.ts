@@ -57,7 +57,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
             params: [
                 new IdValidationRule('identityId', true, this.identityService),
                 new EnumValidationRule('commentType', true, 'CommentType', [CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT] as string[]),
+                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT, CommentType.PRIVATE_MESSAGE] as string[]),
                 new StringValidationRule('receiver', true),
                 new StringValidationRule('target', true),
                 new StringValidationRule('message', true),
@@ -166,6 +166,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
                     .catch(() => {
                         throw new ModelNotFoundException('Market');
                     });
+                break;
+            case CommentType.PRIVATE_MESSAGE:
                 break;
             default:
                 throw new MessageException('CommentType not supported.');

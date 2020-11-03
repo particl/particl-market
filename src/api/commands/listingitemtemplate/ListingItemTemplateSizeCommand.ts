@@ -151,7 +151,7 @@ export class ListingItemTemplateSizeCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - number, The Id of the ListingItemTemplate. '
+            + '    <listingTemplateId>          - number, The Id of the ListingItemTemplate. '
             + '    <usePaidImageMessages>       - [optional] boolean, send Images as paid messages. \n';
     }
 
