@@ -72,7 +72,7 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
                 }
 
             })
-            .orderBy(/*'order_items.' + */options.orderField, options.order)
+            .orderBy(options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit,
