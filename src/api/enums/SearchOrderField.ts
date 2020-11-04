@@ -72,6 +72,7 @@ export enum ListingItemTemplateSearchOrderField {
 
 export enum ListingItemSearchOrderField {
     TITLE = 'item_informations.title',
+    EXPIRED_AT = 'expired_at',
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'
 }

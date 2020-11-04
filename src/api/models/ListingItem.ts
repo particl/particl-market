@@ -123,7 +123,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
         options.order = options.order || SearchOrder.ASC;
-        options.orderField = options.orderField || ListingItemSearchOrderField.UPDATED_AT;
+        options.orderField = options.orderField || ListingItemSearchOrderField.CREATED_AT;
 
         // ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
@@ -244,7 +244,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 // qb.groupBy('listing_items.id');
 
             })
-            .orderBy('created_at', options.order)
+            .orderBy(options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
