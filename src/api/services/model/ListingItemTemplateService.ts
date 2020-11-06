@@ -377,12 +377,13 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
                                              scalingFraction: number = 0.9, qualityFraction: number = 0.95,
                                              maxIterations: number = 10): Promise<ListingItemTemplate> {
 
-        const images = listingItemTemplate.ItemInformation.Images;
+        const images: resources.Image[] = listingItemTemplate.ItemInformation.Images;
         for (const image of images) {
-            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-            // this.log.debug('compressed image.hash: ' + image.hash);
+            const updatedImage: resources.Image = await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction,
+                qualityFraction, maxIterations).then(value => value.toJSON());
+            this.log.debug('updatedImage: ', JSON.stringify(updatedImage, null, 2));
+            this.log.debug('listingItemTemplate.id: ', JSON.stringify(listingItemTemplate.id, null, 2));
         }
-
         return await this.findOne(listingItemTemplate.id);
     }
 

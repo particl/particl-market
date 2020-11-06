@@ -156,7 +156,7 @@ export class ImageDataService {
         // only remove the file if there is just this one Image related to it
         if (imageDatas.length === 1) {
             const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-            this.log.debug('removeImageFile(), removed: ', filename);
+            // this.log.debug('removeImageFile(), removed: ', filename);
             try {
                 // file might not yet exist on a remote node receiving the image
                 if (fs.existsSync(filename)) {
@@ -181,7 +181,7 @@ export class ImageDataService {
      */
     public async loadImageFile(imageHash: string, imageVersion: string): Promise<string> {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-        this.log.debug('loadImageFile(): ', filename);
+        // this.log.debug('loadImageFile(): ', filename);
         try {
             return fs.readFileSync(filename, { encoding: 'base64' });
         } catch (err) {

@@ -877,9 +877,9 @@ export class ImageProcessing {
         let quality = 100;
         let iteration = 0;
 
-        this.log.debug('maxIterations: ' + maxIterations);
-        this.log.debug('byteLimit: ' + byteLimit);
-        this.log.debug('imageRaw.length: ' + imageRaw.length);
+        // this.log.debug('maxIterations: ' + maxIterations);
+        // this.log.debug('byteLimit: ' + byteLimit);
+        // this.log.debug('imageRaw.length: ' + imageRaw.length);
 
         const dataBuffer = Buffer.from(imageRaw, 'base64');
         let imageBuffer: any = await Jimp.read(dataBuffer);
@@ -905,8 +905,8 @@ export class ImageProcessing {
                     return buffer.toString('base64');
                 });
 
-                this.log.debug('result (' + iteration + '), resize (' + scaleFraction + '): ' + resizedImage.length
-                    + ', took: ' + (Date.now() - startTime) + 'ms');
+                // this.log.debug('result (' + iteration + '), resize (' + scaleFraction + '): ' + resizedImage.length
+                //    + ', took: ' + (Date.now() - startTime) + 'ms');
 
                 if (resizedImage.length <= byteLimit) {
                     return resizedImage;
@@ -924,8 +924,8 @@ export class ImageProcessing {
                     skipQuality = resizedImage.length === resizedImage2.length;
                     resizedImage = resizedImage2;
 
-                    this.log.debug('result (' + iteration + '), quality (' + quality.toFixed(1) + '): ' + resizedImage.length
-                        + ', took: ' + (Date.now() - startTime) + 'ms');
+                    // this.log.debug('result (' + iteration + '), quality (' + quality.toFixed(1) + '): ' + resizedImage.length
+                    //    + ', took: ' + (Date.now() - startTime) + 'ms');
 
                     if (resizedImage.length <= byteLimit) {
                         return resizedImage;

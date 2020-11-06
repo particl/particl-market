@@ -25,14 +25,8 @@ import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { MarketService } from '../../services/model/MarketService';
 import { BaseImageAddMessage } from '../../messages/action/BaseImageAddMessage';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
-import {
-    BooleanValidationRule,
-    CommandParamValidationRules,
-    EnumValidationRule,
-    NumberValidationRule,
-    ParamValidationRule, ScalingValueValidationRule,
-    StringValidationRule
-} from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, EnumValidationRule, NumberValidationRule, ParamValidationRule, ScalingValueValidationRule,
+    StringValidationRule } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
@@ -97,9 +91,6 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         const qualityFraction: number = data.params[8];
         const maxIterations: number = data.params[9];
 
-        // this.log.debug('typeSpecifier:', JSON.stringify(typeSpecifier, null, 2));
-        // this.log.debug('type:', JSON.stringify(type, null, 2));
-
         const createRequest: ImageCreateRequest = await this.imageFactory.get({
             actionMessage: {
                 data: [{
@@ -113,9 +104,8 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             listingItemTemplate: typeSpecifier === 'template' ? type : undefined
         } as ImageCreateParams);
 
-        // this.log.debug('createRequest:', JSON.stringify(createRequest, null, 2));
-
-        const image = await this.imageService.create(createRequest).then(value => value.toJSON());
+        let image: resources.Image = await this.imageService.create(createRequest).then(value => value.toJSON());
+        this.log.debug('CREATED IMAGE:', image.id);
 
         if (featured) {
             await this.imageService.updateFeatured(image.id, true);
@@ -126,10 +116,17 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         if (!skipResize && typeSpecifier === 'template') {
-            await this.listingItemTemplateService.createResizedTemplateImages(type as resources.ListingItemTemplate, messageVersionToFit, scalingFraction,
-                qualityFraction, maxIterations);
+            this.log.debug('creating a resized image version for all of the templates images...');
+
+            let listingItemTemplate: resources.ListingItemTemplate = type as resources.ListingItemTemplate;
+            listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
+            listingItemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate, messageVersionToFit,
+                scalingFraction, qualityFraction, maxIterations).then(value => value.toJSON());
+            this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
         } else if (!skipResize && typeSpecifier === 'market') {
-            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
+            image = await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations)
+                .then(value => value.toJSON());
         }
 
         return await this.imageService.findOne(image.id);

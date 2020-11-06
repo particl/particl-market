@@ -207,7 +207,6 @@ export class NumberValidationRule extends BaseParamValidationRule {
     }
 
     public async customValidate(value: number, index: number, allValues: any[]): Promise<boolean> {
-        console.log('value:' + value);
         if (!_.isNil(value) && value < this.minValue) {
             throw new InvalidParamException(this.name, 'greater than or equal to ' + this.minValue);
         }

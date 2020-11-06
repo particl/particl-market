@@ -156,7 +156,8 @@ export class ImageService {
     }
 
     public async createResizedVersion(id: number, messageVersionToFit: CoreMessageVersion, scalingFraction: number = 0.9, qualityFraction: number = 0.95,
-                                      maxIterations: number = 10): Promise<resources.ImageData[]> {
+                                      maxIterations: number = 10): Promise<Image> {
+        this.log.debug('---------------------------');
 
         const image: resources.Image = await this.findOne(id).then(value => value.toJSON());
         const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
@@ -169,29 +170,34 @@ export class ImageService {
         if (_.isNil(imageDataOriginal)) {
             throw new ModelNotFoundException('ImageData');
         }
+        this.log.debug('resized image exists: ', !_.isNil(imageDataResized));
 
         const rawImageData = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
         const maxSize = MessageVersions.maxSize(messageVersionToFit);
 
         const resizedImageData = await ImageProcessing.resizeImageToSize(rawImageData, maxSize, scalingFraction, qualityFraction, maxIterations);
 
-        this.log.debug('resized image size: ', resizedImageData.length);
+        // only create resized version if needed
+        if (rawImageData !== resizedImageData) {
+            this.log.debug('resized image size: ', resizedImageData.length);
 
-        const versionCreateOrUpdateRequest = {
-            image_id: image.id,
-            protocol: imageDataOriginal.protocol,
-            imageVersion: ImageVersions.RESIZED.propName,
-            imageHash: image.hash,
-            encoding: imageDataOriginal.encoding,
-            data: resizedImageData
-        } as ImageDataCreateRequest;
+            const versionCreateOrUpdateRequest = {
+                image_id: image.id,
+                protocol: imageDataOriginal.protocol,
+                imageVersion: ImageVersions.RESIZED.propName,
+                imageHash: image.hash,
+                encoding: imageDataOriginal.encoding,
+                data: resizedImageData
+            } as ImageDataCreateRequest;
 
-        // resized could already exist, so create/update
-        if (_.isNil(imageDataResized)) {
-            return await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
-        } else {
-            return await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+            // resized could already exist, so create/update
+            if (_.isNil(imageDataResized)) {
+                await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
+            } else {
+                await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+            }
         }
+        return await this.findOne(id);
     }
 
     @validate()

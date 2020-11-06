@@ -105,7 +105,7 @@ export class ImageController {
 
         this.log.debug('createImages(), uploadRequest:', JSON.stringify(uploadRequest, null, 2));
 
-        const createdImages: resources.Image[] = [];
+        let createdImages: resources.Image[] = [];
         let listingItemTemplate: resources.ListingItemTemplate | undefined;
 
         if (!_.isNil(uploadRequest.listingItemTemplateId)) {
@@ -127,8 +127,10 @@ export class ImageController {
             await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate!, messageVersionToFit, scalingFraction,
                 qualityFraction, maxIterations);
         } else if (!_.isNil(uploadRequest.marketId)) {
-            await this.imageService.createResizedVersion(createdImages[0].id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-            await this.marketService.setImage(uploadRequest.marketId, createdImages[0].id);
+            const image: resources.Image = await this.imageService.createResizedVersion(createdImages[0].id, messageVersionToFit, scalingFraction,
+                qualityFraction, maxIterations).then(value => value.toJSON());
+            await this.marketService.setImage(uploadRequest.marketId, image.id);
+            createdImages = [image];
         }
 
         return createdImages;

@@ -19,6 +19,9 @@ import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderF
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { SmsgSendResponse } from '../../../src/api/responses/SmsgSendResponse';
 import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
+import * as _ from 'lodash';
+import {ImageVersions} from '../../../src/core/helpers/ImageVersionEnumType';
+import {MessageVersions} from '../../../src/api/messages/MessageVersions';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -225,7 +228,7 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should estimate post cost without actually posting (free image msgs)', async () => {
+    test('Should estimate post cost without actually posting (FREE image msgs)', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
@@ -243,7 +246,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.childResults[0].result).toBe('No fee for FREE message.');
         expect(result.childResults[0].fee).toBe(0);
 
-        log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
+        log.debug('==[ ESTIMATED COST ON ITEM (FREE image msgs) ]================================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
         log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
         log.debug('fee: ' + result.fee);
@@ -252,7 +255,7 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should estimate post cost with paid images', async () => {
+    test('Should estimate post cost with PAID images', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
@@ -277,7 +280,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.childResults![0].result).toBe('Not Sent.');
         expect(result.childResults![0].fee).toBeGreaterThan(0);
 
-        log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
+        log.debug('==[ ESTIMATED COST ON ITEM (PAID image msgs) ]================================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
         log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
         log.debug('fee: ' + result.fee);
@@ -292,7 +295,6 @@ describe('ListingItemTemplatePostCommand', () => {
 
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
         const randomImage = await testUtilSellerNode.generateRandomImage(800, 400);
-        log.debug('randomImage.length: ', randomImage.length);
 
         let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
             'template',
@@ -315,6 +317,8 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+
+        log.debug('Added Image (skipResize), length: ', randomImage.length);
     });
 
 
@@ -354,7 +358,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.childResults![0].result).toBe('Not Sent.');
         expect(result.childResults![0].fee).toBeGreaterThan(0);
 
-        log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
+        log.debug('==[ ESTIMATED COST ON ITEM (PAID image msgs)  ]===============================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
         log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
         log.debug('fee: ' + result.fee);
@@ -392,16 +396,16 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+        log.debug('Added Image (skipResize), length: ', randomImage.length);
     });
 
 
-    test('Should add a too large Image 2 for PAID msg to the ListingItemTemplate', async () => {
+    test('Should add a too large Image 2 for PAID msg to the ListingItemTemplate (resize after upload)', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
         const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
-        log.debug('randomImage.length: ', randomImage.length);
+        log.debug('randomImage.length (resizing after upload): ', randomImage.length);
 
         let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
             'template',
@@ -409,11 +413,16 @@ describe('ListingItemTemplatePostCommand', () => {
             ProtocolDSN.REQUEST,
             randomImage,
             false,              // featured
-            true                // skipResize
+            false,              // skipResize
+            CoreMessageVersion.PAID,
+            0.8,                // scalingFraction, default: 0.9
+            1,                  // qualityFraction, default: 0.9
+            50                  // maxIterations, default: 10
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const addImageResult: resources.Image = res.getBody()['result'];
+        log.debug('addImageResult:', JSON.stringify(addImageResult, null, 2));
 
         res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
             listingItemTemplateOnSellerNode.id,
@@ -423,40 +432,20 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(200);
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
-        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+        const index = listingItemTemplateOnSellerNode.ItemInformation.Images.length - 1;
+        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[index].id);
+
+        log.debug('Added Image (original), length: ', randomImage.length);
+        const resizedImageData = _.find(addImageResult.ImageDatas, (value: resources.Image) => {
+            return value.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        log.debug('resizedImageData:', JSON.stringify(resizedImageData, null, 2));
+        expect(resizedImageData.imageHash).toBe(addImageResult.hash);
+
     });
 
-    test('Should add a too large Image 3 for PAID msg to the ListingItemTemplate', async () => {
-
-        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
-
-        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
-        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
-        log.debug('randomImage.length: ', randomImage.length);
-
-        let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
-            'template',
-            listingItemTemplateOnSellerNode.id,
-            ProtocolDSN.REQUEST,
-            randomImage,
-            false,              // featured
-            true                // skipResize
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const addImageResult: resources.Image = res.getBody()['result'];
-
-        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
-            listingItemTemplateOnSellerNode.id,
-            true        // returnImageData
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        listingItemTemplateOnSellerNode = res.getBody()['result'];
-
-        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
-    });
-
+/*
     test('Should return MessageSize for ListingItemTemplate, FREE msg, doesnt fit', async () => {
 
         const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
@@ -474,8 +463,28 @@ describe('ListingItemTemplatePostCommand', () => {
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
         expect(result.childMessageSizes[imageCount - 1].fits).toBe(false);
         expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeLessThan(0);
-
     });
+
+
+    test('Should return MessageSize for ListingItemTemplate, PAID msg, doesnt fit, but last image fits', async () => {
+
+        const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplateOnSellerNode.id,
+            false
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result = res.getBody()['result'];
+        log.debug('MessageSize: ', JSON.stringify(result, null, 2));
+        expect(result.spaceLeft).toBeGreaterThan(0);
+        expect(result.fits).toBe(true);
+
+        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
+        expect(result.childMessageSizes[imageCount - 1].fits).toBe(true);
+        expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeGreaterThan(0);
+    });
+
 
     test('Should fail to estimate post cost because Image too large for PAID message', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
@@ -490,7 +499,7 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should compress Images to fit PAID message size', async () => {
+    test('Should compress all Images to fit PAID message size', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplateOnSellerNode.id,
             CoreMessageVersion.PAID,
@@ -507,6 +516,7 @@ describe('ListingItemTemplatePostCommand', () => {
         }
     });
 
+    // todo: all images should fit in PAID msgs
 
     test('Should estimate post cost with PAID image messages', async () => {
 
@@ -530,15 +540,15 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.totalFees).not.toBeUndefined();
         expect(result.totalFees).toBeGreaterThan(result.fee!);
 
-        log.debug('==[ ESTIMATED COST ON ITEM ]==================================================================');
+        log.debug('==[ ESTIMATED COST ON ITEM (PAID) ]===========================================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
         log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
         log.debug('fee: ' + result.fee);
         log.debug('totalFees: ' + result.totalFees);
         log.debug('==============================================================================================');
     });
-
-
+*/
+/*
     test('Should compress Images to fit FREE message size', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplateOnSellerNode.id,
@@ -735,7 +745,7 @@ describe('ListingItemTemplatePostCommand', () => {
             }
         }
     }, 600000); // timeout to 600s
-
+*/
 
 
 });
