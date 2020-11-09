@@ -66,7 +66,7 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -197,7 +197,11 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
-        // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
+        // at minimum we'd need the messageVersion to create the RESIZED version
+        // listingItemTemplate = await this.createResizedTemplateImages(listingItemTemplate, messageVersionToFit,
+        //    scalingFraction, qualityFraction, maxIterations).then(value => value.toJSON());
+
         return await this.findOne(listingItemTemplate.id);
     }
 
@@ -381,8 +385,8 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         for (const image of images) {
             const updatedImage: resources.Image = await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction,
                 qualityFraction, maxIterations).then(value => value.toJSON());
-            this.log.debug('updatedImage: ', JSON.stringify(updatedImage, null, 2));
-            this.log.debug('listingItemTemplate.id: ', JSON.stringify(listingItemTemplate.id, null, 2));
+            // this.log.debug('updatedImage: ', JSON.stringify(updatedImage, null, 2));
+            // this.log.debug('listingItemTemplate.id: ', JSON.stringify(listingItemTemplate.id, null, 2));
         }
         return await this.findOne(listingItemTemplate.id);
     }
@@ -434,7 +438,7 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         if (qualityFactor <= 0) {
             return '';
         }
-        const originalImage = await this.itemDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+        const originalImage = await this.imageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
 
         let compressedImage = await ImageProcessing.resizeImageToFit(
             originalImage,
@@ -474,11 +478,18 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
             images = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
 
                 // for each image, get the data from ORIGINAL and create a new ImageCreateRequest based on that data
+                // the other image versions will be created later
                 const imageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
-                this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
+                // try to load data, if it exists.
+                const data = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName)
+                    .then(value => value)
+                    .catch(reason => undefined);
+                imageDataOriginal.data = data ? data : imageDataOriginal.data;
+
+                // this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
 
                 const imageCreateRequest: ImageCreateRequest = await this.imageFactory.get({
                     actionMessage: {

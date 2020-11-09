@@ -131,6 +131,7 @@ export class ImageDataService {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
         // this.log.debug('saveImageFile(): ', filename);
         try {
+            // replaces the file if it already exists
             fs.writeFileSync(filename, base64Image, { encoding: 'base64' });
         } catch (err) {
             throw new MessageException('Image write failed: ' + err);

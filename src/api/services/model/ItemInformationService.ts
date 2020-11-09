@@ -125,7 +125,7 @@ export class ItemInformationService {
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('update(), body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);

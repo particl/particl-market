@@ -36,7 +36,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         super(Commands.ITEMINFORMATION_UPDATE);
         this.log = new Logger(__filename);
 
-        this.debug = true;
+        // this.debug = true;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
@@ -117,8 +117,8 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
-        this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
-        this.log.debug('listingItemTemplate.market: ', JSON.stringify(listingItemTemplate.market, null, 2));
+        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+        // this.log.debug('listingItemTemplate.market: ', JSON.stringify(listingItemTemplate.market, null, 2));
 
         // allow adding a default category to market template
         if ((!_.isNil(itemCategory) && !_.isNil(itemCategory.market) && !_.isNil(listingItemTemplate.market))

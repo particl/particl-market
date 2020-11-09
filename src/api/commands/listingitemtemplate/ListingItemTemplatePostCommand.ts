@@ -136,7 +136,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // then post the Images related to the ListingItem
         smsgSendResponse.childResults = await this.postListingImages(listingItemTemplate, postRequest, paidImageMessages);
 
-        this.log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
+        // this.log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
 
         // then create the response, add totalFees and availableUtxos
         const unspentUtxos: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(postRequest.sendParams.wallet,
@@ -314,6 +314,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 sellerAddress: listingItemAddRequest.sellerAddress,
                 withData: true
             } as ListingItemImageAddRequest;
+
+            this.log.debug('postListingImages(), usePaid: ', usePaid);
 
             // optionally use paid messages
             imageAddRequest.sendParams.messageType = usePaid ? CoreMessageVersion.PAID : undefined;

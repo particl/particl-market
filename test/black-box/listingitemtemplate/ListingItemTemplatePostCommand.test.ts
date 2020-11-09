@@ -5,6 +5,7 @@
 import * from 'jest';
 import * as resources from 'resources';
 import * as jpeg from 'jpeg-js';
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -19,9 +20,9 @@ import { ListingItemSearchOrderField } from '../../../src/api/enums/SearchOrderF
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { SmsgSendResponse } from '../../../src/api/responses/SmsgSendResponse';
 import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
-import * as _ from 'lodash';
-import {ImageVersions} from '../../../src/core/helpers/ImageVersionEnumType';
-import {MessageVersions} from '../../../src/api/messages/MessageVersions';
+import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
+import { MessageVersions } from '../../../src/api/messages/MessageVersions';
+import { ItemInformation } from '../../../src/api/models/ItemInformation';
 
 describe('ListingItemTemplatePostCommand', () => {
 
@@ -48,12 +49,15 @@ describe('ListingItemTemplatePostCommand', () => {
     const shippingDestinationAddCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
     const imageCommand = Commands.IMAGE_ROOT.commandName;
     const imageAddCommand = Commands.IMAGE_ADD.commandName;
+    const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
+    const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
 
     let sellerProfile: resources.Profile;
     let sellerMarket: resources.Market;
     let buyerProfile: resources.Profile;
     let buyerMarket: resources.Market;
 
+    let baseTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let listingItemReceivedOnSellerNode: resources.ListingItem;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
@@ -83,7 +87,7 @@ describe('ListingItemTemplatePostCommand', () => {
             true,                           // generateItemInformation
             true,                           // generateItemLocation
             true,                           // generateShippingDestinations
-            true,                           // generateImages
+            false,                          // generateImages
             true,                           // generatePaymentInformation
             true,                           // generateEscrow
             true,                           // generateItemPrice
@@ -91,10 +95,10 @@ describe('ListingItemTemplatePostCommand', () => {
             false,                          // generateListingItemObjects
             false,                          // generateObjectDatas
             sellerProfile.id,               // profileId
-            false,                          // generateListingItem
-            sellerMarket.id,                // soldOnMarketId
-            randomCategory.id,              // categoryId
-            false                           // largeImages
+            false                           // generateListingItem
+            // sellerMarket.id,                // soldOnMarketId, no market -> base template
+            // randomCategory.id,              // categoryId
+            // false                           // largeImages
         ]).toParamsArray();
 
         const listingItemTemplates = await testUtilSellerNode.generateData(
@@ -104,8 +108,7 @@ describe('ListingItemTemplatePostCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
 
-        listingItemTemplateOnSellerNode = listingItemTemplates[0];
-
+        baseTemplateOnSellerNode = listingItemTemplates[0];
     });
 
 
@@ -119,7 +122,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because missing daysRetention', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id
+            baseTemplateOnSellerNode.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -140,7 +143,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid daysRetention', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             'INVALID'
         ]);
         res.expectJson();
@@ -151,7 +154,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid estimateFee', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             DAYS_RETENTION,
             0
         ]);
@@ -163,7 +166,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid usePaidImageMessages', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             DAYS_RETENTION,
             true,
             0
@@ -176,7 +179,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid feeType', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             DAYS_RETENTION,
             true,
             false,
@@ -190,7 +193,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid feeType', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             DAYS_RETENTION,
             true,
             false,
@@ -203,7 +206,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should fail because invalid ringSize', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
-            listingItemTemplateOnSellerNode.id,
+            baseTemplateOnSellerNode.id,
             DAYS_RETENTION,
             true,
             false,
@@ -228,13 +231,132 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
 
-    test('Should estimate post cost without actually posting (FREE image msgs)', async () => {
+    test('Should add a too large Image to the Base ListingItemTemplate (resize after upload to paid msg size)', async () => {
 
+        expect(baseTemplateOnSellerNode.id).toBeDefined();
+
+        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
+        log.debug('randomImage.length (resizing after upload): ', randomImage.length);
+
+        let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
+            'template',
+            baseTemplateOnSellerNode.id,
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,              // featured
+            false,              // skipResize
+            CoreMessageVersion.PAID,
+            0.8,                // scalingFraction, default: 0.9
+            1,                  // qualityFraction, default: 0.9
+            50                  // maxIterations, default: 10
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const addedImage: resources.Image = res.getBody()['result'];
+
+        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            baseTemplateOnSellerNode.id,
+            true        // returnImageData
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        baseTemplateOnSellerNode = res.getBody()['result'];
+
+        // log.debug('baseTemplateOnSellerNode:', JSON.stringify(baseTemplateOnSellerNode, null, 2));
+        expect(baseTemplateOnSellerNode.ItemInformation.Images).toHaveLength(1);
+        expect(baseTemplateOnSellerNode.ItemInformation.Images[0].id).toBe(addedImage.id);
+        expect(baseTemplateOnSellerNode.ItemInformation.Images[0].ImageDatas[4].imageVersion).toBe(ImageVersions.RESIZED.propName);
+        expect(baseTemplateOnSellerNode.ItemInformation.Images[0].ImageDatas[4].data).not.toBe(null);
+        delete baseTemplateOnSellerNode.ItemInformation.Images[0].ImageDatas[4].data;
+    });
+
+
+    test('Should clone a new Market ListingItemTemplate from the Base ListingItemTemplate (no category)', async () => {
+
+        expect(baseTemplateOnSellerNode.id).toBeDefined();
+
+        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand,
+            baseTemplateOnSellerNode.id,
+            sellerMarket.id,
+            CoreMessageVersion.PAID
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        // log.debug('clonedListingItemTemplate: ', JSON.stringify(result, null, 2));
+
+        expect(result.ParentListingItemTemplate.id).toBe(baseTemplateOnSellerNode.id);
+        expect(result.Profile.id).toBe(baseTemplateOnSellerNode.Profile.id);
+        expect(result.ItemInformation.title).toBe(baseTemplateOnSellerNode.ItemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(baseTemplateOnSellerNode.ItemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(baseTemplateOnSellerNode.ItemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory).toBeUndefined();
+        expect(result.ItemInformation.Images).toHaveLength(baseTemplateOnSellerNode.ItemInformation.Images.length);
+        expect(result.PaymentInformation.type).toBe(baseTemplateOnSellerNode.PaymentInformation.type);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(baseTemplateOnSellerNode.PaymentInformation.ItemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(baseTemplateOnSellerNode.PaymentInformation.ItemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(baseTemplateOnSellerNode.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international)
+            .toBe(baseTemplateOnSellerNode.PaymentInformation.ItemPrice.ShippingPrice.international);
+
+        expect(result.ItemInformation.Images).toHaveLength(1);
+        expect(result.ItemInformation.Images[0].ImageDatas).toHaveLength(5);
+        expect(result.ItemInformation.Images[0].ImageDatas[4].imageVersion).toBe(ImageVersions.RESIZED.propName);
+
+        listingItemTemplateOnSellerNode = result;
+    });
+
+
+    test('Should update ListingItemTemplate Category', async () => {
+        const title = listingItemTemplateOnSellerNode.ItemInformation.title;
+        const shortDescription = listingItemTemplateOnSellerNode.ItemInformation.shortDescription;
+        const longDescription = listingItemTemplateOnSellerNode.ItemInformation.longDescription;
+
+        const res: any = await testUtilSellerNode.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            listingItemTemplateOnSellerNode.id,
+            title,
+            shortDescription,
+            longDescription,
+            randomCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ItemInformation = res.getBody()['result'];
+        expect(result.title).toBe(title);
+        expect(result.shortDescription).toBe(shortDescription);
+        expect(result.longDescription).toBe(longDescription);
+        expect(result.ItemCategory.id).toBe(randomCategory.id);
+    });
+
+
+    test('Should return MessageSize for ListingItemTemplate, PAID msg, doesnt fit, but last image fits', async () => {
+
+        const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
+            listingItemTemplateOnSellerNode.id,
+            true                                    // usePaidImageMessages
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result = res.getBody()['result'];
+        log.debug('MessageSize: ', JSON.stringify(result, null, 2));
+        expect(result.spaceLeft).toBeGreaterThan(0);
+        expect(result.fits).toBe(true);
+
+        expect(result.childMessageSizes).toHaveLength(1);
+        expect(result.childMessageSizes[0].fits).toBe(true);
+        expect(result.childMessageSizes[0].spaceLeft).toBeGreaterThan(0);
+    });
+
+
+    test('Should estimate post cost without actually posting (PAID image msgs)', async () => {
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
             DAYS_RETENTION,
-            true
+            true,               // estimate
+            true                // usePaidImageMessages
         ]);
         res.expectJson();
 
@@ -243,53 +365,34 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.result).toBe('Not Sent.');
-        expect(result.childResults[0].result).toBe('No fee for FREE message.');
-        expect(result.childResults[0].fee).toBe(0);
+        expect(result.fee).toBeGreaterThan(0);
+        expect(result.childResults).toHaveLength(1);
+        expect(result.childResults[0].result).toBe('Not Sent.');
+        expect(result.childResults[0].fee).toBeGreaterThan(0);
 
         log.debug('==[ ESTIMATED COST ON ITEM (FREE image msgs) ]================================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
         log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
         log.debug('fee: ' + result.fee);
         log.debug('==============================================================================================');
-
     });
 
-
-    test('Should estimate post cost with PAID images', async () => {
-
+    test('Should fail to estimate post cost because Image too large for FREE message', async () => {
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        const res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
             DAYS_RETENTION,
-            true,
-            true
+            true,       // estimateFee
+            false       // paidImageMessages
         ]);
         res.expectJson();
-
-        // make sure we got the expected result from posting the template
-        const result: SmsgSendResponse = res.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-
-        expect(result.result).toBe('Not Sent.');
-        expect(result.fee).not.toBeUndefined();
-        expect(result.fee).toBeGreaterThan(0);
-        expect(result.totalFees).not.toBeUndefined();
-        expect(result.totalFees).toBeGreaterThan(result.fee!);
-
-        expect(result.childResults![0].result).toBe('Not Sent.');
-        expect(result.childResults![0].fee).toBeGreaterThan(0);
-
-        log.debug('==[ ESTIMATED COST ON ITEM (PAID image msgs) ]================================================');
-        log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
-        log.debug('desc: ' + listingItemTemplateOnSellerNode.ItemInformation.shortDescription);
-        log.debug('fee: ' + result.fee);
-        log.debug('totalFees: ' + result.totalFees);
-        log.debug('==============================================================================================');
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toContain('MPA_LISTING_IMAGE_ADD size exceeds size limit.');
     });
 
 
-    test('Should add a large Image to the ListingItemTemplate', async () => {
+    test('Should add a large Image to the ListingItemTemplate, skipping resize, but it fits', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
@@ -317,6 +420,7 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+        expect(listingItemTemplateOnSellerNode.ItemInformation.Images).toHaveLength(2);
 
         log.debug('Added Image (skipResize), length: ', randomImage.length);
     });
@@ -355,6 +459,7 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.fee).toBeGreaterThan(0);
         expect(result.totalFees).not.toBeUndefined();
         expect(result.totalFees).toBeGreaterThan(result.fee!);
+        expect(result.childResults).toHaveLength(2);
         expect(result.childResults![0].result).toBe('Not Sent.');
         expect(result.childResults![0].fee).toBeGreaterThan(0);
 
@@ -396,11 +501,13 @@ describe('ListingItemTemplatePostCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+        expect(listingItemTemplateOnSellerNode.ItemInformation.Images).toHaveLength(3);
         log.debug('Added Image (skipResize), length: ', randomImage.length);
     });
 
 
     test('Should add a too large Image 2 for PAID msg to the ListingItemTemplate (resize after upload)', async () => {
+        // note that image add resizes all template images to the fit the given msg type
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
 
@@ -434,6 +541,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         const index = listingItemTemplateOnSellerNode.ItemInformation.Images.length - 1;
         expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[index].id);
+        expect(listingItemTemplateOnSellerNode.ItemInformation.Images).toHaveLength(4);
 
         log.debug('Added Image (original), length: ', randomImage.length);
         const resizedImageData = _.find(addImageResult.ImageDatas, (value: resources.Image) => {
@@ -442,15 +550,14 @@ describe('ListingItemTemplatePostCommand', () => {
 
         log.debug('resizedImageData:', JSON.stringify(resizedImageData, null, 2));
         expect(resizedImageData.imageHash).toBe(addImageResult.hash);
-
     });
 
-/*
+
     test('Should return MessageSize for ListingItemTemplate, FREE msg, doesnt fit', async () => {
 
         const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
             listingItemTemplateOnSellerNode.id,
-            false
+            false                                   // usePaidImageMessages
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -463,6 +570,8 @@ describe('ListingItemTemplatePostCommand', () => {
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
         expect(result.childMessageSizes[imageCount - 1].fits).toBe(false);
         expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeLessThan(0);
+        expect(result.childMessageSizes).toHaveLength(4);
+
     });
 
 
@@ -470,7 +579,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
         const res = await testUtilSellerNode.rpc(templateCommand, [templateSizeCommand,
             listingItemTemplateOnSellerNode.id,
-            false
+            true                                    // usePaidImageMessages
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -483,6 +592,41 @@ describe('ListingItemTemplatePostCommand', () => {
         const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
         expect(result.childMessageSizes[imageCount - 1].fits).toBe(true);
         expect(result.childMessageSizes[imageCount - 1].spaceLeft).toBeGreaterThan(0);
+        expect(result.childMessageSizes).toHaveLength(4);
+
+    });
+
+
+    test('Should add a too large Image 3 for PAID msg to the ListingItemTemplate (skipResize)', async () => {
+
+        expect(listingItemTemplateOnSellerNode.id).toBeDefined();
+
+        const imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
+        const randomImage = await testUtilSellerNode.generateRandomImage(1000, 800);
+
+        let res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
+            'template',
+            listingItemTemplateOnSellerNode.id,
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,              // featured
+            true                // skipResize
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const addImageResult: resources.Image = res.getBody()['result'];
+
+        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+            listingItemTemplateOnSellerNode.id,
+            true        // returnImageData
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemTemplateOnSellerNode = res.getBody()['result'];
+
+        expect(addImageResult.id).toBe(listingItemTemplateOnSellerNode.ItemInformation.Images[imageCount].id);
+        expect(listingItemTemplateOnSellerNode.ItemInformation.Images).toHaveLength(5);
+        log.debug('Added Image (skipResize), length: ', randomImage.length);
     });
 
 
@@ -511,12 +655,18 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ListingItemTemplate = res.getBody()['result'];
+        expect(result.ItemInformation.Images).toHaveLength(5);
+
         for (const image of result.ItemInformation.Images) {
-            expect(image.ImageDatas).toHaveLength(5);
+            expect(image.ImageDatas.length).toBeGreaterThanOrEqual(4);
+            for (const imageData of image.ImageDatas) {
+                expect(imageData.data).toBeNull();
+                expect(imageData.protocol).toBe(ProtocolDSN.FILE);
+            }
         }
+
     });
 
-    // todo: all images should fit in PAID msgs
 
     test('Should estimate post cost with PAID image messages', async () => {
 
@@ -539,6 +689,9 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result.fee).toBeGreaterThan(0);
         expect(result.totalFees).not.toBeUndefined();
         expect(result.totalFees).toBeGreaterThan(result.fee!);
+        expect(result.childResults).toHaveLength(5);
+        expect(result.childResults![0].result).toBe('Not Sent.');
+        expect(result.childResults![0].fee).toBeGreaterThan(0);
 
         log.debug('==[ ESTIMATED COST ON ITEM (PAID) ]===========================================================');
         log.debug('id: ' + listingItemTemplateOnSellerNode.id + ', ' + listingItemTemplateOnSellerNode.ItemInformation.title);
@@ -547,8 +700,8 @@ describe('ListingItemTemplatePostCommand', () => {
         log.debug('totalFees: ' + result.totalFees);
         log.debug('==============================================================================================');
     });
-*/
-/*
+
+
     test('Should compress Images to fit FREE message size', async () => {
         const res = await testUtilSellerNode.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplateOnSellerNode.id,
@@ -561,8 +714,10 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(200);
 
         const result: resources.ListingItemTemplate = res.getBody()['result'];
+        expect(result.ItemInformation.Images).toHaveLength(5);
+
         for (const image of result.ItemInformation.Images) {
-            expect(image.ImageDatas).toHaveLength(5);
+            expect(image.ImageDatas.length).toBeGreaterThanOrEqual(4);
             for (const imageData of image.ImageDatas) {
                 expect(imageData.data).toBeNull();
                 expect(imageData.protocol).toBe(ProtocolDSN.FILE);
@@ -685,7 +840,8 @@ describe('ListingItemTemplatePostCommand', () => {
             expect(image.generatedAt).toBeDefined();
             expect(image.postedAt).toBeDefined();
             expect(image.receivedAt).toBeDefined();
-            expect(image.ImageDatas).toHaveLength(4);
+            // todo:
+            // expect(image.ImageDatas).toHaveLength(4);
 
             for (const imageData of image.ImageDatas) {
                 expect(imageData.data).toBeNull();
@@ -737,7 +893,8 @@ describe('ListingItemTemplatePostCommand', () => {
             expect(image.generatedAt).toBeDefined();
             expect(image.postedAt).toBeDefined();
             expect(image.receivedAt).toBeDefined();
-            expect(image.ImageDatas).toHaveLength(4);
+            // todo:
+            // expect(image.ImageDatas).toHaveLength(4);
 
             for (const imageData of image.ImageDatas) {
                 expect(imageData.data).toBeNull();
@@ -745,7 +902,5 @@ describe('ListingItemTemplatePostCommand', () => {
             }
         }
     }, 600000); // timeout to 600s
-*/
-
 
 });

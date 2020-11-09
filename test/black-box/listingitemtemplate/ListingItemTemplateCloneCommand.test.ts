@@ -505,4 +505,6 @@ describe('ListingItemTemplateCloneCommand', () => {
 
     });
 
+    // todo: test template image cloning
+    // check template post tests
 });

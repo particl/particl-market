@@ -105,7 +105,6 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
         } as ImageCreateParams);
 
         let image: resources.Image = await this.imageService.create(createRequest).then(value => value.toJSON());
-        this.log.debug('CREATED IMAGE:', image.id);
 
         if (featured) {
             await this.imageService.updateFeatured(image.id, true);
@@ -122,7 +121,7 @@ export class ImageAddCommand extends BaseCommand implements RpcCommandInterface<
             listingItemTemplate = await this.listingItemTemplateService.findOne(listingItemTemplate.id).then(value => value.toJSON());
             listingItemTemplate = await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate, messageVersionToFit,
                 scalingFraction, qualityFraction, maxIterations).then(value => value.toJSON());
-            this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+            // this.log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
         } else if (!skipResize && typeSpecifier === 'market') {
             image = await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations)

@@ -84,9 +84,6 @@ export class ImageService {
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
-        // find the ImageVersions.ORIGINAL from the existing ImageDatas
-        // the ORIGINAL should always exist, its used to create the other versions
-        // it should also be the only version...
         const imageDataCreateRequestOriginal: ImageDataCreateRequest | undefined = _.find(body.data, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
@@ -97,11 +94,13 @@ export class ImageService {
 
             // this.log.debug('body: ', JSON.stringify(body, null, 2));
             const image: resources.Image = await this.imageRepository.create(body).then(value => value.toJSON());
+            // this.log.debug('image: ', JSON.stringify(image, null, 2));
 
             // then create the ORIGINAL ImageData
             imageDataCreateRequestOriginal.image_id = image.id;
 
-            await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
+            const originalImageData: resources.ImageData = await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
+            // this.log.debug('originalImageData: ', JSON.stringify(originalImageData, null, 2));
 
             // then create the other versions from the given original data,
             // original is automatically added as one of the versions
@@ -126,9 +125,8 @@ export class ImageService {
         let startTime = Date.now();
         const imageDatas: resources.ImageData[] = [];
 
-        // this.log.debug('createVersions(), originalImageData: ', JSON.stringify(originalImageData, null, 2));
-
         if (originalImageData.data) {
+            // if data for the original image exists, then create the other versions
             const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
             this.log.debug('createVersions(), convertToJPEG: ' + (Date.now() - startTime) + 'ms');
 
@@ -148,7 +146,6 @@ export class ImageService {
 
         } else {
             // when there is no data, we received ListingItemAddMessage and we are expecting to receive the data via smsg later
-            // original version has already been created, so theres nothing more to do
         }
 
         // this.log.debug('createVersions(), created imageDatas: ', JSON.stringify(imageDatas, null, 2));
@@ -157,7 +154,6 @@ export class ImageService {
 
     public async createResizedVersion(id: number, messageVersionToFit: CoreMessageVersion, scalingFraction: number = 0.9, qualityFraction: number = 0.95,
                                       maxIterations: number = 10): Promise<Image> {
-        this.log.debug('---------------------------');
 
         const image: resources.Image = await this.findOne(id).then(value => value.toJSON());
         const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
@@ -172,31 +168,39 @@ export class ImageService {
         }
         this.log.debug('resized image exists: ', !_.isNil(imageDataResized));
 
-        const rawImageData = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
-        const maxSize = MessageVersions.maxSize(messageVersionToFit);
+        const originalData = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName)
+            .catch(reason => {
+                this.log.warn('Can\'t create RESIZED version, failed to load the ORIGINAL.');
+                return undefined;
+            });
 
-        const resizedImageData = await ImageProcessing.resizeImageToSize(rawImageData, maxSize, scalingFraction, qualityFraction, maxIterations);
+        if (originalData) {
+            const maxSize = MessageVersions.maxSize(messageVersionToFit);
 
-        // only create resized version if needed
-        if (rawImageData !== resizedImageData) {
-            this.log.debug('resized image size: ', resizedImageData.length);
+            const resizedImageData = await ImageProcessing.resizeImageToSize(originalData, maxSize, scalingFraction, qualityFraction, maxIterations);
 
-            const versionCreateOrUpdateRequest = {
-                image_id: image.id,
-                protocol: imageDataOriginal.protocol,
-                imageVersion: ImageVersions.RESIZED.propName,
-                imageHash: image.hash,
-                encoding: imageDataOriginal.encoding,
-                data: resizedImageData
-            } as ImageDataCreateRequest;
+            // only create resized version if needed
+            if (originalData !== resizedImageData) {
+                this.log.debug('resized image size: ', resizedImageData.length);
 
-            // resized could already exist, so create/update
-            if (_.isNil(imageDataResized)) {
-                await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
-            } else {
-                await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+                const versionCreateOrUpdateRequest = {
+                    image_id: image.id,
+                    protocol: imageDataOriginal.protocol,
+                    imageVersion: ImageVersions.RESIZED.propName,
+                    imageHash: image.hash,
+                    encoding: imageDataOriginal.encoding,
+                    data: resizedImageData
+                } as ImageDataCreateRequest;
+
+                // resized could already exist, so create/update
+                if (_.isNil(imageDataResized)) {
+                    await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
+                } else {
+                    await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+                }
             }
         }
+
         return await this.findOne(id);
     }
 
