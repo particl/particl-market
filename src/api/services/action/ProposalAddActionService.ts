@@ -28,7 +28,7 @@ import { ProposalAddRequest } from '../../requests/action/ProposalAddRequest';
 import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
 import { MarketService } from '../model/MarketService';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ProposalNotification } from '../../messages/notification/ProposalNotification';
@@ -40,7 +40,7 @@ export class ProposalAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
@@ -171,6 +171,10 @@ export class ProposalAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection
             && proposalAddMessage.category === ProposalCategory.ITEM_VOTE) {
 
+            const proposal: resources.Proposal = await this.proposalService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
+
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
                 proposalAddMessage.target!, smsgMessage.to)
                 .then(value => value.toJSON())
@@ -179,10 +183,11 @@ export class ProposalAddActionService extends BaseActionService {
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    category: proposalAddMessage.category,
-                    hash: proposalAddMessage.hash,
+                    objectId: _.isEmpty(proposal) ? proposal.id : undefined,
+                    objectHash: proposalAddMessage.hash,
                     target: proposalAddMessage.target,
-                    market: listingItem.market
+                    market: listingItem.market,
+                    category: proposalAddMessage.category
                 } as ProposalNotification
             };
             return notification;

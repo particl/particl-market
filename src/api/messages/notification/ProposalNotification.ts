@@ -4,13 +4,16 @@
 
 import { ActionNotificationInterface } from './ActionNotificationInterface';
 import { ProposalCategory } from '../../enums/ProposalCategory';
+import { GovernanceAction } from '../../enums/GovernanceAction';
 
 export class ProposalNotification implements ActionNotificationInterface {
 
-    public category: ProposalCategory;
-    public hash: string;
-    public target: string;
+    public type: GovernanceAction.MPA_PROPOSAL_ADD;
+    public objectId: number;
+    public objectHash: string;
 
+    public category: ProposalCategory;
+    public target: string;
     public market: string;
 
 }

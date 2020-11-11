@@ -11,7 +11,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Core, Targets, Types } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { ListingItemTemplateSearchOrderField, SearchOrderField } from '../../enums/SearchOrderField';
+import { MarketSearchOrderField, SearchOrderField } from '../../enums/SearchOrderField';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { ProfileService } from '../../services/model/ProfileService';
@@ -50,7 +50,7 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
     }
 
     public getAllowedSearchOrderFields(): string[] {
-        return EnumHelper.getValues(ListingItemTemplateSearchOrderField) as string[];
+        return EnumHelper.getValues(MarketSearchOrderField) as string[];
     }
 
     /**
@@ -117,11 +117,11 @@ export class MarketSearchCommand extends BaseSearchCommand implements RpcCommand
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <page>                   - Numeric - The number of the page we want to view. \n'
-            + '    <pageLimit>              - Numeric - The number of results per page. \n'
-            + '    <order>                  - ENUM{SearchOrder} - The order of the returned results. \n'
-            + '    <orderField>             - ENUM{MarketSearchOrderField} - The field to use to sort results.\n'
-            + '    <searchString>           - [optional] String - A string that is used to search. \n'
+            + '    <page>                   - number, The number of the page we want to view. \n'
+            + '    <pageLimit>              - number, The number of results per page. \n'
+            + '    <order>                  - ENUM{SearchOrder}, The order of the returned results. \n'
+            + '    <orderField>             - ENUM{MarketSearchOrderField}, The field to use to sort results.\n'
+            + '    <searchString>           - [optional] String, A string that is used to search. \n'
             + '    <type>                   - [optional] MarketType \n'
             + '    <region>                 - [optional] MarketRegion \n';
     }

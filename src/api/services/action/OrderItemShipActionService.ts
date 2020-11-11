@@ -25,7 +25,7 @@ import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipVal
 import { OrderItemShipMessage } from '../../messages/action/OrderItemShipMessage';
 import { OrderItemShipMessageFactory } from '../../factories/message/OrderItemShipMessageFactory';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ListingItemService } from '../model/ListingItemService';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ActionDirection } from '../../enums/ActionDirection';
@@ -37,7 +37,7 @@ export class OrderItemShipActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,

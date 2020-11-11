@@ -21,7 +21,7 @@ import { strip } from 'omp-lib/dist/util';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
-import { NotificationService } from './NotificationService';
+import { NotifyService } from './NotifyService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { unmanaged } from 'inversify';
 import { MessageSize } from '../responses/MessageSize';
@@ -44,7 +44,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
-    public notificationService: NotificationService;
+    public notificationService: NotifyService;
     public smsgMessageFactory: SmsgMessageFactory;
     public validator: ActionMessageValidatorInterface;
     public blacklistService: BlacklistService;
@@ -52,7 +52,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
-                @unmanaged() notificationService: NotificationService,
+                @unmanaged() notificationService: NotifyService,
                 @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,

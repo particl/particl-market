@@ -11,7 +11,7 @@ import { SmsgMessageService } from './model/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { ActionDirection } from '../enums/ActionDirection';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
-import { NotificationService } from './NotificationService';
+import { NotifyService } from './NotifyService';
 import {ActionMessageInterface} from '../messages/action/ActionMessageInterface';
 
 /**
@@ -20,7 +20,7 @@ import {ActionMessageInterface} from '../messages/action/ActionMessageInterface'
 export interface ActionServiceInterface {
 
     smsgService: SmsgService;
-    notificationService: NotificationService;
+    notificationService: NotifyService;
     smsgMessageService: SmsgMessageService;
     smsgMessageFactory: SmsgMessageFactory;
 

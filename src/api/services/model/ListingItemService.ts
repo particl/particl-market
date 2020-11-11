@@ -25,7 +25,7 @@ import { ListingItemObjectCreateRequest } from '../../requests/model/ListingItem
 import { ListingItemObjectUpdateRequest } from '../../requests/model/ListingItemObjectUpdateRequest';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { CommentService } from './CommentService';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 import { ImageService } from './ImageService';
 import { ShoppingCartItemService } from './ShoppingCartItemService';
 import { ProposalCategory } from '../../enums/ProposalCategory';
@@ -318,7 +318,7 @@ export class ListingItemService {
 
         // Comments dont have a hard link to ListinItems
         // TODO: we might not want to delete Comments just yet since the ListingItem might get relisted
-        const listingComments = await this.commentService.findAllByTypeAndTarget(CommentType.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
+        const listingComments = await this.commentService.findAllByTypeAndTarget(CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS, listingItem.hash);
         listingComments.forEach((comment) => {
             try {
                 this.log.debug('destroy(), deleting Comment:', comment.id);

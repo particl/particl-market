@@ -30,7 +30,7 @@ import { EscrowRefundMessageFactory } from '../../factories/message/EscrowRefund
 import { EscrowRefundRequest } from '../../requests/action/EscrowRefundRequest';
 import { EscrowRefundValidator } from '../../messagevalidators/EscrowRefundValidator';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
@@ -41,7 +41,7 @@ export class EscrowRefundActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,

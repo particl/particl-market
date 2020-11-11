@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { CommentType } from '../../../src/api/enums/CommentType';
+import { CommentCategory } from '../../../src/api/enums/CommentCategory';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
@@ -77,7 +77,7 @@ describe('CommentGetCommand', () => {
             false,                                              // generatePastComment
             market.Identity.address,                            // sender
             market.receiveAddress,                              // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
             listingItem.hash                                    // target
         ]).toParamsArray();
 
@@ -102,7 +102,7 @@ describe('CommentGetCommand', () => {
 
     test('Should fail because missing target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS
         ]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -134,7 +134,7 @@ describe('CommentGetCommand', () => {
 
     test('Should fail because invalid target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             false
         ]);
         response.expectJson();
@@ -145,7 +145,7 @@ describe('CommentGetCommand', () => {
 
     test('Should fail because invalid parentCommentHash', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             listingItem.hash,
             false
         ]);
@@ -157,7 +157,7 @@ describe('CommentGetCommand', () => {
 
     test('Should fail because parent Comment not found', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             listingItem.hash,
             comment.hash + 'NOTFOUND'
         ]);
@@ -169,7 +169,7 @@ describe('CommentGetCommand', () => {
 
     test('Should return a number of Comments for type and target', async () => {
         const response = await testUtil.rpc(commentCommand, [commentCountCommand,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             listingItem.hash
         ]);
         response.expectJson();

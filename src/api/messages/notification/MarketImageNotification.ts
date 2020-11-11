@@ -3,9 +3,13 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { ActionNotificationInterface } from './ActionNotificationInterface';
+import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export class MarketImageNotification implements ActionNotificationInterface {
 
-    public hash: string;
-    public marketHash: string;
+    public type: MPActionExtended.MPA_MARKET_IMAGE_ADD;
+    public objectId: number;
+    public objectHash: string;
+
+    public target: string;          // was: marketHash
 }

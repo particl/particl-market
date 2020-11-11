@@ -223,6 +223,12 @@ export class CommandEnumType extends Enum<Command> {
     public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,
         [this.BLACKLIST_ADD, this.BLACKLIST_LIST], EnvironmentType.ALL);
 
+    public NOTIFICATION_SEARCH: Command       = new Command('notificationsearch', 'search', false);
+    public NOTIFICATION_REMOVE: Command      = new Command('notificationremove', 'remove', false);
+    public NOTIFICATION_SETREAD: Command      = new Command('notificationsetread', 'setread', false);
+    public NOTIFICATION_ROOT: Command      = new Command('notification', 'notification', true,
+        [this.NOTIFICATION_SEARCH, this.NOTIFICATION_REMOVE, this.NOTIFICATION_SETREAD], EnvironmentType.ALL);
+
     constructor() {
         super();
         this.initEnum('Command');

@@ -6,7 +6,7 @@ import { MessageBody } from '../../../core/api/MessageBody';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { CommentAction } from '../../enums/CommentAction';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 
 export class CommentAddMessage extends MessageBody implements ActionMessageInterface {
 
@@ -21,8 +21,8 @@ export class CommentAddMessage extends MessageBody implements ActionMessageInter
     public receiver: string;
 
     @IsNotEmpty()
-    @IsEnum(CommentType)
-    public commentType: CommentType;
+    @IsEnum(CommentCategory)
+    public commentType: CommentCategory;
 
     @IsNotEmpty()
     public target: string;

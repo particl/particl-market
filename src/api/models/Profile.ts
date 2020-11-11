@@ -12,6 +12,7 @@ import { Identity } from './Identity';
 import { Setting } from './Setting';
 import { Blacklist } from './Blacklist';
 import { Image } from './Image';
+import { Notification } from './Notification';
 import { ListingItemTemplate } from './ListingItemTemplate';
 
 
@@ -26,7 +27,8 @@ export class Profile extends Bookshelf.Model<Profile> {
         'Identities',
         'Identities.Markets',
         'Settings',
-        'Blacklists'
+        'Blacklists',
+        'Notifications'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
@@ -86,6 +88,10 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public Image(): Image {
         return this.belongsTo(Image, 'image_id', 'id');
+    }
+
+    public Notifications(): Collection<Notification> {
+        return this.hasMany(Notification, 'profile_id', 'id');
     }
 
 }

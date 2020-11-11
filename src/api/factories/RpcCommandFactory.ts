@@ -146,6 +146,10 @@ import { CommentCountCommand } from '../commands/comment/CommentCountCommand';
 import { BlacklistListCommand } from '../commands/blacklist/BlacklistListCommand';
 import { BlacklistRootCommand } from '../commands/blacklist/BlacklistRootCommand';
 import { BlacklistAddCommand } from '../commands/blacklist/BlacklistAddCommand';
+import { NotificationRootCommand } from '../commands/notification/NotificationRootCommand';
+import { NotificationSetReadCommand } from '../commands/notification/NotificationSetReadCommand';
+import { NotificationRemoveCommand } from '../commands/notification/NotificationRemoveCommand';
+import { NotificationSearchCommand } from '../commands/notification/NotificationSearchCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -321,6 +325,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistAddCommand) private blacklistAddCommand: BlacklistAddCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistListCommand) private blacklistListCommand: BlacklistListCommand,
         @inject(Types.Command) @named(Targets.Command.blacklist.BlacklistRootCommand) private blacklistRootCommand: BlacklistRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.notification.NotificationSearchCommand) private notificationSearchCommand: NotificationSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.notification.NotificationRemoveCommand) private notificationRemoveCommand: NotificationRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.notification.NotificationSetReadCommand) private notificationSetReadCommand: NotificationSetReadCommand,
+        @inject(Types.Command) @named(Targets.Command.notification.NotificationRootCommand) private notificationRootCommand: NotificationRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -499,6 +508,11 @@ export class RpcCommandFactory {
         this.commands.push(blacklistAddCommand);
         this.commands.push(blacklistListCommand);
         this.commands.push(blacklistRootCommand);
+
+        this.commands.push(notificationSearchCommand);
+        this.commands.push(notificationRemoveCommand);
+        this.commands.push(notificationSetReadCommand);
+        this.commands.push(notificationRootCommand);
 
         this.commands.push(helpCommand);
 

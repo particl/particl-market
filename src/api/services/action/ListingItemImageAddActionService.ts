@@ -24,7 +24,7 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
@@ -48,7 +48,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
@@ -183,14 +183,16 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
-            // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON())
+                .catch(err => undefined);
 
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    hash: imageAddMessage.hash,
-                    listingItemHash: imageAddMessage.target
+                    objectId: _.isEmpty(image) ? image.id : undefined,
+                    objectHash: imageAddMessage.hash,
+                    target: imageAddMessage.target
                 } as ListingItemImageNotification
             };
             return notification;

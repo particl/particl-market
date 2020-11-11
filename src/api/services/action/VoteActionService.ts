@@ -37,7 +37,7 @@ import { MarketService } from '../model/MarketService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { BlacklistService } from '../model/BlacklistService';
 import { GovernanceAction } from '../../enums/GovernanceAction';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 
@@ -64,7 +64,7 @@ export class VoteActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
@@ -319,7 +319,6 @@ export class VoteActionService extends BaseActionService {
         const remove = voteRequest.proposalOption.description === ItemVote.REMOVE.toString();
 
         for (const flaggedItem of voteRequest.proposal.FlaggedItems) {
-
             switch (voteRequest.proposal.category) {
                 case ProposalCategory.ITEM_VOTE:
                     if (_.isNil(flaggedItem.ListingItem)) {
@@ -327,14 +326,12 @@ export class VoteActionService extends BaseActionService {
                     }
                     await this.listingItemService.setRemovedFlag(flaggedItem.ListingItem.id, remove);
                     break;
-
                 case ProposalCategory.MARKET_VOTE:
                     if (_.isNil(flaggedItem.Market)) {
                         return; // should not happen
                     }
                     await this.marketService.setRemovedFlag(flaggedItem.Market.id, remove);
                     break;
-
                 default:
                     break;
             }

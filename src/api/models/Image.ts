@@ -27,6 +27,10 @@ export class Image extends Bookshelf.Model<Image> {
         return Image.where<Image>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Image> {
+        return Image.where<Image>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<Image>> {
         const collection = Image.forge<Model<Image>>()
             .query(qb => {

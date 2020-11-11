@@ -7,7 +7,7 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ActionRequestInterface } from './ActionRequestInterface';
 import { SmsgSendParams } from './SmsgSendParams';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 
 export class CommentAddRequest extends RequestBody implements ActionRequestInterface {
 
@@ -21,7 +21,7 @@ export class CommentAddRequest extends RequestBody implements ActionRequestInter
     public receiver: string;
 
     @IsNotEmpty()
-    public type: CommentType;
+    public type: CommentCategory;
 
     @IsNotEmpty()
     public target: string;

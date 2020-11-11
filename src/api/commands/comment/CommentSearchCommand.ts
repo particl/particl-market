@@ -15,7 +15,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemService } from '../../services/model/ListingItemService';
 import { BaseSearchCommand } from '../BaseSearchCommand';
@@ -56,7 +56,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new EnumValidationRule('commentType', true, 'CommentType', EnumHelper.getValues(CommentType) as string[]),
+                new EnumValidationRule('commentType', true, 'CommentType', EnumHelper.getValues(CommentCategory) as string[]),
                 new StringValidationRule('receiver', true),
                 new StringValidationRule('target', false),
                 new StringValidationRule('sender', false),
@@ -72,7 +72,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Comment>> {
 
-        const type: CommentType = data.params[4];
+        const type: CommentCategory = data.params[4];
         const receiver: string = data.params[5];
         const target: string = data.params[6];                      // optional
         const sender: string = data.params[7];                      // optional
@@ -98,14 +98,14 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
-        const type: CommentType = data.params[4];
+        const type: CommentCategory = data.params[4];
         const receiver: string = data.params[5];
         const target: string = data.params[6];      // optional
         const sender: string = data.params[7];      // optional
         const parentCommentHash = data.params[8];   // optional
 
         // TODO: add support for other CommentTypes
-        if (CommentType.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
+        if (CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS === type) {
 
             // make sure given the receiver (Market), exists
             await this.marketService.findAllByReceiveAddress(receiver)

@@ -15,7 +15,7 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { CommentService } from '../../services/model/CommentService';
 import { ProfileService } from '../../services/model/ProfileService';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 import { MarketService } from '../../services/model/MarketService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
@@ -56,8 +56,8 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         return {
             params: [
                 new IdValidationRule('identityId', true, this.identityService),
-                new EnumValidationRule('commentType', true, 'CommentType', [CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT, CommentType.PRIVATE_MESSAGE] as string[]),
+                new EnumValidationRule('commentType', true, 'CommentType', [CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
+                    CommentCategory.PROPOSAL_QUESTION_AND_ANSWERS, CommentCategory.MARKETPLACE_COMMENT, CommentCategory.PRIVATE_MESSAGE] as string[]),
                 new StringValidationRule('receiver', true),
                 new StringValidationRule('target', true),
                 new StringValidationRule('message', true),
@@ -84,7 +84,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         const identity: resources.Identity = data.params[0];
-        const type = CommentType[data.params[1]];
+        const type = CommentCategory[data.params[1]];
         const toAddress = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
@@ -127,7 +127,7 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         await super.validate(data);
 
         const identity: resources.Identity = data.params[0];
-        const type: CommentType = data.params[1];
+        const type: CommentCategory = data.params[1];
         const receiver = data.params[2];
         const target = data.params[3];
         const message = data.params[4];
@@ -147,27 +147,27 @@ export class CommentPostCommand extends BaseCommand implements RpcCommandInterfa
         data.params[6] = market;
 
         switch (type) {
-            case CommentType.LISTINGITEM_QUESTION_AND_ANSWERS:
+            case CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS:
                 await this.listingItemService.findOneByHashAndMarketReceiveAddress(target, market.receiveAddress).then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('ListingItem');
                     });
                 break;
-            case CommentType.PROPOSAL_QUESTION_AND_ANSWERS:
+            case CommentCategory.PROPOSAL_QUESTION_AND_ANSWERS:
                 // todo: findOneByHashAndMarket
                 await this.proposalService.findOneByHash(target).then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('ListingItem');
                     });
                 break;
-            case CommentType.MARKETPLACE_COMMENT:
+            case CommentCategory.MARKETPLACE_COMMENT:
                 await this.marketService.findOneByProfileIdAndReceiveAddress(identity.Profile.id, target)
                     .then(value => value.toJSON())
                     .catch(() => {
                         throw new ModelNotFoundException('Market');
                     });
                 break;
-            case CommentType.PRIVATE_MESSAGE:
+            case CommentCategory.PRIVATE_MESSAGE:
                 break;
             default:
                 throw new MessageException('CommentType not supported.');

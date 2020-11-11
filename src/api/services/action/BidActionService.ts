@@ -29,7 +29,7 @@ import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MPAction  } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BidNotification } from '../../messages/notification/BidNotification';
@@ -45,7 +45,7 @@ export class BidActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
@@ -233,17 +233,17 @@ export class BidActionService extends BaseActionService {
                 .catch(err => undefined);
 
             if (bid) {
-                const notification: MarketplaceNotification = {
+                return {
                     event: MPAction.MPA_BID,
                     payload: {
-                        id: bid.id,
-                        hash: bid.hash,
-                        bidder: bid.bidder,
-                        listingItemHash: bid.ListingItem.hash,
+                        objectId: bid.id,
+                        objectHash: bid.hash,
+                        from: bid.bidder,
+                        to: bid.OrderItem.Order.seller,
+                        target: bid.ListingItem.hash,
                         market: bid.ListingItem.market
                     } as BidNotification
-                };
-                return notification;
+                } as MarketplaceNotification;
             }
         }
         return undefined;

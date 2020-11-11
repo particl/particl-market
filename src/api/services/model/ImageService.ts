@@ -45,15 +45,6 @@ export class ImageService {
         return this.imageRepository.findAll();
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
-        const image = await this.imageRepository.findOne(id, withRelated);
-        if (image === null) {
-            this.log.warn(`Image with the id=${id} was not found!`);
-            throw new NotFoundException(id);
-        }
-        return image;
-    }
-
     /**
      * Return all Images with a certain hash.
      * There could be several, since the same image file could be used in multiple ListingItems.
@@ -71,6 +62,24 @@ export class ImageService {
 
     public async findAllByHashAndTarget(hash: string, target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
         return await this.imageRepository.findAllByHashAndTarget(hash, target, withRelated);
+    }
+
+    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
+        const image = await this.imageRepository.findOne(id, withRelated);
+        if (image === null) {
+            this.log.warn(`Image with the id=${id} was not found!`);
+            throw new NotFoundException(id);
+        }
+        return image;
+    }
+
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Image> {
+        const image = await this.imageRepository.findOneByMsgId(msgid, withRelated);
+        if (image === null) {
+            this.log.warn(`Image with the msgid=${msgid} was not found!`);
+            throw new NotFoundException(msgid);
+        }
+        return image;
     }
 
     /**

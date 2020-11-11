@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -22,7 +23,7 @@ import { CommentCreateParams } from '../../factories/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
@@ -35,7 +36,7 @@ export class CommentAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
@@ -178,21 +179,17 @@ export class CommentAddActionService extends BaseActionService {
                 const notification: MarketplaceNotification = {
                     event: CommentAction.MPA_COMMENT_ADD,
                     payload: {
-                        id: comment.id,
-                        hash: comment.hash,
+                        objectId: comment.id,
+                        objectHash: comment.hash,
+                        from: comment.sender,
+                        to: comment.receiver,
                         target: comment.target,
-                        sender: comment.sender,
-                        receiver: comment.receiver,
-                        commentType: comment.commentType
+                        category: comment.commentType,
+                        parentObjectId: !_.isEmpty(comment.ParentComment) ? comment.ParentComment.id : undefined,
+                        parentObjectHash: !_.isEmpty(comment.ParentComment) ? comment.ParentComment.hash : undefined
                     } as CommentAddNotification
                 };
 
-                if (comment.ParentComment) {
-                    (notification.payload as CommentAddNotification).parent = {
-                        id: comment.ParentComment.id,
-                        hash: comment.ParentComment.hash
-                    } as CommentAddNotification;
-                }
                 return notification;
             }
         }

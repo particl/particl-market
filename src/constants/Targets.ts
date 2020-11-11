@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2020, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -39,6 +35,7 @@ export const Targets = {
         LocationMarker: 'LocationMarker',
         Market: 'Market',
         MessagingInformation: 'MessagingInformation',
+        Notification: 'Notification',
         Order: 'Order',
         OrderItem: 'OrderItem',
         PaymentInformation: 'PaymentInformation',
@@ -82,6 +79,7 @@ export const Targets = {
         LocationMarkerRepository: 'LocationMarkerRepository',
         MarketRepository: 'MarketRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
+        NotificationRepository: 'NotificationRepository',
         OrderItemRepository: 'OrderItemRepository',
         OrderRepository: 'OrderRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
@@ -100,8 +98,20 @@ export const Targets = {
         VoteRepository: 'VoteRepository'
     },
     Service:     {
+        ActionServiceInterface: 'ActionServiceInterface',
+        BaseActionService: 'BaseActionService',
+        BaseBidActionService: 'BaseBidActionService',
+        CoreRpcService: 'CoreRpcService',
+        DefaultItemCategoryService: 'DefaultItemCategoryService',
+        DefaultMarketService: 'DefaultMarketService',
+        DefaultProfileService: 'DefaultProfileService',
+        DefaultSettingService: 'DefaultSettingService',
+        ModelServiceInterface: 'ModelServiceInterface',
+        NotifyService: 'NotifyService',
+        OmpService: 'OmpService',
+        SmsgService: 'SmsgService',
+        TestDataService: 'TestDataService',
         action: {
-            ActionServiceInterface: 'ActionServiceInterface',
             BidAcceptActionService: 'BidAcceptActionService',
             BidActionService: 'BidActionService',
             BidCancelActionService: 'BidCancelActionService',
@@ -119,13 +129,6 @@ export const Targets = {
             ProposalAddActionService: 'ProposalAddActionService',
             VoteActionService: 'VoteActionService'
         },
-        BaseActionService: 'BaseActionService',
-        BaseBidActionService: 'BaseBidActionService',
-        CoreRpcService: 'CoreRpcService',
-        DefaultItemCategoryService: 'DefaultItemCategoryService',
-        DefaultMarketService: 'DefaultMarketService',
-        DefaultProfileService: 'DefaultProfileService',
-        DefaultSettingService: 'DefaultSettingService',
         model: {
             AddressService: 'AddressService',
             BidDataService: 'BidDataService',
@@ -152,6 +155,7 @@ export const Targets = {
             LocationMarkerService: 'LocationMarkerService',
             MarketService: 'MarketService',
             MessagingInformationService: 'MessagingInformationService',
+            NotificationService: 'NotificationService',
             OrderItemService: 'OrderItemService',
             OrderService: 'OrderService',
             PaymentInformationService: 'PaymentInformationService',
@@ -178,11 +182,7 @@ export const Targets = {
             ExpiredProposalService: 'ExpiredProposalService',
             ProposalResultRecalcService: 'ProposalResultRecalcService',
             WaitingMessageService: 'WaitingMessageService'
-        },
-        OmpService: 'OmpService',
-        SmsgService: 'SmsgService',
-        NotificationService: 'NotificationService',
-        TestDataService: 'TestDataService'
+        }
     },
     Command:     {
         address: {
@@ -213,6 +213,7 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        CommandParamValidation: 'CommandParamValidation',
         comment: {
             CommentCountCommand: 'CommentCountCommand',
             CommentGetCommand: 'CommentGetCommand',
@@ -253,6 +254,13 @@ export const Targets = {
             IdentityListCommand: 'IdentityListCommand',
             IdentityRootCommand: 'IdentityRootCommand'
         },
+        image: {
+            ImageAddCommand: 'ImageAddCommand',
+            ImageCompressCommand: 'ImageCompressCommand',
+            ImageListCommand: 'ImageListCommand',
+            ImageRemoveCommand: 'ImageRemoveCommand',
+            ImageRootCommand: 'ImageRootCommand'
+        },
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
@@ -261,13 +269,6 @@ export const Targets = {
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
             ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
-        },
-        image: {
-            ImageAddCommand: 'ImageAddCommand',
-            ImageCompressCommand: 'ImageCompressCommand',
-            ImageListCommand: 'ImageListCommand',
-            ImageRemoveCommand: 'ImageRemoveCommand',
-            ImageRootCommand: 'ImageRootCommand'
         },
         iteminformation: {
             ItemInformationGetCommand: 'ItemInformationGetCommand',
@@ -315,6 +316,12 @@ export const Targets = {
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
+        },
+        notification: {
+            NotificationRootCommand: 'NotificationRootCommand',
+            NotificationSearchCommand: 'NotificationSearchCommand',
+            NotificationRemoveCommand: 'NotificationRemoveCommand',
+            NotificationSetReadCommand: 'NotificationSetReadCommand'
         },
         order: {
             OrderRootCommand: 'OrderRootCommand',
@@ -393,6 +400,11 @@ export const Targets = {
         }
     },
     Factory:     {
+        BaseMessageFactory: 'BaseMessageFactory',
+        MessageFactoryInterface: 'MessageFactoryInterface',
+        ModelCreateParams: 'ModelCreateParams',
+        ModelFactoryInterface: 'ModelFactoryInterface',
+        RpcCommandFactory: 'RpcCommandFactory',
         hashableconfig: {
             HashableField: 'HashableField',
             createrequest: {
@@ -417,11 +429,6 @@ export const Targets = {
                 HashableListingItemTemplateConfig: 'HashableListingItemTemplateConfig'
             }
         },
-        MessageFactoryInterface: 'MessageFactoryInterface',
-        ModelCreateParams: 'ModelCreateParams',
-        ModelFactoryInterface: 'ModelFactoryInterface',
-        RpcCommandFactory: 'RpcCommandFactory',
-        BaseMessageFactory: 'BaseMessageFactory',
         message: {
             BidMessageFactory: 'BidMessageFactory',
             BidAcceptMessageFactory: 'BidAcceptMessageFactory',

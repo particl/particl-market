@@ -10,7 +10,7 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { BidCreateParams } from '../factories/ModelCreateParams';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
-import { NotificationService } from './NotificationService';
+import { NotifyService } from './NotifyService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { BaseActionService } from './BaseActionService';
 import { BidCreateRequest } from '../requests/model/BidCreateRequest';
@@ -45,7 +45,7 @@ export abstract class BaseBidActionService extends BaseActionService {
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
-                @unmanaged() notificationService: NotificationService,
+                @unmanaged() notificationService: NotifyService,
                 @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,
@@ -101,10 +101,11 @@ export abstract class BaseBidActionService extends BaseActionService {
             return {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    id: bid.id,
-                    hash: bid.hash,
-                    bidder: bid.bidder,
-                    listingItemHash: bid.ListingItem.hash,
+                    objectId: bid.id,
+                    objectHash: bid.hash,
+                    from: smsgMessage.from,
+                    to: smsgMessage.to,
+                    target: bid.ListingItem.hash,
                     market: bid.ListingItem.market
                 } as BidNotification
             } as MarketplaceNotification;

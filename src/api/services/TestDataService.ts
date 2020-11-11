@@ -89,7 +89,7 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
-import { CommentType } from '../enums/CommentType';
+import { CommentCategory } from '../enums/CommentCategory';
 import { CommentService } from './model/CommentService';
 import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
 import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
@@ -1202,7 +1202,7 @@ export class TestDataService {
                 type: CommentAction.MPA_COMMENT_ADD,
                 sender: generateParams.sender,
                 receiver: generateParams.receiver,
-                commentType: generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                commentType: generateParams.type || CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
                 target: generateParams.target,
                 message: Faker.lorem.lines(1),
                 // parentCommentHash,

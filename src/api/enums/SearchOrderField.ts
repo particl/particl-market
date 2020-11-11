@@ -27,6 +27,11 @@ export enum MarketSearchOrderField {
     CREATED_AT = 'created_at'
 }
 
+export enum NotificationSearchOrderField {
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
 export enum BidSearchOrderField {
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'

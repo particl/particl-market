@@ -30,7 +30,7 @@ import { ListingItemTemplateService } from '../model/ListingItemTemplateService'
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
@@ -43,7 +43,7 @@ export class ListingItemAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -189,9 +189,10 @@ export class ListingItemAddActionService extends BaseActionService {
                 const notification: MarketplaceNotification = {
                     event: marketplaceMessage.action.type,
                     payload: {
-                        id: listingItem.id,
-                        hash: listingItem.hash,
-                        seller: listingItem.seller,
+                        objectId: listingItem.id,
+                        objectHash: listingItem.hash,
+                        from: listingItem.seller,
+                        to: smsgMessage.to,
                         market: listingItem.market
                     } as ListingItemNotification
                 };

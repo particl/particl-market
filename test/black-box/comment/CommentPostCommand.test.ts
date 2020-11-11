@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { CommentType } from '../../../src/api/enums/CommentType';
+import { CommentCategory } from '../../../src/api/enums/CommentCategory';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
@@ -92,7 +92,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because missing receiver', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS
         ]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -103,7 +103,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because missing target', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress
         ]);
         response.expectJson();
@@ -115,7 +115,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because missing message', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash
         ]);
@@ -128,7 +128,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because invalid identityId', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             true,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             'THIS_IS_THE_MESSAGE'
@@ -170,7 +170,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because invalid receiver', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             true,
             listingItem.hash,
             'THIS_IS_THE_MESSAGE'
@@ -184,7 +184,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because invalid target', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             true,
             'THIS_IS_THE_MESSAGE'
@@ -198,7 +198,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because invalid message', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             true
@@ -212,7 +212,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because invalid parentCommentHash', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             'THIS_IS_THE_MESSAGE',
@@ -227,7 +227,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because Identity not found', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             0,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             'THIS_IS_THE_MESSAGE'
@@ -241,7 +241,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because Market not found', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress + 'NO_MATCH',
             listingItem.hash,
             'THIS_IS_THE_MESSAGE'
@@ -255,7 +255,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because ListingItem not found', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash + 'NO_MATCH',
             'THIS_IS_THE_MESSAGE'
@@ -269,7 +269,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because Comment not found', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             'THIS_IS_THE_MESSAGE',
@@ -284,7 +284,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because empty message', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             ''
@@ -298,7 +298,7 @@ describe('CommentPostCommand', () => {
     test('Should fail because too long message', async () => {
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
@@ -323,7 +323,7 @@ describe('CommentPostCommand', () => {
 
         const response: any = await testUtil.rpc(commentCommand, [commentPostCommand,
             market.Identity.id,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem.hash,
             'Comment Message'

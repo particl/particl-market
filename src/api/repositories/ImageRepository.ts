@@ -26,10 +26,6 @@ export class ImageRepository {
         return list as Bookshelf.Collection<Image>;
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
-        return await this.ImageModel.fetchById(id, withRelated);
-    }
-
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
         return await this.ImageModel.fetchAllByHash(hash, withRelated);
     }
@@ -40,6 +36,14 @@ export class ImageRepository {
 
     public async findAllByHashAndTarget(hash: string, target: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Image>> {
         return await this.ImageModel.fetchAllByHashAndTarget(hash, target, withRelated);
+    }
+
+    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
+        return await this.ImageModel.fetchById(id, withRelated);
+    }
+
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Image> {
+        return await this.ImageModel.fetchByMsgId(msgid, withRelated);
     }
 
     public async create(data: any): Promise<Image> {

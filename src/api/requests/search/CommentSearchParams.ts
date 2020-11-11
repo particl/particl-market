@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 import { BaseSearchParams } from './BaseSearchParams';
 import { CommentSearchOrderField} from '../../enums/SearchOrderField';
 
@@ -10,7 +10,7 @@ export class CommentSearchParams extends BaseSearchParams {
 
     public orderField = CommentSearchOrderField.POSTED_AT;
 
-    public type: CommentType;
+    public type: CommentCategory;
     public sender: string;
     public receiver: string;
     public target: string;

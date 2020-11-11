@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SearchOrder } from '../enums/SearchOrder';
-import { CommentType } from '../enums/CommentType';
+import { CommentCategory } from '../enums/CommentCategory';
 import { CommentSearchParams } from '../requests/search/CommentSearchParams';
 import { CommentSearchOrderField } from '../enums/SearchOrderField';
 
@@ -87,7 +87,7 @@ export class Comment extends Bookshelf.Model<Comment> {
         const collection = Comment.forge<Model<Comment>>()
             .query( qb => {
 
-                if (CommentType[options.type]) {
+                if (CommentCategory[options.type]) {
                     qb.andWhere('comments.type', '=', options.type);
                 }
 
