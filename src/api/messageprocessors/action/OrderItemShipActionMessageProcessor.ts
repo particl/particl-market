@@ -24,6 +24,7 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
 
 
 export class OrderItemShipActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -35,6 +36,7 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
@@ -45,6 +47,7 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             listingItemService,
             bidFactory,

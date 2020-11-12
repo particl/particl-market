@@ -21,6 +21,8 @@ import { MarketService } from '../../services/model/MarketService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ListingItemImageAddValidator } from '../../messagevalidators/ListingItemImageAddValidator';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class ListingItemImageAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -33,6 +35,7 @@ export class ListingItemImageAddActionMessageProcessor extends BaseActionMessage
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ListingItemImageAddValidator) public validator: ListingItemImageAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -43,6 +46,7 @@ export class ListingItemImageAddActionMessageProcessor extends BaseActionMessage
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );

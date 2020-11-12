@@ -55,7 +55,8 @@ export class BidAcceptActionService extends BaseBidActionService {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT,
+        super(
+            MPAction.MPA_ACCEPT,
             smsgService,
             smsgMessageService,
             notificationService,

@@ -19,6 +19,8 @@ import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { ProposalAddValidator } from '../../messagevalidators/ProposalAddValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class ProposalAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -28,6 +30,7 @@ export class ProposalAddActionMessageProcessor extends BaseActionMessageProcesso
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) public actionService: ProposalAddActionService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.ProposalAddValidator) public validator: ProposalAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -37,6 +40,7 @@ export class ProposalAddActionMessageProcessor extends BaseActionMessageProcesso
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );

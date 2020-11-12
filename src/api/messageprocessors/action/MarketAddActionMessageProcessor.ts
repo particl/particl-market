@@ -23,9 +23,7 @@ import { MarketService } from '../../services/model/MarketService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddActionService } from '../../services/action/MarketAddActionService';
 import { BlacklistService } from '../../services/model/BlacklistService';
-import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchParams';
-import { BlacklistType } from '../../enums/BlacklistType';
-import { MarketAddMessage } from '../../messages/action/MarketAddMessage';
+import { NotificationService } from '../../services/model/NotificationService';
 
 
 export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -38,6 +36,7 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketAddValidator) public validator: MarketAddValidator,
@@ -48,6 +47,7 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );

@@ -13,6 +13,7 @@ declare module 'resources' {
         market: string;
         category: string;
         read: boolean;
+        Profile: Profile;
         createdAt: Date;
         updatedAt: Date;
     }

@@ -2,6 +2,8 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
 import { ActionMessageTypes } from '../../enums/ActionMessageTypes';
+import {CommentCategory} from '../../enums/CommentCategory';
+import {ProposalCategory} from '../../enums/ProposalCategory';
 
 
 // tslint:disable:variable-name
@@ -20,7 +22,7 @@ export class NotificationCreateRequest extends RequestBody implements ModelReque
     public from: string;
     public to: string;
     public market: string;
-    public category: string;
+    public category: CommentCategory | ProposalCategory;
     public read: boolean;
 
 }

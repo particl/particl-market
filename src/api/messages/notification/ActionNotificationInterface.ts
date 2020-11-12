@@ -7,17 +7,15 @@ import { CommentCategory } from '../../enums/CommentCategory';
 import { ProposalCategory } from '../../enums/ProposalCategory';
 
 export interface ActionNotificationInterface {
-    type: ActionMessageTypes;
-
     objectId: number;               // which object this notication is about
-    objectHash?: string;
+    objectHash: string;
     parentObjectId?: number;
     parentObjectHash?: string;
 
     // everything below could be retrieved with the id or hash, so not necessarily needed
-    target?: string;                // possible target for the action the notification is about
-    from?: string;
-    to?: string;
-    market?: string;
+    target: string;                // possible target for the action the notification is about
+    from: string;
+    to: string;
+    market: string;
     category?: CommentCategory | ProposalCategory;
 }

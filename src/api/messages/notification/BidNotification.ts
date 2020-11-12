@@ -13,8 +13,6 @@ export type BidActionMessageTypes = MPAction.MPA_BID | MPAction.MPA_ACCEPT
 
 export class BidNotification implements ActionNotificationInterface {
 
-    public type: BidActionMessageTypes;
-
     public objectId: number;
     public objectHash: string;
 

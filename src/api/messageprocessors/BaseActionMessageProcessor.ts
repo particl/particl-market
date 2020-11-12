@@ -17,11 +17,8 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { unmanaged } from 'inversify';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {MarketAddMessage} from '../messages/action/MarketAddMessage';
-import {BlacklistType} from '../enums/BlacklistType';
-import {BlacklistSearchParams} from '../requests/search/BlacklistSearchParams';
-import {MessageException} from '../exceptions/MessageException';
+import { NotificationService } from '../services/model/NotificationService';
+import { NotificationCreateRequest } from '../requests/model/NotificationCreateRequest';
 
 
 // @injectable()
@@ -30,6 +27,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public smsgMessageService: SmsgMessageService;
     public bidService: BidService;
     public proposalService: ProposalService;
+    public notificationService: NotificationService;
     public log: LoggerType;
     public eventType: ActionMessageTypes;
     public validator: ActionMessageValidatorInterface;
@@ -40,6 +38,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                 @unmanaged() smsgMessageService: SmsgMessageService,
                 @unmanaged() bidService: BidService,
                 @unmanaged() proposalService: ProposalService,
+                @unmanaged() notificationService: NotificationService,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType) {
         this.eventType = eventType;
@@ -47,6 +46,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
         this.smsgMessageService = smsgMessageService;
         this.bidService = bidService;
         this.proposalService = proposalService;
+        this.notificationService = notificationService;
         this.validator = validator;
         this.log = new Logger(eventType);
     }
@@ -139,6 +139,20 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
 
         // only send if we created one
         if (notification) {
+            const createRequest = {
+                type: notification.event,
+                objectId: notification.payload.objectId,
+                objectHash: notification.payload.objectHash,
+                parentObjectId: notification.payload.parentObjectId,
+                parentObjectHash: notification.payload.parentObjectHash,
+                target: notification.payload.target,
+                from: notification.payload.from,
+                to: notification.payload.to,
+                market: notification.payload.market,
+                category: notification.payload.category,
+                read: false
+            } as NotificationCreateRequest;
+            await this.notificationService.create(createRequest);
             await this.actionService.sendNotification(notification);
         }
 

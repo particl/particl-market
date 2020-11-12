@@ -16,7 +16,7 @@ declare module 'resources' {
         Markets: Market[];
         Identities: Identity[];
         Settings: Setting[];
-
+        Notifications: Notification[];
     }
 
 }

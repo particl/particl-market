@@ -53,7 +53,8 @@ export abstract class BaseBidActionService extends BaseActionService {
                 @unmanaged() listingItemService: ListingItemService,
                 @unmanaged() bidService: BidService,
                 @unmanaged() bidFactory: BidFactory) {
-        super(eventType,
+        super(
+            eventType,
             smsgService,
             smsgMessageService,
             notificationService,

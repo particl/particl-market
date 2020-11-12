@@ -22,6 +22,8 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { BidActionService } from '../../services/action/BidActionService';
 import { BidValidator } from '../../messagevalidators/BidValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class BidActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,6 +34,7 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
         @inject(Types.Service) @named(Targets.Service.action.BidActionService) public actionService: BidActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidValidator) public validator: BidValidator,
@@ -42,6 +45,7 @@ export class BidActionMessageProcessor extends BaseActionMessageProcessor implem
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );
