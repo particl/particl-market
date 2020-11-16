@@ -88,7 +88,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             .then(value => value)
             .catch(reason => false);
 
-        let updatedSmsgMessage: resources.SmsgMessage  = {} as resources.SmsgMessage;
+        let updatedSmsgMessage: resources.SmsgMessage = {} as resources.SmsgMessage;
 
         if (validContent) {
             if (!validSequence) {
@@ -134,27 +134,38 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                 .then(value => value.toJSON());
         }
 
-        const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
-            ActionDirection.INCOMING, updatedSmsgMessage);
+        if (updatedSmsgMessage.status === SmsgMessageStatus.PROCESSED) {
+            const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
+                ActionDirection.INCOMING, updatedSmsgMessage);
 
-        // only send if we created one
-        if (notification) {
-            const createRequest = {
-                type: notification.event,
-                objectId: notification.payload.objectId,
-                objectHash: notification.payload.objectHash,
-                parentObjectId: notification.payload.parentObjectId,
-                parentObjectHash: notification.payload.parentObjectHash,
-                target: notification.payload.target,
-                from: notification.payload.from,
-                to: notification.payload.to,
-                market: notification.payload.market,
-                category: notification.payload.category,
-                read: false
-            } as NotificationCreateRequest;
-            await this.notificationService.create(createRequest);
-            await this.actionService.sendNotification(notification);
+            this.log.debug('process(), notification:', JSON.stringify(notification, null, 2));
+
+            // only send if we created one
+            if (notification) {
+                const createRequest = {
+                    // TODO: check if smsg to/from is an identity and set the profile_id
+                    // profile_id: identity.Profile.id
+                    msgid: updatedSmsgMessage.msgid,
+                    type: notification.event,
+                    objectId: notification.payload.objectId,
+                    objectHash: notification.payload.objectHash,
+                    parentObjectId: notification.payload.parentObjectId,
+                    parentObjectHash: notification.payload.parentObjectHash,
+                    target: notification.payload.target,
+                    from: notification.payload.from,
+                    to: notification.payload.to,
+                    market: notification.payload.market,
+                    category: notification.payload.category,
+                    read: false
+                } as NotificationCreateRequest;
+                const savedNotification: resources.Notification = await this.notificationService.create(createRequest)
+                    .then(value => value.toJSON())
+                    .catch(reason => {
+                        this.log.debug('ERROR:', reason);
+                    });
+                this.log.debug('savedNotification:', JSON.stringify(savedNotification, null, 2));
+                await this.actionService.sendNotification(notification);
+            }
         }
-
     }
 }

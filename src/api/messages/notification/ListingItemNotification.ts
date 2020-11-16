@@ -6,8 +6,6 @@ import { ActionNotificationInterface } from './ActionNotificationInterface';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ListingItemNotification implements ActionNotificationInterface {
-
-    public type: MPAction.MPA_LISTING_ADD;
     public objectId: number;
     public objectHash: string;
 
@@ -15,5 +13,4 @@ export class ListingItemNotification implements ActionNotificationInterface {
     public to: string;      // listing could be just a private offer to someone
 
     public market: string;
-
 }

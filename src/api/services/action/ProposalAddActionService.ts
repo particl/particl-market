@@ -172,8 +172,7 @@ export class ProposalAddActionService extends BaseActionService {
             && proposalAddMessage.category === ProposalCategory.ITEM_VOTE) {
 
             const proposal: resources.Proposal = await this.proposalService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(
                 proposalAddMessage.target!, smsgMessage.to)
@@ -183,10 +182,12 @@ export class ProposalAddActionService extends BaseActionService {
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    objectId: _.isEmpty(proposal) ? proposal.id : undefined,
+                    objectId: proposal.id,
                     objectHash: proposalAddMessage.hash,
                     target: proposalAddMessage.target,
                     market: listingItem.market,
+                    from: smsgMessage.from,
+                    to: smsgMessage.to,
                     category: proposalAddMessage.category
                 } as ProposalNotification
             };

@@ -95,8 +95,7 @@ export abstract class BaseBidActionService extends BaseActionService {
                                        smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
 
         const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
-            .then(value => value.toJSON())
-            .catch(err => undefined);
+            .then(value => value.toJSON());
 
         if (bid) {
             return {

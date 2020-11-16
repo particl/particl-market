@@ -12,7 +12,6 @@ export type BidActionMessageTypes = MPAction.MPA_BID | MPAction.MPA_ACCEPT
     | MPActionExtended.MPA_RELEASE | MPActionExtended.MPA_SHIP;
 
 export class BidNotification implements ActionNotificationInterface {
-
     public objectId: number;
     public objectHash: string;
 
@@ -21,5 +20,4 @@ export class BidNotification implements ActionNotificationInterface {
 
     public target: string;      // was: listingItemHash
     public market: string;
-
 }

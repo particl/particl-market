@@ -6,11 +6,12 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('notifications', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('msgid').notNullable();
             table.string('type').nullable();
-            table.integer('objectId').nullable();
-            table.string('objectHash').nullable();
-            table.integer('parentObjectId').nullable();
-            table.string('parentObjectHash').nullable();
+            table.integer('object_id').nullable();
+            table.string('object_hash').nullable();
+            table.integer('parent_object_id').nullable();
+            table.string('parent_object_hash').nullable();
             table.string('target').nullable();
             table.string('from').nullable();
             table.string('to').nullable();

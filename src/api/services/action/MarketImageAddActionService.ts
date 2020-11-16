@@ -179,14 +179,15 @@ export class MarketImageAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    objectId: _.isEmpty(image) ? image.id : undefined,
+                    objectId: image.id,
                     objectHash: imageAddMessage.hash,
+                    from: smsgMessage.from,
+                    to: smsgMessage.to,
                     target: imageAddMessage.target
                 } as MarketImageNotification
             };

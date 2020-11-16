@@ -229,12 +229,11 @@ export class BidActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (bid) {
                 return {
-                    event: MPAction.MPA_BID,
+                    event: marketplaceMessage.action.type,
                     payload: {
                         objectId: bid.id,
                         objectHash: bid.hash,

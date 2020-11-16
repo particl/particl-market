@@ -9,6 +9,11 @@ import {ProposalCategory} from '../../enums/ProposalCategory';
 // tslint:disable:variable-name
 export class NotificationCreateRequest extends RequestBody implements ModelRequestInterface {
 
+    public profile_id: number;
+
+    @IsNotEmpty()
+    public msgid: string;
+
     @IsNotEmpty()
     public type: ActionMessageTypes;
 

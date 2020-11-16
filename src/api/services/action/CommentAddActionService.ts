@@ -160,8 +160,7 @@ export class CommentAddActionService extends BaseActionService {
 
             // only notify if the Comment is not from you
             const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (comment) {
                 // TODO: this doesn't consider that there could be different Profiles!!!

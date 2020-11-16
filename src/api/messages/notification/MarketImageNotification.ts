@@ -6,10 +6,11 @@ import { ActionNotificationInterface } from './ActionNotificationInterface';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 
 export class MarketImageNotification implements ActionNotificationInterface {
-
-    public type: MPActionExtended.MPA_MARKET_IMAGE_ADD;
     public objectId: number;
     public objectHash: string;
+
+    public from: string;
+    public to: string;
 
     public target: string;          // was: marketHash
 }

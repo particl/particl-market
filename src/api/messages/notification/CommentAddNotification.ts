@@ -8,8 +8,6 @@ import { ActionNotificationInterface } from './ActionNotificationInterface';
 
 
 export class CommentAddNotification implements ActionNotificationInterface {
-
-    public type: CommentAction.MPA_COMMENT_ADD;
     public objectId: number;
     public objectHash: string;
 
@@ -22,5 +20,4 @@ export class CommentAddNotification implements ActionNotificationInterface {
 
     public parentObjectId?: number;     // was: parent: CommentAddNotification
     public parentObjectHash?: string;   // was: parent: CommentAddNotification
-
 }

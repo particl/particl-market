@@ -182,8 +182,7 @@ export class ListingItemAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (listingItem) {
                 const notification: MarketplaceNotification = {

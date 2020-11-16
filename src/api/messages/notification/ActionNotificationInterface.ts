@@ -13,9 +13,9 @@ export interface ActionNotificationInterface {
     parentObjectHash?: string;
 
     // everything below could be retrieved with the id or hash, so not necessarily needed
-    target: string;                // possible target for the action the notification is about
+    target?: string;                // possible target for the action the notification is about
     from: string;
     to: string;
-    market: string;
+    market?: string;
     category?: CommentCategory | ProposalCategory;
 }

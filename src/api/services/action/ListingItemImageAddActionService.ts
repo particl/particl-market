@@ -133,7 +133,6 @@ export class ListingItemImageAddActionService extends BaseActionService {
             // for all incoming messages, update the image data if found
             const images: resources.Image[] = await this.imageService.findAllByHashAndTarget(actionMessage.hash, actionMessage.target)
                 .then(value => value.toJSON());
-            this.log.debug('images exist:', images.length);
 
             if (!_.isEmpty(images)) {
                 for (const image of images) {
@@ -184,14 +183,17 @@ export class ListingItemImageAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
+
+            this.log.debug('image: ', JSON.stringify(image, null, 2));
 
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    objectId: _.isEmpty(image) ? image.id : undefined,
+                    objectId: image.id,
                     objectHash: imageAddMessage.hash,
+                    from: imageAddMessage.seller,
+                    to: smsgMessage.to,
                     target: imageAddMessage.target
                 } as ListingItemImageNotification
             };

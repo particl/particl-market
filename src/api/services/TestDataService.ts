@@ -580,6 +580,7 @@ export class TestDataService {
             'comments',
             'blacklists',
             'markets',
+            'notifications',
             'identities',
             'profiles'
         ];

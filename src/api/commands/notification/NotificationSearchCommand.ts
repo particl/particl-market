@@ -73,7 +73,7 @@ export class NotificationSearchCommand extends BaseSearchCommand implements RpcC
             pageLimit,
             order,
             orderField,
-            profileId: profile.id,
+            profileId: _.isNil(profile) ? undefined : profile.id,
             read
         } as NotificationSearchParams;
 

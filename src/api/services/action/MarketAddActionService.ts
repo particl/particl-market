@@ -185,6 +185,8 @@ export class MarketAddActionService extends BaseActionService {
                     payload: {
                         objectId: market.id,
                         objectHash: market.hash,
+                        from: smsgMessage.from,
+                        to: smsgMessage.to,
                         target: market.receiveAddress
                     } as MarketNotification
                 };
