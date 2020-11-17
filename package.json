@@ -133,7 +133,7 @@
     "typescript": "2.4.2",
     "web-request": "^1.0.7",
     "winston": "^2.4.4",
-    "zeromq": "5"
+    "zeromq": "6.0.0-beta6"
   },
   "optionalDependencies": {
     "fsevents": "^2.1.3"
