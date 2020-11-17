@@ -133,7 +133,7 @@ describe('Image', () => {
         expect(images.length).toBeGreaterThan(1);
 
         const result: resources.Image = images[images.length - 1];
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(testData.hash);    // recalculated
         expect(result.featured).toBeFalsy();
         expect(result.ImageDatas).toBe(undefined); // doesnt fetch related
@@ -142,7 +142,7 @@ describe('Image', () => {
     test('Should return one Image', async () => {
         itemImage = await imageService.findOne(itemImage.id).then(value => value.toJSON());
 
-        log.debug('itemImage:', JSON.stringify(itemImage, null, 2));
+        // log.debug('itemImage:', JSON.stringify(itemImage, null, 2));
 
         const imageUrl = 'data/tests/images/' + testData.hash + '-' + ImageVersions.ORIGINAL.propName;
 
@@ -179,7 +179,7 @@ describe('Image', () => {
         testDataUpdated.data[0].data = randomImageData1;
 
         const result: resources.Image = await imageService.update(itemImage.id, testDataUpdated).then(value => value.toJSON());
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // .debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.featured).toBeTruthy();

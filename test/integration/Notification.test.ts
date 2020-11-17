@@ -30,24 +30,11 @@ describe('Notification', () => {
 
     let notification: resources.Notification;
 
-    const testData = {
-        type: MPAction.MPA_BID,
-        objectId: 1,
-        objectHash: Faker.random.uuid(),
-        from: Faker.random.uuid(),
-        to: Faker.random.uuid(),
-        target: Faker.random.uuid(),
-        market: Faker.random.uuid(),
-        read: false
-    } as NotificationCreateRequest;
-
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        notificationService = app.IoC.getNamed<NotificationService>(Types.Service, Targets.Service.model.NotifyService);
-
-
+        notificationService = app.IoC.getNamed<NotificationService>(Types.Service, Targets.Service.model.NotificationService);
 
     });
 
@@ -56,20 +43,31 @@ describe('Notification', () => {
     });
 
     test('Should create a new notification', async () => {
-        notification = await notificationService.create(testData).then(value => value.toJSON());
-        const result: resources.Notification = notification;
+
+        const testData = {
+            msgid: Faker.random.uuid(),
+            type: MPAction.MPA_BID,
+            objectId: 1,
+            objectHash: Faker.random.uuid(),
+            from: Faker.random.uuid(),
+            to: Faker.random.uuid(),
+            target: Faker.random.uuid(),
+            market: Faker.random.uuid(),
+            read: false
+        } as NotificationCreateRequest;
+
+        const result: resources.Notification = await notificationService.create(testData).then(value => value.toJSON());
 
         expect(result.type).toBe(testData.type);
         expect(result.objectId).toBe(testData.objectId);
         expect(result.objectHash).toBe(testData.objectHash);
-        expect(result.parentObjectId).toBe(testData.parentObjectId);
-        expect(result.parentObjectHash).toBe(testData.parentObjectHash);
-        expect(result.target).toBe(testData.target);
         expect(result.from).toBe(testData.from);
         expect(result.to).toBe(testData.to);
+        expect(result.target).toBe(testData.target);
         expect(result.market).toBe(testData.market);
-        expect(result.category).toBe(testData.category);
-        expect(result.read).toBe(testData.read);
+        expect(result.read).toBeFalsy();
+
+        notification = result;
     });
 
     test('Should list Notifications with our new create one', async () => {
@@ -84,32 +82,26 @@ describe('Notification', () => {
         expect(notifications.length).toBe(1);
 
         const result = notifications[0];
-        expect(result.type).toBe(testData.type);
-        expect(result.objectId).toBe(testData.objectId);
-        expect(result.objectHash).toBe(testData.objectHash);
-        expect(result.parentObjectId).toBe(testData.parentObjectId);
-        expect(result.parentObjectHash).toBe(testData.parentObjectHash);
-        expect(result.target).toBe(testData.target);
-        expect(result.from).toBe(testData.from);
-        expect(result.to).toBe(testData.to);
-        expect(result.market).toBe(testData.market);
-        expect(result.category).toBe(testData.category);
-        expect(result.read).toBe(testData.read);
+        expect(result.type).toBe(notification.type);
+        expect(result.objectId).toBe(notification.objectId);
+        expect(result.objectHash).toBe(notification.objectHash);
+        expect(result.from).toBe(notification.from);
+        expect(result.to).toBe(notification.to);
+        expect(result.target).toBe(notification.target);
+        expect(result.market).toBe(notification.market);
+        expect(result.read).toBeFalsy();
     });
 
     test('Should return one notification', async () => {
         const result: resources.Notification = await notificationService.findOne(notification.id).then(value => value.toJSON());
-        expect(result.type).toBe(testData.type);
-        expect(result.objectId).toBe(testData.objectId);
-        expect(result.objectHash).toBe(testData.objectHash);
-        expect(result.parentObjectId).toBe(testData.parentObjectId);
-        expect(result.parentObjectHash).toBe(testData.parentObjectHash);
-        expect(result.target).toBe(testData.target);
-        expect(result.from).toBe(testData.from);
-        expect(result.to).toBe(testData.to);
-        expect(result.market).toBe(testData.market);
-        expect(result.category).toBe(testData.category);
-        expect(result.read).toBe(testData.read);
+        expect(result.type).toBe(notification.type);
+        expect(result.objectId).toBe(notification.objectId);
+        expect(result.objectHash).toBe(notification.objectHash);
+        expect(result.from).toBe(notification.from);
+        expect(result.to).toBe(notification.to);
+        expect(result.target).toBe(notification.target);
+        expect(result.market).toBe(notification.market);
+        expect(result.read).toBeFalsy();
     });
 
     test('Should update the notification', async () => {
@@ -129,14 +121,11 @@ describe('Notification', () => {
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.objectId).toBe(testDataUpdated.objectId);
         expect(result.objectHash).toBe(testDataUpdated.objectHash);
-        expect(result.parentObjectId).toBe(testDataUpdated.parentObjectId);
-        expect(result.parentObjectHash).toBe(testDataUpdated.parentObjectHash);
-        expect(result.target).toBe(testDataUpdated.target);
         expect(result.from).toBe(testDataUpdated.from);
         expect(result.to).toBe(testDataUpdated.to);
+        expect(result.target).toBe(testDataUpdated.target);
         expect(result.market).toBe(testDataUpdated.market);
-        expect(result.category).toBe(testDataUpdated.category);
-        expect(result.read).toBe(testDataUpdated.read);
+        expect(result.read).toBeFalsy();
     });
 
     test('Should delete the Notification', async () => {

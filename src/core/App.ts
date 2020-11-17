@@ -92,14 +92,13 @@ export class App {
             await DataDir.createDefaultEnvFile()
                 .catch(reason => {
                     this.log.error('Error: ', JSON.stringify(reason, null, 2));
-                    // TODO: exit codes for different problems
                     return process.exit(1);
                 });
         }
 
         // loads the .env file into the 'process.env' variable, in case it hasn't been loaded already
         const config: EnvConfig = envConfig();
-        dotenv.config({ path: config.envFile });
+        dotenv.config({path: config.envFile});
 
         // Perform database migrations
         if (Environment.isTruthy(process.env.MIGRATE)) {
@@ -164,5 +163,4 @@ export class App {
 
         return eventEmitter;
     }
-
 }
