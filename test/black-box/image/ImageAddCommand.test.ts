@@ -283,7 +283,7 @@ describe('ImageAddCommand', () => {
 
     test('Should add a larger (than free msg size limit) Image to Market', async () => {
 
-        const randomImage = await generateRandomImage();
+        const randomImage = await generateRandomImage(1200, 800);
         log.debug('randomImage.length: ', randomImage.length);
 
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
@@ -291,8 +291,8 @@ describe('ImageAddCommand', () => {
             market.id,
             ProtocolDSN.REQUEST,
             randomImage,
-            false,
-            false
+            false,      // featured
+            false       // skipResize
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -338,8 +338,8 @@ describe('ImageAddCommand', () => {
             market.id,
             ProtocolDSN.REQUEST,
             ImageProcessing.milkcatSmall,
-            false,
-            false
+            false,      // featured
+            true        // skipResize
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -371,10 +371,10 @@ describe('ImageAddCommand', () => {
             return value.imageVersion === ImageVersions.RESIZED.propName;
         });
 
-        expect(result[0].ImageDatas.length).toBe(5);
+        expect(result[0].ImageDatas.length).toBe(4);
         expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
-        expect(original.data.length).toBe(resized.data.length);
     });
+
 
     /**
      * Generates an random colored image with specified width, height and quality
