@@ -18,6 +18,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
+
 describe('CommentSearchCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -193,20 +194,6 @@ describe('CommentSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new ModelNotFoundException('ListingItem').getMessage());
-    });
-
-
-    test('Should fail because type not supported', async () => {
-        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentCategory.MARKETPLACE_COMMENT,
-            market.receiveAddress,
-            listingItem1.hash
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-
-        expect(res.error.error.message).toBe(new MessageException('CommentType not supported.').getMessage());
     });
 
 

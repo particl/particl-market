@@ -46,7 +46,7 @@ export class CommentSearchCommand extends BaseSearchCommand implements RpcComman
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: orderField, SearchOrderField, field to which the SearchOrder is applied
-     *  [4]: type, CommentType (only LISTINGITEM_QUESTION_AND_ANSWERS supported for now)
+     *  [4]: type, CommentType
      *  [5]: receiver, string (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> Market.receiveAddress)
      *  [6]: target, string, optional (when type === LISTINGITEM_QUESTION_AND_ANSWERS -> ListingItem.hash)
      *  [7]: sender, string
