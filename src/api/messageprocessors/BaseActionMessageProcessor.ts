@@ -155,8 +155,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                     from: notification.payload.from,
                     to: notification.payload.to,
                     market: notification.payload.market,
-                    category: notification.payload.category,
-                    read: false
+                    category: notification.payload.category
                 } as NotificationCreateRequest;
                 const savedNotification: resources.Notification = await this.notificationService.create(createRequest)
                     .then(value => value.toJSON())

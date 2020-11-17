@@ -16,8 +16,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { MPActionExtended } from '../../../src/api/enums/MPActionExtended';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
+import {MissingParamException} from '../../../src/api/exceptions/MissingParamException';
 
-describe('NotificationSearchCommand', () => {
+describe('NotificationSetReadCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -28,6 +29,7 @@ describe('NotificationSearchCommand', () => {
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const notificationCommand = Commands.NOTIFICATION_ROOT.commandName;
+    const notificationSetReadCommand = Commands.NOTIFICATION_SETREAD.commandName;
     const notificationSearchCommand = Commands.NOTIFICATION_SEARCH.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -45,6 +47,8 @@ describe('NotificationSearchCommand', () => {
     let listingItemReceivedOnSellerNode: resources.ListingItem;
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
     let randomCategory: resources.ItemCategory;
+    let notifications: resources.Notification[];
+    let imageCount: number;
 
     let sent = false;
     const PAGE = 0;
@@ -71,50 +75,6 @@ describe('NotificationSearchCommand', () => {
 
         randomCategory = await testUtilSellerNode.getRandomCategory();
 
-    });
-
-
-    test('Should fail because invalid profileId', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, NOTIFICATION_SEARCHORDERFIELD,
-            true
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('profileId', 'number').getMessage());
-    });
-
-
-    test('Should fail because invalid read', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, NOTIFICATION_SEARCHORDERFIELD,
-            sellerProfile.id,
-            'INVALID'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('read', 'boolean').getMessage());
-    });
-
-
-    test('Should return empty result because nothing found', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSearchCommand,
-            PAGE, PAGE_LIMIT, SEARCHORDER, NOTIFICATION_SEARCHORDERFIELD,
-            sellerProfile.id,
-            false
-        ]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(0);
-    });
-
-
-    test('Should create ListingItemTemplate', async () => {
-        expect(sellerProfile).toBeDefined();
-        expect(sellerMarket).toBeDefined();
-        expect(randomCategory).toBeDefined();
-
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,                   // generateItemInformation
             true,                   // generateItemLocation
@@ -140,15 +100,12 @@ describe('NotificationSearchCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
         listingItemTemplateOnSellerNode = listingItemTemplates[0];
+        imageCount = listingItemTemplateOnSellerNode.ItemInformation.Images.length;
 
         expect(listingItemTemplateOnSellerNode).toBeDefined();
-    });
-
-
-    test('Should post a ListingItemTemplate from SELLER node (FREE image msg)', async () => {
 
         expect(listingItemTemplateOnSellerNode.id).toBeDefined();
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        let res: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateOnSellerNode.id,
             DAYS_RETENTION
         ]);
@@ -170,11 +127,7 @@ describe('NotificationSearchCommand', () => {
             + listingItemTemplateOnSellerNode.ItemInformation.ItemCategory.name);
         log.debug('==============================================================================================');
 
-    });
-
-
-    test('Should get the updated ListingItemTemplate with the hash', async () => {
-        const res: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
+        res = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand,
             listingItemTemplateOnSellerNode.id
         ]);
         res.expectJson();
@@ -182,7 +135,7 @@ describe('NotificationSearchCommand', () => {
         listingItemTemplateOnSellerNode = res.getBody()['result'];
 
         expect(listingItemTemplateOnSellerNode.hash).toBeDefined();
-        log.debug('listingItemTemplateOnSellerNode.hash: ', listingItemTemplateOnSellerNode.hash);
+
     });
 
 
@@ -219,8 +172,6 @@ describe('NotificationSearchCommand', () => {
         expect(results[0].hash).toBe(listingItemTemplateOnSellerNode.hash);
 
         listingItemReceivedOnSellerNode = results[0];
-        // log.debug('listingItemReceivedOnSellerNode: ', JSON.stringify(listingItemReceivedOnSellerNode, null, 2));
-        expect(listingItemReceivedOnSellerNode.ItemInformation.Images.length).toBeGreaterThan(0);
 
         for (const image of listingItemReceivedOnSellerNode.ItemInformation.Images) {
             expect(image.msgid).toBeDefined();
@@ -228,8 +179,6 @@ describe('NotificationSearchCommand', () => {
             expect(image.generatedAt).toBeDefined();
             expect(image.postedAt).toBeDefined();
             expect(image.receivedAt).toBeDefined();
-            // todo:
-            // expect(image.ImageDatas).toHaveLength(4);
 
             for (const imageData of image.ImageDatas) {
                 expect(imageData.data).toBeNull();
@@ -309,13 +258,75 @@ describe('NotificationSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const results: resources.Notification[] = res.getBody()['result'];
+        log.debug('results: ', JSON.stringify(results, null, 2));
+        log.debug('imageCount: ', imageCount);
+
+        expect(results.length).toBe(imageCount + 1);
+        for (const notification of results) {
+            expect(notification.read).toBeFalsy();
+        }
+        notifications = results;
+    });
+
+
+    test('Should fail because missing notificationId', async () => {
+        const res = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(new MissingParamException('notificationId').getMessage());
+    });
+
+
+    test('Should fail because invalid notificationId', async () => {
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
+            true,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('notificationId', 'number').getMessage());
+    });
+
+
+    test('Should fail because invalid read', async () => {
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
+            notifications[0].id,
+            'INVALID'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+        expect(res.error.error.message).toBe(new InvalidParamException('read', 'boolean').getMessage());
+    });
+
+
+    test('Should set 1 read', async () => {
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
+            notifications[0].id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Notification = res.getBody()['result'];
+        expect(result.read).toBeTruthy();
+    });
+
+
+    test('Should return 1 read', async () => {
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSearchCommand,
+            PAGE, PAGE_LIMIT, SEARCHORDER, NOTIFICATION_SEARCHORDERFIELD,
+            null,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const results: resources.Notification[] = res.getBody()['result'];
 
         log.debug('results: ', JSON.stringify(results, null, 2));
 
-        expect(results.length).toBe(3);
+        expect(results.length).toBe(1);
         expect(results[0].type).toBe(MPActionExtended.MPA_LISTING_IMAGE_ADD);
-        expect(results[1].type).toBe(MPActionExtended.MPA_LISTING_IMAGE_ADD);
-        expect(results[2].type).toBe(MPAction.MPA_LISTING_ADD);
+        expect(results[0].read).toBeTruthy();
     });
+
 
 });
