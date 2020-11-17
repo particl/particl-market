@@ -138,7 +138,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
                 ActionDirection.INCOMING, updatedSmsgMessage);
 
-            this.log.debug('process(), notification:', JSON.stringify(notification, null, 2));
+            // this.log.debug('process(), notification:', JSON.stringify(notification, null, 2));
 
             // only send if we created one
             if (notification) {
@@ -162,7 +162,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                     .catch(reason => {
                         this.log.debug('ERROR:', reason);
                     });
-                this.log.debug('savedNotification:', JSON.stringify(savedNotification, null, 2));
+                // this.log.debug('savedNotification:', JSON.stringify(savedNotification, null, 2));
                 await this.actionService.sendNotification(notification);
             }
         }

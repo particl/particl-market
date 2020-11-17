@@ -185,7 +185,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
             const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
                 .then(value => value.toJSON());
 
-            this.log.debug('image: ', JSON.stringify(image, null, 2));
+            // this.log.debug('image: ', JSON.stringify(image, null, 2));
 
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
