@@ -109,7 +109,7 @@
     "multer": "^1.4.1",
     "omp-lib": "^0.1.150",
     "particl-bitcore-lib": "^0.16.0",
-    "particl-zmq": "^1.0.4",
+    "particl-zmq": "^1.0.5",
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",
