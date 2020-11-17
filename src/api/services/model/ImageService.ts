@@ -4,7 +4,6 @@
 
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
-import * as fs from 'fs';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,19 +16,14 @@ import { ImageCreateRequest } from '../../requests/model/ImageCreateRequest';
 import { ImageDataCreateRequest } from '../../requests/model/ImageDataCreateRequest';
 import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ImageDataService } from './ImageDataService';
-import { ImageDataFactory } from '../../factories/model/ImageDataFactory';
 import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ImageDataRepository } from '../../repositories/ImageDataRepository';
-import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
-import { HashableImageCreateRequestConfig } from '../../factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
 import { ImageVersion } from '../../../core/helpers/ImageVersion';
 import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 import { MessageVersions } from '../../messages/MessageVersions';
-import { ListingItemImageAddMessageFactory } from '../../factories/message/ListingItemImageAddMessageFactory';
 
 
 export class ImageService {
@@ -41,8 +35,6 @@ export class ImageService {
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ImageRepository) public imageRepository: ImageRepository,
         @inject(Types.Repository) @named(Targets.Repository.ImageDataRepository) public imageDataRepository: ImageDataRepository,
-        @inject(Types.Factory) @named(Targets.Factory.model.ImageDataFactory) public imageDataFactory: ImageDataFactory,
-        @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) public listingItemImageAddMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
         // tslint:enable:max-line-length
     ) {
@@ -51,15 +43,6 @@ export class ImageService {
 
     public async findAll(): Promise<Bookshelf.Collection<Image>> {
         return this.imageRepository.findAll();
-    }
-
-    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
-        const image = await this.imageRepository.findOne(id, withRelated);
-        if (image === null) {
-            this.log.warn(`Image with the id=${id} was not found!`);
-            throw new NotFoundException(id);
-        }
-        return image;
     }
 
     /**
@@ -81,40 +64,22 @@ export class ImageService {
         return await this.imageRepository.findAllByHashAndTarget(hash, target, withRelated);
     }
 
-    /**
-     * create(), but get data from a local file instead.
-     * used to create the ORIGINAL image version from the uploaded file
-     *
-     * @param imageFile
-     * @param itemInformationId
-     * @returns {Promise<Image>}
-     */
-    @validate()
-    public async createFromFile(imageFile: any, itemInformationId: number): Promise<Image> {
-        // TODO: ADD TYPE TO imageFile!!
+    public async findOne(id: number, withRelated: boolean = true): Promise<Image> {
+        const image = await this.imageRepository.findOne(id, withRelated);
+        if (image === null) {
+            this.log.warn(`Image with the id=${id} was not found!`);
+            throw new NotFoundException(id);
+        }
+        return image;
+    }
 
-        const dataStr = fs.readFileSync(imageFile.path, 'base64');
-
-        // TODO: use factory
-        const imageDataCreateRequest = {
-            dataId: imageFile.fieldname, // replaced with local url in factory
-            protocol: ProtocolDSN.FILE,
-            imageVersion: ImageVersions.ORIGINAL.propName,
-            encoding: 'BASE64',
-            data: dataStr,
-            originalMime: imageFile.mimetype,
-            originalName: imageFile.originalname
-        } as ImageDataCreateRequest;
-
-        // TODO: use factory
-        const imageCreateRequest = {
-            item_information_id: itemInformationId,
-            data: [imageDataCreateRequest]
-        } as ImageCreateRequest;
-
-        imageCreateRequest.hash = ConfigurableHasher.hash(imageCreateRequest, new HashableImageCreateRequestConfig());
-
-        return await this.create(imageCreateRequest);
+    public async findOneByMsgId(msgid: string, withRelated: boolean = true): Promise<Image> {
+        const image = await this.imageRepository.findOneByMsgId(msgid, withRelated);
+        if (image === null) {
+            this.log.warn(`Image with the msgid=${msgid} was not found!`);
+            throw new NotFoundException(msgid);
+        }
+        return image;
     }
 
     /**
@@ -128,9 +93,6 @@ export class ImageService {
 
         // this.log.debug('body: ', JSON.stringify(body, null, 2));
 
-        // find the ImageVersions.ORIGINAL from the existing ImageDatas
-        // the ORIGINAL should always exist, its used to create the other versions
-        // it should also be the only version...
         const imageDataCreateRequestOriginal: ImageDataCreateRequest | undefined = _.find(body.data, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
@@ -141,11 +103,13 @@ export class ImageService {
 
             // this.log.debug('body: ', JSON.stringify(body, null, 2));
             const image: resources.Image = await this.imageRepository.create(body).then(value => value.toJSON());
+            // this.log.debug('image: ', JSON.stringify(image, null, 2));
 
             // then create the ORIGINAL ImageData
             imageDataCreateRequestOriginal.image_id = image.id;
 
-            await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
+            const originalImageData: resources.ImageData = await this.imageDataService.create(imageDataCreateRequestOriginal).then(value => value.toJSON());
+            // this.log.debug('originalImageData: ', JSON.stringify(originalImageData, null, 2));
 
             // then create the other versions from the given original data,
             // original is automatically added as one of the versions
@@ -170,9 +134,8 @@ export class ImageService {
         let startTime = Date.now();
         const imageDatas: resources.ImageData[] = [];
 
-        // this.log.debug('createVersions(), originalImageData: ', JSON.stringify(originalImageData, null, 2));
-
         if (originalImageData.data) {
+            // if data for the original image exists, then create the other versions
             const originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
             this.log.debug('createVersions(), convertToJPEG: ' + (Date.now() - startTime) + 'ms');
 
@@ -192,7 +155,6 @@ export class ImageService {
 
         } else {
             // when there is no data, we received ListingItemAddMessage and we are expecting to receive the data via smsg later
-            // original version has already been created, so theres nothing more to do
         }
 
         // this.log.debug('createVersions(), created imageDatas: ', JSON.stringify(imageDatas, null, 2));
@@ -200,32 +162,55 @@ export class ImageService {
     }
 
     public async createResizedVersion(id: number, messageVersionToFit: CoreMessageVersion, scalingFraction: number = 0.9, qualityFraction: number = 0.95,
-                                      maxIterations: number = 10): Promise<resources.ImageData[]> {
+                                      maxIterations: number = 10): Promise<Image> {
 
         const image: resources.Image = await this.findOne(id).then(value => value.toJSON());
         const imageDataOriginal: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
+        const imageDataResized: resources.ImageData | undefined = _.find(image.ImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.RESIZED.propName;
+        });
 
         if (_.isNil(imageDataOriginal)) {
             throw new ModelNotFoundException('ImageData');
         }
+        this.log.debug('resized image exists: ', !_.isNil(imageDataResized));
 
-        imageDataOriginal.data = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName);
+        const originalData = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName)
+            .catch(reason => {
+                this.log.warn('Can\'t create RESIZED version, failed to load the ORIGINAL.');
+                return undefined;
+            });
 
-        const rawImage = imageDataOriginal.data;
-        const maxSize = MessageVersions.maxSize(messageVersionToFit);
-        const resizedImage = await ImageProcessing.resizeImageToSize(rawImage, maxSize, scalingFraction, qualityFraction, maxIterations);
+        if (originalData) {
+            const maxSize = MessageVersions.maxSize(messageVersionToFit);
 
-        const versionCreateRequest = {
-            image_id: image.id,
-            protocol: imageDataOriginal.protocol,
-            imageVersion: ImageVersions.RESIZED.propName,
-            imageHash: image.hash,
-            encoding: imageDataOriginal.encoding,
-            data: resizedImage
-        } as ImageDataCreateRequest;
-        return await this.imageDataService.create(versionCreateRequest).then(value => value.toJSON());
+            const resizedImageData = await ImageProcessing.resizeImageToSize(originalData, maxSize, scalingFraction, qualityFraction, maxIterations);
+
+            // only create resized version if needed
+            if (originalData !== resizedImageData) {
+                this.log.debug('resized image size: ', resizedImageData.length);
+
+                const versionCreateOrUpdateRequest = {
+                    image_id: image.id,
+                    protocol: imageDataOriginal.protocol,
+                    imageVersion: ImageVersions.RESIZED.propName,
+                    imageHash: image.hash,
+                    encoding: imageDataOriginal.encoding,
+                    data: resizedImageData
+                } as ImageDataCreateRequest;
+
+                // resized could already exist, so create/update
+                if (_.isNil(imageDataResized)) {
+                    await this.imageDataService.create(versionCreateOrUpdateRequest).then(value => value.toJSON());
+                } else {
+                    await this.imageDataService.update(imageDataResized.id, versionCreateOrUpdateRequest).then(value => value.toJSON());
+                }
+            }
+        }
+
+        return await this.findOne(id);
     }
 
     @validate()
@@ -237,6 +222,7 @@ export class ImageService {
         });
         delete body.data;
 
+        // this.log.debug('imageDataUpdateRequestOriginal:', imageDataUpdateRequestOriginal);
         if (imageDataUpdateRequestOriginal) {
             const image = await this.findOne(id, false);
             image.Hash = body.hash;
@@ -247,6 +233,10 @@ export class ImageService {
             for (const imageData of updatedImage.ImageDatas) {
                 await this.imageDataService.destroy(imageData.id);
             }
+
+            // create the original
+            imageDataUpdateRequestOriginal.image_id = id;
+            await this.imageDataService.create(imageDataUpdateRequestOriginal).then(value => value.toJSON());
 
             // then recreate the other ImageDatas from the original data
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];

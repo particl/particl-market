@@ -24,6 +24,7 @@ import { hash } from 'omp-lib/dist/hasher/hash';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { SellerMessage } from '../factories/message/ListingItemAddMessageFactory';
 
+
 decorate(injectable(), FV_MPA_LISTING);
 export class ListingItemAddValidator extends FV_MPA_LISTING implements ActionMessageValidatorInterface {
 

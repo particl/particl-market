@@ -61,8 +61,9 @@ import { DefaultMarketService } from '../../src/api/services/DefaultMarketServic
 import { HashableListingItemTemplateCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableListingItemTemplateCreateRequestConfig';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/model/ListingItemObjectDataCreateRequest';
-import {SellerMessage} from '../../src/api/services/action/ListingItemAddActionService';
-import {CoreRpcService} from '../../src/api/services/CoreRpcService';
+import { CoreRpcService } from '../../src/api/services/CoreRpcService';
+import { SellerMessage } from '../../src/api/factories/message/ListingItemAddMessageFactory';
+import {ListingItemSearchParams} from '../../src/api/requests/search/ListingItemSearchParams';
 // tslint:enable:max-line-length
 
 describe('ListingItem', () => {
@@ -150,13 +151,14 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
 
-        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
+        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(false);
         // log.debug('testDataToSave: ', JSON.stringify(testDataToSave, null, 2));
         createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
         // log.debug('createdListingItem1: ', JSON.stringify(createdListingItem1, null, 2));
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
     }, 600000); // timeout to 600s
+
 
     test('Should findOne ListingItem by id', async () => {
         const result: resources.ListingItem = await listingItemService.findOne(createdListingItem1.id).then(value => value.toJSON());
@@ -175,7 +177,7 @@ describe('ListingItem', () => {
     });
 
     test('Should create a new ListingItem WITHOUT ItemInformation, PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
+        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(false);
 
         // remove the stuff that we dont need in this test
         delete testDataToSave.itemInformation;
@@ -188,7 +190,7 @@ describe('ListingItem', () => {
         expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
     }, 600000); // timeout to 600s
 
-    test('Should findAll ListingItems', async () => {
+    test('Should findAll ListingItems (2)', async () => {
         const result: resources.ListingItem[] = await listingItemService.findAll().then(value => value.toJSON());
         expect(result).toHaveLength(2);
     });
@@ -209,26 +211,8 @@ describe('ListingItem', () => {
         createdListingItem2 = undefined;
     });
 
-/*
-    TODO: skipping update because I'm not sure we even need this...
-    test('Should update previously created ListingItem', async () => {
-        const testDataToSave: ListingItemUpdateRequest = await generateListingItemCreateRequest();
-
-        testDataToSave.market = market.receiveAddress;
-        testDataToSave.seller = profile.address;
-
-        // generate random images so that they can be deleted
-        testDataToSave.itemInformation.images[0].data[0].data = await testDataService.generateRandomImage(20, 20);
-        testDataToSave.itemInformation.images[1].data[0].data = await testDataService.generateRandomImage(20, 20);
-
-        updatedListingItem1 = await listingItemService.update(createdListingItem2.id, testDataToSave).then(value => value.toJSON());
-
-        expectListingItemFromCreateRequest(updatedListingItem1, testDataToSave);
-    }, 600000); // timeout to 600s
-*/
-
     test('Should create a new ListingItem without PaymentInformation, MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
+        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(false);
 
         // remove the stuff that we dont need in this test
         delete testDataToSave.paymentInformation;
@@ -249,7 +233,7 @@ describe('ListingItem', () => {
     });
 
     test('Should create a new ListingItem without MessagingInformation and ListingItemObjects', async () => {
-        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
+        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(false);
 
         // remove the stuff that we dont need in this test
         delete testDataToSave.messagingInformation;
@@ -268,7 +252,7 @@ describe('ListingItem', () => {
     });
 
     test('Should create a new expired ListingItem', async () => {
-        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest();
+        const testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(true);
 
         testDataToSave.expiredAt = Date.now() - 60 * 60 * 1000;
 
@@ -295,6 +279,49 @@ describe('ListingItem', () => {
         await listingItemService.destroy(createdListingItem1.id);
         await expectListingItemWasDeleted(createdListingItem1);
         createdListingItem1 = undefined;
+    });
+
+    test('Should create two new ListingItems, one without shippingDestination', async () => {
+        let testDataToSave: ListingItemCreateRequest = await generateListingItemCreateRequest(false);
+        createdListingItem1 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
+        expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
+
+        testDataToSave = await generateListingItemCreateRequest(false);
+        delete testDataToSave.itemInformation.shippingDestinations;
+        createdListingItem2 = await listingItemService.create(testDataToSave).then(value => value.toJSON());
+        expectListingItemFromCreateRequest(createdListingItem2, testDataToSave);
+
+    }, 600000); // timeout to 600s
+
+    test('Should find both when searching by shippingDestination', async () => {
+        const searchParams = {
+            shippingDestination: createdListingItem1.ItemInformation.ShippingDestinations[0].country
+        } as ListingItemSearchParams;
+        const result: resources.ListingItem[] = await listingItemService.search(searchParams).then(value => value.toJSON());
+        expect(result).toHaveLength(2);
+    }, 600000); // timeout to 600s
+
+    test('Should delete the one with shippingDestination set', async () => {
+        expect.assertions(13);
+        await listingItemService.destroy(createdListingItem1.id);
+        await expectListingItemWasDeleted(createdListingItem1, false);
+    });
+
+    test('Should find one when searching by shippingDestination', async () => {
+        const searchParams = {
+            shippingDestination: createdListingItem1.ItemInformation.ShippingDestinations[0].country
+        } as ListingItemSearchParams;
+        const result: resources.ListingItem[] = await listingItemService.search(searchParams).then(value => value.toJSON());
+        expect(result).toHaveLength(1);
+    }, 600000); // timeout to 600s
+
+    test('Should delete the one with shippingDestination set', async () => {
+        expect.assertions(14);
+        await listingItemService.destroy(createdListingItem2.id);
+        await expectListingItemWasDeleted(createdListingItem2, true);
+
+        createdListingItem1 = undefined;
+        createdListingItem2 = undefined;
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
@@ -345,7 +372,7 @@ describe('ListingItem', () => {
         expect(result.ItemLocation.LocationMarker.description).toBe(createRequest.itemLocation.locationMarker.description);
         expect(result.ItemLocation.LocationMarker.lat).toBe(createRequest.itemLocation.locationMarker.lat);
         expect(result.ItemLocation.LocationMarker.lng).toBe(createRequest.itemLocation.locationMarker.lng);
-        expect(result.ShippingDestinations).toHaveLength(createRequest.shippingDestinations.length);
+        expect(result.ShippingDestinations).toHaveLength(_.isNil(createRequest.shippingDestinations) ? 0 : createRequest.shippingDestinations.length);
         expect(result.Images).toHaveLength(createRequest.images.length);
         expect(result.Images[0].ImageDatas).toHaveLength(4); // 4 sizes
     };
@@ -381,7 +408,7 @@ describe('ListingItem', () => {
         expect(objectDataResults[0].value).toBe(createRequest[0].listingItemObjectDatas[0].value);
     };
 
-    const expectListingItemWasDeleted = async (item: resources.ListingItem) => {
+    const expectListingItemWasDeleted = async (item: resources.ListingItem, imageDeleted: boolean = true) => {
         await listingItemService.findOne(item.id).catch(e =>
             expect(e).toEqual(new NotFoundException(item.id))
         );
@@ -414,7 +441,7 @@ describe('ListingItem', () => {
             }
 
             // Image
-            if (!_.isEmpty(item.ItemInformation.Images)) {
+            if (!_.isEmpty(item.ItemInformation.Images) && imageDeleted) {
                 await imageService.findOne(item.ItemInformation.Images[0].id, false).catch(e =>
                     expect(e).toEqual(new NotFoundException(item.ItemInformation.Images[0].id))
                 );
@@ -483,7 +510,6 @@ describe('ListingItem', () => {
         // ListingItemObjects
         if (!_.isEmpty(item.ListingItemObjects)) {
             for (const listingItemObject of item.ListingItemObjects) {
-                const listintItemObjectId = ;
                 // ListingItemObjectDatas
                 const listintItemObjectDatas = listingItemObject.ListingItemObjectDatas;
                 if (!_.isEmpty(listintItemObjectDatas)) {
@@ -500,19 +526,20 @@ describe('ListingItem', () => {
         }
     };
 
-    const generateListingItemCreateRequest = async (): Promise<ListingItemCreateRequest> => {
+    const generateListingItemCreateRequest = async (expired: boolean = false): Promise<ListingItemCreateRequest> => {
         const now = Date.now();
         const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
 
         const createRequest = {
             hash: Faker.random.uuid(),
+            removed: false,
             msgid: Faker.random.uuid(),
             seller: market.Identity.address,
             market: market.receiveAddress,
             // listing_item_template_id: 0,
             expiryTime: 4,
             postedAt: now,
-            expiredAt: now,
+            expiredAt: expired ? now : now + 100000,
             receivedAt: now,
             generatedAt: now,
             itemInformation: {
@@ -548,11 +575,12 @@ describe('ListingItem', () => {
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
+                        imageHash: 'TEST-IMAGEHASH1',
                         data: randomImageData
                     }] as ImageDataCreateRequest[],
                     featured: false,
                     hash: 'TEST-IMAGEHASH1'
-                }, {
+                }/*, {
                     data: [{
                         // when we receive ListingItemAddMessage -> ProtocolDSN.SMSG
                         // when we receive ListingItemImageAddMessage -> ProtocolDSN.FILE
@@ -560,11 +588,12 @@ describe('ListingItem', () => {
                         encoding: 'BASE64',
                         dataId: 'https://particl.io/images/' + Faker.random.uuid(),
                         imageVersion: ImageVersions.ORIGINAL.propName,
+                        imageHash: 'TEST-IMAGEHASH2',
                         data: randomImageData
                     }] as ImageDataCreateRequest[],
                     featured: false,
                     hash: 'TEST-IMAGEHASH2'
-                }] as ImageCreateRequest[]
+                }*/] as ImageCreateRequest[]
             } as ItemInformationCreateRequest,
             paymentInformation: {
                 type: SaleType.SALE,
@@ -611,6 +640,7 @@ describe('ListingItem', () => {
             address: market.Identity.address,
             hash: createRequest.hash
         } as SellerMessage;
+
         const signature = await coreRpcService.signMessage(market.Identity.wallet, market.Identity.address, message);
         createRequest.signature = signature;
 

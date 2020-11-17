@@ -34,6 +34,10 @@ export class ImageDataRepository {
         return this.ImageDataModel.fetchById(id, withRelated);
     }
 
+    public async findOneByImageIdAndVersion(imageId: number, version: string, withRelated: boolean = true): Promise<ImageData> {
+        return this.ImageDataModel.fetchByImageIdAndVersion(imageId, version, withRelated);
+    }
+
     public async create(data: any): Promise<ImageData> {
         const itemImageData = this.ImageDataModel.forge<ImageData>(data);
         try {

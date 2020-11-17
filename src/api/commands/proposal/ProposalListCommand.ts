@@ -27,6 +27,7 @@ import {
 } from '../CommandParamValidation';
 import { MarketService } from '../../services/model/MarketService';
 
+
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 
     constructor(
@@ -54,8 +55,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * data.params[]:
-     * [0] timeStart | *, optional
-     * [1] timeEnd | *, optional
+     * [0] timeStart, optional
+     * [1] timeEnd, optional
      * [2] category, optional
      * [3] marketId, optional
      * [4] order
@@ -67,13 +68,18 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Proposal>> {
 
+        const timeStart: number = data.params[0];
+        const timeEnd: number = data.params[1];
+        const category: ProposalCategory = data.params[2];
         const market: resources.Market = data.params[3];
+        const order: SearchOrder = data.params[4];
+
         const searchParams = {
-            timeStart: data.params[0],
-            timeEnd: data.params[1],
-            category: data.params[2],
+            timeStart,
+            timeEnd,
+            category,
             market: market ? market.receiveAddress : undefined,
-            order: data.params[4]
+            order
         } as ProposalSearchParams;
 
         // this.log.debug('searchParams: ', JSON.stringify(searchParams, null, 2));
@@ -82,8 +88,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      *
-     * list * 100 -> return all proposals which ended before block 100
-     * list 100 * -> return all proposals ending after block 100
+     * list * 100 -> return all proposals which ended before 100
+     * list 100 * -> return all proposals ending after 100
      * list 100 200 -> return all which are active and closed between 100 200
      *
      * data.params[]:

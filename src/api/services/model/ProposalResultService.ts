@@ -17,6 +17,8 @@ import { ProposalResultUpdateRequest } from '../../requests/model/ProposalResult
 import { ProposalCategory } from '../../enums/ProposalCategory';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
+import { ShoppingCartItemService } from './ShoppingCartItemService';
+
 
 export class ProposalResultService {
 
@@ -24,6 +26,7 @@ export class ProposalResultService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.model.ShoppingCartItemService) public shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalResultRepository) public proposalResultRepo: ProposalResultRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -104,23 +107,19 @@ export class ProposalResultService {
      */
     public async shouldRemoveFlaggedItem(proposalResult: resources.ProposalResult, flaggedItem: resources.FlaggedItem): Promise<boolean> {
 
-        let removalPercentage = 0.1;
-
-        switch (proposalResult.Proposal.category) {
-            case ProposalCategory.ITEM_VOTE:
-                // we dont want to remove ListingItems that have related Bids
-                if (!_.isEmpty(flaggedItem.ListingItem!.Bids)) {
-                    return false;
-                }
-                removalPercentage = parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE);
-                break;
-            case ProposalCategory.MARKET_VOTE:
-                removalPercentage = 1;  // TODO: create LISTING_MARKET_REMOVE_PERCENTAGE
-                break;
-            case ProposalCategory.PUBLIC_VOTE:
-            default:
-                return false;
+        if (ProposalCategory.ITEM_VOTE === proposalResult.Proposal.category
+            && (!_.isEmpty(flaggedItem.ListingItem!.Bids)
+                || !_.isEmpty(flaggedItem.ListingItem!.FavoriteItems)
+                || !_.isEmpty(flaggedItem.ListingItem!.ShoppingCartItem))) {
+            // we dont want to remove ListingItems that have related Bids or FavoriteItems or ShoppingCartItems
+            return false;
         }
+
+        const removalPercentage = ProposalCategory.ITEM_VOTE === proposalResult.Proposal.category
+            ? parseFloat(process.env.LISTING_ITEM_REMOVE_PERCENTAGE)
+            : ProposalCategory.MARKET_VOTE === proposalResult.Proposal.category
+                ? parseFloat(process.env.MARKET_REMOVE_PERCENTAGE)
+                : 0.1;    // default
 
         const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
             return proposalOptionResult.ProposalOption.description === ItemVote.REMOVE.toString();

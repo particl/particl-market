@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { CommentType } from '../../../src/api/enums/CommentType';
+import { CommentCategory } from '../../../src/api/enums/CommentCategory';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
@@ -77,7 +77,7 @@ describe('CommentGetCommand', () => {
             false,                                              // generatePastComment
             market.Identity.address,                            // sender
             market.receiveAddress,                              // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
             listingItem.hash                                    // target
         ]).toParamsArray();
 

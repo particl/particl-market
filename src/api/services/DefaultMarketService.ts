@@ -81,7 +81,7 @@ export class DefaultMarketService {
      * @param withRelated
      */
     public async getDefaultForProfile(profileId: number, shouldCreateIfNotSet: boolean = true, withRelated: boolean = true): Promise<Market> {
-        this.log.debug('getDefaultForProfile(): ', profileId);
+        // this.log.debug('getDefaultForProfile(): ', profileId);
         const profileSettings: resources.Setting[] = await this.settingService.findAllByProfileId(profileId).then(value => value.toJSON());
         const marketIdSetting = _.find(profileSettings, value => {
             return value.key === SettingValue.PROFILE_DEFAULT_MARKETPLACE_ID;
@@ -148,7 +148,7 @@ export class DefaultMarketService {
             })
             .then(value => value.toJSON());
 
-        // this.log.debug('seedDefaultMarketForProfile(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
+        this.log.debug('seedDefaultMarketForProfile(), defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
         return await this.marketService.findOne(defaultMarket.id, true).then(value => value.toJSON());
     }

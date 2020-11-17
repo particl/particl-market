@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
@@ -10,6 +10,10 @@ import { CryptocurrencyAddress } from './CryptocurrencyAddress';
 import { Market } from './Market';
 import { Identity } from './Identity';
 import { Setting } from './Setting';
+import { Blacklist } from './Blacklist';
+import { Image } from './Image';
+import { Notification } from './Notification';
+import { ListingItemTemplate } from './ListingItemTemplate';
 
 
 export class Profile extends Bookshelf.Model<Profile> {
@@ -22,7 +26,9 @@ export class Profile extends Bookshelf.Model<Profile> {
         'Markets.Identity',
         'Identities',
         'Identities.Markets',
-        'Settings'
+        'Settings',
+        'Blacklists',
+        'Notifications'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
@@ -70,6 +76,22 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public Settings(): Collection<Setting> {
         return this.hasMany(Setting, 'profile_id', 'id');
+    }
+
+    public ListingItemTemplates(): Collection<ListingItemTemplate> {
+        return this.hasMany(ListingItemTemplate, 'profile_id', 'id');
+    }
+
+    public Blacklists(): Collection<Blacklist> {
+        return this.hasMany(Blacklist, 'profile_id', 'id');
+    }
+
+    public Image(): Image {
+        return this.belongsTo(Image, 'image_id', 'id');
+    }
+
+    public Notifications(): Collection<Notification> {
+        return this.hasMany(Notification, 'profile_id', 'id');
     }
 
 }

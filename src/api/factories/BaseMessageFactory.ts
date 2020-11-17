@@ -2,11 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { MessageFactoryInterface } from '../MessageFactoryInterface';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { ActionRequestInterface } from '../../requests/action/ActionRequestInterface';
 import { ompVersion } from 'omp-lib/dist/omp';
-import { ActionMessageInterface } from '../../messages/action/ActionMessageInterface';
+import { MessageFactoryInterface } from './MessageFactoryInterface';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ActionRequestInterface } from '../requests/action/ActionRequestInterface';
+import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
+
 
 export abstract class BaseMessageFactory implements MessageFactoryInterface {
 

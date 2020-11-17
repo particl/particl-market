@@ -29,7 +29,7 @@ import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { OrderCreateRequest } from '../../requests/model/OrderCreateRequest';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MPAction  } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BidNotification } from '../../messages/notification/BidNotification';
@@ -38,19 +38,21 @@ import { AddressType } from '../../enums/AddressType';
 import { ProfileService } from '../model/ProfileService';
 import { BidMessageFactory } from '../../factories/message/BidMessageFactory';
 import { IdentityService } from '../model/IdentityService';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class BidActionService extends BaseActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) public identityService: IdentityService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.OrderFactory) public orderFactory: OrderFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
@@ -63,6 +65,7 @@ export class BidActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -226,21 +229,20 @@ export class BidActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (bid) {
-                const notification: MarketplaceNotification = {
-                    event: MPAction.MPA_BID,
+                return {
+                    event: marketplaceMessage.action.type,
                     payload: {
-                        id: bid.id,
-                        hash: bid.hash,
-                        bidder: bid.bidder,
-                        listingItemHash: bid.ListingItem.hash,
+                        objectId: bid.id,
+                        objectHash: bid.hash,
+                        from: bid.bidder,
+                        to: bid.OrderItem.Order.seller,
+                        target: bid.ListingItem.hash,
                         market: bid.ListingItem.market
                     } as BidNotification
-                };
-                return notification;
+                } as MarketplaceNotification;
             }
         }
         return undefined;

@@ -30,14 +30,13 @@ import {
 
 export class SmsgSearchCommand extends BaseSearchCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 
-    public debug = true;
-
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService
     ) {
         super(Commands.SMSG_SEARCH);
         this.log = new Logger(__filename);
+        this.debug = false;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {

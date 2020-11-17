@@ -14,10 +14,12 @@ export class BlacklistCreateRequest extends RequestBody implements ModelRequestI
     public type: BlacklistType;
 
     @IsNotEmpty()
-    public target: string;
-
+    public target: string;              // target hash/whatever to blacklist
     public market: string;              // optional market to be blacklisted on
+
     public profile_id: number;          // optional profile to have relation to
+
     public listing_item_id: number;     // optional listingitem to have relation to
+    public market_id: number;           // optional market to have relation to
 }
 // tslint:enable:variable-name

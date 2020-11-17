@@ -32,15 +32,17 @@ import { EscrowCompleteMessage } from '../../messages/action/EscrowCompleteMessa
 import { EscrowCompleteValidator } from '../../messagevalidators/EscrowCompleteValidator';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class EscrowCompleteActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
@@ -48,6 +50,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowCompleteMessageFactory) public actionMessageFactory: EscrowCompleteMessageFactory,
@@ -60,6 +63,7 @@ export class EscrowCompleteActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

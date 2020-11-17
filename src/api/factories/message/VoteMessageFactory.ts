@@ -11,7 +11,7 @@ import { GovernanceAction } from '../../enums/GovernanceAction';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 // todo: move

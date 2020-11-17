@@ -48,6 +48,15 @@ export class ImageDataService {
         return imageData;
     }
 
+    public async findOneByImageIdAndVersion(imageId: number, version: string, withRelated: boolean = true): Promise<ImageData> {
+        const imageData = await this.imageDataRepo.findOneByImageIdAndVersion(imageId, version, withRelated);
+        if (imageData === null) {
+            this.log.warn(`ImageData with the imageId=${imageId} and version=${version} was not found!`);
+            throw new NotFoundException(imageId);
+        }
+        return imageData;
+    }
+
     @validate()
     public async create( @request(ImageDataCreateRequest) data: ImageDataCreateRequest): Promise<ImageData> {
         const body = JSON.parse(JSON.stringify(data));
@@ -57,7 +66,7 @@ export class ImageDataService {
             delete body.data;
         }
 
-        // this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create(), body: ', JSON.stringify(body, null, 2));
         const imageData: resources.ImageData = await this.imageDataRepo.create(body).then(value => value.toJSON());
         return await this.findOne(imageData.id);
     }
@@ -70,6 +79,7 @@ export class ImageDataService {
 
         await this.removeImageFile(imageData.ImageHash, imageData.ImageVersion);
         body.dataId = await this.saveImageFile(body.data, body.imageHash, body.imageVersion);
+        delete body.data;
 
         // set new values
         if (body.dataId) {
@@ -121,6 +131,7 @@ export class ImageDataService {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
         // this.log.debug('saveImageFile(): ', filename);
         try {
+            // replaces the file if it already exists
             fs.writeFileSync(filename, base64Image, { encoding: 'base64' });
         } catch (err) {
             throw new MessageException('Image write failed: ' + err);
@@ -146,7 +157,7 @@ export class ImageDataService {
         // only remove the file if there is just this one Image related to it
         if (imageDatas.length === 1) {
             const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-            this.log.debug('removeImageFile(), removed: ', filename);
+            // this.log.debug('removeImageFile(), removed: ', filename);
             try {
                 // file might not yet exist on a remote node receiving the image
                 if (fs.existsSync(filename)) {
@@ -171,7 +182,7 @@ export class ImageDataService {
      */
     public async loadImageFile(imageHash: string, imageVersion: string): Promise<string> {
         const filename = path.join(DataDir.getImagesPath(), imageHash + '-' + imageVersion);
-        this.log.debug('loadImageFile(): ', filename);
+        // this.log.debug('loadImageFile(): ', filename);
         try {
             return fs.readFileSync(filename, { encoding: 'base64' });
         } catch (err) {

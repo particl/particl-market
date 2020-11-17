@@ -23,7 +23,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
+
 
 export class SmsgResendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -65,7 +65,7 @@ export class SmsgResendCommand extends BaseCommand implements RpcCommandInterfac
             toAddress: smsgMessage.to,
             daysRetention: smsgMessage.daysretention,
             estimateFee: false,
-            anonFee: true
+            anonFee: false
         } as SmsgSendParams;
 
         const marketplaceMessage: MarketplaceMessage = JSON.parse(smsgMessage.text);

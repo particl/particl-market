@@ -12,6 +12,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { CoreMessageVersion } from '../../../src/api/enums/CoreMessageVersion';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
 
 describe('ListingItemTemplateCompressCommand', () => {
@@ -134,7 +135,7 @@ describe('ListingItemTemplateCompressCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('maxIterations', 'number').getMessage());
     });
 
-    test('Should compress Images to fit given size in bytes', async () => {
+    test('Should compress Images to fit given message size', async () => {
         const res = await testUtil.rpc(templateCommand, [templateCompressCommand,
             listingItemTemplate.id,
             CoreMessageVersion.FREE,
@@ -148,8 +149,11 @@ describe('ListingItemTemplateCompressCommand', () => {
         const result: resources.ListingItemTemplate = res.getBody()['result'];
         for (const image of result.ItemInformation.Images) {
             expect(image.ImageDatas).toHaveLength(5);
+            for (const imageData of image.ImageDatas) {
+                expect(imageData.data).toBeNull();
+                expect(imageData.protocol).toBe(ProtocolDSN.FILE);
+            }
         }
-
     });
 
 });

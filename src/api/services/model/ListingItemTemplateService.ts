@@ -66,7 +66,7 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Service) @named(Targets.Service.model.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public itemDataService: ImageDataService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -145,7 +145,6 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         const body: ListingItemTemplateCreateRequest = JSON.parse(JSON.stringify(data));
         // this.log.debug('create(), body:', JSON.stringify(body, null, 2));
 
-        // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
@@ -155,39 +154,30 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
-        // then create the listingItemTemplate
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
+        this.log.debug('create(), listingItemTemplate.id:', listingItemTemplate.id);
 
-        // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
-            const createdItemInfo: resources.ItemInformation = await this.itemInformationService.create(itemInformation)
-                .then(value => value.toJSON());
-            // this.log.debug('itemInformation, result:', JSON.stringify(createdItemInfo, null, 2));
+            await this.itemInformationService.create(itemInformation).then(value => value.toJSON());
         }
 
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.id;
-            const createdPaymentInfo: resources.PaymentInformation = await this.paymentInformationService.create(paymentInformation)
-                .then(value => value.toJSON());
-            // this.log.debug('paymentInformation, result:', JSON.stringify(createdPaymentInfo, null, 2));
+            await this.paymentInformationService.create(paymentInformation).then(value => value.toJSON());
         }
 
         if (!_.isEmpty(messagingInformation)) {
             for (const msgInfo of messagingInformation) {
                 msgInfo.listing_item_template_id = listingItemTemplate.id;
-                const createdMsgInfo: resources.MessagingInformation = await this.messagingInformationService.create(msgInfo)
-                    .then(value => value.toJSON());
-                // this.log.debug('msgInfo, result:', JSON.stringify(createdMsgInfo, null, 2));
+                await this.messagingInformationService.create(msgInfo).then(value => value.toJSON());
             }
         }
 
         if (!_.isEmpty(listingItemObjects)) {
             for (const object of listingItemObjects) {
                 object.listing_item_template_id = listingItemTemplate.id;
-                const createdListingItemObject: resources.ListingItemObject = await this.listingItemObjectService.create(object)
-                    .then(value => value.toJSON());
-                // this.log.debug('object, result:', JSON.stringify(createdListingItemObject, null, 2));
+                await this.listingItemObjectService.create(object).then(value => value.toJSON());
             }
         }
 
@@ -204,28 +194,28 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
         // this.log.debug('clone(), listingItemTemplateId: ' + listingItemTemplate.id + ', targetParentId: '
         //    + targetParentId + ', market: ' + (market ? market.id : undefined));
+        this.log.debug('clone(), targetParentId: ', targetParentId);
         const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
-        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
-        // this.log.debug('clone(), listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
+        // at minimum we'd need the messageVersion to create the RESIZED version
+        // listingItemTemplate = await this.createResizedTemplateImages(listingItemTemplate, messageVersionToFit,
+        //    scalingFraction, qualityFraction, maxIterations).then(value => value.toJSON());
+
         return await this.findOne(listingItemTemplate.id);
     }
 
     @validate()
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
-
-        // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
-        // ListingItemTemplates with a hash or ListingItems are not supposed to be modified anymore
         if (!_.isEmpty(listingItemTemplate.Hash) || !_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new ModelNotModifiableException('ListingItemTemplate');
         }
 
-        // update listingItemTemplate record
-        // todo: ListingItemTemplate has no changeable data?
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
         // if the related one exists already, then update. if it doesnt exist, create. and if the related one is missing, then remove.
@@ -238,13 +228,13 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
                 // already exists
                 const updateRequest: ItemInformationUpdateRequest = body.itemInformation;
                 //  updateRequest.listing_item_template_id = id;
-                this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
+                // this.log.debug('updateRequest: ', JSON.stringify(updateRequest, null, 2));
                 await this.itemInformationService.update(itemInformation.id, updateRequest);
             } else {
                 // doesnt exist
                 const createRequest: ItemInformationCreateRequest = body.itemInformation;
                 createRequest.listing_item_template_id = id;
-                this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
+                // this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
                 await this.itemInformationService.create(createRequest);
             }
         } else if (!_.isEmpty(itemInformation)) {
@@ -362,12 +352,9 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     }
 
     public async isModifiable(id: number): Promise<boolean> {
-        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id, true).then(value => value.toJSON());
+        const listingItemTemplate: resources.ListingItemTemplate = await this.findOne(id).then(value => value.toJSON());
 
         // ListingItemTemplates which have a related ListingItems or ChildListingItems can not be modified
-        // this.log.debug('listingItemTemplate.ListingItems: ' + listingItemTemplate.ListingItems);
-        // this.log.debug('listingItemTemplate.ChildListingItemTemplates: ' + listingItemTemplate.ChildListingItemTemplates);
-
         // const isModifiable = (_.isEmpty(listingItemTemplate.ListingItems) && _.isEmpty(listingItemTemplate.ChildListingItemTemplates));
 
         // template is modifiable if it hasn't been posted, and it hasnt been posted unless it has a hash
@@ -392,16 +379,17 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
      * @param maxIterations
      * @returns {Promise<ListingItemTemplate>}
      */
-    public async resizeTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
-                                      scalingFraction: number = 0.9, qualityFraction: number = 0.95,
-                                      maxIterations: number = 10): Promise<ListingItemTemplate> {
+    public async createResizedTemplateImages(listingItemTemplate: resources.ListingItemTemplate, messageVersionToFit: CoreMessageVersion,
+                                             scalingFraction: number = 0.9, qualityFraction: number = 0.95,
+                                             maxIterations: number = 10): Promise<ListingItemTemplate> {
 
-        const images = listingItemTemplate.ItemInformation.Images;
+        const images: resources.Image[] = listingItemTemplate.ItemInformation.Images;
         for (const image of images) {
-            await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-            this.log.debug('compressed image.hash: ' + image.hash);
+            const updatedImage: resources.Image = await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction,
+                qualityFraction, maxIterations).then(value => value.toJSON());
+            // this.log.debug('updatedImage: ', JSON.stringify(updatedImage, null, 2));
+            // this.log.debug('listingItemTemplate.id: ', JSON.stringify(listingItemTemplate.id, null, 2));
         }
-
         return await this.findOne(listingItemTemplate.id);
     }
 
@@ -452,7 +440,7 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         if (qualityFactor <= 0) {
             return '';
         }
-        const originalImage = await this.itemDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
+        const originalImage = await this.imageDataService.loadImageFile(imageHash, ImageVersions.ORIGINAL.propName);
 
         let compressedImage = await ImageProcessing.resizeImageToFit(
             originalImage,
@@ -492,11 +480,18 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
             images = await Promise.all(_.map(templateToClone.ItemInformation.Images, async (image) => {
 
                 // for each image, get the data from ORIGINAL and create a new ImageCreateRequest based on that data
+                // the other image versions will be created later
                 const imageDataOriginal: resources.ImageData = _.find(image.ImageDatas, (imageData) => {
                     return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
                 })!;
 
-                this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
+                // try to load data, if it exists.
+                const data = await this.imageDataService.loadImageFile(image.hash, ImageVersions.ORIGINAL.propName)
+                    .then(value => value)
+                    .catch(reason => undefined);
+                imageDataOriginal.data = data ? data : imageDataOriginal.data;
+
+                // this.log.debug('imageDataOriginal: ', JSON.stringify(imageDataOriginal, null, 2));
 
                 const imageCreateRequest: ImageCreateRequest = await this.imageFactory.get({
                     actionMessage: {
@@ -564,7 +559,8 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
                     title: templateToClone.ItemInformation.title,
                     shortDescription: templateToClone.ItemInformation.shortDescription,
                     longDescription: templateToClone.ItemInformation.longDescription,
-                    item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
+                    // for now, we are not cloning the categories
+                    // item_category_id: templateToClone.ItemInformation.ItemCategory ? templateToClone.ItemInformation.ItemCategory.id : undefined,
                     shippingDestinations,
                     images,
                     itemLocation: templateToClone.ItemInformation.ItemLocation

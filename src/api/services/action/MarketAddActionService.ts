@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -21,7 +22,7 @@ import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddRequest } from '../../requests/action/MarketAddRequest';
@@ -32,10 +33,10 @@ import { MarketFactory } from '../../factories/model/MarketFactory';
 import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketNotification } from '../../messages/notification/MarketNotification';
 import { MarketAddValidator } from '../../messagevalidators/MarketAddValidator';
-import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { ImageService } from '../model/ImageService';
 import { MarketType } from '../../enums/MarketType';
 import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class MarketAddActionService extends BaseActionService {
@@ -43,7 +44,7 @@ export class MarketAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -51,6 +52,7 @@ export class MarketAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.MarketFactory) public marketFactory: MarketFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketAddMessageFactory) private actionMessageFactory: MarketAddMessageFactory,
@@ -62,6 +64,7 @@ export class MarketAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -153,7 +156,7 @@ export class MarketAddActionService extends BaseActionService {
 
             const market: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
             for (const existingImage of existingImages) {
-                await this.marketService.updateImage(market.id, existingImage.id).then(value => {
+                await this.marketService.setImage(market.id, existingImage.id).then(value => {
                     this.log.debug('updated, image: ' + existingImage.id + ', for market: ' + market.id + '.');
                 });
             }
@@ -180,9 +183,11 @@ export class MarketAddActionService extends BaseActionService {
                 const notification: MarketplaceNotification = {
                     event: marketplaceMessage.action.type,
                     payload: {
-                        id: market.id,
-                        hash: market.hash,
-                        name: market.name
+                        objectId: market.id,
+                        objectHash: market.hash,
+                        from: smsgMessage.from,
+                        to: smsgMessage.to,
+                        target: market.receiveAddress
                     } as MarketNotification
                 };
                 return notification;

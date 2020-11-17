@@ -16,16 +16,18 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 import { BlacklistType } from '../../enums/BlacklistType';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ProfileService } from '../../services/model/ProfileService';
+import {
+    CommandParamValidationRules,
+    EnumValidationRule,
+    IdValidationRule,
+    ParamValidationRule
+} from '../CommandParamValidation';
+
 
 export class BlacklistListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Blacklist>> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,6 +36,16 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
     ) {
         super(Commands.BLACKLIST_LIST);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new EnumValidationRule('type', true, 'BlacklistType',
+                    EnumHelper.getValues(BlacklistType) as string[]),
+                new IdValidationRule('profileId', false, this.profileService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -50,11 +62,11 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Blacklist>> {
         const type: BlacklistType = data.params[0];
+        const profile: resources.Profile = data.params[1];
 
-        if (_.isEmpty(data.params[1])) {
+        if (_.isNil(profile)) {
             return await this.blacklistService.findAllByType(type);
         } else {
-            const profile: resources.Profile = data.params[1];
             return await this.blacklistService.findAllByTypeAndProfileId(type, profile.id);
         }
     }
@@ -67,31 +79,7 @@ export class BlacklistListCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('type');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'string') {
-            throw new InvalidParamException('type', 'string');
-        } else if (data.params[1] && typeof data.params[1] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        }
-
-        // check for valid enum
-        if (!EnumHelper.containsName(BlacklistType, data.params[0])) {
-            throw new InvalidParamException('type', 'BlacklistType');
-        }
-
-        if (data.params[1]) {
-            // make sure Profile with the id exists
-            data.params[1] = await this.profileService.findOne(data.params[1])
-                .then(value => value.toJSON())
-                .catch(reason => {
-                    throw new ModelNotFoundException('Profile');
-                });
-        }
+        await super.validate(data);
         return data;
     }
 

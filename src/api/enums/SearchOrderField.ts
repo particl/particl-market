@@ -27,6 +27,11 @@ export enum MarketSearchOrderField {
     CREATED_AT = 'created_at'
 }
 
+export enum NotificationSearchOrderField {
+    UPDATED_AT = 'updated_at',
+    CREATED_AT = 'created_at'
+}
+
 export enum BidSearchOrderField {
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'
@@ -72,6 +77,7 @@ export enum ListingItemTemplateSearchOrderField {
 
 export enum ListingItemSearchOrderField {
     TITLE = 'item_informations.title',
+    EXPIRED_AT = 'expired_at',
     UPDATED_AT = 'updated_at',
     CREATED_AT = 'created_at'
 }

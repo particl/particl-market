@@ -29,7 +29,7 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
         super(Commands.IDENTITY_ADD);
         this.log = new Logger(__filename);
 
-        this.debug = true;
+        // this.debug = true;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
@@ -42,11 +42,8 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
                     if (!_.isNil(value)) {
 
                         const profile: resources.Profile = allValues[index - 1];
-                        this.log.debug('duplicates, profile: ', profile.id);
-                        this.log.debug('duplicates, name: ', value);
                         await this.identityService.findAllByProfileIdAndName(profile.id, value)
                             .then(result => {
-                                this.log.debug('result: ', JSON.stringify(result, null, 2));
                                 const identities: resources.Identity[] = result.toJSON();
                                 if (identities.length > 0) {
                                     throw new MessageException('Identity with the name already exists.');
@@ -74,7 +71,6 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Identity> {
         const profile: resources.Profile = data.params[0];
         const name: string = data.params[1];
-
         return this.identityService.createMarketIdentityForProfile(profile, name);
     }
 
@@ -88,7 +84,6 @@ export class IdentityAddCommand extends BaseCommand implements RpcCommandInterfa
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
-
         return data;
     }
 

@@ -877,59 +877,62 @@ export class ImageProcessing {
         let quality = 100;
         let iteration = 0;
 
-        this.log.debug('maxIterations: ' + maxIterations);
-        this.log.debug('byteLimit: ' + byteLimit);
-        this.log.debug('imageRaw.length: ' + imageRaw.length);
+        // this.log.debug('maxIterations: ' + maxIterations);
+        // this.log.debug('byteLimit: ' + byteLimit);
+        // this.log.debug('imageRaw.length: ' + imageRaw.length);
 
         const dataBuffer = Buffer.from(imageRaw, 'base64');
         let imageBuffer: any = await Jimp.read(dataBuffer);
         let resizedImage;
         let skipQuality = false;
 
-        do {
-            ++iteration;
-            const startTime = Date.now();
+        if (imageRaw.length > byteLimit) {
+            // resize only if needed
+            do {
+                ++iteration;
+                const startTime = Date.now();
 
-            if (imageBuffer.length <= byteLimit) {
-                return imageBuffer;
-            }
+                if (imageBuffer.length <= byteLimit) {
+                    return imageBuffer;
+                }
 
-            if (iteration > maxIterations) {
-                throw new MessageException(`Couldn't compress Image enough within ${maxIterations}`);
-            }
+                if (iteration > maxIterations) {
+                    throw new MessageException(`Couldn't compress Image enough within ${maxIterations}`);
+                }
 
-            imageBuffer = imageBuffer.scale(scaleFraction);
-            resizedImage = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
-                return buffer.toString('base64');
-            });
-
-            this.log.debug('result (' + iteration + '), resize (' + scaleFraction + '): ' + resizedImage.length
-                + ', took: ' + (Date.now() - startTime) + 'ms');
-
-            if (resizedImage.length <= byteLimit) {
-                return resizedImage;
-            }
-
-            if (!skipQuality) {
-                quality = quality * qualityFraction;
-
-                imageBuffer = imageBuffer.quality(quality);
-
-                const resizedImage2 = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+                imageBuffer = imageBuffer.scale(scaleFraction);
+                resizedImage = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
                     return buffer.toString('base64');
                 });
 
-                skipQuality = resizedImage.length === resizedImage2.length;
-                resizedImage = resizedImage2;
-
-                this.log.debug('result (' + iteration + '), quality (' + quality.toFixed(1) + '): ' + resizedImage.length
-                    + ', took: ' + (Date.now() - startTime) + 'ms');
+                // this.log.debug('result (' + iteration + '), resize (' + scaleFraction + '): ' + resizedImage.length
+                //    + ', took: ' + (Date.now() - startTime) + 'ms');
 
                 if (resizedImage.length <= byteLimit) {
                     return resizedImage;
                 }
-            }
-        } while (imageRaw.length >= byteLimit);
+
+                if (!skipQuality) {
+                    quality = quality * qualityFraction;
+
+                    imageBuffer = imageBuffer.quality(quality);
+
+                    const resizedImage2 = await imageBuffer.getBuffer(imageBuffer.getMIME() !== 'image/jpeg' ? Jimp.MIME_JPEG : 'image/jpeg', (err, buffer) => {
+                        return buffer.toString('base64');
+                    });
+
+                    skipQuality = resizedImage.length === resizedImage2.length;
+                    resizedImage = resizedImage2;
+
+                    // this.log.debug('result (' + iteration + '), quality (' + quality.toFixed(1) + '): ' + resizedImage.length
+                    //    + ', took: ' + (Date.now() - startTime) + 'ms');
+
+                    if (resizedImage.length <= byteLimit) {
+                        return resizedImage;
+                    }
+                }
+            } while (imageRaw.length >= byteLimit);
+        }
 
         return imageRaw;
     }

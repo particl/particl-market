@@ -21,7 +21,7 @@ import { strip } from 'omp-lib/dist/util';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
-import { NotificationService } from './NotificationService';
+import { NotifyService } from './NotifyService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { unmanaged } from 'inversify';
 import { MessageSize } from '../responses/MessageSize';
@@ -31,7 +31,11 @@ import { MessageSizeException } from '../exceptions/MessageSizeException';
 import { ActionMessageInterface } from '../messages/action/ActionMessageInterface';
 import { MessageWebhooks } from '../messages/MessageWebhooks';
 import { AuthOptions, RequestOptions, Headers} from 'web-request';
-import {Environment} from '../../core/helpers/Environment';
+import { Environment } from '../../core/helpers/Environment';
+import { BlacklistService } from './model/BlacklistService';
+import { BlacklistSearchParams } from '../requests/search/BlacklistSearchParams';
+import { BlacklistType } from '../enums/BlacklistType';
+import {MarketAddMessage} from '../messages/action/MarketAddMessage';
 
 
 export abstract class BaseActionService implements ActionServiceInterface {
@@ -40,14 +44,16 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
     public smsgService: SmsgService;
     public smsgMessageService: SmsgMessageService;
-    public notificationService: NotificationService;
+    public notificationService: NotifyService;
     public smsgMessageFactory: SmsgMessageFactory;
     public validator: ActionMessageValidatorInterface;
+    public blacklistService: BlacklistService;
 
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
-                @unmanaged() notificationService: NotificationService,
+                @unmanaged() notificationService: NotifyService,
+                @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType
@@ -56,6 +62,7 @@ export abstract class BaseActionService implements ActionServiceInterface {
         this.smsgService = smsgService;
         this.smsgMessageService = smsgMessageService;
         this.notificationService = notificationService;
+        this.blacklistService = blacklistService;
         this.smsgMessageFactory = smsgMessageFactory;
         this.validator = validator;
     }
@@ -65,10 +72,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
      * used to determine whether the MarketplaceMessage fits in the SmsgMessage size limits.
      *
      * @param marketplaceMessage
+     * @param messageType, optional, override the default message version
      */
-    public async getMarketplaceMessageSize(marketplaceMessage: MarketplaceMessage): Promise<MessageSize> {
+    public async getMarketplaceMessageSize(marketplaceMessage: MarketplaceMessage, messageType?: CoreMessageVersion): Promise<MessageSize> {
 
-        const messageVersion: CoreMessageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        const messageVersion: CoreMessageVersion = messageType ? messageType : MessageVersions.get(marketplaceMessage.action.type);
         const maxSize = MessageVersions.maxSize(messageVersion);
 
         const messageSize = JSON.stringify(marketplaceMessage).length;
@@ -107,12 +115,20 @@ export abstract class BaseActionService implements ActionServiceInterface {
 
         // create the marketplaceMessage, extending class should implement
         let marketplaceMessage: MarketplaceMessage = await this.createMarketplaceMessage(actionRequest);
-        // this.log.debug('post(), got marketplaceMessage:'); // , JSON.stringify(marketplaceMessage, null, 2));
 
-        const messageSize = await this.getMarketplaceMessageSize(marketplaceMessage);
+        // this.log.debug('post(), marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+        // this.log.debug('post(), actionRequest.sendParams.toAddress: ', actionRequest.sendParams.toAddress);
+        // this.log.debug('post(), marketplaceMessage.action.hash: ', marketplaceMessage.action.hash);
+
+        const isBlacklisted = await this.isBlacklisted([actionRequest.sendParams.toAddress, marketplaceMessage.action.hash]);
+        if (isBlacklisted) {
+            throw new MessageException('Blacklisted recipient.');
+        }
+
+        const messageSize: MessageSize = await this.getMarketplaceMessageSize(marketplaceMessage, actionRequest.sendParams.messageType);
         if (!messageSize.fits) {
             this.log.error('messageDataSize:', JSON.stringify(messageSize, null, 2));
-            throw new MessageSizeException(marketplaceMessage.action.type);
+            throw new MessageSizeException(marketplaceMessage.action.type, messageSize);
         }
         // this.log.debug('post(), messageSize:', JSON.stringify(messageSize, null, 2));
 
@@ -141,7 +157,11 @@ export abstract class BaseActionService implements ActionServiceInterface {
         // TODO: also validate the sequence?
         // await this.validator.validateSequence(marketplaceMessage, ActionDirection.OUTGOING);
 
-        const messageVersion = MessageVersions.get(marketplaceMessage.action.type);
+        // optionally override the default messageVersion to the one set in sendParams
+        const messageVersion = actionRequest.sendParams.messageType
+            ? actionRequest.sendParams.messageType
+            : MessageVersions.get(marketplaceMessage.action.type);
+
         // return smsg fee estimate, if thats what was requested
         if (actionRequest.sendParams.estimateFee) {
             if (messageVersion === CoreMessageVersion.PAID) {
@@ -278,6 +298,22 @@ export abstract class BaseActionService implements ActionServiceInterface {
                 });
         }
         return;
+    }
+
+    /**
+     * check whether the targets are blacklisted
+     * @param targets
+     */
+    public async isBlacklisted(targets: string[]): Promise<boolean> {
+        // filter out possible nulls, as not all types of messages have hash
+        targets = targets.filter(value => value !== undefined && value !== null);
+
+        return await this.blacklistService.search({
+            targets
+        } as BlacklistSearchParams).then(async value => {
+            const blacklists: resources.Blacklist[] = value.toJSON();
+            return blacklists.length > 0;
+        });
     }
 
     public marketplaceMessageDebug(direction: ActionDirection, actionRequest: ActionMessageInterface): void {

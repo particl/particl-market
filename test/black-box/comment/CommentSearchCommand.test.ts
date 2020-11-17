@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { CommentType } from '../../../src/api/enums/CommentType';
+import { CommentCategory } from '../../../src/api/enums/CommentCategory';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateCommentParams } from '../../../src/api/requests/testdata/GenerateCommentParams';
 import { CommentSearchOrderField } from '../../../src/api/enums/SearchOrderField';
@@ -17,6 +17,7 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
+
 
 describe('CommentSearchCommand', () => {
 
@@ -90,7 +91,7 @@ describe('CommentSearchCommand', () => {
             false,                                              // generatePastComment
             market.Identity.address,                            // sender
             market.receiveAddress,                              // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
             listingItem1.hash                                   // target
         ]).toParamsArray();
 
@@ -112,7 +113,7 @@ describe('CommentSearchCommand', () => {
             false,                                              // generatePastComment
             market.Identity.address,                            // sender
             market.receiveAddress,                              // receiver
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,       // type
             listingItem2.hash                                   // target
         ]).toParamsArray();
 
@@ -139,7 +140,7 @@ describe('CommentSearchCommand', () => {
     test('Should fail because missing receiver', async () => {
         const response = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS
         ]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -162,7 +163,7 @@ describe('CommentSearchCommand', () => {
     test('Should fail because invalid receiver', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             true
         ]);
         res.expectJson();
@@ -174,7 +175,7 @@ describe('CommentSearchCommand', () => {
     test('Should fail because receiver not found', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress + 'NOTFOUND'
         ]);
         res.expectJson();
@@ -186,7 +187,7 @@ describe('CommentSearchCommand', () => {
     test('Should fail because target not found', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem1.hash + 'NOTFOUND'
         ]);
@@ -196,24 +197,10 @@ describe('CommentSearchCommand', () => {
     });
 
 
-    test('Should fail because type not supported', async () => {
-        const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
-            PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.MARKETPLACE_COMMENT,
-            market.receiveAddress,
-            listingItem1.hash
-        ]);
-        res.expectJson();
-        res.expectStatusCode(404);
-
-        expect(res.error.error.message).toBe(new MessageException('CommentType not supported.').getMessage());
-    });
-
-
     test('Should search for a Comments by commentType and receiver', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress
         ]);
         res.expectJson();
@@ -234,7 +221,7 @@ describe('CommentSearchCommand', () => {
     test('Should search for a Comments by type, receiver and target', async () => {
         const res: any = await testUtil.rpc(commentCommand, [commentSearchCommand,
             PAGE, PAGE_LIMIT, ORDER, ORDER_FIELD,
-            CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             market.receiveAddress,
             listingItem1.hash
         ]);

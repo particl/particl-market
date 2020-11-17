@@ -3,13 +3,14 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { ActionNotificationInterface } from './ActionNotificationInterface';
+import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 
 export class ListingItemNotification implements ActionNotificationInterface {
+    public objectId: number;
+    public objectHash: string;
 
-    public id: number;
-    public hash: string;
+    public from: string;    // was: seller
+    public to: string;      // listing could be just a private offer to someone
 
-    public seller: string;
     public market: string;
-
 }

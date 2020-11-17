@@ -28,12 +28,10 @@ export class ExpiredListingItemService extends BaseObserverService {
 
         const listingItems: resources.ListingItem[] = await this.listingItemService.findAllExpired().then(value => value.toJSON());
         for (const listingItem of listingItems) {
-            if (listingItem.expiredAt <= Date.now()) {
-                await this.listingItemService.destroy(listingItem.id)
-                    .catch(reason => {
-                        this.log.error('Failed to remove expired ListingItem (' + listingItem.hash + ') on Market (' + listingItem.market + '): ', reason);
-                    });
-            }
+            await this.listingItemService.destroy(listingItem.id)
+                .catch(reason => {
+                    this.log.error('Failed to remove expired ListingItem (' + listingItem.hash + ') on Market (' + listingItem.market + '): ', reason);
+                });
         }
 
         return ObserverStatus.RUNNING;

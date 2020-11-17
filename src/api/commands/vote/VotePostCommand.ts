@@ -22,7 +22,6 @@ import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -82,17 +81,20 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
                 paid: false,
                 daysRetention: Math.ceil((proposal.expiredAt - Date.now()) / 1000 / 60 / 60 / 24),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
-            sender: identity,                       // todo: could we use sendParams.from?
+            sender: identity,
             market,
             proposal,
             proposalOption
         } as VoteRequest;
 
-        // calling vote instead of post since we're going to send multiple messages
-        return await this.voteActionService.vote(postRequest);
+        const childResults: SmsgSendResponse[] = await this.voteActionService.vote(postRequest);
 
+        return {
+            result: 'Sent.',
+            childResults
+        } as SmsgSendResponse;
     }
 
     /**

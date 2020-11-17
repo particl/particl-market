@@ -27,7 +27,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { BidDataValue } from '../../enums/BidDataValue';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
+
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -90,7 +90,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid,
             bidAccept,

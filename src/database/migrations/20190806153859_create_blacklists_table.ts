@@ -12,15 +12,24 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('type').notNullable();
 
-            table.string('target').notNullable();  // target listing/market/image/...
-            table.string('market').nullable();  // optional market to be blacklisted on
+            table.string('target').notNullable();   // target hash, listing/market/image/whatever...
+            table.string('market').nullable();      // optional market to be blacklisted on
 
-            // this is to easily be able to remove blacklisted listings from searches by a profile
-            table.integer('listing_item_id').unsigned().nullable();  // listingitem to blacklist
-            table.foreign('listing_item_id').references('id').inTable('listing_items').onDelete('CASCADE');
+            // these are for removing blacklisted listings/markets from search results
+            // todo: remove
+            table.integer('listing_item_id').unsigned().nullable();
+            table.foreign('listing_item_id').references('id')
+                .inTable('listing_items').onDelete('CASCADE');
 
-            table.integer('profile_id').unsigned().nullable();  // profile to blacklist for
-            table.foreign('profile_id').references('id').inTable('profiles').onDelete('CASCADE');
+            // todo: remove this too
+            table.integer('market_id').unsigned().nullable();
+            table.foreign('market_id').references('id')
+                .inTable('markets').onDelete('CASCADE');
+
+            // for which profile this blacklist applies to, for example listing could be removed only for specific profile
+            table.integer('profile_id').unsigned().nullable();
+            table.foreign('profile_id').references('id')
+                .inTable('profiles').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

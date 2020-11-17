@@ -2,19 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * from 'jest';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
-describe('ImageListCommand', () => {
+
+describe('ImageAddCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -177,6 +178,21 @@ describe('ImageListCommand', () => {
 
         const result: resources.Image[] = res.getBody()['result'];
         expect(result.length).toBeGreaterThan(0);
+    });
+
+    test('Should list all Market Images with data', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
+
     });
 
 });

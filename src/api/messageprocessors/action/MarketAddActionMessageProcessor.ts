@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../../constants';
@@ -21,6 +22,9 @@ import { ListingItemService } from '../../services/model/ListingItemService';
 import { MarketService } from '../../services/model/MarketService';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { MarketAddActionService } from '../../services/action/MarketAddActionService';
+import { BlacklistService } from '../../services/model/BlacklistService';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,7 +36,9 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.MarketAddValidator) public validator: MarketAddValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
@@ -41,6 +47,7 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );
@@ -69,4 +76,5 @@ export class MarketAddActionMessageProcessor extends BaseActionMessageProcessor 
                 return SmsgMessageStatus.PROCESSING_FAILED;
             });
     }
+
 }

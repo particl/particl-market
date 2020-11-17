@@ -22,6 +22,8 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,16 +34,19 @@ export class BidCancelActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.Service) @named(Targets.Service.action.BidCancelActionService) public bidCancelActionService: BidCancelActionService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_CANCEL,
+        super(
+            MPAction.MPA_CANCEL,
             bidCancelActionService,
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             listingItemService,
             bidFactory,

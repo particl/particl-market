@@ -17,6 +17,9 @@ import { ActionDirection } from '../enums/ActionDirection';
 import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { unmanaged } from 'inversify';
+import { NotificationService } from '../services/model/NotificationService';
+import { NotificationCreateRequest } from '../requests/model/NotificationCreateRequest';
+
 
 // @injectable()
 export abstract class BaseActionMessageProcessor implements ActionMessageProcessorInterface {
@@ -24,6 +27,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
     public smsgMessageService: SmsgMessageService;
     public bidService: BidService;
     public proposalService: ProposalService;
+    public notificationService: NotificationService;
     public log: LoggerType;
     public eventType: ActionMessageTypes;
     public validator: ActionMessageValidatorInterface;
@@ -34,6 +38,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                 @unmanaged() smsgMessageService: SmsgMessageService,
                 @unmanaged() bidService: BidService,
                 @unmanaged() proposalService: ProposalService,
+                @unmanaged() notificationService: NotificationService,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType) {
         this.eventType = eventType;
@@ -41,6 +46,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
         this.smsgMessageService = smsgMessageService;
         this.bidService = bidService;
         this.proposalService = proposalService;
+        this.notificationService = notificationService;
         this.validator = validator;
         this.log = new Logger(eventType);
     }
@@ -50,6 +56,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
      * @param event
      */
     public abstract async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus>;
+
 
     /**
      * - validate the received MarketplaceMessage
@@ -63,6 +70,14 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
      */
     public async process(event: MarketplaceMessageEvent): Promise<void> {
 
+        const isBlacklisted = await this.actionService.isBlacklisted([event.smsgMessage.to]);
+
+        if (isBlacklisted) {
+            this.log.error('Blacklisted recipient address.');
+            await this.smsgMessageService.updateStatus(event.smsgMessage.id, SmsgMessageStatus.BLACKLISTED).then(value => value.toJSON());
+            return;
+        }
+
         // set process.env.MPMESSAGE_DEBUG=true to enable this
         this.actionService.marketplaceMessageDebug(ActionDirection.INCOMING, event.marketplaceMessage.action);
 
@@ -73,7 +88,7 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
             .then(value => value)
             .catch(reason => false);
 
-        let updatedSmsgMessage: resources.SmsgMessage  = {} as resources.SmsgMessage;
+        let updatedSmsgMessage: resources.SmsgMessage = {} as resources.SmsgMessage;
 
         if (validContent) {
             if (!validSequence) {
@@ -119,13 +134,37 @@ export abstract class BaseActionMessageProcessor implements ActionMessageProcess
                 .then(value => value.toJSON());
         }
 
-        const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
-            ActionDirection.INCOMING, updatedSmsgMessage);
+        if (updatedSmsgMessage.status === SmsgMessageStatus.PROCESSED) {
+            const notification: MarketplaceNotification | undefined = await this.actionService.createNotification(event.marketplaceMessage,
+                ActionDirection.INCOMING, updatedSmsgMessage);
 
-        // only send if we created one
-        if (notification) {
-            await this.actionService.sendNotification(notification);
+            // this.log.debug('process(), notification:', JSON.stringify(notification, null, 2));
+
+            // only send if we created one
+            if (notification) {
+                const createRequest = {
+                    // TODO: check if smsg to/from is an identity and set the profile_id
+                    // profile_id: identity.Profile.id
+                    msgid: updatedSmsgMessage.msgid,
+                    type: notification.event,
+                    objectId: notification.payload.objectId,
+                    objectHash: notification.payload.objectHash,
+                    parentObjectId: notification.payload.parentObjectId,
+                    parentObjectHash: notification.payload.parentObjectHash,
+                    target: notification.payload.target,
+                    from: notification.payload.from,
+                    to: notification.payload.to,
+                    market: notification.payload.market,
+                    category: notification.payload.category
+                } as NotificationCreateRequest;
+                const savedNotification: resources.Notification = await this.notificationService.create(createRequest)
+                    .then(value => value.toJSON())
+                    .catch(reason => {
+                        this.log.debug('ERROR:', reason);
+                    });
+                // this.log.debug('savedNotification:', JSON.stringify(savedNotification, null, 2));
+                await this.actionService.sendNotification(notification);
+            }
         }
-
     }
 }

@@ -24,6 +24,8 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { OrderItemShipValidator } from '../../messagevalidators/OrderItemShipValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class OrderItemShipActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -34,6 +36,7 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.OrderItemShipValidator) public validator: OrderItemShipValidator,
@@ -44,6 +47,7 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             listingItemService,
             bidFactory,
@@ -76,8 +80,7 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
             });
 
         // dont allow the MPA_SHIP to be processed before MPA_COMPLETE is received
-        // MPA_LOCK sets OrderStatus.PROCESSING && OrderItemStatus.ESCROW_COMPLETED
-        // todo: should be handled in isValidSequence?
+        // MPA_COMPLETE sets OrderStatus.PROCESSING && OrderItemStatus.ESCROW_COMPLETED
         if (mpaBid.OrderItem.status === OrderItemStatus.ESCROW_COMPLETED
             && mpaBid.OrderItem.Order.status === OrderStatus.PROCESSING) {
 
@@ -88,6 +91,12 @@ export class OrderItemShipActionMessageProcessor extends BaseBidActionMessagePro
                 .catch(reason => {
                     return SmsgMessageStatus.PROCESSING_FAILED;
                 });
+
+        } else if (mpaBid.OrderItem.status === OrderItemStatus.COMPLETE
+            && mpaBid.OrderItem.Order.status === OrderStatus.COMPLETE) {
+            // the buyer released the escrow after the seller completed it and before the seller sent the MPA_SHIP
+            // no need to do anything
+            return SmsgMessageStatus.PROCESSED;
         } else {
             // escrow is not locked yet, send to waiting queue, until escrow gets locked
             return SmsgMessageStatus.WAITING;

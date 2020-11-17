@@ -25,6 +25,8 @@ declare module 'resources' {
         Bids: Bid[];
         ListingItemTemplate: ListingItemTemplate;
         FlaggedItem: FlaggedItem;
+        FavoriteItems: FavoriteItem[];
+        ShoppingCartItem: ShoppingCartItem[];
 
         createdAt: Date;
         updatedAt: Date;

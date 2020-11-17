@@ -223,7 +223,7 @@ export class ItemInformationService {
      */
     private async getOrCreateItemCategory(createRequest: ItemCategoryCreateRequest): Promise<ItemCategory> {
         let result;
-        // this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('getOrCreateItemCategory(): ', JSON.stringify(createRequest, null, 2));
 
         if (createRequest.key && createRequest.market) {
             result = await this.itemCategoryService.findOneByKeyAndMarket(createRequest.key, createRequest.market);

@@ -15,6 +15,8 @@ import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { PrivateKey, Networks } from 'particl-bitcore-lib';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { MarketRegion } from '../../../src/api/enums/MarketRegion';
+import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
+import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 
 
 describe('MarketJoinCommand', () => {
@@ -24,16 +26,24 @@ describe('MarketJoinCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const marketCommand = Commands.MARKET_ROOT.commandName;
     const marketAddCommand = Commands.MARKET_ADD.commandName;
     const marketListCommand = Commands.MARKET_LIST.commandName;
     const marketJoinCommand = Commands.MARKET_JOIN.commandName;
+    const marketPostCommand = Commands.MARKET_POST.commandName;
+    const imageCommand = Commands.IMAGE_ROOT.commandName;
+    const imageAddCommand = Commands.IMAGE_ADD.commandName;
 
-    let profile: resources.Profile;
-    let market: resources.Market;
-    let newMarket: resources.Market;
+    let sellerProfile: resources.Profile;
+    let buyerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let buyerMarket: resources.Market;
+
+    let newMarketOnSellerNode: resources.Market;
+    let newMarketOnBuyerNode: resources.Market;
 
     const marketData = {
         name: 'TEST-1',
@@ -45,17 +55,31 @@ describe('MarketJoinCommand', () => {
         // publishKey === receiveKey
     };
 
-    beforeAll(async () => {
-        await testUtil.cleanDb();
+    let sent = false;
+    const DAYS_RETENTION = 1;
 
-        profile = await testUtil.getDefaultProfile();
-        expect(profile.id).toBeDefined();
-        market = await testUtil.getDefaultMarket(profile.id);
-        expect(market.id).toBeDefined();
+    beforeAll(async () => {
+        await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
+
+        // get seller and buyer profiles
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
+        expect(buyerProfile.id).toBeDefined();
+        // log.debug('sellerProfile: ', sellerProfile.address);
+        // log.debug('buyerProfile: ', buyerProfile.address);
+
+        sellerMarket = await testUtilSellerNode.getDefaultMarket(sellerProfile.id);
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket(buyerProfile.id);
+        expect(sellerMarket.id).toBeDefined();
+        expect(buyerMarket.id).toBeDefined();
+        // log.debug('sellerMarket: ', JSON.stringify(sellerMarket, null, 2));
+        // log.debug('buyerMarket: ', JSON.stringify(buyerMarket, null, 2));
 
         // marketplace
         const network = Networks.testnet;
-        const privateKey: PrivateKey = PrivateKey.fromRandom(Networks.testnet);
+        const privateKey: PrivateKey = PrivateKey.fromRandom(network);
         marketData.receiveKey = privateKey.toWIF();
         marketData.publishKey = marketData.receiveKey;          // same same
         // marketData.name = marketData.receiveKey;
@@ -65,7 +89,7 @@ describe('MarketJoinCommand', () => {
 
 
     test('Should fail because missing profileId', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketJoinCommand]);
+        const res = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('profileId').getMessage());
@@ -73,8 +97,8 @@ describe('MarketJoinCommand', () => {
 
 
     test('Should fail because missing marketId', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id
+        const res = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -84,9 +108,9 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because invalid profileId', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
             false,
-            market.id
+            sellerMarket.id
         ]);
         res.expectJson();
         res.expectStatusCode(400);
@@ -96,8 +120,8 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because invalid marketId', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id,
             false
         ]);
         res.expectJson();
@@ -108,9 +132,9 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because invalid identityId', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
-            market.id,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id,
+            sellerMarket.id,
             false
         ]);
         res.expectJson();
@@ -121,9 +145,9 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because Profile not found', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
             0,
-            market.id
+            sellerMarket.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -133,8 +157,8 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because Market not found', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id,
             0
         ]);
         res.expectJson();
@@ -145,9 +169,9 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because Identity not found', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
-            market.id,
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id,
+            sellerMarket.id,
             0
         ]);
         res.expectJson();
@@ -158,9 +182,9 @@ describe('MarketJoinCommand', () => {
 
     test('Should fail because Market has already been joined', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
-            market.id
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketJoinCommand,
+            sellerProfile.id,
+            sellerMarket.id
         ]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -169,13 +193,13 @@ describe('MarketJoinCommand', () => {
 
 
     test('Should create a new joinable Market (MARKETPLACE)', async () => {
-        const res = await testUtil.rpc(marketCommand, [marketAddCommand,
-            profile.id,
+        const res = await testUtilSellerNode.rpc(marketCommand, [marketAddCommand,
+            sellerProfile.id,
             marketData.name,
             null,
             null,
             null,
-            market.Identity.id,         // Identity required to create a receiveKey
+            sellerMarket.Identity.id,         // Identity required to create a receiveKey
             marketData.description,
             marketData.region,
             true
@@ -191,46 +215,90 @@ describe('MarketJoinCommand', () => {
         expect(result.Profile).toBeUndefined();
         expect(result.Image).toBeUndefined();
 
-        newMarket = result;
+        newMarketOnSellerNode = result;
     });
 
 
-    test('Should list the created Market', async () => {
-        const res: any = await testUtil.rpc(marketCommand, [marketListCommand]);
+    test('Should add Image to Market', async () => {
+        const res: any = await testUtilSellerNode.rpc(imageCommand, [imageAddCommand,
+            'market',
+            newMarketOnSellerNode.id,
+            ProtocolDSN.REQUEST,
+            ImageProcessing.milkcatSmall,
+            false,
+            false
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
+        const result: resources.Image = res.getBody()['result'];
+        expect(result).toBeDefined();
+    });
 
-        const markets: resources.Market[] = res.getBody()['result'];
-        // log.debug('markets: ', JSON.stringify(markets, null, 2));
+
+    test('Should post the newMarket Market', async () => {
+
+        expect(sellerMarket.id).toBeDefined();
+        const res: any = await testUtilSellerNode.rpc(marketCommand, [marketPostCommand,
+            newMarketOnSellerNode.id,
+            DAYS_RETENTION
+        ]);
+        res.expectJson();
+
+        // make sure we got the expected result from posting the template
+        const result: any = res.getBody()['result'];
+        // log.debug('result:', JSON.stringify(result, null, 2));
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
+        expect(result.result).toBe('Sent.');
+    });
+
+
+    test('Should receive and list the posted Market on the BUYER node', async () => {
+
+        const response: any = await testUtilBuyerNode.rpcWaitFor(marketCommand, [marketListCommand],
+            30 * 60,                    // maxSeconds
+            200,                    // waitForStatusCode
+            '.length',          // property name
+            1,              // value
+            '='
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const markets: resources.Market[] = response.getBody()['result'];
+        log.debug('markets: ', JSON.stringify(markets, null, 2));
         expect(markets).toHaveLength(1);
 
         const result: resources.Market = markets[0];
-        expect(result.name).toBe(newMarket.name);
-        expect(result.description).toBe(newMarket.description);
-        expect(result.region).toBe(newMarket.region);
-        expect(result.receiveKey).toBe(result.publishKey);
+        expect(result.title).toBe(newMarketOnSellerNode.title);
+        expect(result.description).toBe(newMarketOnSellerNode.description);
         expect(result.Profile).toBeUndefined();
-        expect(result.Identity).toBeUndefined();
-        expect(result.Image).toBeUndefined();
+
+        newMarketOnBuyerNode = result;
     }, 600000); // timeout to 600s
 
 
     test('Should join the created Market', async () => {
 
-        const res: any = await testUtil.rpc(marketCommand, [marketJoinCommand,
-            profile.id,
-            newMarket.id
+        const res: any = await testUtilBuyerNode.rpc(marketCommand, [marketJoinCommand,
+            buyerProfile.id,
+            newMarketOnBuyerNode.id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: resources.Market = res.getBody()['result'];
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
         expect(result.name).toBe(marketData.name);
         expect(result.description).toBe(marketData.description);
         expect(result.region).toBe(marketData.region);
         expect(result.receiveKey).toBe(result.publishKey);
-        expect(result.Profile.id).toBe(profile.id);
-        expect(result.Image).toBeUndefined();
+        expect(result.Profile.id).toBe(buyerProfile.id);
+        expect(result.Image).not.toBeUndefined();
     });
 
 });

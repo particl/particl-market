@@ -16,6 +16,7 @@ import { ListingItemSearchOrderField } from '../../src/api/enums/SearchOrderFiel
 import { ProposalCategory } from '../../src/api/enums/ProposalCategory';
 import { CombinedVote } from '../../src/api/services/action/VoteActionService';
 
+
 describe('Happy ListingItem Vote Flow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -307,6 +308,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode).toBeDefined();
 
+        // proposal.haash: 90e0cc2b8e6203af9dff962b0cd58cf20c32cc107b49873617a6a99639f38871
+        // listing.hash: 9b64902da468580470c2803e247ac9267a973e2f496dd463bc538541d319fe8e
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_PROPOSAL_ADD');
         log.debug('========================================================================================');
@@ -314,27 +317,28 @@ describe('Happy ListingItem Vote Flow', () => {
         await testUtilBuyerNode.waitFor(2);
 
         const response: any = await testUtilBuyerNode.rpcWaitFor(proposalCommand, [proposalListCommand,
-                timeOfFlagging,
-                '*',
+                timeOfFlagging,     // timeStart
+                '*',                // timeEnd
                 ProposalCategory.ITEM_VOTE
             ],
             30 * 60,                    // maxSeconds
             200,                    // waitForStatusCode
-            '[0].target',        // property name
-            listingItemTemplateOnSellerNode.hash,   // value
-            '='
+            '.length',          // property name
+            1,              // value
+            '>='
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: resources.Proposal = response.getBody()['result'][0];
-        // log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
         expect(result.target).toBe(listingItemReceivedOnBuyerNode.hash);
         expect(result.ProposalOptions.length).toBe(2);
 
         // Proposal should have a minimum of two ProposalResults
         expect(result.ProposalResults.length).toBeGreaterThanOrEqual(1);
-        expect(result.FlaggedItem.ListingItem.id).toBe(listingItemReceivedOnBuyerNode.id);
+        expect(result.FlaggedItems[0].ListingItem.id).toBe(listingItemReceivedOnBuyerNode.id);
 
         proposalReceivedOnBuyerNode = result;
 
@@ -345,7 +349,7 @@ describe('Happy ListingItem Vote Flow', () => {
 
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
 
         await testUtilBuyerNode.waitFor(2);
 
@@ -372,7 +376,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_VOTE');
@@ -406,7 +410,6 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
 
         buyerCombinedVote = result;
-        log.debug('buyerCombinedVote: ', JSON.stringify(buyerCombinedVote, null, 2));
 
     }, 600000); // timeout to 600s
 
@@ -416,7 +419,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -453,7 +456,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -482,7 +485,7 @@ describe('Happy ListingItem Vote Flow', () => {
         // log.debug('proposal:', JSON.stringify(result, null, 2));
         expect(result.target).toBe(listingItemReceivedOnSellerNode.hash);
         expect(result.description).toBe('reason for reporting');
-        expect(result.FlaggedItem.ListingItem.id).toBe(listingItemReceivedOnSellerNode.id);
+        expect(result.FlaggedItems[0].ListingItem.id).toBe(listingItemReceivedOnSellerNode.id);
         expect(result.ProposalOptions.length).toBe(2);
 
         // Proposal should have a minimum of two ProposalResults
@@ -495,13 +498,16 @@ describe('Happy ListingItem Vote Flow', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should have flagged ListingItem on SELLER node', async () => {
+    test('Should have also flagged the ListingItem on SELLER node', async () => {
+
+        log.debug('proposalReceivedOnBuyerNode: ', JSON.stringify(proposalReceivedOnBuyerNode, null, 2));
+        log.debug('proposalReceivedOnSellerNode: ', JSON.stringify(proposalReceivedOnSellerNode, null, 2));
 
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -532,8 +538,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -577,8 +583,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -617,8 +623,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -665,8 +671,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -714,8 +720,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -769,8 +775,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -809,8 +815,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -856,8 +862,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);
@@ -905,8 +911,8 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(sent).toBeTruthy();
         expect(listingItemReceivedOnSellerNode.FlaggedItem.Proposal).toBeDefined();
         expect(listingItemReceivedOnBuyerNode.FlaggedItem.Proposal).toBeDefined();
-        expect(proposalReceivedOnBuyerNode.FlaggedItem.ListingItem).toBeDefined();
-        expect(proposalReceivedOnSellerNode.FlaggedItem.ListingItem).toBeDefined();
+        expect(proposalReceivedOnBuyerNode.FlaggedItems[0].ListingItem).toBeDefined();
+        expect(proposalReceivedOnSellerNode.FlaggedItems[0].ListingItem).toBeDefined();
         expect(buyerCombinedVote.count).toBeGreaterThan(0);
         expect(buyerCombinedVote.weight).toBeGreaterThan(0);
         expect(buyerCombinedVote.votedProposalOption.optionId).toBe(buyerVotedOption.optionId);

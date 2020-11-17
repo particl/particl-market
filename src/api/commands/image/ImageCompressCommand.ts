@@ -74,8 +74,7 @@ export class ImageCompressCommand extends BaseCommand implements RpcCommandInter
         const qualityFraction: number = data.params[3];
         const maxIterations: number = data.params[4];
 
-        await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
-        return this.imageService.findOne(image.id);
+        return await this.imageService.createResizedVersion(image.id, messageVersionToFit, scalingFraction, qualityFraction, maxIterations);
     }
 
     /**

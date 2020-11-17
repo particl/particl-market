@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -19,6 +20,8 @@ import { ProposalResultService } from './ProposalResultService';
 import { MarketService } from './MarketService';
 import { ItemVote } from '../../enums/ItemVote';
 import { CoreRpcService } from '../CoreRpcService';
+import {MessageException} from '../../exceptions/MessageException';
+
 
 export class FlaggedItemService {
 
@@ -79,13 +82,79 @@ export class FlaggedItemService {
         await this.flaggedItemRepo.destroy(id);
     }
 
+    /**
+     *
+     * @param proposal
+     */
+    public async createFlaggedItemsForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem[]> {
 
-    // todo: refactor
-    public async flagAsRemovedIfNeeded(id: number, proposalResult: resources.ProposalResult, vote: resources.Vote): Promise<void> {
+        const flaggedItems: resources.FlaggedItem[] = [];
+
+        switch (proposal.category) {
+            case ProposalCategory.ITEM_VOTE:
+                const listingItem: resources.ListingItem = await this.listingItemService.findOneByHashAndMarketReceiveAddress(proposal.target, proposal.market)
+                    .then(value => value.toJSON());
+
+                let flaggedItem: resources.FlaggedItem;
+
+                if (_.isEmpty(listingItem.FlaggedItem)) {
+                    flaggedItem = await this.create({
+                        proposal_id: proposal.id,
+                        listing_item_id: listingItem.id,
+                        reason: proposal.description
+                    } as FlaggedItemCreateRequest).then(value => value.toJSON());
+                } else {
+                    flaggedItem = await this.findOne(listingItem.FlaggedItem.id).then(value => value.toJSON());
+                }
+                flaggedItems.push(flaggedItem);
+                break;
+
+            case ProposalCategory.MARKET_VOTE:
+
+                const marketsByAddress: resources.Market[] = await this.marketService.findAllByReceiveAddress(proposal.target).then(value => value.toJSON());
+                const marketsByHash: resources.Market[] = await this.marketService.findAllByHash(proposal.target).then(value => value.toJSON());
+                const markets: resources.Market[] = [...marketsByAddress, ...marketsByHash];
+
+                // create FlaggedItem for all the found Markets
+                for (const market of markets) {
+                    let flaggedMarketItem: resources.FlaggedItem;
+
+                    if (_.isEmpty(market.FlaggedItem)) {
+                        flaggedMarketItem = await this.create({
+                            proposal_id: proposal.id,
+                            market_id: market.id,
+                            reason: proposal.description
+                        } as FlaggedItemCreateRequest).then(value => value.toJSON());
+                    } else {
+                        // else just return the existing
+                        flaggedMarketItem = await this.findOne(market.FlaggedItem.id).then(value => value.toJSON());
+                    }
+                    flaggedItems.push(flaggedMarketItem);
+                }
+                break;
+
+            default:
+                break;
+        }
+        return flaggedItems;
+    }
+
+    /**
+     * called from VoteActionService to set the removed flag if needed after processing the incoming vote
+     * todo: this is propably unnecessary, we can do this when periodically running the new proposal results
+     *
+     * todo: setting the removed flag is also problematic with multiple profiles as not all voted to remove the listing
+     * the whole idea of removing anything before the voting is done is stupid.
+     *
+     * @param id
+     * @param proposalResult
+     * @param vote
+     */
+    public async setRemovedFlagIfNeeded(id: number, proposalResult: resources.ProposalResult, vote: resources.Vote): Promise<void> {
 
         // fetch the FlaggedItem and remove if thresholds are hit
         if (proposalResult.Proposal.category !== ProposalCategory.PUBLIC_VOTE) {
-            const flaggedItem: resources.FlaggedItem = await this.findOne(id)
+            const flaggedItem: resources.FlaggedItem = await this.findOne(id, true)
                 .then(value => value.toJSON())
                 .catch(reason => {
                     this.log.error('ERROR: ', reason);
@@ -93,41 +162,53 @@ export class FlaggedItemService {
 
             if (flaggedItem) {
 
-                const listingItemId = flaggedItem.ListingItem!.id;
                 const remove = vote.ProposalOption.description === ItemVote.REMOVE.toString();
                 const shouldRemove = await this.proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);
 
-                switch (proposalResult.Proposal.category) {
+                if (shouldRemove) { // only consider remove if thresholds are hit
+                    switch (proposalResult.Proposal.category) {
 
-                    case ProposalCategory.ITEM_VOTE:
-                        if (shouldRemove) {
-                            // if we should remove, remove only if we voted so
-                            await this.listingItemService.setRemovedFlag(listingItemId, remove);
-                        }
-
-                        // if this vote is mine lets set/unset the removed flag
-                        // todo: this is problematic with multiple profiles, we can have multiple profiles and the one didnt vote to remove the item?
-                        const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(proposalResult.Proposal.market)
-                            .then(value => value.toJSON());
-
-                        for (const market of markets) {
-                            const addressInfo = await this.coreRpcService.getAddressInfo(market.Identity.wallet, vote.voter);
-                            if (addressInfo && addressInfo.ismine) {
-                                this.log.debug('isMine: ', addressInfo.ismine);
-                                await this.listingItemService.setRemovedFlag(listingItemId, remove);
+                        case ProposalCategory.ITEM_VOTE:
+                            if (_.isNil(flaggedItem.ListingItem)) {
+                                return; // should not happen
                             }
-                        }
 
-                        // TODO: Blacklist
-                        break;
-                    case ProposalCategory.MARKET_VOTE:
-                        // await this.marketService.setRemovedFlag(flaggedItem.Market!.id);
-                        // TODO: Blacklist
-                        break;
-                    default:
-                        break;
+                            const markets: resources.Market[] = await this.marketService.findAllByReceiveAddress(flaggedItem.ListingItem.market)
+                                .then(value => value.toJSON());
+
+                            for (const market of markets) {
+                                await this.coreRpcService.getAddressInfo(market.Identity.wallet, vote.voter)
+                                    .then(async addressInfo => {
+                                        if (addressInfo && addressInfo.ismine) {
+                                            await this.listingItemService.setRemovedFlag(flaggedItem.ListingItem!.id, remove);
+                                        }
+                                    });
+                            }
+
+                            break;
+
+                        case ProposalCategory.MARKET_VOTE:
+                            if (_.isNil(flaggedItem.Market)) {
+                                return; // should not happen
+                            }
+
+                            const flaggedMarket: resources.Market = await this.marketService.findOne(flaggedItem.Market.id).then(value => value.toJSON());
+
+                            // only flag if voter address is ours
+                            await this.coreRpcService.getAddressInfo(flaggedMarket.Identity.wallet, vote.voter)
+                                .then(async addressInfo => {
+                                    if (addressInfo && addressInfo.ismine) {
+                                        await this.marketService.setRemovedFlag(flaggedMarket.id, remove);
+                                    }
+                                });
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
             }
+
         }
     }
 }

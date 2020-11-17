@@ -6,6 +6,10 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ImageData } from './ImageData';
 import { ItemInformation } from './ItemInformation';
+import { Identity } from './Identity';
+import { Profile } from './Profile';
+import { Market } from './Market';
+
 
 export class Image extends Bookshelf.Model<Image> {
 
@@ -13,11 +17,18 @@ export class Image extends Bookshelf.Model<Image> {
         'ImageDatas',
         'ItemInformation',
         'ItemInformation.ListingItem',
-        'ItemInformation.ListingItemTemplate'
+        'ItemInformation.ListingItemTemplate',
+        'Identity',
+        'Profile',
+        'Market'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Image> {
         return Image.where<Image>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<Image> {
+        return Image.where<Image>({ msgid: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<Image>> {
@@ -88,4 +99,17 @@ export class Image extends Bookshelf.Model<Image> {
     public ItemInformation(): ItemInformation {
         return this.belongsTo(ItemInformation, 'item_information_id', 'id');
     }
+
+    public Identity(): Identity {
+        return this.hasOne(Identity);
+    }
+
+    public Profile(): Profile {
+        return this.hasOne(Profile);
+    }
+
+    public Market(): Market {
+        return this.hasOne(Market);
+    }
+
 }

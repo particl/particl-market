@@ -24,7 +24,7 @@ import { BidService } from '../../services/model/BidService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
+
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -83,7 +83,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid,
             bidAccept,
@@ -107,11 +107,9 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItem: resources.OrderItem = data.params[0];
         const memo: string = data.params[1];
 
-        // TODO: check there's no MPA_CANCEL, MPA_REJECT?
-        // TODO: check that we are the buyer
-        // TODO: check these
         const validOrderItemStatuses = [
-            OrderItemStatus.SHIPPING
+            OrderItemStatus.ESCROW_COMPLETED,   // seller completed the escrow (MPA_COMPLETE)
+            OrderItemStatus.SHIPPING            // seller sent the item (MPA_SHIP), this is now "optional"
         ];
 
         // check if in the right state.

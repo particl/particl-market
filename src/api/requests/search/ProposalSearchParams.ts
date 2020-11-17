@@ -19,7 +19,10 @@ export class ProposalSearchParams extends RequestBody {
 
     public market: string;
 
-    public timeStart: number | string;
-    public timeEnd: number | string;
+    // rename these for clarity?
+    public timeStart: number | string;      // endAfter
+    public timeEnd: number | string;        // endBefore
+
+    public hasFinalResult: boolean;
 }
 // tslint:enable:variable-name

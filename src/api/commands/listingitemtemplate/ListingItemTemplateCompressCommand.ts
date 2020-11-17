@@ -14,14 +14,8 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
-import {
-    CommandParamValidationRules,
-    EnumValidationRule,
-    IdValidationRule,
-    NumberValidationRule,
-    ParamValidationRule,
-    ScalingValueValidationRule
-} from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, NumberValidationRule, ParamValidationRule,
+    ScalingValueValidationRule } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
 
 
@@ -35,6 +29,14 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         this.log = new Logger(__filename);
     }
 
+    /**
+     * params[]:
+     *  [0]: listingItemTemplateId: number
+     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [2]: scalingFraction, default: 0.9
+     *  [3]: qualityFraction, default: 0.9
+     *  [4]: maxIterations, default: 10
+     */
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
@@ -66,21 +68,10 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
         const scalingFraction: number = data.params[2];
         const qualityFraction: number = data.params[3];
         const maxIterations: number = data.params[4];
-        return await this.listingItemTemplateService.resizeTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+        return await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
             qualityFraction, maxIterations);
     }
 
-    /**
-     * data.params[]:
-     *  [0]: listingItemTemplateId
-     *  [1]: messageVersionToFit: CoreMessageVersion, default: FREE
-     *  [2]: scalingFraction, default: 0.9
-     *  [3]: qualityFraction, default: 0.9
-     *  [4]: maxIterations, default: 10
-     *
-     * @param data
-     * @returns {Promise<ListingItemTemplate>}
-     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
         return data;
@@ -92,11 +83,11 @@ export class ListingItemTemplateCompressCommand extends BaseCommand implements R
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The Id of the ListingItemTemplate. '
-            + '    <messageVersionToFit>    - [optional] string, CoreMessageVersion to fit. '
-            + '    <scalingFraction>        - [optional] number used to scale the Image size. '
-            + '    <qualityFraction>        - [optional] number used to scale the Image quality. '
-            + '    <maxIterations>          - [optional] number of max iterations run. ';
+            + '    <listingTemplateId>          - number, The Id of the ListingItemTemplate. '
+            + '    <messageVersionToFit>        - [optional] string, CoreMessageVersion to fit (for Image msgs), default FREE. '
+            + '    <scalingFraction>            - [optional] number used to scale the Image size, default 0.9. '
+            + '    <qualityFraction>            - [optional] number used to scale the Image quality, default 0.9. '
+            + '    <maxIterations>              - [optional] number of max iterations run, default 10. ';
     }
 
     public description(): string {

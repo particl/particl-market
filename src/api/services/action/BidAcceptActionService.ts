@@ -26,25 +26,28 @@ import { OrderStatus } from '../../enums/OrderStatus';
 import { OrderItemService } from '../model/OrderItemService';
 import { OrderItemStatus } from '../../enums/OrderItemStatus';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { ListingItemService } from '../model/ListingItemService';
 import { BidAcceptMessageFactory } from '../../factories/message/BidAcceptMessageFactory';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class BidAcceptActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidAcceptMessageFactory) public actionMessageFactory: BidAcceptMessageFactory,
@@ -52,10 +55,12 @@ export class BidAcceptActionService extends BaseBidActionService {
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(MPAction.MPA_ACCEPT,
+        super(
+            MPAction.MPA_ACCEPT,
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

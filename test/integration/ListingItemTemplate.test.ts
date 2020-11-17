@@ -72,6 +72,7 @@ import { ListingItemTemplateSearchOrderField } from '../../src/api/enums/SearchO
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { ImageCreateRequest } from '../../src/api/requests/model/ImageCreateRequest';
 import { HashableImageCreateRequestConfig } from '../../src/api/factories/hashableconfig/createrequest/HashableImageCreateRequestConfig';
+import { ImageDataCreateRequest } from '../../src/api/requests/model/ImageDataCreateRequest';
 // tslint:enable:max-line-length
 
 describe('ListingItemTemplate', async () => {
@@ -429,7 +430,6 @@ describe('ListingItemTemplate', async () => {
         expect(templates.length).toBe(2);
         expect(templates[0].ItemInformation.title).toBe(titleToSearchFor + ' 2');
         expect(templates[1].ItemInformation.title).toBe(titleToSearchFor + ' 1');
-
     });
 
     const generateTemplatesAndListingItems = async (withListingItemAmount: number = 0, withoutListingItemAmount: number = 0):
@@ -535,6 +535,7 @@ describe('ListingItemTemplate', async () => {
 
             const hash = ConfigurableHasher.hash(images[0], new HashableImageCreateRequestConfig());
             images[0].hash = hash;
+            images[0].data[0].imageHash = hash;
             images[0].data[0].dataId = 'https://particl.io/images/' + hash;
         }
 

@@ -20,6 +20,8 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { CommentAddMessage } from '../../messages/action/CommentAddMessage';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -29,6 +31,7 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.action.CommentAddActionService) public actionService: CommentAddActionService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.CommentAddValidator) public validator: CommentAddValidator,
@@ -39,6 +42,7 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );
@@ -47,7 +51,6 @@ export class CommentAddActionMessageProcessor extends BaseActionMessageProcessor
     /**
      * handles the received CommentAddMessage and returns SmsgMessageStatus as a result
      *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
      * @param event
      */
     public async onEvent(event: MarketplaceMessageEvent): Promise<SmsgMessageStatus> {

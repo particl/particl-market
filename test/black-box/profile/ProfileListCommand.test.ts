@@ -7,6 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
+
 describe('ProfileListCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -15,6 +16,7 @@ describe('ProfileListCommand', () => {
 
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtil2 = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileListCommand = Commands.PROFILE_LIST.commandName;
@@ -22,6 +24,7 @@ describe('ProfileListCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        await testUtil2.cleanDb();
 
     });
 

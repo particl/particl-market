@@ -14,7 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ImageDataService } from '../../services/model/ImageDataService';
-import {BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItemTemplate> {
@@ -51,6 +51,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const returnImageData: boolean = data.params[1];
 
+        this.log.debug('returnImageData:', returnImageData);
         if (returnImageData && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
             for (const image of listingItemTemplate.ItemInformation.Images) {
                 for (const imageData of image.ImageDatas) {
@@ -58,7 +59,6 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
                 }
             }
         }
-
         return listingItemTemplate;
     }
 

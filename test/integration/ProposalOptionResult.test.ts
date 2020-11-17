@@ -184,14 +184,14 @@ describe('ProposalOptionResult', () => {
         proposalOptionResult = result;
     });
 
-    test('shouldRemoveListingItem should return correct result', async () => {
+    test('shouldRemoveFlaggedItem should return correct result', async () => {
         // log.debug('proposal: ', JSON.stringify(proposal, null, 2));
 
         proposalResult = await proposalResultService.findLatestByProposalHash(proposal.hash, true).then(value => value.toJSON());
 
         // log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
-        const flaggedItem: resources.FlaggedItem = await flaggedItemService.findOne(proposal.FlaggedItem.id).then(value => value.toJSON());
+        const flaggedItem: resources.FlaggedItem = await flaggedItemService.findOne(proposal.FlaggedItems[0].id).then(value => value.toJSON());
 
         proposalResult.ProposalOptionResults[1].weight = 1000 * 100000000; // vote weights are in satoshis
         let shouldRemove: boolean = await proposalResultService.shouldRemoveFlaggedItem(proposalResult, flaggedItem);

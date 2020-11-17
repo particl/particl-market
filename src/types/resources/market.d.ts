@@ -19,6 +19,7 @@ declare module 'resources' {
         receiveAddress: string;
         publishKey: string;
         publishAddress: string;
+        publishPublicKey?: string;
 
         removed: boolean;
         expiryTime: number;

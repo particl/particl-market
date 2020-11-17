@@ -18,6 +18,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ListingItemSearchOrderField } from '../enums/SearchOrderField';
+import { Blacklist } from './Blacklist';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -54,9 +55,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'FavoriteItems.Profile',
         'FlaggedItem',
         'FlaggedItem.Proposal',
-        'FlaggedItem.Proposal.ProposalOptions'
+        'FlaggedItem.Proposal.ProposalOptions',
         // 'FlaggedItem.Proposal.ProposalOptions.Votes'
         // 'FlaggedItem.Proposal.ProposalResults'
+        'Blacklists'
     ];
 
     public static async fetchAllByHash(hash: string, withRelated: boolean = true): Promise<Collection<ListingItem>> {
@@ -113,7 +115,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.andWhereRaw('bid_totals.bid_totals IS NULL');
                 qb.groupBy('listing_items.id');
             });
-        return await listingCollection.fetchAll();
+        return listingCollection.fetchAll();
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
@@ -121,7 +123,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         options.page = options.page || 0;
         options.pageLimit = options.pageLimit || 10;
         options.order = options.order || SearchOrder.ASC;
-        options.orderField = options.orderField || ListingItemSearchOrderField.UPDATED_AT;
+        options.orderField = options.orderField || ListingItemSearchOrderField.CREATED_AT;
 
         // ListingItem.log.debug('...searchBy by options: ', JSON.stringify(options, null, 2));
 
@@ -207,11 +209,15 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('item_locations.country', options.country);
                 }
 
-                // searchBy by shipping destination
+                // searchBy by shippingDestination
                 if (options.shippingDestination) {
-                    qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
-                    qb.where('shipping_destinations.country', options.shippingDestination);
-                    qb.andWhere('shipping_destinations.shipping_availability', 'SHIPS');
+                    qb.leftJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
+                    qb.where( qbInner => {
+                       return qbInner.where( qbInnerInner => {
+                           qbInnerInner.where('shipping_destinations.country', options.shippingDestination)
+                               .andWhere('shipping_destinations.shipping_availability', 'SHIPS');
+                       }).orWhereNull('shipping_destinations.country');
+                    });
                 }
 
                 if (options.searchString) {
@@ -238,7 +244,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 // qb.groupBy('listing_items.id');
 
             })
-            .orderBy('created_at', options.order)
+            .orderBy(options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit
@@ -325,7 +331,13 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.hasOne(FlaggedItem);
     }
 
+    // todo: ShoppingCartItems
     public ShoppingCartItem(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }
+
+    public Blacklists(): Collection<Blacklist> {
+        return this.hasMany(Blacklist, 'listing_item_id', 'id');
+    }
+
 }

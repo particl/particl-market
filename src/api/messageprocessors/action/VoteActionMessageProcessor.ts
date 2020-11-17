@@ -19,6 +19,8 @@ import { BidService } from '../../services/model/BidService';
 import { ProposalService } from '../../services/model/ProposalService';
 import { VoteValidator } from '../../messagevalidators/VoteValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class VoteActionMessageProcessor extends BaseActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -28,15 +30,18 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) public actionService: VoteActionService,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.VoteValidator) public validator: VoteValidator,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
-        super(GovernanceAction.MPA_VOTE,
+        super(
+            GovernanceAction.MPA_VOTE,
             actionService,
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );
@@ -44,8 +49,6 @@ export class VoteActionMessageProcessor extends BaseActionMessageProcessor imple
 
     /**
      * handles the received VoteMessage and returns SmsgMessageStatus as a result
-     *
-     * TODO: check whether returned SmsgMessageStatuses actually make sense and the responses to those
      *
      * @param event
      */

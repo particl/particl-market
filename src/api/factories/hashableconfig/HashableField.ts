@@ -16,8 +16,8 @@ export enum HashableMarketField {
     MARKET_NAME = 'name',
     MARKET_DESCRIPTION = 'description',
     MARKET_TYPE = 'type',
-    MARKET_RECEIVE_KEY = 'receiveKey',
-    MARKET_PUBLISH_KEY = 'publishKey',
+    MARKET_RECEIVE_ADDRESS = 'receiveAddress',
+    MARKET_PUBLISH_ADDRESS = 'publishAddress',
     MARKET_IMAGE_HASH = 'imageHash'
 }
 

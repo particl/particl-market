@@ -10,7 +10,7 @@ import { SmsgMessageFactory } from '../factories/model/SmsgMessageFactory';
 import { BidCreateParams } from '../factories/ModelCreateParams';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
-import { NotificationService } from './NotificationService';
+import { NotifyService } from './NotifyService';
 import { ActionMessageTypes } from '../enums/ActionMessageTypes';
 import { BaseActionService } from './BaseActionService';
 import { BidCreateRequest } from '../requests/model/BidCreateRequest';
@@ -29,6 +29,8 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 import { BidNotification } from '../messages/notification/BidNotification';
 import { unmanaged } from 'inversify';
+import { BlacklistService } from './model/BlacklistService';
+
 
 export type ChildBidActionMessages = BidAcceptMessage | BidCancelMessage | BidRejectMessage | OrderItemShipMessage
     | EscrowCompleteMessage | EscrowLockMessage | EscrowRefundMessage | EscrowReleaseMessage;
@@ -39,24 +41,29 @@ export abstract class BaseBidActionService extends BaseActionService {
     public bidService: BidService;
     public bidFactory: BidFactory;
 
+    // tslint:disable:parameters-max-number
     constructor(@unmanaged() eventType: ActionMessageTypes,
                 @unmanaged() smsgService: SmsgService,
                 @unmanaged() smsgMessageService: SmsgMessageService,
-                @unmanaged() notificationService: NotificationService,
+                @unmanaged() notificationService: NotifyService,
+                @unmanaged() blacklistService: BlacklistService,
                 @unmanaged() smsgMessageFactory: SmsgMessageFactory,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() Logger: typeof LoggerType,
                 @unmanaged() listingItemService: ListingItemService,
                 @unmanaged() bidService: BidService,
                 @unmanaged() bidFactory: BidFactory) {
-        super(eventType,
+        super(
+            eventType,
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
-    );
+        );
+        // tslint:enable:parameters-max-number
 
         this.listingItemService = listingItemService;
         this.bidService = bidService;
@@ -88,17 +95,17 @@ export abstract class BaseBidActionService extends BaseActionService {
                                        smsgMessage: resources.SmsgMessage): Promise<MarketplaceNotification | undefined> {
 
         const bid: resources.Bid = await this.bidService.findOneByMsgId(smsgMessage.msgid)
-            .then(value => value.toJSON())
-            .catch(err => undefined);
+            .then(value => value.toJSON());
 
         if (bid) {
             return {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    id: bid.id,
-                    hash: bid.hash,
-                    bidder: bid.bidder,
-                    listingItemHash: bid.ListingItem.hash,
+                    objectId: bid.id,
+                    objectHash: bid.hash,
+                    from: smsgMessage.from,
+                    to: smsgMessage.to,
+                    target: bid.ListingItem.hash,
                     market: bid.ListingItem.market
                 } as BidNotification
             } as MarketplaceNotification;

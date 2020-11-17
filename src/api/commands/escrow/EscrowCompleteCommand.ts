@@ -24,7 +24,7 @@ import { EscrowCompleteRequest } from '../../requests/action/EscrowCompleteReque
 import { EscrowCompleteActionService } from '../../services/action/EscrowCompleteActionService';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
+
 
 export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -94,7 +94,7 @@ export class EscrowCompleteCommand extends BaseCommand implements RpcCommandInte
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid,
             bidAccept,

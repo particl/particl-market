@@ -10,6 +10,8 @@ import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 import { BlacklistType } from '../enums/BlacklistType';
+import { BlacklistSearchParams } from '../requests/search/BlacklistSearchParams';
+
 
 export class BlacklistRepository {
 
@@ -20,6 +22,10 @@ export class BlacklistRepository {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async search(options: BlacklistSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Blacklist>> {
+        return this.BlacklistModel.searchBy(options, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Blacklist>> {
@@ -35,7 +41,7 @@ export class BlacklistRepository {
         return await this.BlacklistModel.fetchAllByTypeAndProfileId(type, profileId);
     }
 
-    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+    public async findAllByTargetAndProfileId(target: string, profileId?: number): Promise<Bookshelf.Collection<Blacklist>> {
         return await this.BlacklistModel.fetchAllByTargetAndProfileId(target, profileId);
     }
 

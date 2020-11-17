@@ -157,7 +157,7 @@ describe('TestDataService', () => {
         expect(bidderOrder.buyer).not.toBe(bidderOrder.seller);
         expect(bidderOrder.buyer).toBe(bidderMarket.Identity.address);
         expect(bidderOrder.seller).toBe(sellerMarket.Identity.address);
-        expect(bidderOrder.status).toBe(OrderStatus.PROCESSING);
+        expect(bidderOrder.status).toBe(OrderStatus.SENT);
         expect(bidderOrder.OrderItems[0].itemHash).toBe(bidderBid.ListingItem.hash);
 
     }, 600000); // timeout to 600s

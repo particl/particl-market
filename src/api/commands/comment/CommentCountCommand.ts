@@ -15,7 +15,7 @@ import { BaseCommand } from '../BaseCommand';
 import { CommentService } from '../../services/model/CommentService';
 import { CommentSearchParams } from '../../requests/search/CommentSearchParams';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 import { CommandParamValidationRules, EnumValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
@@ -32,8 +32,8 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
-                new EnumValidationRule('commentType', true, 'CommentType', [CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
-                    CommentType.PROPOSAL_QUESTION_AND_ANSWERS, CommentType.MARKETPLACE_COMMENT] as string[]),
+                new EnumValidationRule('commentType', true, 'CommentType', [CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
+                    CommentCategory.PROPOSAL_QUESTION_AND_ANSWERS, CommentCategory.MARKETPLACE_COMMENT, CommentCategory.PRIVATE_MESSAGE] as string[]),
                 new StringValidationRule('target', true),
                 new StringValidationRule('parentCommentHash', false)
             ] as ParamValidationRule[]
@@ -63,7 +63,7 @@ export class CommentCountCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
-     * TODO: the params here might need some rethinking :)
+     * TODO: the params here might need some rethinking
      *
      * data.params[]:
      *  [0]: type, CommentType

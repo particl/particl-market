@@ -20,5 +20,6 @@ export enum SmsgMessageStatus {
     VALIDATION_FAILED = 'VALIDATION_FAILED',    // message validation failed, can't recover
     WAITING = 'WAITING',                        // these are waiting for some other messages
     IGNORED = 'IGNORED',                        // ignored for some reason, perhaps for expiration...
+    BLACKLISTED = 'BLACKLISTED',                //
     DB_LOCKED = 'DB_LOCKED'                     // db was locked, retry asap TODO: get rid of this
 }

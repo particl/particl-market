@@ -15,6 +15,7 @@ import { BaseActionMessageProcessor } from './BaseActionMessageProcessor';
 import { ActionMessageValidatorInterface } from '../messagevalidators/ActionMessageValidatorInterface';
 import { ActionServiceInterface } from '../services/ActionServiceInterface';
 import { unmanaged } from 'inversify';
+import { NotificationService } from '../services/model/NotificationService';
 
 // @injectable()
 export abstract class BaseBidActionMessageProcessor extends BaseActionMessageProcessor {
@@ -27,15 +28,18 @@ export abstract class BaseBidActionMessageProcessor extends BaseActionMessagePro
                 @unmanaged() smsgMessageService: SmsgMessageService,
                 @unmanaged() bidService: BidService,
                 @unmanaged() proposalService: ProposalService,
+                @unmanaged() notificationService: NotificationService,
                 @unmanaged() validator: ActionMessageValidatorInterface,
                 @unmanaged() listingItemService: ListingItemService,
                 @unmanaged() bidFactory: BidFactory,
                 @unmanaged() Logger: typeof LoggerType) {
-        super(eventType,
+        super(
+            eventType,
             actionService,
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             Logger
         );
@@ -44,5 +48,5 @@ export abstract class BaseBidActionMessageProcessor extends BaseActionMessagePro
         this.bidFactory = bidFactory;
     }
 
-    // TOOD: this class isn't really needed anymore
+    // TODO: this class isn't really needed anymore
 }

@@ -24,7 +24,7 @@ import { FlaggedItemService } from '../model/FlaggedItemService';
 import { ListingItemTemplateService } from '../model/ListingItemTemplateService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
@@ -39,6 +39,7 @@ import { ImageUpdateRequest } from '../../requests/model/ImageUpdateRequest';
 import { ListingItemImageNotification } from '../../messages/notification/ListingItemImageNotification';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
 import { ImageFactory } from '../../factories/model/ImageFactory';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class ListingItemImageAddActionService extends BaseActionService {
@@ -47,7 +48,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
@@ -57,6 +58,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemImageAddMessageFactory) private actionMessageFactory: ListingItemImageAddMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
@@ -70,6 +72,7 @@ export class ListingItemImageAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -130,13 +133,9 @@ export class ListingItemImageAddActionService extends BaseActionService {
             // for all incoming messages, update the image data if found
             const images: resources.Image[] = await this.imageService.findAllByHashAndTarget(actionMessage.hash, actionMessage.target)
                 .then(value => value.toJSON());
-            this.log.debug('images exist:', images.length);
 
             if (!_.isEmpty(images)) {
-
                 for (const image of images) {
-
-                    // todo: factory
                     const updateRequest = {
                         data: [{
                             dataId: actionMessage.data[0].dataId,
@@ -183,14 +182,19 @@ export class ListingItemImageAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
-            // const images: resources.Image[] = await this.imageService.findAllByHash(imageAddMessage.hash).then(value => value.toJSON());
-            // const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid).then(value => value.toJSON());
+            const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON());
+
+            // this.log.debug('image: ', JSON.stringify(image, null, 2));
 
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    hash: imageAddMessage.hash,
-                    listingItemHash: imageAddMessage.target
+                    objectId: image.id,
+                    objectHash: imageAddMessage.hash,
+                    from: imageAddMessage.seller,
+                    to: smsgMessage.to,
+                    target: imageAddMessage.target
                 } as ListingItemImageNotification
             };
             return notification;

@@ -25,7 +25,6 @@ import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 import { IdentityService } from '../../services/model/IdentityService';
 import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
 import { EnumHelper } from '../../../core/helpers/EnumHelper';
-import {BidCancelRequest} from '../../requests/action/BidCancelRequest';
 
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -74,7 +73,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid,
             reason

@@ -5,9 +5,12 @@
 import { CoreMessageVersion } from '../enums/CoreMessageVersion';
 
 export class MessageSize {
+    public identifier?: number;
     public messageVersion: CoreMessageVersion;
     public size: number;
     public maxSize: number;
     public spaceLeft: number;
     public fits: boolean;
+
+    public childMessageSizes?: MessageSize[];
 }

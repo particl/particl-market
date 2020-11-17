@@ -58,6 +58,7 @@ data/gui1_node_modules/*
 data/gui2_node_modules/*
 data/bootstrap*
 data/images/*
+data/elkf/*
 
 *.paw
 

@@ -28,6 +28,11 @@ export class ImageData extends Bookshelf.Model<ImageData> {
         return ImageData.where<ImageData>({ id: value }).fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
     }
 
+    public static async fetchByImageIdAndVersion(imageId: number, version: string, withRelated: boolean = true): Promise<ImageData> {
+        return ImageData.where<ImageData>({ image_id: imageId, image_version: version })
+            .fetch(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
     public get tableName(): string { return 'image_datas'; }
     public get hasTimestamps(): boolean { return true; }
 

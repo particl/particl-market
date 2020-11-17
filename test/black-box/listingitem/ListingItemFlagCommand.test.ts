@@ -15,6 +15,7 @@ import { MissingParamException } from '../../../src/api/exceptions/MissingParamE
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 
+
 describe('ListingItemFlagCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -40,7 +41,6 @@ describe('ListingItemFlagCommand', () => {
 
     let listingItemTemplateOnSellerNode: resources.ListingItemTemplate;
     let randomCategoryOnSellerNode: resources.ItemCategory;
-
     let listingItemReceivedOnBuyerNode: resources.ListingItem;
 
     const PAGE = 0;
@@ -190,6 +190,7 @@ describe('ListingItemFlagCommand', () => {
 
     }, 600000); // timeout to 600s
 
+
     test('Should fail because missing listingItemId', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
@@ -272,6 +273,7 @@ describe('ListingItemFlagCommand', () => {
 
     }, 600000); // timeout to 600s
 
+
     test('Should have flagged the ListingItem', async () => {
         const response = await testUtilBuyerNode.rpcWaitFor(itemCommand, [itemGetCommand,
                 listingItemReceivedOnBuyerNode.id
@@ -289,6 +291,7 @@ describe('ListingItemFlagCommand', () => {
 
         expect(item.FlaggedItem.Proposal.title).toBe(listingItemReceivedOnBuyerNode.hash);
     }, 600000); // timeout to 600s
+
 
     test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         const res = await testUtilBuyerNode.rpc(itemCommand, [itemFlagCommand,

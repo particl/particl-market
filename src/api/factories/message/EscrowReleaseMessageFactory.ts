@@ -13,7 +13,7 @@ import { HashableBidMessageConfig } from '../hashableconfig/message/HashableBidM
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { EscrowReleaseRequest } from '../../requests/action/EscrowReleaseRequest';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendParams } from '../../requests/action/SmsgSendParams';
 import { ListingItemAddRequest } from '../../requests/action/ListingItemAddRequest';

@@ -6,6 +6,7 @@ import { Enum, EnumValue } from 'ts-enums';
 import { Command } from './Command';
 import { EnvironmentType } from '../../core/helpers/Environment';
 
+
 export class CommandEnumType extends Enum<Command> {
 
     public DAEMON_ROOT: Command     = new Command('daemon', 'daemon', true, [], EnvironmentType.ALL);
@@ -211,14 +212,22 @@ export class CommandEnumType extends Enum<Command> {
     public SMSG_ROOT: Command           = new Command('smsg', 'smsg', true,
         [this.SMSG_SEARCH, this.SMSG_REMOVE, this.SMSG_RESEND], EnvironmentType.ALL);
 
+    public IDENTITY_ADD: Command          = new Command('identityadd', 'add', false);
+    public IDENTITY_FUND: Command          = new Command('identityfund', 'fund', false);
     public IDENTITY_LIST: Command         = new Command('identitylist', 'list', false);
-    public IDENTITY_ADD: Command         = new Command('identityadd', 'add', false);
     public IDENTITY_ROOT: Command         = new Command('identity', 'identity', true,
-        [this.IDENTITY_ADD, this.IDENTITY_LIST], EnvironmentType.ALL);
+        [this.IDENTITY_ADD, this.IDENTITY_FUND, this.IDENTITY_LIST], EnvironmentType.ALL);
 
+    public BLACKLIST_ADD: Command       = new Command('blacklistadd', 'add', false);
     public BLACKLIST_LIST: Command      = new Command('blacklistlist', 'list', false);
     public BLACKLIST_ROOT: Command      = new Command('blacklist', 'blacklist', true,
-        [this.BLACKLIST_LIST], EnvironmentType.ALL);
+        [this.BLACKLIST_ADD, this.BLACKLIST_LIST], EnvironmentType.ALL);
+
+    public NOTIFICATION_SEARCH: Command       = new Command('notificationsearch', 'search', false);
+    public NOTIFICATION_REMOVE: Command      = new Command('notificationremove', 'remove', false);
+    public NOTIFICATION_SETREAD: Command      = new Command('notificationsetread', 'setread', false);
+    public NOTIFICATION_ROOT: Command      = new Command('notification', 'notification', true,
+        [this.NOTIFICATION_SEARCH, this.NOTIFICATION_REMOVE, this.NOTIFICATION_SETREAD], EnvironmentType.ALL);
 
     constructor() {
         super();

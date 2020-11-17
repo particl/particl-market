@@ -16,8 +16,11 @@ import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
 import { HashableMarketAddMessageConfig } from '../hashableconfig/message/HashableMarketAddMessageConfig';
 import { ContentReference, DSN } from 'omp-lib/dist/interfaces/dsn';
 import { ListingItemImageAddMessageFactory } from './ListingItemImageAddMessageFactory';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import {HashableBidCreateRequestConfig} from '../hashableconfig/createrequest/HashableBidCreateRequestConfig';
+import {HashableBidField} from 'omp-lib/dist/interfaces/omp-enums';
+import {HashableMarketField} from '../hashableconfig/HashableField';
 
 export class MarketAddMessageFactory extends BaseMessageFactory {
 
@@ -71,7 +74,13 @@ export class MarketAddMessageFactory extends BaseMessageFactory {
             hash: 'recalculateandvalidate'
         } as MarketAddMessage;
 
-        message.hash = ConfigurableHasher.hash(message, new HashableMarketAddMessageConfig());
+        message.hash = ConfigurableHasher.hash(message, new HashableMarketAddMessageConfig([{
+            value: actionRequest.market.receiveAddress,
+            to: HashableMarketField.MARKET_RECEIVE_ADDRESS
+        }, {
+            value: actionRequest.market.publishAddress,
+            to: HashableMarketField.MARKET_PUBLISH_ADDRESS
+        }]));
 
         return await this.getMarketplaceMessage(message);
     }

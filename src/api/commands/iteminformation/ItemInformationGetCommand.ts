@@ -14,14 +14,12 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -30,6 +28,14 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
     ) {
         super(Commands.ITEMINFORMATION_GET);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -53,26 +59,12 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('listingItemTemplateId');
-        }
+        await super.validate(data);
 
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('listingItemTemplateId', 'number');
-        }
-
-        // make sure ListingItemTemplate with the id exists
-        const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('ListingItemTemplate');
-            });
-
+        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];  // required
         if (_.isEmpty(listingItemTemplate.ItemInformation)) {
             throw new ModelNotFoundException('ItemInformation');
         }
-
-        data.params[0] = listingItemTemplate;
         return data;
     }
 

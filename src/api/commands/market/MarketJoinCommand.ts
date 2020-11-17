@@ -25,6 +25,7 @@ import { MarketCreateParams } from '../../factories/ModelCreateParams';
 import { MarketFactory } from '../../factories/model/MarketFactory';
 import { ContentReference, DSN, ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import {ImageVersions} from '../../../core/helpers/ImageVersionEnumType';
 
 
 export class MarketJoinCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -84,12 +85,14 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
                 publishKey: marketToJoin.publishKey,
                 image: marketToJoin.Image ? {
                     hash: marketToJoin.Image.hash,
-                    data: marketToJoin.Image.ImageDatas ? [{
+                    data: !_.isEmpty(marketToJoin.Image.ImageDatas) ? [{
                         protocol: ProtocolDSN.FILE,
                         dataId: marketToJoin.Image.ImageDatas[0].dataId,
                         encoding: marketToJoin.Image.ImageDatas[0].encoding,
                         data: marketToJoin.Image.ImageDatas[0].data
-                    }] as DSN[] : undefined,
+                    }] as DSN[] : [{
+                        protocol: ProtocolDSN.SMSG
+                    }] as DSN[],
                     featured: marketToJoin.Image.featured
                 } as ContentReference : undefined,
                 generated: Date.now()
@@ -131,7 +134,7 @@ export class MarketJoinCommand extends BaseCommand implements RpcCommandInterfac
         const identity: resources.Identity = data.params[2];
 
         // make sure Identity belongs to the given Profile
-        if (!_.isNil(identity) && identity!.Profile.id !== profile.id) {
+        if (!_.isNil(identity) && identity.Profile.id !== profile.id) {
             throw new MessageException('Identity does not belong to the Profile.');
         }
 

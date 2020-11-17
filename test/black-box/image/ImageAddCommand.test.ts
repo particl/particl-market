@@ -2,7 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * from 'jest';
+import * as jpeg from 'jpeg-js';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -16,6 +18,8 @@ import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNo
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
+import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
+
 
 describe('ImageAddCommand', () => {
 
@@ -28,6 +32,7 @@ describe('ImageAddCommand', () => {
 
     const imageCommand = Commands.IMAGE_ROOT.commandName;
     const imageAddCommand = Commands.IMAGE_ADD.commandName;
+    const imageListCommand = Commands.IMAGE_LIST.commandName;
 
     let profile: resources.Profile;
     let market: resources.Market;
@@ -276,27 +281,120 @@ describe('ImageAddCommand', () => {
     });
 
 
+    test('Should add a larger (than free msg size limit) Image to Market', async () => {
+
+        const randomImage = await generateRandomImage(1200, 800);
+        log.debug('randomImage.length: ', randomImage.length);
+
+        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
+            'market',
+            market.id,
+            ProtocolDSN.REQUEST,
+            randomImage,
+            false,      // featured
+            false       // skipResize
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Image = res.getBody()['result'];
+
+        market = await testUtil.getDefaultMarket(profile.id);
+
+        expect(result).toBeDefined();
+        expect(result.id).toBe(market.Image.id);
+    });
+
+
+    test('Should have resized the Image', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+
+        expect(result.length).toBe(1);
+        const original: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        const resized: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        expect(result[0].ImageDatas.length).toBe(5);
+        expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
+        expect(original.data.length).toBeGreaterThan(resized.data.length);
+
+        log.debug('resized randomImage.length: ', resized.data.length);
+
+    });
+
     test('Should add Image to Market', async () => {
         const res: any = await testUtil.rpc(imageCommand, [imageAddCommand,
             'market',
             market.id,
             ProtocolDSN.REQUEST,
             ImageProcessing.milkcatSmall,
-            false,
-            false
+            false,      // featured
+            true        // skipResize
         ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: resources.Image = res.getBody()['result'];
-
-        log.debug('result: ', JSON.stringify(result, null, 2));
 
         market = await testUtil.getDefaultMarket(profile.id);
 
         expect(market.id).toBeDefined();
         expect(result).toBeDefined();
         expect(result.id).toBe(market.Image.id);
-
     });
+
+
+    test('Should not have resized the Image', async () => {
+        const res: any = await testUtil.rpc(imageCommand, [imageListCommand,
+            'market',
+            market.id,
+            true
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.Image[] = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        const original: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+        const resized: resources.ImageData = _.find(result[0].ImageDatas, value => {
+            return value.imageVersion === ImageVersions.RESIZED.propName;
+        });
+
+        expect(result[0].ImageDatas.length).toBe(4);
+        expect(result[0].ImageDatas[0].data.length).toBeGreaterThan(0);
+    });
+
+
+    /**
+     * Generates an random colored image with specified width, height and quality
+     * @param width width of the image
+     * @param height height of the image
+     * @param quality quality of the image
+     */
+    const generateRandomImage = async (width: number = 800, height: number = 600, quality: number = 50): Promise<string> => {
+        const frameData = Buffer.alloc(width * height * 4);
+        let i = 0;
+        while (i < frameData.length) {
+            frameData[i++] = Math.floor(Math.random() * 256);
+        }
+        const rawImageData = {
+            data: frameData,
+            width,
+            height
+        };
+        const generatedImage: jpeg.RawImageData<Buffer> = jpeg.encode(rawImageData, quality);
+        return generatedImage.data.toString('base64');
+    };
 
 });

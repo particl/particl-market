@@ -11,7 +11,7 @@ import { KVS } from 'omp-lib/dist/interfaces/common';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
 import { BidCancelMessage } from '../../messages/action/BidCancelMessage';
 import { BidCancelRequest } from '../../requests/action/BidCancelRequest';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 export class BidCancelMessageFactory extends BaseMessageFactory {

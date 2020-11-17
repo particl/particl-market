@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as Bookshelf from 'bookshelf';
+import * as path from 'path';
 import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
@@ -135,7 +136,8 @@ export class IdentityService {
 
         // create and load a new blank wallet
         // TODO: encrypt by default?
-        const marketWalletName = 'profiles/' + profile.name + '/' + name;
+
+        const marketWalletName = path.join('profiles', profile.name, name);
         const marketWalletExists = await this.coreRpcService.walletExists(marketWalletName);
 
         if (marketWalletExists) {
@@ -194,7 +196,6 @@ export class IdentityService {
             type: IdentityType.MARKET
         } as IdentityCreateRequest;
 
-        this.log.debug('createRequest: ', JSON.stringify(createRequest, null, 2));
         // create Identity for Market, using the created wallet
         const marketIdentity: resources.Identity = await this.create(createRequest).then(value => value.toJSON());
 
@@ -219,7 +220,7 @@ export class IdentityService {
         this.log.debug('createProfileIdentity(), Creating new Identity for Profile: ' + profile.name);
 
         // create and load a new blank wallet
-        const walletName = 'profiles/' + profile.name;
+        const walletName = path.join('profiles', profile.name);
         const walletExists = await this.coreRpcService.walletExists(walletName);
 
         if (!walletExists) {

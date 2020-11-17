@@ -5,17 +5,22 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 
+export interface UploadedFile {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    destination: string;
+    filename: string;
+    path: string;
+    size: number;
+}
+
 export class ImageUploadRequest extends RequestBody {
 
-    @IsNumber()
-    public listingItemTemplateId: number;
-
-    @IsNumber()
-    public marketId: number;
+    public listingItemTemplateId?: number;
+    public marketId?: number;
 
     @IsNotEmpty()
-    public requestBody: any;
-
-    @IsNotEmpty()
-    public request: any;
+    public files: UploadedFile[];
 }

@@ -14,18 +14,15 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { MarketService } from '../../services/model/MarketService';
 import { hash } from 'omp-lib/dist/hasher/hash';
 import { MarketType } from '../../enums/MarketType';
 import { MessageException } from '../../exceptions/MessageException';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
 
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
-
-    public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,6 +32,17 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     ) {
         super(Commands.CATEGORY_ADD);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('marketId', true, this.marketService),
+                new StringValidationRule('categoryName', true),
+                new StringValidationRule('description', true),
+                new IdValidationRule('parentItemCategoryId', true, this.itemCategoryService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -52,18 +60,20 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
 
-        const market: resources.Market = data.params[0];
-        const parentItemCategory: resources.ItemCategory = data.params[3];
+        const market: resources.Market = data.params[0];                            // required
+        const name = data.params[1];                                                // required
+        const description = data.params[2];                                         // required
+        const parentItemCategory: resources.ItemCategory = data.params[3];          // required
 
         const createRequest = {
-            name: data.params[1],
-            description: data.params[2],
+            name,
+            description,
             market: market.receiveAddress,
             parent_item_category_id: parentItemCategory.id
         } as ItemCategoryCreateRequest;
 
         let path: string[] = this.itemCategoryFactory.getArray(parentItemCategory);
-        path = [...path, data.params[1]];
+        path = [...path, name];
         createRequest.key = hash(path.toString());
 
         return await this.itemCategoryService.create(createRequest);
@@ -83,37 +93,18 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ItemCategory>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-        if (data.params.length < 1) {
-            throw new MissingParamException('marketId');
-        } else if (data.params.length < 2) {
-            throw new MissingParamException('categoryName');
-        } else if (data.params.length < 3) {
-            throw new MissingParamException('description');
-        } else if (data.params.length < 4) {
-            throw new MissingParamException('parentItemCategoryId');
-        }
+        await super.validate(data);
 
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('marketId', 'number');
-        } else if (typeof data.params[1] !== 'string') {
-            throw new InvalidParamException('categoryName', 'string');
-        } else if (typeof data.params[2] !== 'string') {
-            throw new InvalidParamException('description', 'string');
-        } else if (typeof data.params[3] !== 'number') {
-            throw new InvalidParamException('parentItemCategoryId', 'number');
-        }
-
-        const market: resources.Market = await this.marketService.findOne(data.params[0]).then(value => value.toJSON());
-        const parentCategory: resources.ItemCategory = await this.itemCategoryService.findOne(data.params[3]).then(value => value.toJSON());
-
-        data.params[0] = market;
-        data.params[3] = parentCategory;
+        const market: resources.Market = data.params[0];                            // required
+        const categoryName = data.params[1];                                        // required
+        const description = data.params[2];                                         // required
+        const parentItemCategory: resources.ItemCategory = data.params[3];          // required
 
         if (market.type !== MarketType.STOREFRONT_ADMIN) {
             throw new MessageException('You can only add ItemCategories on Storefronts if you have the publish rights.');
         }
 
-        if (market.receiveAddress !== parentCategory.market) {
+        if (market.receiveAddress !== parentItemCategory.market) {
             throw new MessageException('Parent ItemCategory belongs to different Market.');
         }
 

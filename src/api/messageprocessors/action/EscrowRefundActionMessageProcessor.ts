@@ -22,6 +22,8 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { EscrowRefundValidator } from '../../messagevalidators/EscrowRefundValidator';
 import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,6 +34,7 @@ export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProc
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowRefundValidator) public validator: EscrowRefundValidator,
@@ -42,6 +45,7 @@ export class EscrowRefundActionMessageProcessor extends BaseBidActionMessageProc
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             listingItemService,
             bidFactory,

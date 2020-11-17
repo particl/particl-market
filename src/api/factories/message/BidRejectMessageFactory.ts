@@ -13,7 +13,7 @@ import { BidRejectMessage } from '../../messages/action/BidRejectMessage';
 import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { BidRejectRequest } from '../../requests/action/BidRejectRequest';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 
 export class BidRejectMessageFactory extends BaseMessageFactory {
 

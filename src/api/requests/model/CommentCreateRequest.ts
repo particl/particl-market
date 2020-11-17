@@ -5,7 +5,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../../core/api/RequestBody';
 import { ModelRequestInterface } from './ModelRequestInterface';
-import { CommentType } from '../../enums/CommentType';
+import { CommentCategory } from '../../enums/CommentCategory';
 
 // tslint:disable:variable-name
 export class CommentCreateRequest extends RequestBody implements ModelRequestInterface {
@@ -24,7 +24,7 @@ export class CommentCreateRequest extends RequestBody implements ModelRequestInt
     public receiver: string;
 
     @IsNotEmpty()
-    public type: CommentType;
+    public type: CommentCategory;
 
     @IsNotEmpty()
     public target: string;

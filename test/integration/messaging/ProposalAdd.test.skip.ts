@@ -113,7 +113,7 @@ describe('ProposalAddActionListener', () => {
                 paid: false,
                 daysRetention: 1,
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             sender: bidderMarket.Identity,
             market: bidderMarket,
@@ -152,7 +152,6 @@ describe('ProposalAddActionListener', () => {
         expect(proposal.msgid).toBe(smsgSendResponse.msgid);
         expect(proposal.ProposalResults.length).toBe(1);
         expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
-        expect(proposal.FlaggedItem).toEqual({});
     });
 /*
     test('Should process the previous MPA_PROPOSAL_ADD (PUBLIC_VOTE) and create SmsgMessage', async () => {
@@ -225,7 +224,6 @@ describe('ProposalAddActionListener', () => {
 
         expect(updatedProposal.ProposalResults.length).toBe(1);
         expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
-        expect(updatedProposal.FlaggedItem).toEqual({});
     });
 
     test('Should process the SmsgMessage (ProposalAddMessage) (PUBLIC_VOTE) sent from another node (Proposal doesnt exist yet)', async () => {
@@ -268,7 +266,6 @@ describe('ProposalAddActionListener', () => {
 
         expect(updatedProposal.ProposalResults.length).toBe(1);
         expect(updatedProposal.ProposalResults[0].ProposalOptionResults.length).toBe(3);
-        expect(updatedProposal.FlaggedItem).toEqual({});
     });
 */
     test('Should create and post MPA_PROPOSAL_ADD (ITEM_VOTE)', async () => {
@@ -289,7 +286,7 @@ describe('ProposalAddActionListener', () => {
                 toAddress: bidderMarket.receiveAddress,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             sender: bidderMarket.Identity,
             market: bidderMarket,
@@ -348,8 +345,8 @@ describe('ProposalAddActionListener', () => {
         expect(proposal.ProposalResults[0].ProposalOptionResults.length).toBe(2);
         expect(proposal.ProposalResults[0].ProposalOptionResults[0].weight).toBe(0);
         expect(proposal.ProposalResults[0].ProposalOptionResults[1].weight).toBe(0);
-        expect(proposal.FlaggedItem.ListingItem.id).toEqual(listingItem.id);
-        expect(proposal.FlaggedItem.reason).toEqual(postRequest.description);
+        expect(proposal.FlaggedItems[0].ListingItem.id).toEqual(listingItem.id);
+        expect(proposal.FlaggedItems[0].reason).toEqual(postRequest.description);
 
         /*
         for (const voteMsgid of smsgSendResponse.msgids!) {
@@ -357,8 +354,8 @@ describe('ProposalAddActionListener', () => {
             log.debug('vote: ', JSON.stringify(vote, null, 2));
             expect(vote.ProposalOption.id).toBeDefined();
             expect(vote.ProposalOption.Proposal.id).toBeDefined();
-            expect(vote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
-            expect(vote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItems[0].id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItems[0].ListingItem.id).toBeDefined();
         }
         */
     });
@@ -483,7 +480,7 @@ describe('ProposalAddActionListener', () => {
         expect(updatedProposal.ProposalResults[0].ProposalOptionResults[1].weight).toBe(0);
         expect(updatedProposal.ProposalResults[1].ProposalOptionResults[0].weight).toBe(0);
         expect(updatedProposal.ProposalResults[1].ProposalOptionResults[1].weight).toBeGreaterThan(0);
-        expect(updatedProposal.FlaggedItem.listingItemId).toEqual(listingItem.id);
+        expect(updatedProposal.FlaggedItems[0].listingItemId).toEqual(listingItem.id);
 
     });
 
@@ -529,8 +526,8 @@ describe('ProposalAddActionListener', () => {
             expect(vote.expiredAt).not.toBe(Number.MAX_SAFE_INTEGER);
             expect(vote.ProposalOption.id).toBeDefined();
             expect(vote.ProposalOption.Proposal.id).toBeDefined();
-            expect(vote.ProposalOption.Proposal.FlaggedItem.id).toBeDefined();
-            expect(vote.ProposalOption.Proposal.FlaggedItem.ListingItem.id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItems[0].id).toBeDefined();
+            expect(vote.ProposalOption.Proposal.FlaggedItems[0].ListingItem.id).toBeDefined();
 
             // calculate the total weights
             removeWeight = ItemVote.REMOVE === vote.ProposalOption.description ? removeWeight + vote.weight : removeWeight;

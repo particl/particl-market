@@ -70,7 +70,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                 paid: false,
                 daysRetention: parseInt(process.env.FREE_MESSAGE_RETENTION_DAYS, 10),
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             bid
         } as BidAcceptRequest;

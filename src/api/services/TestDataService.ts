@@ -89,7 +89,7 @@ import { HashableListingItemTemplateCreateRequestConfig } from '../factories/has
 import { HashableProposalOptionMessageConfig } from '../factories/hashableconfig/message/HashableProposalOptionMessageConfig';
 import { toSatoshis } from 'omp-lib/dist/util';
 import { CommentCreateRequest } from '../requests/model/CommentCreateRequest';
-import { CommentType } from '../enums/CommentType';
+import { CommentCategory } from '../enums/CommentCategory';
 import { CommentService } from './model/CommentService';
 import { GenerateCommentParams } from '../requests/testdata/GenerateCommentParams';
 import { HashableCommentCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableCommentCreateRequestConfig';
@@ -125,7 +125,8 @@ import { BaseImageAddMessage } from '../messages/action/BaseImageAddMessage';
 import { HashableBidBasicCreateRequestConfig } from '../factories/hashableconfig/createrequest/HashableBidBasicCreateRequestConfig';
 import { CommentFactory } from '../factories/model/CommentFactory';
 import { CommentAddMessage } from '../messages/action/CommentAddMessage';
-import {VoteTicket} from '../factories/message/VoteMessageFactory';
+import { VoteTicket } from '../factories/message/VoteMessageFactory';
+import { FlaggedItemService } from './model/FlaggedItemService';
 
 
 export class TestDataService {
@@ -156,6 +157,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.model.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) private commentService: CommentService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) private smsgMessageService: SmsgMessageService,
+        @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) private flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.model.BlacklistService) private blacklistService: BlacklistService,
         @inject(Types.Service) @named(Targets.Service.action.ProposalAddActionService) private proposalAddActionService: ProposalAddActionService,
         @inject(Types.Service) @named(Targets.Service.action.VoteActionService) private voteActionService: VoteActionService,
@@ -562,13 +564,9 @@ export class TestDataService {
             'addresses',
             'favorite_items',
             'cryptocurrency_addresses',
-            'identities',
-            'profiles',
             'shopping_cart_items',
             'shopping_carts',
             'item_categories',
-            'markets',
-            'identities',
             'settings',
             'price_ticker', // todo: price_tickers
             'flagged_items',
@@ -580,7 +578,11 @@ export class TestDataService {
             'votes',
             'smsg_messages',
             'comments',
-            'blacklists'
+            'blacklists',
+            'markets',
+            'notifications',
+            'identities',
+            'profiles'
         ];
 
         this.log.debug('cleaning ' + tablesToClean.length + ' tables...');
@@ -709,11 +711,13 @@ export class TestDataService {
         const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
+            // this.log.debug('generateParams: ', JSON.stringify(generateParams, null, 2));
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // const fromAddress = await this.coreRpcService.getNewAddress();
             // const market: resources.Market = await this.marketService.getDefaultForProfile().then(value => value.toJSON());
 
+            // this.log.debug('listingItemCreateRequest: ', JSON.stringify(listingItemCreateRequest, null, 2));
             const savedListingItem: resources.ListingItem = await this.listingItemService.create(listingItemCreateRequest).then(value => value.toJSON());
 
             // this.log.debug('savedListingItem: ', JSON.stringify(savedListingItem, null, 2));
@@ -984,7 +988,7 @@ export class TestDataService {
 
             // in case of ITEM_VOTE || MARKET_VOTE, we also need to create the FlaggedItem
             if (ProposalCategory.ITEM_VOTE === proposal.category || ProposalCategory.MARKET_VOTE === proposal.category) {
-                await this.proposalAddActionService.createFlaggedItemForProposal(proposal);
+                await this.flaggedItemService.createFlaggedItemsForProposal(proposal);
                 this.log.debug('created FlaggedItem');
             }
 
@@ -1199,7 +1203,7 @@ export class TestDataService {
                 type: CommentAction.MPA_COMMENT_ADD,
                 sender: generateParams.sender,
                 receiver: generateParams.receiver,
-                commentType: generateParams.type || CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+                commentType: generateParams.type || CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
                 target: generateParams.target,
                 message: Faker.lorem.lines(1),
                 // parentCommentHash,

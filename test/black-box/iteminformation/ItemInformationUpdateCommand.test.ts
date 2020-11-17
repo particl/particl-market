@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
 import * from 'jest';
 import * as resources from 'resources';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -13,7 +12,9 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../../src/api/exceptions/ModelNotFoundException';
-import { ModelNotModifiableException } from '../../../src/api/exceptions/ModelNotModifiableException';
+import { MarketType } from '../../../src/api/enums/MarketType';
+import {ModelNotModifiableException} from '../../../src/api/exceptions/ModelNotModifiableException';
+
 
 describe('ItemInformationUpdateCommand', () => {
 
@@ -26,11 +27,20 @@ describe('ItemInformationUpdateCommand', () => {
 
     const itemInformationCommand = Commands.ITEMINFORMATION_ROOT.commandName;
     const itemInformationUpdateCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateCloneCommand = Commands.TEMPLATE_CLONE.commandName;
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
+    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
+
     let profile: resources.Profile;
     let market: resources.Market;
+    let storefront: resources.Market;
 
     let listingItemTemplate: resources.ListingItemTemplate;
+    let clonedListingItemTemplate: resources.ListingItemTemplate;
     let randomCategory: resources.ItemCategory;
+    let newCategoryOnStorefront: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -66,6 +76,8 @@ describe('ItemInformationUpdateCommand', () => {
             generateListingItemTemplateParams
         );
         listingItemTemplate = listingItemTemplates[0];
+
+        log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
     });
 
@@ -105,6 +117,7 @@ describe('ItemInformationUpdateCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('longDescription').getMessage());
     });
+
 
     test('Should fail because invalid listingItemTemplateId', async () => {
         const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
@@ -159,7 +172,7 @@ describe('ItemInformationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new InvalidParamException('longDescription', 'string').getMessage());
     });
 
-    test('Should fail because invalid categoryId', async () => {
+    test('Should fail because invalid itemCategoryId', async () => {
         const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
             listingItemTemplate.id,
             'new title',
@@ -169,8 +182,9 @@ describe('ItemInformationUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('categoryId', 'number').getMessage());
+        expect(res.error.error.message).toBe(new InvalidParamException('itemCategoryId', 'number').getMessage());
     });
+
 
     test('Should fail because missing ListingItemTemplate', async () => {
         const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
@@ -238,6 +252,7 @@ describe('ItemInformationUpdateCommand', () => {
         expect(res.error.error.message).toBe(new ModelNotFoundException('ItemCategory').getMessage());
     });
 
+
     test('Should update ItemInformation', async () => {
         const title = 'new title';
         const shortDescription = 'new short description';
@@ -259,6 +274,72 @@ describe('ItemInformationUpdateCommand', () => {
         expect(result.longDescription).toBe(longDescription);
         expect(result.ItemCategory.id).toBe(randomCategory.id);
     });
+
+
+    test('Should create a STOREFRONT_ADMIN Market, a custom ItemCategory and clone MarketTemplate to the Storefront', async () => {
+        // create a storefront
+        storefront = await testUtil.createMarketplace(MarketType.STOREFRONT_ADMIN, profile.id, market.Identity.id);
+        expect(storefront.id).toBeDefined();
+
+        // get the storefront root category
+        let res = await testUtil.rpc(categoryCommand, [categoryListCommand,
+            storefront.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const rootCategory: resources.ItemCategory = res.getBody()['result'];
+        expect(rootCategory.id).not.toBeUndefined();
+
+        // add a new category under the root
+        res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            storefront.id,
+            'Test Category',
+            'Test Category description',
+            rootCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        newCategoryOnStorefront = res.getBody()['result'];
+        expect(newCategoryOnStorefront.id).not.toBeUndefined();
+        expect(newCategoryOnStorefront.ParentItemCategory.id).toBe(rootCategory.id);
+
+        // then finally clone the template
+        res = await testUtil.rpc(templateCommand, [templateCloneCommand,
+            listingItemTemplate.id,
+            storefront.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        clonedListingItemTemplate = res.getBody()['result'];
+
+        log.debug('clonedTemplate:', JSON.stringify(clonedListingItemTemplate, null, 2));
+        expect(clonedListingItemTemplate).not.toBeUndefined();
+        expect(clonedListingItemTemplate.ItemInformation).not.toBeUndefined();
+        expect(clonedListingItemTemplate.ItemInformation.ItemCategory).toBeUndefined();
+    });
+
+    test('Should update cloned ListingItemTemplates ItemInformation on STOREFRONT to have custom ItemCategory', async () => {
+        const title = 'new title';
+        const shortDescription = 'new short description';
+        const longDescription = 'new long description';
+
+        const res: any = await testUtil.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            clonedListingItemTemplate.id,
+            title,
+            shortDescription,
+            longDescription,
+            newCategoryOnStorefront.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result.title).toBe(title);
+        expect(result.shortDescription).toBe(shortDescription);
+        expect(result.longDescription).toBe(longDescription);
+        expect(result.ItemCategory.id).toBe(newCategoryOnStorefront.id);
+    });
+
 
     test('Should fail because the ListingItemTemplate has been published', async () => {
 
@@ -300,6 +381,5 @@ describe('ItemInformationUpdateCommand', () => {
 
         expect(result.error.error.message).toBe(new ModelNotModifiableException('ListingItemTemplate').getMessage());
     });
-
 
 });

@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
+import * as math from 'mathjs';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -33,13 +34,11 @@ import { ListingItemImageAddRequest } from '../../requests/action/ListingItemIma
 import { ListingItemImageAddActionService } from '../../services/action/ListingItemImageAddActionService';
 import { ItemCategoryService } from '../../services/model/ItemCategoryService';
 import { ItemCategoryFactory } from '../../factories/model/ItemCategoryFactory';
-import {
-    BooleanValidationRule,
-    CommandParamValidationRules, EnumValidationRule,
-    IdValidationRule,
-    MessageRetentionValidationRule, NumberValidationRule,
-    ParamValidationRule, RingSizeValidationRule
-} from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, EnumValidationRule, IdValidationRule, MessageRetentionValidationRule,
+    ParamValidationRule, RingSizeValidationRule } from '../CommandParamValidation';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
+import { RpcUnspentOutput } from 'omp-lib/dist/interfaces/rpc';
+import { BigNumber } from 'mathjs';
 
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -68,6 +67,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
                 new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
                 new MessageRetentionValidationRule('daysRetention', true),
                 new BooleanValidationRule('estimateFee', false, false),
+                new BooleanValidationRule('usePaidImageMessages', false, false),
                 new EnumValidationRule('feeType', false, 'OutputType',
                     [OutputType.ANON, OutputType.PART] as string[], OutputType.PART),
                 new RingSizeValidationRule('ringSize', false, 24)
@@ -82,9 +82,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: estimateFee
-     *  [3]: market: resources.Market
-     *  [4]: anonFee: boolean
-     *  [5]: ringSize (optional, default: 24)
+     *  [3]: paidImageMessages (optional, default: false)
+     *  [4]: market: resources.Market
+     *  [5]: anonFee: boolean
+     *  [6]: ringSize (optional, default: 24)
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -95,25 +96,17 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const estimateFee: boolean = data.params[2];
-        const market: resources.Market = data.params[3];
-        const anonFee: boolean = data.params[4];
-        const ringSize: number = data.params[5];
+        const paidImageMessages: boolean = data.params[3];
+        const market: resources.Market = data.params[4];
+        const anonFee: boolean = data.params[5];
+        const ringSize: number = data.params[6];
 
-        this.log.debug('execute(), estimateFee:', estimateFee);
-
-        // type === MARKETPLACE -> receive + publish keys are the same / private key in wif format
-        // type === STOREFRONT -> receive key is private key, publish key is public key / DER hex encoded string
-        // type === STOREFRONT_ADMIN -> receive + publish keys are different / private key in wif format
-
-        // ListingItems always posted from market publishAddress to receiveAddress
         const fromAddress = market.publishAddress;
         const toAddress = market.receiveAddress;
 
-        // if ListingItem contains a category, create the market categories
+        // create the market category if needed
         const categoryArray: string[] = this.itemCategoryFactory.getArray(listingItemTemplate.ItemInformation.ItemCategory);
         await this.itemCategoryService.createMarketCategoriesFromArray(market.receiveAddress, categoryArray);
-
-        // this.log.debug('posting template:', JSON.stringify(listingItemTemplate, null, 2));
 
         const postRequest = {
             sendParams: {
@@ -130,26 +123,40 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             imagesWithData: false
         } as ListingItemAddRequest;
 
-        this.log.debug('execute(), posting...');
-
         // first post the ListingItem
         const smsgSendResponse: SmsgSendResponse = await this.listingItemAddActionService.post(postRequest);
 
-        // if post was succesful, update the hash
-        // if listingItemTemplate.hash doesn't yet exist, create it now, so that the ListingItemTemplate cannot be modified anymore
         if (!estimateFee && smsgSendResponse.result === 'Sent.') {
-            // note!! hash should not be saved unless ListingItemTemplate is actually posted.
-            // ...because ListingItemTemplates with hash can't be modified anymore.
-
+            // if post was succesful ad were not just estimating, update the hash
+            // once listingItemTemplate.hash is created, it cannot be modified anymore
             const hash = ConfigurableHasher.hash(listingItemTemplate, new HashableListingItemTemplateConfig());
-            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash)
-                .then(value => value.toJSON());
+            listingItemTemplate = await this.listingItemTemplateService.updateHash(listingItemTemplate.id, hash).then(value => value.toJSON());
         }
 
-        // then post the Images related to the ListingItem one by one
-        if (!estimateFee && smsgSendResponse.result === 'Sent.' && !_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
-            const imageSmsgSendResponse: SmsgSendResponse = await this.postListingImages(listingItemTemplate, postRequest);
-            smsgSendResponse.msgids = imageSmsgSendResponse.msgids;
+        // then post the Images related to the ListingItem
+        smsgSendResponse.childResults = await this.postListingImages(listingItemTemplate, postRequest, paidImageMessages);
+
+        // this.log.debug('smsgSendResponse: ', JSON.stringify(smsgSendResponse, null, 2));
+
+        // then create the response, add totalFees and availableUtxos
+        const unspentUtxos: RpcUnspentOutput[] = await this.coreRpcService.listUnspent(postRequest.sendParams.wallet,
+            anonFee ? OutputType.ANON : OutputType.PART);
+        smsgSendResponse.availableUtxos = unspentUtxos.length;
+        let minRequiredUtxos = 1;
+
+        if (!_.isNil(smsgSendResponse.childResults)) {
+            let childSum: BigNumber = math.bignumber(0);
+            for (const childResult of smsgSendResponse.childResults) {
+                childSum = math.add(childSum, math.bignumber(childResult.fee ? childResult.fee : 0));
+            }
+            smsgSendResponse.totalFees = +math.format(math.add(childSum, math.bignumber(smsgSendResponse.fee ? smsgSendResponse.fee : 0)), {precision: 8});
+            minRequiredUtxos = minRequiredUtxos + (paidImageMessages ? smsgSendResponse.childResults.length : 0);
+        } else {
+            smsgSendResponse.totalFees = 0;
+        }
+
+        if (smsgSendResponse.availableUtxos < minRequiredUtxos) {
+            smsgSendResponse.error = 'Not enough utxos.';
         }
 
         return smsgSendResponse;
@@ -160,8 +167,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: daysRetention
      *  [2]: estimateFee (optional, default: false)
-     *  [3]: feeType (optional, default: PART)
-     *  [4]: ringSize (optional, default: 24)
+     *  [3]: paidImageMessages (optional, default: false)
+     *  [4]: feeType (optional, default: PART)
+     *  [5]: ringSize (optional, default: 24)
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -170,8 +178,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         await super.validate(data); // validates the basic search params, see: BaseSearchCommand.validateSearchParams()
 
         let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
-        const feeType: OutputType = data.params[3];
-        const ringSize: number = data.params[4];
+        const feeType: OutputType = data.params[4];
+        const ringSize: number = data.params[5];
 
         // ListingItemTemplate should be a market template
         if (_.isEmpty(listingItemTemplate.market)) {
@@ -209,15 +217,15 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
 
         data.params[0] = listingItemTemplate;
-        data.params[3] = market;
-        data.params[4] = feeType === OutputType.ANON;
-        data.params[5] = ringSize;
+        data.params[4] = market;
+        data.params[5] = feeType === OutputType.ANON;
+        data.params[6] = ringSize;
 
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] [feeType] [ringSize]';
+        return this.getName() + ' <listingTemplateId> [daysRetention] [estimateFee] [usePaidImageMessages] [feeType] [ringSize]';
     }
 
     public help(): string {
@@ -225,6 +233,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             + '    <listingTemplateId>          - number, The ID of the ListingItemTemplate that we want to post. \n'
             + '    <daysRetention>              - [optional] number, Days the listing will be retained by network.\n'
             + '    <estimateFee>                - [optional] boolean, estimate the fee, don\'t post. \n'
+            + '    <usePaidImageMessages>       - [optional] boolean, send Images as paid messages. \n'
             + '    <feeType>                    - [optional] OutputType, default: PART. OutputType used to pay for the message fee.\n'
             + '    <ringSize>                   - [optional] number, default: 24. Ring size used if anon used for fee.\n';
     }
@@ -291,34 +300,38 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *
      * @param listingItemTemplate
      * @param listingItemAddRequest
+     * @param usePaid, use paid messages to send images
      */
-    private async postListingImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest):
-        Promise<SmsgSendResponse> {
+    private async postListingImages(listingItemTemplate: resources.ListingItemTemplate, listingItemAddRequest: ListingItemAddRequest,
+                                    usePaid: boolean = false): Promise<SmsgSendResponse[] | undefined> {
 
-        // then prepare the ListingItemImageAddRequest for sending the images
-        const imageAddRequest = {
-            sendParams: listingItemAddRequest.sendParams,
-            listingItem: listingItemTemplate,
-            sellerAddress: listingItemAddRequest.sellerAddress,
-            withData: true
-        } as ListingItemImageAddRequest;
+        if (!_.isEmpty(listingItemTemplate.ItemInformation.Images)) {
 
-        const msgids: string[] = [];
+            // then prepare the ListingItemImageAddRequest for sending the images
+            const imageAddRequest = {
+                sendParams: listingItemAddRequest.sendParams,
+                listingItem: listingItemTemplate,
+                sellerAddress: listingItemAddRequest.sellerAddress,
+                withData: true
+            } as ListingItemImageAddRequest;
 
-        // send each image related to the ListingItem
-        for (const itemImage of listingItemTemplate.ItemInformation.Images) {
-            imageAddRequest.image = itemImage;
-            const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
-            msgids.push(smsgSendResponse.msgid || '');
+            this.log.debug('postListingImages(), usePaid: ', usePaid);
+
+            // optionally use paid messages
+            imageAddRequest.sendParams.messageType = usePaid ? CoreMessageVersion.PAID : undefined;
+
+            const results: SmsgSendResponse[] = [];
+
+            // send each image related to the ListingItem
+            for (const itemImage of listingItemTemplate.ItemInformation.Images) {
+                imageAddRequest.image = itemImage;
+                const smsgSendResponse: SmsgSendResponse = await this.listingItemImageAddActionService.post(imageAddRequest);
+                results.push(smsgSendResponse);
+            }
+            // this.log.debug('postListingImages(), results: ', JSON.stringify(results, null, 2));
+            return results;
+        } else {
+            return undefined;
         }
-
-        const result = {
-            result: 'Sent.',
-            msgids
-        } as SmsgSendResponse;
-
-        this.log.debug('postListingImages(), result: ', JSON.stringify(result, null, 2));
-        return result;
     }
-
 }

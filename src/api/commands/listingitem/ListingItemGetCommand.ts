@@ -4,18 +4,19 @@
 
 import * as _ from 'lodash';
 import * as resources from 'resources';
-import { inject, named } from 'inversify';
-import { validate, request } from '../../../core/api/Validate';
-import { Logger as LoggerType } from '../../../core/Logger';
-import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/model/ListingItemService';
-import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItem } from '../../models/ListingItem';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { ImageDataService } from '../../services/model/ImageDataService';
-import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import {inject, named} from 'inversify';
+import {request, validate} from '../../../core/api/Validate';
+import {Logger as LoggerType} from '../../../core/Logger';
+import {Core, Targets, Types} from '../../../constants';
+import {ListingItemService} from '../../services/model/ListingItemService';
+import {RpcRequest} from '../../requests/RpcRequest';
+import {ListingItem} from '../../models/ListingItem';
+import {RpcCommandInterface} from '../RpcCommandInterface';
+import {Commands} from '../CommandEnumType';
+import {BaseCommand} from '../BaseCommand';
+import {ImageDataService} from '../../services/model/ImageDataService';
+import {BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule} from '../CommandParamValidation';
+import {ProtocolDSN} from 'omp-lib/dist/interfaces/dsn';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<resources.ListingItem> {
 
@@ -54,7 +55,9 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
         if (returnImageData && !_.isEmpty(listingItem.ItemInformation.Images)) {
             for (const image of listingItem.ItemInformation.Images) {
                 for (const imageData of image.ImageDatas) {
-                    imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                    if (imageData.protocol === ProtocolDSN.FILE) {
+                        imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                    }
                 }
             }
         }

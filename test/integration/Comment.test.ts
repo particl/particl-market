@@ -15,7 +15,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CommentService } from '../../src/api/services/model/CommentService';
 import { CommentCreateRequest } from '../../src/api/requests/model/CommentCreateRequest';
 import { CommentUpdateRequest } from '../../src/api/requests/model/CommentUpdateRequest';
-import { CommentType } from '../../src/api/enums/CommentType';
+import { CommentCategory } from 'CommentCategory.ts';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
@@ -87,7 +87,7 @@ describe('Comment', () => {
             msgid: Faker.random.uuid(),
             sender: senderMarket.Identity.address,
             receiver: receiverMarket.receiveAddress,
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            type: CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
             generatedAt: Date.now(),
@@ -120,7 +120,7 @@ describe('Comment', () => {
             parent_comment_id: comment.id,
             sender: senderMarket.Identity.address,
             receiver: receiverMarket.receiveAddress,
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS + '',
+            type: CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS + '',
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
             generatedAt: Date.now(),
@@ -206,7 +206,7 @@ describe('Comment', () => {
             // parent_comment_id: 1,
             sender: senderMarket.Identity.address,
             receiver: receiverMarket.receiveAddress,
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS,
+            type: CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS,
             target: listingItem.hash,
             message: Faker.lorem.paragraph(2),
             generatedAt: Date.now(),
@@ -227,7 +227,7 @@ describe('Comment', () => {
         await commentService.create(testData).then(value => value.toJSON());
 
         const count = await commentService.count({
-            type: CommentType.LISTINGITEM_QUESTION_AND_ANSWERS
+            type: CommentCategory.LISTINGITEM_QUESTION_AND_ANSWERS
         } as CommentSearchParams);
         expect(count).toBe(2);
     });

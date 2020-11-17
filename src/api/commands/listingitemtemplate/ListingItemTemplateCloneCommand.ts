@@ -17,12 +17,13 @@ import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { ListingItemTemplateService } from '../../services/model/ListingItemTemplateService';
 import { MessageException } from '../../exceptions/MessageException';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import { CommandParamValidationRules, EnumValidationRule, IdValidationRule, NumberValidationRule, ParamValidationRule,
+    ScalingValueValidationRule } from '../CommandParamValidation';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { CoreMessageVersion } from '../../enums/CoreMessageVersion';
 
 
 export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
-
-    public debug = true;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -31,13 +32,20 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     ) {
         super(Commands.TEMPLATE_CLONE);
         this.log = new Logger(__filename);
+
+        // this.debug = true;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {
         return {
             params: [
                 new IdValidationRule('listingItemTemplateId', true, this.listingItemTemplateService),
-                new IdValidationRule('marketId', false, this.marketService)
+                new IdValidationRule('marketId', false, this.marketService),
+                new EnumValidationRule('messageVersionToFit', false, 'CoreMessageVersion',
+                    EnumHelper.getValues(CoreMessageVersion) as string[], CoreMessageVersion.FREE),
+                new ScalingValueValidationRule('scalingFraction', false, 0.9),
+                new ScalingValueValidationRule('qualityFraction', false, 0.9),
+                new NumberValidationRule('maxIterations', false, 10)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -49,6 +57,10 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
      *  [0]: listingItemTemplate: resources.ListingItemTemplate
      *  [1]: market: resources.Market, optional
      *  [2]: targetParentId: number, optional
+     *  [3]: messageVersionToFit: CoreMessageVersion, default: FREE
+     *  [4]: scalingFraction, default: 0.9
+     *  [5]: qualityFraction, default: 0.9
+     *  [6]: maxIterations, default: 10
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -56,10 +68,18 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ListingItemTemplate> {
-        const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
+        let listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const market = data.params[1];
         const targetParentId = data.params[2];
-        return await this.listingItemTemplateService.clone(listingItemTemplate, targetParentId, market);
+        const messageVersionToFit: CoreMessageVersion = data.params[3];
+        const scalingFraction: number = data.params[4];
+        const qualityFraction: number = data.params[5];
+        const maxIterations: number = data.params[6];
+
+        listingItemTemplate = await this.listingItemTemplateService.clone(listingItemTemplate, targetParentId, market).then(value => value.toJSON());
+
+        return await this.listingItemTemplateService.createResizedTemplateImages(listingItemTemplate, messageVersionToFit, scalingFraction,
+            qualityFraction, maxIterations);
     }
 
     /**
@@ -75,6 +95,11 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
         const listingItemTemplate: resources.ListingItemTemplate = data.params[0];
         const market: resources.Market = data.params[1];
+        const messageVersionToFit: CoreMessageVersion = data.params[2];
+        const scalingFraction: number = data.params[3];
+        const qualityFraction: number = data.params[4];
+        const maxIterations: number = data.params[5];
+
         let targetParentId;
 
         // template clone 1         - creates new base template based on template id 1
@@ -115,8 +140,16 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
             data.params[2] = targetParentId;
 
-        } // creating new base template based on given templateId, anything goes
+        } else {
+            // creating new base template based on given templateId, anything goes
+            // ...but base templates dont have parents
+            data.params[2] = undefined;
+        }
 
+        data.params[3] = messageVersionToFit;
+        data.params[4] = scalingFraction;
+        data.params[5] = qualityFraction;
+        data.params[6] = maxIterations;
         return data;
     }
 
@@ -137,7 +170,12 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>          - number - The ID of the ListingItemTemplate to be cloned.\n'
-            + '    <marketId>                       - number - Market ID, optional.';
+            + '    <marketId>                       - number - Market ID, optional.'
+            + '    <messageVersionToFit>            - [optional] string, CoreMessageVersion to fit (for Image msgs), default FREE. '
+            + '    <scalingFraction>                - [optional] number used to scale the Image size, default 0.9. '
+            + '    <qualityFraction>                - [optional] number used to scale the Image quality, default 0.9. '
+            + '    <maxIterations>                  - [optional] number of max iterations run, default 10. ';
+
     }
 
     public description(): string {

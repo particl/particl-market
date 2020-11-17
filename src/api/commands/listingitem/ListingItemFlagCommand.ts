@@ -27,7 +27,6 @@ import { ProposalService } from '../../services/model/ProposalService';
 import { VoteRequest } from '../../requests/action/VoteRequest';
 import { VoteActionService } from '../../services/action/VoteActionService';
 import { CommandParamValidationRules, IdValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
-import {BidRequest} from '../../requests/action/BidRequest';
 
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
@@ -85,54 +84,38 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
                 toAddress: market.receiveAddress,
                 daysRetention,
                 estimateFee: false,
-                anonFee: true
+                anonFee: false
             } as SmsgSendParams,
             sender: identity,
             market,
-            category: ProposalCategory.ITEM_VOTE, // type should always be ITEM_VOTE when using this command
-            title: listingItem.hash,
+            category: ProposalCategory.ITEM_VOTE,   // type should always be ITEM_VOTE when using this command
+            title: listingItem.hash,                // deprecated, use target
             description,
             options: [ItemVote.KEEP, ItemVote.REMOVE] as string[],
             target: listingItem.hash
         } as ProposalAddRequest;
 
-        // first post the Proposal
+        // first post the Proposal (+create FlaggedItem, +calculate first ProposalResult)
         const smsgSendResponse: SmsgSendResponse = await this.proposalAddActionService.post(postRequest);
 
-        // then post the Votes for removal
         const proposal: resources.Proposal = await this.proposalService.findOneByMsgId(smsgSendResponse.msgid!).then(value => value.toJSON());
+        const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
+            return o.description === ItemVote.REMOVE;
+        });
 
-        if (ProposalCategory.ITEM_VOTE === proposal.category || ProposalCategory.MARKET_VOTE === proposal.category) {
-            // find the REMOVE option
-            const proposalOption: resources.ProposalOption | undefined = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
-                return o.description === ItemVote.REMOVE;
-            });
-            if (!proposalOption) {
-                const error = new MessageException('ProposalOption ' + ItemVote.REMOVE + ' not found.');
-                this.log.error(error.getMessage());
-                throw error;
-            }
+        // prepare the VoteRequest for sending votes
+        const voteRequest = {
+            sendParams: postRequest.sendParams,
+            sender: postRequest.sender,          // Identity
+            market: postRequest.market,
+            proposal,
+            proposalOption
+        } as VoteRequest;
 
-            // prepare the VoteRequest for sending votes
-            const voteRequest = {
-                sendParams: postRequest.sendParams,
-                sender: postRequest.sender,          // Identity
-                market: postRequest.market,
-                proposal,
-                proposalOption
-            } as VoteRequest;
-
-            // we're not calling post here as post will only post a single message
-            // send the VoteMessages from each of senders Identity wallets addresses
-            const voteSmsgSendResponse = await this.voteActionService.vote(voteRequest);
-            smsgSendResponse.msgids = voteSmsgSendResponse.msgids;
-            // ProposalResult will be calculated after each vote has been sent...
-        } else {
-            // should not be possible...
-            const error = new MessageException('Invalid ProposalCategory: ' + proposal.category);
-            this.log.error(error.getMessage());
-            throw error;
-        }
+        // then post the Votes for removal (+create Blacklist)
+        // we're not calling post here as post will only post a single message
+        // send the VoteMessages from each of senders Identity wallets addresses
+        smsgSendResponse.childResults = await this.voteActionService.vote(voteRequest);
 
         return smsgSendResponse;
     }

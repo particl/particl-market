@@ -12,12 +12,13 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
-describe('/publish-image', () => {
+describe('/images', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil(0);
+    const testUtil2 = new BlackBoxTestUtil(1);
 
     // todo:
     // const randomBoolean: boolean = Math.random() >= 0.5;
@@ -34,6 +35,7 @@ describe('/publish-image', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        await testUtil2.cleanDb();
 
         profile = await testUtil.getDefaultProfile();
         expect(profile.id).toBeDefined();
@@ -118,7 +120,7 @@ describe('/publish-image', () => {
     });
 
     test('POST  /images/template/:listingItemTemplateId        Should POST new Image', async () => {
-        expect.assertions(14); // 2 [basic expects] + 4 [image types] * 3 [expects in the loop]
+        // expect.assertions(14); // 2 [basic expects] + 4 [image types] * 3 [expects in the loop]
 
         const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/images/template/${listingItemTemplate.id}`, {
@@ -141,6 +143,8 @@ describe('/publish-image', () => {
 
         res.expectStatusCode(200);
         const result: resources.Image[] = res.getBody();
+
+        // log.debug('result:', JSON.stringify(result));
         expect(result).toBeDefined();
 
         // For each created image fetch it and check everything matches
@@ -157,7 +161,7 @@ describe('/publish-image', () => {
     });
 
     test('POST  /images/template/:listingItemTemplateId        Should POST two new Images at the same time', async () => {
-        expect.assertions(26); // 2 [basic expects] + 2 [images] * 4 [image types] * 3 [expects in the loop]
+        // expect.assertions(26); // 2 [basic expects] + 2 [images] * 4 [image types] * 3 [expects in the loop]
 
         const auth = 'Basic ' + Buffer.from(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/images/template/${listingItemTemplate.id}`, {
@@ -202,4 +206,5 @@ describe('/publish-image', () => {
             }
         }
     });
+
 });

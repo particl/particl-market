@@ -9,7 +9,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MarketplaceNotification } from '../messages/MarketplaceNotification';
 
-export class NotificationService {
+export class NotifyService {
 
     public log: LoggerType;
 

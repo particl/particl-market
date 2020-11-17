@@ -19,7 +19,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('listing_item_template_id').unsigned().nullable();
             table.foreign('listing_item_template_id').references('id')
-                .inTable('listing_item_templates').onDelete('cascade');
+                .inTable('listing_item_templates');
 
             table.boolean('removed').notNullable().defaultTo(false);
             table.integer('expiry_time').unsigned();

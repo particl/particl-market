@@ -17,6 +17,7 @@ import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { ListingItemTemplateSearchOrderField } from '../../../src/api/enums/SearchOrderField';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
+
 describe('ListingItemTemplateCloneCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -289,7 +290,6 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.title).toBe(marketTemplate.ItemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
         expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
@@ -299,6 +299,25 @@ describe('ListingItemTemplateCloneCommand', () => {
             .toBe(marketTemplate.PaymentInformation.ItemPrice.ShippingPrice.international);
 
         marketV1Template = result;
+    });
+
+
+    test('Should update cloned Market ListingItemTemplates ItemCategory', async () => {
+        const res: any = await testUtilSellerNode.rpc(itemInformationCommand, [itemInformationUpdateCommand,
+            marketV1Template.id,
+            marketV1Template.ItemInformation.title,
+            marketV1Template.ItemInformation.shortDescription,
+            marketV1Template.ItemInformation.longDescription,
+            itemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ItemInformation = res.getBody()['result'];
+        expect(result.title).toBe(marketV1Template.ItemInformation.title);
+        expect(result.shortDescription).toBe(marketV1Template.ItemInformation.shortDescription);
+        expect(result.longDescription).toBe(marketV1Template.ItemInformation.longDescription);
+        expect(result.ItemCategory.id).toBe(itemCategory.id);
     });
 
 
@@ -364,7 +383,6 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.title).toBe(marketTemplate.ItemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
         expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
@@ -382,6 +400,8 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(marketTemplate.id).toBeDefined();
         expect(marketV1Template.id).toBeDefined();
         expect(marketV2Template.id).toBeDefined();
+
+        log.debug('marketV2Template.hash: ', marketV2Template.hash);
 
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand,
             marketV2Template.id
@@ -404,7 +424,6 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(result.ItemInformation.title).toBe(marketTemplate.ItemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(marketTemplate.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(marketTemplate.ItemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.key).toBe(marketTemplate.ItemInformation.ItemCategory.key);
         expect(result.ItemInformation.Images).toHaveLength(marketTemplate.ItemInformation.Images.length);
         expect(result.PaymentInformation.type).toBe(marketTemplate.PaymentInformation.type);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(marketTemplate.PaymentInformation.ItemPrice.currency);
@@ -488,4 +507,6 @@ describe('ListingItemTemplateCloneCommand', () => {
 
     });
 
+    // todo: test template image cloning
+    // check template post tests
 });

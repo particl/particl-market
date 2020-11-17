@@ -70,7 +70,7 @@ describe('MarketAddCommand', () => {
 
         // marketplace
         const network = Networks.testnet;
-        let privateKey: PrivateKey = PrivateKey.fromRandom(Networks.testnet);
+        let privateKey: PrivateKey = PrivateKey.fromRandom(network);
         marketData.receiveKey = privateKey.toWIF();
         marketData.publishKey = marketData.receiveKey;          // same same
         // marketData.name = marketData.receiveKey;

@@ -75,6 +75,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
      * @param templateId
      * @param market
      * @param allVersions
+     * @param withRelated
      */
     public static async fetchByParentTemplateAndMarket(templateId?: number, market?: string,
                                                        allVersions: boolean = false, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
@@ -174,7 +175,7 @@ ORDER BY lit.generated_at DESC;
 
                 // qb.orderByRaw('LOWER(' + sortingField + ') ' + options.order);
             })
-            .orderBy(/*'listing_item_templates.' + */options.orderField, options.order)
+            .orderBy(options.orderField, options.order)
             .query({
                 limit: options.pageLimit,
                 offset: options.page * options.pageLimit

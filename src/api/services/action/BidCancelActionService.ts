@@ -25,23 +25,25 @@ import { BidCancelMessageFactory } from '../../factories/message/BidCancelMessag
 import { BidCancelValidator } from '../../messagevalidators/BidCancelValidator';
 import { BaseBidActionService } from '../BaseBidActionService';
 import { MPAction } from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { ListingItemService } from '../model/ListingItemService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { BidCreateRequest } from '../../requests/model/BidCreateRequest';
+import { BlacklistService } from '../model/BlacklistService';
 
 export class BidCancelActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.BidCancelMessageFactory) public actionMessageFactory: BidCancelMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidCancelValidator) public validator: BidCancelValidator,
@@ -52,6 +54,7 @@ export class BidCancelActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

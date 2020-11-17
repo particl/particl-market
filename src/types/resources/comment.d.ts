@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { CommentType } from '../../api/enums/CommentType';
+import { CommentCategory } from '../../api/enums/CommentCategory';
 
 declare module 'resources' {
 
@@ -16,7 +16,7 @@ declare module 'resources' {
         type: string;
         target: string;
         message: string;
-        commentType: CommentType;
+        commentType: CommentCategory;
         generatedAt: number;
 
         postedAt: number;

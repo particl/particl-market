@@ -93,7 +93,7 @@ export class MarketplaceMessageProcessor implements MessageProcessorInterface {
             })
             .on('next', () => {
                 // emitted every time a task is completed and the number of pending or queued tasks is decreased.
-                this.log.debug(`ACTIONQUEUE: messaage processed. queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
+                this.log.debug(`ACTIONQUEUE: message processed. queue size: ${this.actionQueue.size}, tasks pending: ${this.actionQueue.pending}`);
             })
             .start();
 

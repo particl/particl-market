@@ -52,7 +52,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
                         // if maxPrice set, must be < maxPrice
                         const largerThanZero = !_.isNil(value) ? value >= 0 : true;
                         const smallerThanMaxPrice = !_.isNil(maxPrice) ? value < maxPrice : true;
-                        this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
+                        // this.log.debug('largerThanZero: ' + largerThanZero + ', smallerThanMaxPrice: ' + smallerThanMaxPrice);
                         return largerThanZero && smallerThanMaxPrice;
                     }
                     return true;
@@ -64,7 +64,7 @@ export class ListingItemSearchCommand extends BaseSearchCommand implements RpcCo
                         // if minPrice set, must be > minPrice
                         const largerThanZero = !_.isNil(value) ? value >= 0 : true;
                         const largerThanMinPrice = !_.isNil(minPrice) ? value > minPrice : true;
-                        this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
+                        // this.log.debug('largerThanZero: ' + largerThanZero + ', largerThanMinPrice: ' + largerThanMinPrice);
                         return largerThanZero && largerThanMinPrice;
                     }
                     return true;

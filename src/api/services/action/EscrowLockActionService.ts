@@ -32,15 +32,17 @@ import { ActionMessageObjects } from '../../enums/ActionMessageObjects';
 import { KVS } from 'omp-lib/dist/interfaces/common';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { BaseBidActionService } from '../BaseBidActionService';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { EscrowLockMessageFactory } from '../../factories/message/EscrowLockMessageFactory';
+import { BlacklistService } from '../model/BlacklistService';
+
 
 export class EscrowLockActionService extends BaseBidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.OmpService) public ompService: OmpService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.action.ListingItemAddActionService) public listingItemAddActionService: ListingItemAddActionService,
@@ -50,6 +52,7 @@ export class EscrowLockActionService extends BaseBidActionService {
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.model.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.EscrowLockMessageFactory) public actionMessageFactory: EscrowLockMessageFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.EscrowLockValidator) public validator: EscrowLockValidator,
@@ -60,6 +63,7 @@ export class EscrowLockActionService extends BaseBidActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger,

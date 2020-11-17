@@ -21,7 +21,9 @@ import { BidRejectActionService } from '../../services/action/BidRejectActionSer
 import { ProposalService } from '../../services/model/ProposalService';
 import { BaseBidActionMessageProcessor } from '../BaseBidActionMessageProcessor';
 import { BidRejectValidator } from '../../messagevalidators/BidRejectValidator';
-import {ActionDirection} from '../../enums/ActionDirection';
+import { ActionDirection } from '../../enums/ActionDirection';
+import { NotificationService } from '../../services/model/NotificationService';
+
 
 export class BidRejectActionMessageProcessor extends BaseBidActionMessageProcessor implements ActionMessageProcessorInterface {
 
@@ -32,6 +34,7 @@ export class BidRejectActionMessageProcessor extends BaseBidActionMessageProcess
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.model.NotificationService) public notificationService: NotificationService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.model.BidFactory) public bidFactory: BidFactory,
         @inject(Types.MessageValidator) @named(Targets.MessageValidator.BidRejectValidator) public validator: BidRejectValidator,
@@ -42,6 +45,7 @@ export class BidRejectActionMessageProcessor extends BaseBidActionMessageProcess
             smsgMessageService,
             bidService,
             proposalService,
+            notificationService,
             validator,
             listingItemService,
             bidFactory,

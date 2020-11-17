@@ -61,6 +61,10 @@ export class MarketService {
         return await this.marketRepo.findAllByHash(hash, withRelated);
     }
 
+    public async findAllExpired(): Promise<Bookshelf.Collection<Market>> {
+        return await this.marketRepo.findAllExpired();
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Market> {
         const market = await this.marketRepo.findOne(id, withRelated);
         if (market === null) {
@@ -97,7 +101,6 @@ export class MarketService {
     @validate()
     public async create( @request(MarketCreateRequest) data: MarketCreateRequest): Promise<Market> {
         const body: MarketCreateRequest = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create Market, body: ', JSON.stringify(body, null, 2));
 
         const imageCreateRequest = body.image;
         delete body.image;
@@ -107,7 +110,7 @@ export class MarketService {
         if (!_.isEmpty(imageCreateRequest)) {
             await this.imageService.create(imageCreateRequest).then(async value => {
                 const image: resources.Image = value.toJSON();
-                await this.updateImage(market.id, image.id);
+                await this.setImage(market.id, image.id);
             });
         }
 
@@ -147,7 +150,7 @@ export class MarketService {
         return await this.findOne(id, true);
     }
 
-    public async updateImage(id: number, imageId: number): Promise<Market> {
+    public async setImage(id: number, imageId: number): Promise<Market> {
         const market = await this.findOne(id, false);
         market.set('imageId', imageId);
         await this.marketRepo.update(id, market.toJSON()).then(value => value.toJSON());
@@ -165,6 +168,16 @@ export class MarketService {
 
         this.log.debug('joinMarket(): JOINED!');
         return;
+    }
+
+    /**
+     * Set the removed flag
+     *
+     * @returns {Promise<void>}
+     */
+    public async setRemovedFlag(id: number, removed: boolean): Promise<void> {
+        const market: resources.Market = await this.findOne(id).then(value => value.toJSON());
+        await this.marketRepo.update(market.id, { removed });
     }
 
     /**
@@ -205,20 +218,11 @@ export class MarketService {
     }
 
     private getHash(market: resources.Market): string {
-        const createRequest = {
-            generatedAt: market.generatedAt,
+        return ConfigurableHasher.hash({
             name: market.name,
             description: market.description,
-            type: market.type,
-            receiveKey: market.receiveKey,
-            publishKey: market.publishKey,
-            image: !_.isNil(market.Image)
-                ? {
-                    hash: market.Image.hash
-                }
-                : undefined
-        } as MarketCreateRequest;
-
-        return ConfigurableHasher.hash(createRequest, new HashableMarketCreateRequestConfig());
+            receiveAddress: market.receiveAddress,
+            publishAddress: market.publishAddress
+        } as MarketCreateRequest, new HashableMarketCreateRequestConfig());
     }
 }

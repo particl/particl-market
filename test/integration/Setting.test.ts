@@ -76,8 +76,7 @@ describe('Setting', () => {
 
         testData.profile_id = profile.id;
 
-        log.debug('testData: ', JSON.stringify(testData, null, 2));
-
+        // log.debug('testData: ', JSON.stringify(testData, null, 2));
         const result: resources.Setting = await settingService.create(testData).then(value => value.toJSON());
 
         expect(result.Profile.id).toBe(testData.profile_id);
@@ -89,8 +88,8 @@ describe('Setting', () => {
 
     test('Should list Settings with our newly created one', async () => {
         const settings: resources.Setting[] = await settingService.findAll().then(value => value.toJSON());
-        expect(settings.length).toBe(6); // 6 default ones
-        const result = settings[5];
+        expect(settings.length).toBe(5);
+        const result = settings[4];
 
         expect(result.key).toBe(testData.key);
         expect(result.value).toBe(testData.value);

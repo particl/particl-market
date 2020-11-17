@@ -30,11 +30,12 @@ import { ListingItemTemplateService } from '../model/ListingItemTemplateService'
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { MPAction} from 'omp-lib/dist/interfaces/omp-enums';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { ListingItemNotification } from '../../messages/notification/ListingItemNotification';
 import { ListingItemCreateRequest } from '../../requests/model/ListingItemCreateRequest';
 import { ImageService } from '../model/ImageService';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class ListingItemAddActionService extends BaseActionService {
@@ -42,7 +43,7 @@ export class ListingItemAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
@@ -50,6 +51,7 @@ export class ListingItemAddActionService extends BaseActionService {
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.ListingItemAddMessageFactory) private actionMessageFactory: ListingItemAddMessageFactory,
@@ -62,6 +64,7 @@ export class ListingItemAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -179,16 +182,16 @@ export class ListingItemAddActionService extends BaseActionService {
         if (ActionDirection.INCOMING === actionDirection) {
 
             const listingItem: resources.ListingItem = await this.listingItemService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (listingItem) {
                 const notification: MarketplaceNotification = {
                     event: marketplaceMessage.action.type,
                     payload: {
-                        id: listingItem.id,
-                        hash: listingItem.hash,
-                        seller: listingItem.seller,
+                        objectId: listingItem.id,
+                        objectHash: listingItem.hash,
+                        from: listingItem.seller,
+                        to: smsgMessage.to,
                         market: listingItem.market
                     } as ListingItemNotification
                 };

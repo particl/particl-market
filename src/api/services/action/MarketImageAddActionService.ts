@@ -20,7 +20,7 @@ import { ProposalService } from '../model/ProposalService';
 import { FlaggedItemService } from '../model/FlaggedItemService';
 import { MarketService } from '../model/MarketService';
 import { ActionDirection } from '../../enums/ActionDirection';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
 import { MPActionExtended } from '../../enums/MPActionExtended';
 import { ImageService } from '../model/ImageService';
@@ -35,6 +35,7 @@ import { MarketImageAddValidator } from '../../messagevalidators/MarketImageAddV
 import { MarketImageNotification } from '../../messages/notification/MarketImageNotification';
 import { ImageFactory } from '../../factories/model/ImageFactory';
 import { ImageCreateParams } from '../../factories/ModelCreateParams';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class MarketImageAddActionService extends BaseActionService {
@@ -43,13 +44,14 @@ export class MarketImageAddActionService extends BaseActionService {
         // tslint:disable:max-line-length
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.ImageService) public imageService: ImageService,
         @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.model.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.MarketImageAddMessageFactory) private actionMessageFactory: MarketImageAddMessageFactory,
@@ -62,6 +64,7 @@ export class MarketImageAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -153,7 +156,7 @@ export class MarketImageAddActionService extends BaseActionService {
                     });
                 }
             } else {
-                this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
+                // this.log.debug('image: ' + actionMessage.hash + ', for market: ' + actionMessage.target + ', doesnt exist yet.');
                 const createRequest = await this.imageFactory.get({
                     actionMessage,
                     smsgMessage
@@ -175,11 +178,17 @@ export class MarketImageAddActionService extends BaseActionService {
         // only send notifications when receiving messages
         if (ActionDirection.INCOMING === actionDirection) {
 
+            const image: resources.Image = await this.imageService.findOneByMsgId(smsgMessage.msgid)
+                .then(value => value.toJSON());
+
             const notification: MarketplaceNotification = {
                 event: marketplaceMessage.action.type,
                 payload: {
-                    hash: imageAddMessage.hash,
-                    marketHash: imageAddMessage.target
+                    objectId: image.id,
+                    objectHash: imageAddMessage.hash,
+                    from: smsgMessage.from,
+                    to: smsgMessage.to,
+                    target: imageAddMessage.target
                 } as MarketImageNotification
             };
             return notification;

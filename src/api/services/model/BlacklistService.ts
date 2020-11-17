@@ -2,8 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
+import * as Bookshelf from 'bookshelf';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -15,6 +15,10 @@ import { Blacklist } from '../../models/Blacklist';
 import { BlacklistCreateRequest } from '../../requests/model/BlacklistCreateRequest';
 import { BlacklistUpdateRequest } from '../../requests/model/BlacklistUpdateRequest';
 import { BlacklistType } from '../../enums/BlacklistType';
+import { VoteRequest } from '../../requests/action/VoteRequest';
+import { ProposalCategory } from '../../enums/ProposalCategory';
+import { ItemVote } from '../../enums/ItemVote';
+import { BlacklistSearchParams } from '../../requests/search/BlacklistSearchParams';
 
 
 export class BlacklistService {
@@ -26,6 +30,10 @@ export class BlacklistService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async search(options: BlacklistSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Blacklist>> {
+        return await this.blacklistRepo.search(options, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Blacklist>> {
@@ -40,7 +48,7 @@ export class BlacklistService {
         return this.blacklistRepo.findAllByTypeAndProfileId(type, profileId);
     }
 
-    public async findAllByTargetAndProfileId(target: string, profileId: number): Promise<Bookshelf.Collection<Blacklist>> {
+    public async findAllByTargetAndProfileId(target: string, profileId?: number): Promise<Bookshelf.Collection<Blacklist>> {
         return this.blacklistRepo.findAllByTargetAndProfileId(target, profileId);
     }
 
@@ -54,7 +62,7 @@ export class BlacklistService {
     }
 
     @validate()
-    public async create( @request(BlacklistCreateRequest) data: BlacklistCreateRequest): Promise<Blacklist> {
+    public async create(@request(BlacklistCreateRequest) data: BlacklistCreateRequest): Promise<Blacklist> {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Blacklist, body: ', JSON.stringify(body, null, 2));
@@ -83,5 +91,70 @@ export class BlacklistService {
     public async destroy(id: number): Promise<void> {
         await this.blacklistRepo.destroy(id);
     }
+
+    /**
+     * Blacklists for Vote are created only when user flags something he doesnt want to see
+     *
+     * @param voteRequest
+     */
+    public async updateBlacklistsByVote(voteRequest: VoteRequest): Promise<resources.Blacklist[]> {
+
+        // this.log.debug('updateBlacklistsByVote(), voteRequest: ', JSON.stringify(voteRequest, null, 2));
+        const blacklisted: resources.Blacklist[] = [];
+
+        if (voteRequest.proposalOption.description === ItemVote.REMOVE.toString()) {
+            // voting to remove -> create blacklists
+            if (!_.isEmpty(voteRequest.proposal.FlaggedItems)) {
+
+                for (const flaggedItem of voteRequest.proposal.FlaggedItems) {
+                    let blacklist: resources.Blacklist;
+
+                    switch (voteRequest.proposal.category) {
+                        case ProposalCategory.ITEM_VOTE:
+
+                            blacklist = await this.create({
+                                type: BlacklistType.LISTINGITEM,        // todo: add the type as command param
+                                target: voteRequest.proposal.target,
+                                market: voteRequest.proposal.market,
+                                profile_id: voteRequest.sender.Profile.id,      // profile specific since user requested this
+                                listing_item_id: flaggedItem.ListingItem!.id
+                            } as BlacklistCreateRequest).then(value => value.toJSON());
+                            blacklisted.push(blacklist);
+                            break;
+
+                        case ProposalCategory.MARKET_VOTE:
+                            blacklist = await this.create({
+                                type: BlacklistType.MARKET,
+                                target: voteRequest.proposal.target,
+                                market: voteRequest.proposal.market,
+                                profile_id: voteRequest.sender.Profile.id,      // profile specific since user requested this
+                                market_id: flaggedItem.Market!.id
+                            } as BlacklistCreateRequest).then(value => value.toJSON());
+                            blacklisted.push(blacklist);
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+
+        } else {
+            // remove blacklists
+            const target = voteRequest.proposal.target;
+            const profileId = voteRequest.sender.Profile.id;
+            const blacklists: resources.Blacklist[] = await this.search({
+                targets: [target],
+                profileId
+            } as BlacklistSearchParams).then(value => value.toJSON());
+
+            for (const blacklist of blacklists) {
+                await this.destroy(blacklist.id);
+            }
+        }
+
+        return blacklisted;
+    }
+
 
 }

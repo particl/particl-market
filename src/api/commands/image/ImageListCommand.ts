@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as resources from 'resources';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -17,7 +18,8 @@ import { BaseCommand } from '../BaseCommand';
 import { InvalidParamException } from '../../exceptions/InvalidParamException';
 import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
 import { MarketService } from '../../services/model/MarketService';
-import { CommandParamValidationRules, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import { BooleanValidationRule, CommandParamValidationRules, NumberValidationRule, ParamValidationRule, StringValidationRule } from '../CommandParamValidation';
+import { ImageDataService } from '../../services/model/ImageDataService';
 
 
 export class ImageListCommand extends BaseCommand implements RpcCommandInterface<resources.Image[]> {
@@ -25,6 +27,7 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Service) @named(Targets.Service.model.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.model.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.model.ImageDataService) public imageDataService: ImageDataService,
         @inject(Types.Service) @named(Targets.Service.model.MarketService) public marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -36,7 +39,8 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
         return {
             params: [
                 new StringValidationRule('template|item|market', true),
-                new NumberValidationRule('id', true)
+                new NumberValidationRule('id', true),
+                new BooleanValidationRule('returnImageData', false, false)
             ] as ParamValidationRule[]
         } as CommandParamValidationRules;
     }
@@ -50,13 +54,29 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<resources.Image[]> {
         const typeSpecifier = data.params[0];
         const type = data.params[1];
+        const returnImageData: boolean = data.params[2];
 
         switch (typeSpecifier) {
             case 'template':
             case 'item':
+                if (returnImageData && !_.isEmpty(type.ItemInformation.Images)) {
+                    for (const img of type.ItemInformation.Images) {
+                        for (const imageData of img.ImageDatas) {
+                            imageData.data = await this.imageDataService.loadImageFile(img.hash, imageData.imageVersion);
+                        }
+                    }
+                }
                 return type.ItemInformation.Images;
+
             case 'market':
-                return [(type as resources.Market).Image];
+                const image = (type as resources.Market).Image;
+                if (returnImageData && !_.isEmpty(image)) {
+                    for (const imageData of image.ImageDatas) {
+                        imageData.data = await this.imageDataService.loadImageFile(image.hash, imageData.imageVersion);
+                    }
+                }
+                return [image];
+
             default:
                 throw new InvalidParamException('typeSpecifier', 'template|item|market');
         }
@@ -103,13 +123,14 @@ export class ImageListCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <type> <id> ';
+        return this.getName() + ' <type> <id> [returnImageData]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <type>           - string - template|item|market\n'
-            + '    <id>             - number - The ID of the template|item|market which Images we want to list. \n';
+            + '    <type>                   - string - template|item|market\n'
+            + '    <id>                     - number - The ID of the template|item|market which Images we want to list. \n'
+            + '    <returnImageData>        - number, optional - Whether to return image data or not. ';
     }
 
     public description(): string {

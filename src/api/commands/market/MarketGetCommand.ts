@@ -16,6 +16,8 @@ import { Market } from '../../models/Market';
 import { MarketService } from '../../services/model/MarketService';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { BooleanValidationRule, CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+import { MarketType } from '../../enums/MarketType';
+import { PublicKey, PrivateKey, Networks } from 'particl-bitcore-lib';
 
 
 export class MarketGetCommand extends BaseCommand implements RpcCommandInterface<resources.Market> {
@@ -57,6 +59,12 @@ export class MarketGetCommand extends BaseCommand implements RpcCommandInterface
                 imageData.data = await this.imageDataService.loadImageFile(imageData.imageHash, imageData.imageVersion);
             }
         }
+
+        // in case of STOREFRONT_ADMIN, add publishPublicKey, so that the market can be easily shared as STOREFRONT using other private communication means
+        if (market.type === MarketType.STOREFRONT_ADMIN) {
+            market.publishPublicKey = PrivateKey.fromWIF(market.publishKey).toPublicKey().toString();
+        }
+
         return market;
     }
 

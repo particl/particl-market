@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as resources from 'resources';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -22,11 +23,12 @@ import { CommentCreateParams } from '../../factories/ModelCreateParams';
 import { CommentFactory } from '../../factories/model/CommentFactory';
 import { CommentAddValidator } from '../../messagevalidators/CommentAddValidator';
 import { MarketplaceNotification } from '../../messages/MarketplaceNotification';
-import { NotificationService } from '../NotificationService';
+import { NotifyService } from '../NotifyService';
 import { IdentityService } from '../model/IdentityService';
 import { ActionDirection } from '../../enums/ActionDirection';
 import { CommentAddNotification } from '../../messages/notification/CommentAddNotification';
 import { CommentAction } from '../../enums/CommentAction';
+import { BlacklistService } from '../model/BlacklistService';
 
 
 export class CommentAddActionService extends BaseActionService {
@@ -34,10 +36,11 @@ export class CommentAddActionService extends BaseActionService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.NotificationService) public notificationService: NotificationService,
+        @inject(Types.Service) @named(Targets.Service.NotifyService) public notificationService: NotifyService,
         @inject(Types.Service) @named(Targets.Service.model.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.model.IdentityService) private identityService: IdentityService,
         @inject(Types.Service) @named(Targets.Service.model.CommentService) public commentService: CommentService,
+        @inject(Types.Service) @named(Targets.Service.model.BlacklistService) public blacklistService: BlacklistService,
         @inject(Types.Factory) @named(Targets.Factory.model.SmsgMessageFactory) public smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Factory) @named(Targets.Factory.model.CommentFactory) private commentFactory: CommentFactory,
         @inject(Types.Factory) @named(Targets.Factory.message.CommentAddMessageFactory) private actionMessageFactory: CommentAddMessageFactory,
@@ -48,6 +51,7 @@ export class CommentAddActionService extends BaseActionService {
             smsgService,
             smsgMessageService,
             notificationService,
+            blacklistService,
             smsgMessageFactory,
             validator,
             Logger
@@ -156,8 +160,7 @@ export class CommentAddActionService extends BaseActionService {
 
             // only notify if the Comment is not from you
             const comment: resources.Comment = await this.commentService.findOneByMsgId(smsgMessage.msgid)
-                .then(value => value.toJSON())
-                .catch(err => undefined);
+                .then(value => value.toJSON());
 
             if (comment) {
                 // TODO: this doesn't consider that there could be different Profiles!!!
@@ -175,21 +178,17 @@ export class CommentAddActionService extends BaseActionService {
                 const notification: MarketplaceNotification = {
                     event: CommentAction.MPA_COMMENT_ADD,
                     payload: {
-                        id: comment.id,
-                        hash: comment.hash,
+                        objectId: comment.id,
+                        objectHash: comment.hash,
+                        from: comment.sender,
+                        to: comment.receiver,
                         target: comment.target,
-                        sender: comment.sender,
-                        receiver: comment.receiver,
-                        commentType: comment.commentType
+                        category: comment.commentType,
+                        parentObjectId: !_.isEmpty(comment.ParentComment) ? comment.ParentComment.id : undefined,
+                        parentObjectHash: !_.isEmpty(comment.ParentComment) ? comment.ParentComment.hash : undefined
                     } as CommentAddNotification
                 };
 
-                if (comment.ParentComment) {
-                    (notification.payload as CommentAddNotification).parent = {
-                        id: comment.ParentComment.id,
-                        hash: comment.ParentComment.hash
-                    } as CommentAddNotification;
-                }
                 return notification;
             }
         }

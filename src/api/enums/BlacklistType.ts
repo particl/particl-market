@@ -9,6 +9,7 @@
 
 export enum BlacklistType {
 
+    // todo: MARKET_HASH/MARKET_ADDRESS
     MARKET = 'MARKET',
     LISTINGITEM = 'LISTINGITEM',
     IMAGE = 'IMAGE'

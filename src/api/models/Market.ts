@@ -16,6 +16,8 @@ export class Market extends Bookshelf.Model<Market> {
 
     public static RELATIONS = [
         'FlaggedItem',
+        'FlaggedItem.Proposal',
+        'FlaggedItem.Proposal.ProposalOptions',
         'Profile',
         'Identity',
         'Identity.ShoppingCarts',
@@ -64,6 +66,15 @@ export class Market extends Bookshelf.Model<Market> {
             })
             .orderBy('updated_at', 'ASC');
         return collection.fetchAll(withRelated ? {withRelated: this.RELATIONS} : undefined);
+    }
+
+    public static async fetchAllExpired(): Promise<Collection<Market>> {
+        const collection = Market.forge<Model<Market>>()
+            .query(qb => {
+                qb.where('expired_at', '<=', Date.now());
+                qb.whereNull('profile_id');
+            });
+        return collection.fetchAll();
     }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Market> {

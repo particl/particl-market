@@ -29,6 +29,7 @@ import { ShippingPriceUpdateRequest } from '../../src/api/requests/model/Shippin
 import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/model/CryptocurrencyAddressUpdateRequest';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 
+
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -64,6 +65,7 @@ describe('ItemPrice', () => {
 
         profile = await profileService.getDefault().then(value => value.toJSON());
         market = await defaultMarketService.getDefaultForProfile(profile.id).then(value => value.toJSON());
+        const randomCategory: resources.ItemCategory = await testDataService.getRandomCategory();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,               // generateItemInformation
@@ -77,8 +79,9 @@ describe('ItemPrice', () => {
             false,              // generateListingItemObjects
             false,              // generateObjectDatas
             profile.id,         // profileId
-            true,               // generateListingItem
-            market.id           // marketId
+            false,              // generateListingItem
+            market.id,          // marketId
+            randomCategory.id   // categoryId
         ]).toParamsArray();
 
         // generate two ListingItemTemplates with ListingItems
@@ -144,26 +147,6 @@ describe('ItemPrice', () => {
         });
     });
 
-    test('Should throw ValidationException because there is no basePrice', async () => {
-        expect.assertions(1);
-
-        const testData = {
-            payment_information_id: listingItemTemplate.PaymentInformation.id,
-            currency: Cryptocurrency.BTC,
-            shippingPrice: {
-                domestic: 0.123,
-                international: 1.234
-            } as ShippingPriceCreateRequest,
-            cryptocurrencyAddress: {
-                type: CryptoAddressType.NORMAL,
-                address: '1234'
-            } as CryptocurrencyAddressCreateRequest
-        } as ItemPriceCreateRequest;
-
-        await itemPriceService.create(testData).catch(e => {
-            expect(e).toEqual(new ValidationException('Request body is not valid', []));
-        });
-    });
 
     test('Should create a new ItemPrice', async () => {
 
@@ -191,6 +174,7 @@ describe('ItemPrice', () => {
         expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
         expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
     });
+
 
     test('Should list ItemPrices with our new create one', async () => {
         const results: resources.ItemPrice[] = await itemPriceService.findAll().then(value => value.toJSON());
@@ -296,8 +280,7 @@ describe('ItemPrice', () => {
 
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
-        // todo: why is this {}?? FIX
-        // todo: ...propably because of the relations
+        // todo: {}?? FIX
         expect(result.ShippingPrice).toEqual({});
         expect(result.CryptocurrencyAddress).not.toBeDefined();
     });

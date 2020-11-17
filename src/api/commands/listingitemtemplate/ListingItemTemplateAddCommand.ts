@@ -24,8 +24,8 @@ import {
     CommandParamValidationRules, CryptocurrencyValidationRule, EnumValidationRule, EscrowRatioValidationRule,
     IdValidationRule, ParamValidationRule, PriceValidationRule, SaleTypeValidationRule, StringValidationRule
 } from '../CommandParamValidation';
-import {EnumHelper} from '../../../core/helpers/EnumHelper';
-import {EscrowReleaseType, EscrowType} from 'omp-lib/dist/interfaces/omp-enums';
+import { EnumHelper } from '../../../core/helpers/EnumHelper';
+import { EscrowReleaseType, EscrowType } from 'omp-lib/dist/interfaces/omp-enums';
 
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
@@ -39,6 +39,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     ) {
         super(Commands.TEMPLATE_ADD);
         this.log = new Logger(__filename);
+
+        // this.debug = true;
     }
 
     public getCommandParamValidationRules(): CommandParamValidationRules {

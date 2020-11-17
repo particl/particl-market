@@ -12,13 +12,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ProfileService } from '../../services/model/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MissingParamException } from '../../exceptions/MissingParamException';
-import { InvalidParamException } from '../../exceptions/InvalidParamException';
-import { ModelNotFoundException } from '../../exceptions/ModelNotFoundException';
+import { CommandParamValidationRules, IdValidationRule, ParamValidationRule } from '../CommandParamValidation';
+
 
 export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
-    public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -26,6 +23,14 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
     ) {
         super(Commands.PROFILE_REMOVE);
         this.log = new Logger(__filename);
+    }
+
+    public getCommandParamValidationRules(): CommandParamValidationRules {
+        return {
+            params: [
+                new IdValidationRule('profileId', true, this.profileService)
+            ] as ParamValidationRule[]
+        } as CommandParamValidationRules;
     }
 
     /**
@@ -50,25 +55,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
-
-        // make sure the required params exist
-        if (data.params.length < 1) {
-            throw new MissingParamException('profileId');
-        }
-
-        // make sure the params are of correct type
-        if (typeof data.params[0] !== 'number') {
-            throw new InvalidParamException('profileId', 'number');
-        }
-
-        // make sure Profile with the id exists
-        const profile: resources.Profile = await this.profileService.findOne(data.params[0])
-            .then(value => value.toJSON())
-            .catch(reason => {
-                throw new ModelNotFoundException('Profile');
-            });
-        data.params[0] = profile;
-
+        await super.validate(data);
         return data;
     }
 
@@ -78,7 +65,7 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
 
     public help(): string {
         return this.usage() + '- ' + this.description() + ' \n'
-            + '    <profileID>              -  The Id of the Profile we want to destroy. \n';
+            + '    <profileId>              -  The Id of the Profile we want to destroy. \n';
     }
 
     public description(): string {

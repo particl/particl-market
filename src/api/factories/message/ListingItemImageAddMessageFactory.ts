@@ -15,7 +15,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ImageDataService } from '../../services/model/ImageDataService';
 import { ListingItemImageAddRequest } from '../../requests/action/ListingItemImageAddRequest';
 import { CoreRpcService } from '../../services/CoreRpcService';
-import { BaseMessageFactory } from './BaseMessageFactory';
+import { BaseMessageFactory } from '../BaseMessageFactory';
 import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { VerifiableMessage } from './ListingItemAddMessageFactory';
 
@@ -85,12 +85,12 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
      *
      * TODO: refactor the image add command params
      *
-     * @param itemImageDatas
+     * @param imageDatas
      * @param withData
      */
-    public async getDSNs(itemImageDatas: resources.ImageData[], withData: boolean = true): Promise<DSN[]> {
+    public async getDSNs(imageDatas: resources.ImageData[], withData: boolean = true): Promise<DSN[]> {
         const dsns: DSN[] = [];
-        const imageData: resources.ImageData = await this.getPostableImageData(itemImageDatas);
+        const imageData: resources.ImageData = await this.getPostableImageData(imageDatas);
 
         let data;
         const protocol = ProtocolDSN.SMSG;
@@ -115,16 +115,16 @@ export class ListingItemImageAddMessageFactory extends BaseMessageFactory {
 
     /**
      * return the resized data, or if that doesnt exist, the original one
-     * @param itemImageDatas
+     * @param imageDatas
      */
-    private async getPostableImageData(itemImageDatas: resources.ImageData[]): Promise<resources.ImageData> {
-        let imageData = _.find(itemImageDatas, (value) => {
+    private async getPostableImageData(imageDatas: resources.ImageData[]): Promise<resources.ImageData> {
+        let imageData = _.find(imageDatas, (value) => {
             return value.imageVersion === ImageVersions.RESIZED.propName;
         });
 
         if (!imageData) {
             // if theres no resized version, then ORIGINAL can be used
-            imageData = _.find(itemImageDatas, (value) => {
+            imageData = _.find(imageDatas, (value) => {
                 return value.imageVersion === ImageVersions.ORIGINAL.propName;
             });
 
