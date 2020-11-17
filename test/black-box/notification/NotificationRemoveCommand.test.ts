@@ -14,7 +14,6 @@ import { InvalidParamException } from '../../../src/api/exceptions/InvalidParamE
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/testdata/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ProtocolDSN } from 'omp-lib/dist/interfaces/dsn';
-import { MPActionExtended } from '../../../src/api/enums/MPActionExtended';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 
@@ -29,7 +28,6 @@ describe('NotificationRemoveCommand', () => {
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const notificationCommand = Commands.NOTIFICATION_ROOT.commandName;
-    const notificationSetReadCommand = Commands.NOTIFICATION_SETREAD.commandName;
     const notificationRemoveCommand = Commands.NOTIFICATION_REMOVE.commandName;
     const notificationSearchCommand = Commands.NOTIFICATION_SEARCH.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
@@ -311,6 +309,4 @@ describe('NotificationRemoveCommand', () => {
 
         expect(results.length).toBe(2);
     });
-
-
 });
