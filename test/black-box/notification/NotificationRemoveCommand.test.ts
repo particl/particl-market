@@ -18,7 +18,7 @@ import { MPActionExtended } from '../../../src/api/enums/MPActionExtended';
 import { MissingParamException } from '../../../src/api/exceptions/MissingParamException';
 
 
-describe('NotificationSetReadCommand', () => {
+describe('NotificationRemoveCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -30,6 +30,7 @@ describe('NotificationSetReadCommand', () => {
 
     const notificationCommand = Commands.NOTIFICATION_ROOT.commandName;
     const notificationSetReadCommand = Commands.NOTIFICATION_SETREAD.commandName;
+    const notificationRemoveCommand = Commands.NOTIFICATION_REMOVE.commandName;
     const notificationSearchCommand = Commands.NOTIFICATION_SEARCH.commandName;
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -270,7 +271,7 @@ describe('NotificationSetReadCommand', () => {
 
 
     test('Should fail because missing notificationId', async () => {
-        const res = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand]);
+        const res = await testUtilSellerNode.rpc(notificationCommand, [notificationRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(new MissingParamException('notificationId').getMessage());
@@ -278,8 +279,7 @@ describe('NotificationSetReadCommand', () => {
 
 
     test('Should fail because invalid notificationId', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
-            true,
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationRemoveCommand,
             true
         ]);
         res.expectJson();
@@ -288,34 +288,20 @@ describe('NotificationSetReadCommand', () => {
     });
 
 
-    test('Should fail because invalid read', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
-            notifications[0].id,
-            'INVALID'
-        ]);
-        res.expectJson();
-        res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(new InvalidParamException('read', 'boolean').getMessage());
-    });
-
-
-    test('Should set 1 read', async () => {
-        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSetReadCommand,
-            notifications[0].id,
-            true
+    test('Should remove one', async () => {
+        const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationRemoveCommand,
+            notifications[0].id
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: resources.Notification = res.getBody()['result'];
-        expect(result.read).toBeTruthy();
     });
 
 
-    test('Should return 1 read', async () => {
+    test('Should return two', async () => {
         const res: any = await testUtilSellerNode.rpc(notificationCommand, [notificationSearchCommand,
             PAGE, PAGE_LIMIT, SEARCHORDER, NOTIFICATION_SEARCHORDERFIELD,
             null,
-            true
+            false
         ]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -323,9 +309,7 @@ describe('NotificationSetReadCommand', () => {
 
         log.debug('results: ', JSON.stringify(results, null, 2));
 
-        expect(results.length).toBe(1);
-        expect(results[0].type).toBe(MPActionExtended.MPA_LISTING_IMAGE_ADD);
-        expect(results[0].read).toBeTruthy();
+        expect(results.length).toBe(2);
     });
 
 
