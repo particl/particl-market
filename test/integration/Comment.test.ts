@@ -15,7 +15,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CommentService } from '../../src/api/services/model/CommentService';
 import { CommentCreateRequest } from '../../src/api/requests/model/CommentCreateRequest';
 import { CommentUpdateRequest } from '../../src/api/requests/model/CommentUpdateRequest';
-import { CommentCategory } from 'CommentCategory.ts';
 import { ProfileService } from '../../src/api/services/model/ProfileService';
 import { MarketService } from '../../src/api/services/model/MarketService';
 import { ConfigurableHasher } from 'omp-lib/dist/hasher/hash';
@@ -23,6 +22,8 @@ import { HashableCommentCreateRequestConfig } from '../../src/api/factories/hash
 import { ListingItemTemplateService } from '../../src/api/services/model/ListingItemTemplateService';
 import { DefaultMarketService } from '../../src/api/services/DefaultMarketService';
 import { CommentSearchParams} from '../../src/api/requests/search/CommentSearchParams';
+import { CommentCategory } from '../../src/api/enums/CommentCategory';
+
 
 describe('Comment', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
