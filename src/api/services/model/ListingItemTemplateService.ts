@@ -155,6 +155,7 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
         delete body.listingItemObjects;
 
         const listingItemTemplate: resources.ListingItemTemplate = await this.listingItemTemplateRepo.create(body).then(value => value.toJSON());
+        this.log.debug('create(), listingItemTemplate.id:', listingItemTemplate.id);
 
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.id;
@@ -193,8 +194,9 @@ export class ListingItemTemplateService implements ModelServiceInterface<Listing
     public async clone(listingItemTemplate: resources.ListingItemTemplate, targetParentId?: number, market?: resources.Market): Promise<ListingItemTemplate> {
         // this.log.debug('clone(), listingItemTemplateId: ' + listingItemTemplate.id + ', targetParentId: '
         //    + targetParentId + ', market: ' + (market ? market.id : undefined));
+        this.log.debug('clone(), targetParentId: ', targetParentId);
         const createRequest = await this.getCloneCreateRequest(listingItemTemplate, targetParentId, market);
-        // this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
+        this.log.debug('clone(), createRequest: ', JSON.stringify(createRequest, null, 2));
 
         listingItemTemplate = await this.create(createRequest).then(value => value.toJSON());
 

@@ -140,7 +140,11 @@ export class ListingItemTemplateCloneCommand extends BaseCommand implements RpcC
 
             data.params[2] = targetParentId;
 
-        } // creating new base template based on given templateId, anything goes
+        } else {
+            // creating new base template based on given templateId, anything goes
+            // ...but base templates dont have parents
+            data.params[2] = undefined;
+        }
 
         data.params[3] = messageVersionToFit;
         data.params[4] = scalingFraction;

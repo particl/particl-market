@@ -401,6 +401,8 @@ describe('ListingItemTemplateCloneCommand', () => {
         expect(marketV1Template.id).toBeDefined();
         expect(marketV2Template.id).toBeDefined();
 
+        log.debug('marketV2Template.hash: ', marketV2Template.hash);
+
         const res: any = await testUtilSellerNode.rpc(templateCommand, [templateCloneCommand,
             marketV2Template.id
         ]);
