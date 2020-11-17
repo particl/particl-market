@@ -49,7 +49,7 @@
     "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
-    "ts-node:fast": "./node_modules/.bin/ts-node -F",
+    "ts-node:fast": "./node_modules/.bin/ts-node --transpile-only",
     "prepublish": "npm run build"
   },
   "repository": "git+ssh://git@github.com:particl/particl-market.git",
@@ -133,7 +133,7 @@
     "typescript": "2.4.2",
     "web-request": "^1.0.7",
     "winston": "^2.4.4",
-    "zeromq": "6.0.0-beta6"
+    "zeromq": "6.0.0-beta.6"
   },
   "optionalDependencies": {
     "fsevents": "^2.1.3"
