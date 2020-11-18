@@ -165,8 +165,6 @@ export class MarketService {
         await this.coreRpcService.loadWallet(market.Identity.wallet);
         await this.smsgService.smsgSetWallet(market.Identity.wallet);
         await this.importMarketKeys(market);
-
-        this.log.debug('joinMarket(): JOINED!');
         return;
     }
 
@@ -198,9 +196,9 @@ export class MarketService {
         await this.smsgService.smsgAddAddress(market.receiveAddress, publicReceiveKey);             // add address and matching public key to smsg database
         await this.smsgService.smsgAddLocalAddress(market.receiveAddress);                          // enable receiving messages on address.
 
-        this.log.debug('importMarketKeys(), receive private key: ', market.receiveKey);
-        this.log.debug('importMarketKeys(), receive public key: ', publicReceiveKey);
-        this.log.debug('importMarketKeys(), receive address: ', market.receiveAddress);
+        // this.log.debug('importMarketKeys(), receive private key: ', market.receiveKey);
+        // this.log.debug('importMarketKeys(), receive public key: ', publicReceiveKey);
+        // this.log.debug('importMarketKeys(), receive address: ', market.receiveAddress);
 
         // publishKey
         if (market.type === MarketType.STOREFRONT) {

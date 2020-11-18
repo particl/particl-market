@@ -33,13 +33,10 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        this.log.debug('data.params:', data.params);
+        // this.log.debug('data.params:', data.params);
         const wallet = data.params.shift();
         const command = data.params.shift();
-
-        const response = await this.coreRpcService.call(command, data.params, wallet);
-        this.log.debug('response: ', JSON.stringify(response));
-        return response;
+        return await this.coreRpcService.call(command, data.params, wallet);
     }
 
     /**

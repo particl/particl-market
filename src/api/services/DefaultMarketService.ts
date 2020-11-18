@@ -200,7 +200,7 @@ export class DefaultMarketService {
         const newMarket: resources.Market = await this.marketService.create(createRequest).then(value => value.toJSON());
         await this.marketService.joinMarket(newMarket);
 
-        this.log.info('createMarket(), created: ' + newMarket.name + ', for: ' + defaultMarketIdentity.Profile.name);
+        // this.log.info('createMarket(), created: ' + newMarket.name + ', for: ' + defaultMarketIdentity.Profile.name);
 
         return await this.marketService.findOne(newMarket.id).then(value => value.toJSON());
     }

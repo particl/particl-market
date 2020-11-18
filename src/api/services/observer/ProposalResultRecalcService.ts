@@ -97,8 +97,8 @@ export class ProposalResultRecalcService extends BaseObserverService {
             }
         }
 
-        this.log.debug('process(), activeProposals: ' + activeProposals.length + ', expiredProposals: ' + expiredProposals.length
-            + ', newBlacklists: ' + newBlacklists.length);
+        // this.log.debug('process(), activeProposals: ' + activeProposals.length + ', expiredProposals: ' + expiredProposals.length
+        //    + ', newBlacklists: ' + newBlacklists.length);
 
         return ObserverStatus.RUNNING;
     }

@@ -107,9 +107,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         // before we can post the bid to the seller, we need to import the pubkey
         for (const msgInfo of listingItem.MessagingInformation) {
             if (msgInfo.protocol === MessagingProtocol.SMSG) {
-                this.log.debug('execute(), identity.wallet: ', identity.wallet);
-                this.log.debug('execute(), listingItem.seller: ', listingItem.seller);
-                this.log.debug('execute(), msgInfo.publicKey: ', msgInfo.publicKey);
+                // this.log.debug('execute(), identity.wallet: ', identity.wallet);
+                // this.log.debug('execute(), listingItem.seller: ', listingItem.seller);
+                // this.log.debug('execute(), msgInfo.publicKey: ', msgInfo.publicKey);
                 await this.smsgService.smsgAddAddress(listingItem.seller, msgInfo.publicKey);
             }
         }

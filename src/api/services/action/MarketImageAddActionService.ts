@@ -128,7 +128,7 @@ export class MarketImageAddActionService extends BaseActionService {
 
             const images: resources.Image[] = await this.imageService.findAllByHashAndTarget(actionMessage.hash, actionMessage.target)
                 .then(value => value.toJSON());
-            this.log.debug('images exist:', images.length);
+            // this.log.debug('images exist:', images.length);
 
             if (!_.isEmpty(images)) {
                 for (const image of images) {
@@ -152,7 +152,7 @@ export class MarketImageAddActionService extends BaseActionService {
 
                     // update the image with the real data
                     await this.imageService.update(image.id, updateRequest).then(value => {
-                        this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
+                        // this.log.debug('updated: ', JSON.stringify(value.toJSON(), null, 2));
                     });
                 }
             } else {
